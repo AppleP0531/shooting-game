@@ -16,7 +16,7 @@ import src.interfaces.Collectible;
 
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.util.Map;
+import java.util.Optional;
 
 import lombok.Getter;
 
@@ -60,12 +60,14 @@ public abstract class Item implements Moveable, GameObject, Entity {
             ItemConfig itemConfig = IM.getItemConfig().get(kind);
             this.speed = itemConfig.getSpeed() * ShootingGameMain.getScreenSizeAdj();
             this.collisionSize = itemConfig.getCollisionSize() * ShootingGameMain.getScreenSizeAdj();
-            this.itemImages = IM.getItemImage().get(kind);
+            this.itemImages = Optional.ofNullable(IM.getItemImage())
+                    .map(images -> images.get(kind))
+                    .orElse(null);
             this.frameRate = itemConfig.getFrameRate();
         } else if (kind instanceof ResourceKinds) {
-            Map<String, BufferedImage[]> resourceConfig = RM.getResourceImage().get(kind);
-            if (resourceConfig != null)
-                this.itemImages = resourceConfig.get("common");
+            this.itemImages = Optional.ofNullable(RM.getResourceImage())
+                    .map(images -> images.get(kind).get("common"))
+                    .orElse(null);
         }
     }
 

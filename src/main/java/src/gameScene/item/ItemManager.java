@@ -85,11 +85,11 @@ public final class ItemManager implements Manager {
      * config読み込み
      */
     private void loadConfig() {
-        final String CONFIG_PATH = "static/configs/ItemConfig.json";
+        final String CONFIG_PATH = "/static/configs/ItemConfig.json";
 
         ObjectMapper mapper = new ObjectMapper();
 
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream(CONFIG_PATH)) {
+        try (InputStream is = getClass().getResourceAsStream(CONFIG_PATH)) {
             // ロード開始ログ
             LogUtils.systemLog(
                     "[DEBUG]",

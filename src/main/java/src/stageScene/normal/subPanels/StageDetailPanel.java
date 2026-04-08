@@ -67,7 +67,7 @@ public class StageDetailPanel extends JPanel {
         Vector2 startStageButtonSize = new Vector2(
                 100 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
-        String startStageImagePath = "static/img/UI/lobbyScene/startStage.png";
+        String startStageImagePath = "/static/img/UI/lobbyScene/startStage.png";
         startStageButton = UIBuilder.createImageButton(component, startStageImagePath, startStageButtonSize,
                 "START");
         startStageButton.addActionListener(e -> {
@@ -81,7 +81,7 @@ public class StageDetailPanel extends JPanel {
         Vector2 skipStageButtonSize = new Vector2(
                 100 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
-        String skipStageImagePath = "static/img/UI/lobbyScene/skipStageImage.png";
+        String skipStageImagePath = "/static/img/UI/lobbyScene/skipStageImage.png";
         skipStageButton = UIBuilder.createImageButton(component, skipStageImagePath, skipStageButtonSize,
                 "SKIP");
         skipStageButton.setBounds(

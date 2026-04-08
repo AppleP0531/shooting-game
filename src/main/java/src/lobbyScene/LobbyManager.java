@@ -75,7 +75,7 @@ public final class LobbyManager extends JPanel implements Manager {
                 Vector2 upgradeButtonSize = new Vector2(
                                 150 * ShootingGameMain.getScreenSizeAdj(),
                                 30 * ShootingGameMain.getScreenSizeAdj());
-                String upgradeImagePath = "static/img/UI/lobbyScene/upgrade.png";
+                String upgradeImagePath = "/static/img/UI/lobbyScene/upgrade.png";
                 upgradeButton = UIBuilder.createImageButton(component, upgradeImagePath, upgradeButtonSize, "UPGRADE");
                 upgradeButton.setBounds(
                                 MAIN.getWidth() / 2 - (int) upgradeButton.getWidth() / 2,
@@ -89,7 +89,7 @@ public final class LobbyManager extends JPanel implements Manager {
                 Vector2 settingButtonSize = new Vector2(
                                 30 * ShootingGameMain.getScreenSizeAdj(),
                                 30 * ShootingGameMain.getScreenSizeAdj());
-                String settingImagePath = "static/img/UI/lobbyScene/settingImage.png";
+                String settingImagePath = "/static/img/UI/lobbyScene/settingImage.png";
                 settingButton = UIBuilder.createImageButton(component, settingImagePath, settingButtonSize, "SETTING");
                 settingButton.setBounds(
                                 MAIN.getWidth() - 10 - (int) settingButton.getWidth(),
@@ -102,7 +102,7 @@ public final class LobbyManager extends JPanel implements Manager {
                 Vector2 nextShipButtonSize = new Vector2(
                                 30 * ShootingGameMain.getScreenSizeAdj(),
                                 30 * ShootingGameMain.getScreenSizeAdj());
-                String nextShipImagePath = "static/img/UI/lobbyScene/nextShip.png";
+                String nextShipImagePath = "/static/img/UI/lobbyScene/nextShip.png";
                 nextShipButton = UIBuilder.createImageButton(component, nextShipImagePath, nextShipButtonSize, ">");
                 nextShipButton.setBounds(
                                 MAIN.getWidth() / 2
@@ -121,7 +121,7 @@ public final class LobbyManager extends JPanel implements Manager {
                 Vector2 previousShipButtonSize = new Vector2(
                                 30 * ShootingGameMain.getScreenSizeAdj(),
                                 30 * ShootingGameMain.getScreenSizeAdj());
-                String previousShipImagePath = "static/img/UI/lobbyScene/previousShip.png";
+                String previousShipImagePath = "/static/img/UI/lobbyScene/previousShip.png";
                 previousShipButton = UIBuilder.createImageButton(component, previousShipImagePath,
                                 previousShipButtonSize, "<");
                 previousShipButton.setBounds(
@@ -141,7 +141,7 @@ public final class LobbyManager extends JPanel implements Manager {
                 Vector2 sellectShipButtonSize = new Vector2(
                                 150 * ShootingGameMain.getScreenSizeAdj(),
                                 30 * ShootingGameMain.getScreenSizeAdj());
-                String sellectShipImagePath = "static/img/UI/lobbyScene/sellectShip.png";
+                String sellectShipImagePath = "/static/img/UI/lobbyScene/sellectShip.png";
                 sellectShipButton = UIBuilder.createImageButton(component, sellectShipImagePath, sellectShipButtonSize,
                                 "SELLECT");
                 sellectShipButton.setBounds(
@@ -159,7 +159,7 @@ public final class LobbyManager extends JPanel implements Manager {
                 Vector2 unlockShipButtonSize = new Vector2(
                                 150 * ShootingGameMain.getScreenSizeAdj(),
                                 30 * ShootingGameMain.getScreenSizeAdj());
-                String unlockShipImagePath = "static/img/UI/lobbyScene/unlockShip.png";
+                String unlockShipImagePath = "/static/img/UI/lobbyScene/unlockShip.png";
                 unlockShipButton = UIBuilder.createImageButton(component, unlockShipImagePath, unlockShipButtonSize,
                                 "UNLOCK");
                 unlockShipButton.setBounds(
@@ -186,7 +186,7 @@ public final class LobbyManager extends JPanel implements Manager {
                 Vector2 backpackButtonSize = new Vector2(
                                 200 * ShootingGameMain.getScreenSizeAdj(),
                                 40 * ShootingGameMain.getScreenSizeAdj());
-                String backpackImagePath = "static/img/UI/lobbyScene/backpackImage.png";
+                String backpackImagePath = "/static/img/UI/lobbyScene/backpackImage.png";
                 backpackButton = UIBuilder.createImageButton(component, backpackImagePath, backpackButtonSize, "Bag");
                 backpackButton.setBounds(
                                 MAIN.getWidth() / 2 - (int) backpackButton.getWidth(),
@@ -200,7 +200,7 @@ public final class LobbyManager extends JPanel implements Manager {
                 Vector2 selectStageButtonSize = new Vector2(
                                 200 * ShootingGameMain.getScreenSizeAdj(),
                                 40 * ShootingGameMain.getScreenSizeAdj());
-                String selectStageImagePath = "static/img/UI/lobbyScene/selectStage.png";
+                String selectStageImagePath = "/static/img/UI/lobbyScene/selectStage.png";
                 selectStageButton = UIBuilder.createImageButton(component, selectStageImagePath,
                                 selectStageButtonSize, "SELECT STAGE");
                 selectStageButton.setBounds(

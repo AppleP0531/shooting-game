@@ -43,7 +43,7 @@ public final class BagManager extends JPanel implements Manager {
         Vector2 goBackButtonSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
-        String goBackImagePath = "static/img/UI/bagScene/goBackImage.png";
+        String goBackImagePath = "/static/img/UI/bagScene/goBackImage.png";
         goBackButton = UIBuilder.createImageButton(component, goBackImagePath, goBackButtonSize,
                 "GO BACK");
         goBackButton.setBounds(
@@ -61,7 +61,7 @@ public final class BagManager extends JPanel implements Manager {
         Vector2 shopButtonSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
-        String shopImagePath = "static/img/UI/bagScene/shopImage.png";
+        String shopImagePath = "/static/img/UI/bagScene/shopImage.png";
         shopButton = UIBuilder.createImageButton(component, shopImagePath, shopButtonSize, "Shop");
         shopButton.setBounds(
                 MAIN.getWidth() / 2,

@@ -39,7 +39,7 @@ public final class TitleManager extends JPanel implements Manager {
         Vector2 startButtonSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
-        String startImagePath = "static/img/UI/titleScene/startGameImage.png";
+        String startImagePath = "/static/img/UI/titleScene/startGameImage.png";
         startButton = UIBuilder.createImageButton(component, startImagePath, startButtonSize, "GAME START");
         startButton.setBounds(
                 MAIN.getWidth() / 2 - startButton.getWidth() / 2,

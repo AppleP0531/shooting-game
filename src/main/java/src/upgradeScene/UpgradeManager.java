@@ -81,7 +81,7 @@ public final class UpgradeManager extends JPanel implements Manager {
         Vector2 lobbyButtonSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
-        String lobbyImagePath = "static/img/UI/upgradeScene/lobbyImage.png";
+        String lobbyImagePath = "/static/img/UI/upgradeScene/lobbyImage.png";
         lobbyButton = UIBuilder.createImageButton(component, lobbyImagePath, lobbyButtonSize, "HANGER");
         lobbyButton.setBounds(
                 MAIN.getWidth() / 2 - (int) lobbyButton.getWidth() / 2,
@@ -111,10 +111,10 @@ public final class UpgradeManager extends JPanel implements Manager {
      * config読み込み
      */
     private void loadConfig() {
-        final String CONFIG_PATH = "static/configs/SkillTreeButtonConfig.json";
+        final String CONFIG_PATH = "/static/configs/SkillTreeButtonConfig.json";
         ObjectMapper mapper = new ObjectMapper();
 
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream(CONFIG_PATH)) {
+        try (InputStream is = getClass().getResourceAsStream(CONFIG_PATH)) {
             // ロード開始ログ
             LogUtils.systemLog(
                     "[DEBUG]",
@@ -154,7 +154,7 @@ public final class UpgradeManager extends JPanel implements Manager {
         skillTreeButtonImageCache = new HashMap<>();
 
         for (SkillTreeButtonData data : skillTreeButtonConfigMap) {
-            String imagePath = "static/img/UI/upgradeScene/" + data.getName() + ".png";
+            String imagePath = "/static/img/UI/upgradeScene/" + data.getName() + ".png";
             BufferedImage image = null;
             try {
                 image = UIBuilder.loadImage(imagePath);

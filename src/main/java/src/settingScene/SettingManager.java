@@ -37,7 +37,7 @@ public final class SettingManager extends JPanel implements Manager {
         Vector2 goBackButtonSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
-        String goBackImagePath = "static/img/UI/settingScene/goBackImage.png";
+        String goBackImagePath = "/static/img/UI/settingScene/goBackImage.png";
         goBackButton = UIBuilder.createImageButton(component, goBackImagePath, goBackButtonSize,
                 "GO BACK");
         goBackButton.setPreferredSize(

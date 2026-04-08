@@ -35,7 +35,7 @@ public final class SelectStageManager extends JPanel implements Manager {
                 Vector2 goBackButtonSize = new Vector2(
                                 200 * ShootingGameMain.getScreenSizeAdj(),
                                 50 * ShootingGameMain.getScreenSizeAdj());
-                String goBackImagePath = "static/img/UI/selectStageScene/goBackImage.png";
+                String goBackImagePath = "/static/img/UI/selectStageScene/goBackImage.png";
                 goBackButton = UIBuilder.createImageButton(component, goBackImagePath, goBackButtonSize,
                                 "GO BACK");
                 goBackButton.setBounds(
@@ -52,7 +52,7 @@ public final class SelectStageManager extends JPanel implements Manager {
                 Vector2 normalModeButtonSize = new Vector2(
                                 200 * ShootingGameMain.getScreenSizeAdj(),
                                 50 * ShootingGameMain.getScreenSizeAdj());
-                String normalModeImagePath = "static/img/UI/selectStageScene/normalModeImage.png";
+                String normalModeImagePath = "/static/img/UI/selectStageScene/normalModeImage.png";
                 normalModeButton = UIBuilder.createImageButton(component, normalModeImagePath, normalModeButtonSize,
                                 "NORMAL MODE");
                 normalModeButton.setBounds(
@@ -68,7 +68,7 @@ public final class SelectStageManager extends JPanel implements Manager {
                 Vector2 infinityModeButtonSize = new Vector2(
                                 200 * ShootingGameMain.getScreenSizeAdj(),
                                 50 * ShootingGameMain.getScreenSizeAdj());
-                String infinityModeImagePath = "static/img/UI/selectStageScene/infinityModeImage.png";
+                String infinityModeImagePath = "/static/img/UI/selectStageScene/infinityModeImage.png";
                 infinityModeButton = UIBuilder.createImageButton(component, infinityModeImagePath,
                                 infinityModeButtonSize,
                                 "INFINITY MODE");

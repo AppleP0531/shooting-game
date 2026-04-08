@@ -53,7 +53,7 @@ public class PausePanel extends JPanel {
                 Vector2 resumeButtonSize = new Vector2(
                                 100 * ShootingGameMain.getScreenSizeAdj(),
                                 50 * ShootingGameMain.getScreenSizeAdj());
-                String resumeImagePath = "static/img/UI/gameScene/resume.png";
+                String resumeImagePath = "/static/img/UI/gameScene/resume.png";
                 resumeButton = UIBuilder.createImageButton(component, resumeImagePath, resumeButtonSize, "RESUME");
                 resumeButton.setBounds(
                                 (int) panelSize.getX() - (int) resumeButton.getWidth() - spacing,
@@ -74,7 +74,7 @@ public class PausePanel extends JPanel {
                 Vector2 quitButtonSize = new Vector2(
                                 100 * ShootingGameMain.getScreenSizeAdj(),
                                 50 * ShootingGameMain.getScreenSizeAdj());
-                String skipStageImagePath = "static/img/UI/gameScene/quit.png";
+                String skipStageImagePath = "/static/img/UI/gameScene/quit.png";
                 quitButton = UIBuilder.createImageButton(component, skipStageImagePath, quitButtonSize, "QUIT");
                 quitButton.setBounds(
                                 spacing,

@@ -39,7 +39,7 @@ public final class GameResultManager extends JPanel implements Manager {
         Vector2 lobbyButtonSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
-        String lobbyImagePath = "static/img/UI/gameResultScene/lobbyImage.png";
+        String lobbyImagePath = "/static/img/UI/gameResultScene/lobbyImage.png";
         lobbyButton = UIBuilder.createImageButton(component, lobbyImagePath, lobbyButtonSize, "LOBBY");
         lobbyButton.setPreferredSize(
                 new Dimension((int) lobbyButton.getWidth(), (int) lobbyButton.getHeight()));
@@ -52,7 +52,7 @@ public final class GameResultManager extends JPanel implements Manager {
         Vector2 replayButtonSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
-        String replayImagePath = "static/img/UI/gameResultScene/replayImage.png";
+        String replayImagePath = "/static/img/UI/gameResultScene/replayImage.png";
         replayButton = UIBuilder.createImageButton(component, replayImagePath, replayButtonSize, "REPLAY");
         replayButton.setPreferredSize(new Dimension((int) replayButton.getWidth(), (int) replayButton.getHeight()));
         replayButton.addActionListener(e -> SceneManager.getInstance().changeScene(SceneType.GAME));

@@ -17,6 +17,7 @@ import java.awt.Graphics2D;
 import java.awt.AlphaComposite;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.util.Optional;
 import lombok.Getter;
 
 /**
@@ -62,7 +63,9 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
         this.collisionSize = bulletConfig.getCollisionSize() * ShootingGameMain.getScreenSizeAdj();
         this.speed = bulletConfig.getSpeed() * ShootingGameMain.getScreenSizeAdj();
         this.damage = bulletConfig.getDamage();
-        this.bulletImages = BM.getBulletImage().get(owner).get(kind).get(id);
+        this.bulletImages = Optional.ofNullable(BM.getBulletImage())
+                .map(images -> images.get(owner).get(kind).get(id))
+                .orElse(null);
         this.frameRate = BM.getBulletConfig().get(owner).get(kind).get(id).getFrameRate();
     }
 

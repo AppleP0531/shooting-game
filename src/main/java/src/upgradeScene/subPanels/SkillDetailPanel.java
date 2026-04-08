@@ -48,7 +48,7 @@ public class SkillDetailPanel extends JPanel {
                 Vector2 upgradeButtonSize = new Vector2(
                                 100 * ShootingGameMain.getScreenSizeAdj(),
                                 50 * ShootingGameMain.getScreenSizeAdj());
-                String upgradeImagePath = "static/img/UI/upgradeScene/upgradeButton.png";
+                String upgradeImagePath = "/static/img/UI/upgradeScene/upgradeButton.png";
                 upgradeButton = UIBuilder.createImageButton(component, upgradeImagePath, upgradeButtonSize, "UPGRADE");
                 upgradeButton.setBounds(
                                 (int) panelSize.getX() / 2 - (int) upgradeButton.getWidth() / 2,

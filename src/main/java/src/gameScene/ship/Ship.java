@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import lombok.Getter;
 import lombok.Setter;
@@ -115,7 +116,11 @@ public abstract class Ship implements Moveable, GameObject, Entity {
             speed = datas.getSpeed() * ShootingGameMain.getScreenSizeAdj();
             score = datas.getScore();
             coins = datas.getCoins();
-            imageMap.put("ship", SHIP_M.getShipImage().get(shipId));
+            imageMap.put(
+                    "ship",
+                    Optional.ofNullable(SHIP_M.getShipImage())
+                            .map(images -> images.get(shipId))
+                            .orElse(null));
             // 画像が存在すれば読み込む
             if (imageMap.get("ship") != null) {
                 // 各状態の画像使用枚数の取得

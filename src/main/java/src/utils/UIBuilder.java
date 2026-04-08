@@ -33,7 +33,7 @@ public class UIBuilder extends JPanel {
      * @throws IOException
      */
     public static BufferedImage loadImage(String path) throws IOException {
-        try (InputStream is = UIBuilder.class.getClassLoader().getResourceAsStream(path)) {
+        try (InputStream is = UIBuilder.class.getResourceAsStream(path)) {
             // ファイルが存在しなかった場合例外を投げる
             if (is == null) {
                 throw new IOException("FILE_NOT_FOUND");
@@ -326,7 +326,7 @@ public class UIBuilder extends JPanel {
             Vector2 closePanelButtonSize = new Vector2(
                     20 * ShootingGameMain.getScreenSizeAdj(),
                     20 * ShootingGameMain.getScreenSizeAdj());
-            String closePanelButtonImagePath = "static/img/UI/closeImage.png";
+            String closePanelButtonImagePath = "/static/img/UI/closeImage.png";
             closePanelButton = UIBuilder.createImageButton("[UIBuilder]", closePanelButtonImagePath,
                     closePanelButtonSize, "X");
             closePanelButton.addActionListener(e -> {

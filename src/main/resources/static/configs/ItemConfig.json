@@ -1,6 +1,6 @@
 {
   "HEAL": {
-    "imagePath": "res/img/item/Heal.png",
+    "imagePath": "/static/img/item/Heal.png",
     "grids": [4, 4],
     "useCount": 15,
     "frameRate": 0.1,
@@ -9,7 +9,7 @@
     "speed": 100
   },
   "LEVEL_UP": {
-    "imagePath": "res/img/item/LevelUp.png",
+    "imagePath": "/static/img/item/LevelUp.png",
     "grids": [4, 4],
     "useCount": 15,
     "frameRate": 0.1,
@@ -18,7 +18,7 @@
     "speed": 100
   },
   "SHIELD": {
-    "imagePath": "res/img/item/Shield.png",
+    "imagePath": "/static/img/item/Shield.png",
     "grids": [4, 4],
     "useCount": 15,
     "frameRate": 0.1,

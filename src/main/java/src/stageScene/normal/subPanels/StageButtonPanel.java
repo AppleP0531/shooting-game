@@ -87,7 +87,7 @@ public class StageButtonPanel extends JPanel {
      * 画像読み込み
      */
     private void loadImages() {
-        String imagePath = "static/img/UI/lobbyScene/stageLock.png";
+        String imagePath = "/static/img/UI/lobbyScene/stageLock.png";
         try {
             lockImage = UIBuilder.loadImage(imagePath);
             double imageSize = 20 * ShootingGameMain.getScreenSizeAdj();

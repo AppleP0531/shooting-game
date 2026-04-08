@@ -84,7 +84,7 @@ public final class NormalStageManager extends JPanel implements Manager {
         Vector2 lobbyButtonSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
-        String lobbyImagePath = "static/img/UI/stageScene/normal/lobbyImage.png";
+        String lobbyImagePath = "/static/img/UI/stageScene/normal/lobbyImage.png";
         lobbyButton = UIBuilder.createImageButton(component, lobbyImagePath, lobbyButtonSize, "LOBBY");
         lobbyButton.setBounds(
                 MAIN.getWidth() / 2 - (int) lobbyButton.getWidth() / 2,
@@ -97,7 +97,7 @@ public final class NormalStageManager extends JPanel implements Manager {
         Vector2 settingButtonSize = new Vector2(
                 30 * ShootingGameMain.getScreenSizeAdj(),
                 30 * ShootingGameMain.getScreenSizeAdj());
-        String settingImagePath = "static/img/UI/lobbyScene/SettingImage.png";
+        String settingImagePath = "/static/img/UI/lobbyScene/SettingImage.png";
         settingButton = UIBuilder.createImageButton(component, settingImagePath, settingButtonSize, "SETTING");
         settingButton.setBounds(
                 MAIN.getWidth() - 10 - (int) settingButton.getWidth(),
@@ -124,10 +124,10 @@ public final class NormalStageManager extends JPanel implements Manager {
      * config読み込み
      */
     private void loadConfig() {
-        final String CONFIG_PATH = "static/configs/StageButtonConfig.json";
+        final String CONFIG_PATH = "/static/configs/StageButtonConfig.json";
         ObjectMapper mapper = new ObjectMapper();
 
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream(CONFIG_PATH)) {
+        try (InputStream is = getClass().getResourceAsStream(CONFIG_PATH)) {
             // ロード開始ログ
             LogUtils.systemLog(
                     "[DEBUG]",
@@ -171,7 +171,7 @@ public final class NormalStageManager extends JPanel implements Manager {
         stageButtonImageCache = new HashMap<>();
 
         for (StageButtonData data : stageButtonConfigMap.values()) {
-            String imagePath = "static/img/UI/lobbyScene/stage" + data.getId() + ".png";
+            String imagePath = "/static/img/UI/lobbyScene/stage" + data.getId() + ".png";
             BufferedImage image = null;
             try {
                 image = UIBuilder.loadImage(imagePath);

@@ -71,10 +71,11 @@ public class GameUtils {
 
     /**
      * HH:mm:ssを秒に変換
+     * 
      * @param time HH:mm:ss
      * @return 秒
      */
-    public static long parseTimeToSeconds(String time){
+    public static long parseTimeToSeconds(String time) {
         String[] parts = time.split(":");
         long hours = Long.parseLong(parts[0]);
         long minutes = Long.parseLong(parts[1]);
@@ -84,10 +85,11 @@ public class GameUtils {
 
     /**
      * 秒をHH:mm:ssに変換
+     * 
      * @param time 秒
      * @return HH:mm:ss
      */
-    public static String formatSecondsToTime(long time){
+    public static String formatSecondsToTime(long time) {
         long h = time / 3600;
         long m = (time % 3600) / 60;
         long s = time % 60;

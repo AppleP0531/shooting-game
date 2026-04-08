@@ -51,7 +51,7 @@ public final class InfinityStageManager extends JPanel implements Manager {
         Vector2 lobbyButtonSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
-        String lobbyImagePath = "static/img/UI/stageScene/infinity/lobbyImage.pnt";
+        String lobbyImagePath = "/static/img/UI/stageScene/infinity/lobbyImage.pnt";
         lobbyButton = UIBuilder.createImageButton(component, lobbyImagePath, lobbyButtonSize, "LOBBY");
         lobbyButton.setBounds(
                 MAIN.getWidth() / 2 - (int) lobbyButton.getWidth() / 2,
@@ -64,7 +64,7 @@ public final class InfinityStageManager extends JPanel implements Manager {
         Vector2 settingButtonSize = new Vector2(
                 30 * ShootingGameMain.getScreenSizeAdj(),
                 30 * ShootingGameMain.getScreenSizeAdj());
-        String settingImagePath = "static/img/UI/lobbyScene/SettingImage.png";
+        String settingImagePath = "/static/img/UI/lobbyScene/SettingImage.png";
         settingButton = UIBuilder.createImageButton(component, settingImagePath, settingButtonSize, "SETTING");
         settingButton.setBounds(
                 MAIN.getWidth() - 10 - (int) settingButton.getWidth(),
