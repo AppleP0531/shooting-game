@@ -1,0 +1,62 @@
+{
+  "COIN": {
+    "id": 0,
+    "rarity": {
+      "common": {
+        "imagePath": "res/img/resource/coin.png",
+        "grids": [1, 1],
+        "useCount": 1,
+        "frameRate": 0.1,
+        "imageSize": 15
+      }
+    }
+  },
+  "RESOURCE_1": {
+    "id": 1,
+    "rarity": {
+      "common": {
+        "imagePath": "res/img/resource/resource_1.png",
+        "grids": [1, 1],
+        "useCount": 1,
+        "frameRate": 0.1,
+        "imageSize": 25
+      }
+    }
+  },
+  "RESOURCE_2": {
+    "id": 2,
+    "rarity": {
+      "common": {
+        "imagePath": "res/img/resource/resource_2.png",
+        "grids": [1, 1],
+        "useCount": 1,
+        "frameRate": 0.1,
+        "imageSize": 25
+      }
+    }
+  },
+  "RESOURCE_3": {
+    "id": 3,
+    "rarity": {
+      "common": {
+        "imagePath": "res/img/resource/resource_3.png",
+        "grids": [1, 1],
+        "useCount": 1,
+        "frameRate": 0.1,
+        "imageSize": 25
+      }
+    }
+  },
+  "RESOURCE_4": {
+    "id": 4,
+    "rarity": {
+      "common": {
+        "imagePath": "res/img/resource/resource_4.png",
+        "grids": [1, 1],
+        "useCount": 1,
+        "frameRate": 0.1,
+        "imageSize": 25
+      }
+    }
+  }
+}

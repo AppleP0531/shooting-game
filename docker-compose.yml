@@ -1,0 +1,14 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: game-mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: game_db
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_USER: game_user
+      MYSQL_PASSWORD: game_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql_data:/var/lib/mysql

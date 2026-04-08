@@ -1,0 +1,1410 @@
+{
+  "sample": {
+    "rewardList": {},
+    "enemyList": {
+      "wave1": [],
+      "wave2": [],
+      "wave3": [],
+      "wave4": [],
+      "wave5": [],
+      "wave6": [],
+      "wave7": [],
+      "wave8": [],
+      "wave9": [],
+      "wave10": [],
+      "wave11": [],
+      "wave12": [],
+      "wave13": [],
+      "wave14": [],
+      "wave15": []
+    }
+  },
+  "stage0": {
+    "enemyList": {
+      "wave0": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-160, 150],
+          "stayPos": [-110, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, 80],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [160, 150],
+          "stayPos": [110, 150]
+        }
+      ]
+    }
+  },
+  "stage1": {
+    "rewardList": {
+      "RESOURCE_1": "3~8"
+    },
+    "enemyList": {
+      "wave1": [
+        {
+          "enemyId": "Enemy1",
+          "level": 0,
+          "spawnPos": [-110, -20],
+          "stayPos": [-110, 150]
+        },
+        {
+          "enemyId": "Enemy1",
+          "level": 0,
+          "spawnPos": [0, -20],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy1",
+          "level": 0,
+          "spawnPos": [110, -20],
+          "stayPos": [110, 150]
+        }
+      ],
+      "wave2": [
+        {
+          "enemyId": "Enemy1",
+          "level": 0,
+          "spawnPos": [-280, -20],
+          "stayPos": [-110, 150]
+        },
+        {
+          "enemyId": "Enemy1",
+          "level": 0,
+          "spawnPos": [-170, -20],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy1",
+          "level": 0,
+          "spawnPos": [-60, -20],
+          "stayPos": [110, 150]
+        }
+      ],
+      "wave3": [
+        {
+          "enemyId": "Enemy1",
+          "level": 0,
+          "spawnPos": [60, -20],
+          "stayPos": [-110, 150]
+        },
+        {
+          "enemyId": "Enemy1",
+          "level": 0,
+          "spawnPos": [170, -20],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy1",
+          "level": 0,
+          "spawnPos": [280, -20],
+          "stayPos": [110, 150]
+        }
+      ],
+      "wave4": [
+        {
+          "enemyId": "Enemy1",
+          "level": 0,
+          "spawnPos": [-110, -80],
+          "stayPos": [-110, 90]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -80],
+          "stayPos": [0, 70]
+        },
+        {
+          "enemyId": "Enemy1",
+          "level": 0,
+          "spawnPos": [110, -80],
+          "stayPos": [110, 90]
+        },
+        {
+          "enemyId": "Enemy1",
+          "level": 0,
+          "spawnPos": [-280, -20],
+          "stayPos": [-110, 150]
+        },
+        {
+          "enemyId": "Enemy1",
+          "level": 0,
+          "spawnPos": [-170, -20],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy1",
+          "level": 0,
+          "spawnPos": [-60, -20],
+          "stayPos": [110, 150]
+        }
+      ],
+      "wave5": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-110, -80],
+          "stayPos": [-110, 90]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -80],
+          "stayPos": [0, 70]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [110, -80],
+          "stayPos": [110, 90]
+        },
+        {
+          "enemyId": "Enemy1",
+          "level": 0,
+          "spawnPos": [60, -20],
+          "stayPos": [-110, 150]
+        },
+        {
+          "enemyId": "Enemy1",
+          "level": 0,
+          "spawnPos": [170, -20],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy1",
+          "level": 0,
+          "spawnPos": [280, -20],
+          "stayPos": [110, 150]
+        }
+      ]
+    }
+  },
+  "stage2": {
+    "rewardList": {
+      "RESOURCE_1": "5~10"
+    },
+    "enemyList": {
+      "wave1": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -20],
+          "stayPos": [-110, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -20],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -20],
+          "stayPos": [110, 150]
+        }
+      ],
+      "wave2": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-110, -20],
+          "stayPos": [-110, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -40],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [110, -20],
+          "stayPos": [110, 150]
+        }
+      ],
+      "wave3": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-110, -20],
+          "stayPos": [-110, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-110, -20],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-110, -20],
+          "stayPos": [110, 150]
+        }
+      ],
+      "wave4": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [110, -20],
+          "stayPos": [-110, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [110, -20],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [110, -20],
+          "stayPos": [110, 150]
+        }
+      ],
+      "wave5": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-110, -20],
+          "stayPos": [-110, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -40],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [110, -20],
+          "stayPos": [110, 150]
+        }
+      ],
+      "wave6": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-120, -20],
+          "stayPos": [-120, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-40, -40],
+          "stayPos": [-40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [40, -40],
+          "stayPos": [40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [120, -20],
+          "stayPos": [120, 150]
+        }
+      ],
+      "wave7": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-290, -20],
+          "stayPos": [-120, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-210, -40],
+          "stayPos": [-40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-130, -40],
+          "stayPos": [40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-50, -20],
+          "stayPos": [120, 150]
+        }
+      ],
+      "wave8": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [50, -20],
+          "stayPos": [-120, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [130, -40],
+          "stayPos": [-40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [210, -40],
+          "stayPos": [40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [290, -20],
+          "stayPos": [120, 150]
+        }
+      ],
+      "wave9": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-120, -20],
+          "stayPos": [-120, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-120, -40],
+          "stayPos": [-40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [120, -40],
+          "stayPos": [40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [120, -20],
+          "stayPos": [120, 150]
+        }
+      ],
+      "wave10": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-40, -20],
+          "stayPos": [-120, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-40, -40],
+          "stayPos": [-40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [40, -40],
+          "stayPos": [40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [40, -20],
+          "stayPos": [120, 150]
+        }
+      ],
+      "wave11": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-140, -20],
+          "stayPos": [-140, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-70, -30],
+          "stayPos": [-70, 140]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -40],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [70, -30],
+          "stayPos": [70, 140]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [140, -20],
+          "stayPos": [140, 150]
+        }
+      ],
+      "wave12": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-140, -40],
+          "stayPos": [-140, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-70, -30],
+          "stayPos": [-70, 140]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -20],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [70, -30],
+          "stayPos": [70, 140]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [140, -40],
+          "stayPos": [140, 150]
+        }
+      ],
+      "wave13": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-140, -20],
+          "stayPos": [-140, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-70, -70],
+          "stayPos": [-70, 140]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -120],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [70, -170],
+          "stayPos": [70, 140]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [140, -220],
+          "stayPos": [140, 150]
+        }
+      ],
+      "wave14": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-140, -220],
+          "stayPos": [-140, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-70, -170],
+          "stayPos": [-70, 140]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -120],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [70, -70],
+          "stayPos": [70, 140]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [140, -20],
+          "stayPos": [140, 150]
+        }
+      ],
+      "wave15": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-280, -20],
+          "stayPos": [-140, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-140, -20],
+          "stayPos": [-70, 140]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -20],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [140, -20],
+          "stayPos": [70, 140]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [280, -20],
+          "stayPos": [140, 150]
+        }
+      ]
+    }
+  },
+  "stage3": {
+    "rewardList": {
+      "RESOURCE_1": "8~15"
+    },
+    "enemyList": {
+      "wave1": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-110, -20],
+          "stayPos": [-110, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -20],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [110, -20],
+          "stayPos": [110, 150]
+        }
+      ],
+      "wave2": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -20],
+          "stayPos": [-110, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -20],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -20],
+          "stayPos": [110, 150]
+        }
+      ],
+      "wave3": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-160, -20],
+          "stayPos": [-110, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-50, -20],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [60, -20],
+          "stayPos": [110, 150]
+        }
+      ],
+      "wave4": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-60, -20],
+          "stayPos": [-110, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [50, -20],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [160, -20],
+          "stayPos": [110, 150]
+        }
+      ],
+      "wave5": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-110, -20],
+          "stayPos": [-110, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -20],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [110, -20],
+          "stayPos": [110, 150]
+        }
+      ],
+      "wave6": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-120, -20],
+          "stayPos": [-120, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-40, -20],
+          "stayPos": [-40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [40, -20],
+          "stayPos": [40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [120, -20],
+          "stayPos": [120, 150]
+        }
+      ],
+      "wave7": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-120, -20],
+          "stayPos": [-120, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-120, -20],
+          "stayPos": [-40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [120, -20],
+          "stayPos": [40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [120, -20],
+          "stayPos": [120, 150]
+        }
+      ],
+      "wave8": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-120, -20],
+          "stayPos": [-120, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [120, -20],
+          "stayPos": [-40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-120, -20],
+          "stayPos": [40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [120, -20],
+          "stayPos": [120, 150]
+        }
+      ],
+      "wave9": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-40, -20],
+          "stayPos": [-120, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-40, -20],
+          "stayPos": [-40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [40, -20],
+          "stayPos": [40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [40, -20],
+          "stayPos": [120, 150]
+        }
+      ],
+      "wave10": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -20],
+          "stayPos": [-120, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -20],
+          "stayPos": [-40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -20],
+          "stayPos": [40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -20],
+          "stayPos": [120, 150]
+        }
+      ],
+      "wave11": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -20],
+          "stayPos": [-140, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -20],
+          "stayPos": [-70, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -20],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -20],
+          "stayPos": [70, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -20],
+          "stayPos": [140, 150]
+        }
+      ],
+      "wave12": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-140, -20],
+          "stayPos": [-140, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-70, -20],
+          "stayPos": [-70, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -20],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [70, -20],
+          "stayPos": [70, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [140, -20],
+          "stayPos": [140, 150]
+        }
+      ],
+      "wave13": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-140, -20],
+          "stayPos": [-140, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-70, -40],
+          "stayPos": [-70, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -60],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [70, -80],
+          "stayPos": [70, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [140, -100],
+          "stayPos": [140, 150]
+        }
+      ],
+      "wave14": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-140, -100],
+          "stayPos": [-140, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-70, -80],
+          "stayPos": [-70, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -60],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [70, -40],
+          "stayPos": [70, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [140, -20],
+          "stayPos": [140, 150]
+        }
+      ],
+      "wave15": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-140, -20],
+          "stayPos": [-140, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 1,
+          "spawnPos": [-70, -80],
+          "stayPos": [-70, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -20],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 1,
+          "spawnPos": [70, -80],
+          "stayPos": [70, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [140, -20],
+          "stayPos": [140, 150]
+        }
+      ]
+    }
+  },
+  "stage4": {
+    "rewardList": {
+      "RESOURCE_1": "12~20"
+    },
+    "enemyList": {
+      "wave1": [
+        {
+          "enemyId": "Enemy2",
+          "level": 1,
+          "spawnPos": [-110, -20],
+          "stayPos": [-110, 170]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -60],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [110, -40],
+          "stayPos": [110, 150]
+        }
+      ],
+      "wave2": [
+        {
+          "enemyId": "Enemy2",
+          "level": 1,
+          "spawnPos": [-120, -40],
+          "stayPos": [-120, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-40, -60],
+          "stayPos": [-40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [40, -60],
+          "stayPos": [40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 1,
+          "spawnPos": [120, -40],
+          "stayPos": [120, 150]
+        }
+      ],
+      "wave3": [
+        {
+          "enemyId": "Enemy2",
+          "level": 1,
+          "spawnPos": [-120, -20],
+          "stayPos": [-120, 170]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-40, -60],
+          "stayPos": [-40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [40, -60],
+          "stayPos": [40, 130]
+        },
+        {
+          "enemyId": "Enemy4",
+          "level": 1,
+          "spawnPos": [120, -40],
+          "stayPos": [120, 150]
+        }
+      ],
+      "wave4": [
+        {
+          "enemyId": "Enemy4",
+          "level": 1,
+          "spawnPos": [-120, -40],
+          "stayPos": [-120, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-40, -60],
+          "stayPos": [-40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [40, -60],
+          "stayPos": [40, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 1,
+          "spawnPos": [120, -20],
+          "stayPos": [120, 170]
+        }
+      ],
+      "wave5": [
+        {
+          "enemyId": "Enemy2",
+          "level": 1,
+          "spawnPos": [-120, -40],
+          "stayPos": [-120, 150]
+        },
+        {
+          "enemyId": "Enemy4",
+          "level": 0,
+          "spawnPos": [120, -20],
+          "stayPos": [-40, 170]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 1,
+          "spawnPos": [40, -20],
+          "stayPos": [40, 170]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 1,
+          "spawnPos": [40, -60],
+          "stayPos": [120, 130]
+        }
+      ],
+      "wave6": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-40, -60],
+          "stayPos": [-120, 130]
+        },
+        {
+          "enemyId": "Enemy4",
+          "level": 1,
+          "spawnPos": [-40, -20],
+          "stayPos": [-40, 170]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-120, -20],
+          "stayPos": [40, 170]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 1,
+          "spawnPos": [120, -40],
+          "stayPos": [120, 150]
+        }
+      ],
+      "wave7": [
+        {
+          "enemyId": "Enemy4",
+          "level": 1,
+          "spawnPos": [-120, -40],
+          "stayPos": [-120, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-40, -20],
+          "stayPos": [-40, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 1,
+          "spawnPos": [40, -20],
+          "stayPos": [40, 150]
+        },
+        {
+          "enemyId": "Enemy4",
+          "level": 1,
+          "spawnPos": [120, -40],
+          "stayPos": [120, 130]
+        }
+      ],
+      "wave8": [
+        {
+          "enemyId": "Enemy4",
+          "level": 1,
+          "spawnPos": [-120, -40],
+          "stayPos": [-120, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 1,
+          "spawnPos": [-40, -20],
+          "stayPos": [-40, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [40, -20],
+          "stayPos": [40, 150]
+        },
+        {
+          "enemyId": "Enemy4",
+          "level": 1,
+          "spawnPos": [120, -40],
+          "stayPos": [120, 130]
+        }
+      ],
+      "wave9": [
+        {
+          "enemyId": "Enemy4",
+          "level": 1,
+          "spawnPos": [-40, -40],
+          "stayPos": [-120, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 1,
+          "spawnPos": [0, -20],
+          "stayPos": [-40, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 1,
+          "spawnPos": [0, -20],
+          "stayPos": [40, 150]
+        },
+        {
+          "enemyId": "Enemy4",
+          "level": 1,
+          "spawnPos": [40, -40],
+          "stayPos": [120, 130]
+        }
+      ],
+      "wave10": [
+        {
+          "enemyId": "Enemy4",
+          "level": 1,
+          "spawnPos": [-120, -40],
+          "stayPos": [-120, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 1,
+          "spawnPos": [-120, -20],
+          "stayPos": [-40, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 1,
+          "spawnPos": [120, -20],
+          "stayPos": [40, 150]
+        },
+        {
+          "enemyId": "Enemy4",
+          "level": 1,
+          "spawnPos": [120, -40],
+          "stayPos": [120, 130]
+        }
+      ],
+      "wave11": [
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-140, -20],
+          "stayPos": [-140, 150]
+        },
+        {
+          "enemyId": "Enemy4",
+          "level": 1,
+          "spawnPos": [-70, -20],
+          "stayPos": [-70, 140]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -20],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy4",
+          "level": 1,
+          "spawnPos": [70, -20],
+          "stayPos": [70, 140]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [140, -20],
+          "stayPos": [140, 150]
+        }
+      ],
+      "wave12": [
+        {
+          "enemyId": "Enemy4",
+          "level": 1,
+          "spawnPos": [-140, -40],
+          "stayPos": [-140, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [70, -40],
+          "stayPos": [-70, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [70, -40],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [70, -40],
+          "stayPos": [70, 130]
+        },
+        {
+          "enemyId": "Enemy4",
+          "level": 1,
+          "spawnPos": [140, -20],
+          "stayPos": [140, 170]
+        }
+      ],
+      "wave13": [
+        {
+          "enemyId": "Enemy4",
+          "level": 1,
+          "spawnPos": [-140, -20],
+          "stayPos": [-140, 170]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-70, -40],
+          "stayPos": [-70, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-70, -40],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [-70, -40],
+          "stayPos": [70, 130]
+        },
+        {
+          "enemyId": "Enemy4",
+          "level": 1,
+          "spawnPos": [140, -40],
+          "stayPos": [140, 150]
+        }
+      ],
+      "wave14": [
+        {
+          "enemyId": "Enemy4",
+          "level": 1,
+          "spawnPos": [-140, -40],
+          "stayPos": [-140, 150]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 1,
+          "spawnPos": [0, -40],
+          "stayPos": [-70, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 0,
+          "spawnPos": [0, -40],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 1,
+          "spawnPos": [0, -40],
+          "stayPos": [70, 130]
+        },
+        {
+          "enemyId": "Enemy4",
+          "level": 1,
+          "spawnPos": [140, -20],
+          "stayPos": [140, 170]
+        }
+      ],
+      "wave15": [
+        {
+          "enemyId": "Enemy4",
+          "level": 1,
+          "spawnPos": [-140, -20],
+          "stayPos": [-140, 170]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 1,
+          "spawnPos": [0, -40],
+          "stayPos": [-70, 130]
+        },
+        {
+          "enemyId": "Enemy4",
+          "level": 1,
+          "spawnPos": [0, -60],
+          "stayPos": [0, 130]
+        },
+        {
+          "enemyId": "Enemy2",
+          "level": 1,
+          "spawnPos": [0, -40],
+          "stayPos": [70, 130]
+        },
+        {
+          "enemyId": "Enemy4",
+          "level": 1,
+          "spawnPos": [140, -40],
+          "stayPos": [140, 150]
+        }
+      ]
+    }
+  },
+  "stage5": {},
+  "stage6": {},
+  "stage7": {},
+  "stage8": {},
+  "stage9": {},
+  "stage10": {}
+}

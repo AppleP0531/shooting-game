@@ -1,0 +1,1201 @@
+{
+  "OBJECT": {
+    "collision": {
+      "datas": {
+        "imagePath": "res/img/ship/player/collision.png",
+        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "frameRate": 0.1,
+        "imageSize": 5
+      }
+    },
+    "shield": {
+      "datas": {
+        "imagePath": "res/img/ship/player/shield.png",
+        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "frameRate": 0.1,
+        "imageSize": 80
+      }
+    },
+    "explosion": {
+      "datas": {
+        "imagePath": "res/img/ship/player/explosion.png",
+        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "frameRate": 0.1,
+        "imageSize": 80
+      }
+    }
+  },
+  "PLAYER": {
+    "Ship1": {
+      "datas": {
+        "imagePath": "res/img/ship/player/Ship1.png",
+        "sheets": [
+          { "grids": [1, 1], "useCount": 1 },
+          { "grids": [0, 0], "useCount": 0 },
+          { "grids": [0, 0], "useCount": 0 }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 30,
+        "collisionSize": 3,
+        "speed": 250
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [4, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [-4, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 10
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -10
+        }
+      ],
+      "Lv3": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 20
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -20
+        }
+      ],
+      "Lv4": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 30
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -30
+        }
+      ],
+      "Lv5": []
+    },
+    "Ship2": {
+      "datas": {
+        "imagePath": "res/img/ship/player/Ship2.png",
+        "cost": 10000,
+        "sheets": [
+          { "grids": [1, 1], "useCount": 1 },
+          { "grids": [0, 0], "useCount": 0 },
+          { "grids": [0, 0], "useCount": 0 }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 30,
+        "collisionSize": 3,
+        "speed": 250
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 2,
+          "pos": [4, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 2,
+          "pos": [-4, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 10
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -10
+        }
+      ],
+      "Lv3": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 20
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -20
+        }
+      ],
+      "Lv4": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 30
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -30
+        }
+      ],
+      "Lv5": []
+    },
+    "Ship3": {
+      "datas": {
+        "imagePath": "res/img/ship/player/Ship3.png",
+        "cost": 50000,
+        "sheets": [
+          { "grids": [1, 1], "useCount": 1 },
+          { "grids": [0, 0], "useCount": 0 },
+          { "grids": [0, 0], "useCount": 0 }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 30,
+        "collisionSize": 3,
+        "speed": 250
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 4,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 4,
+          "pos": [4, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 4,
+          "pos": [-4, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 10
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -10
+        }
+      ],
+      "Lv3": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 20
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -20
+        }
+      ],
+      "Lv4": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 30
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -30
+        }
+      ],
+      "Lv5": []
+    },
+    "Ship4": {
+      "datas": {
+        "imagePath": "res/img/ship/player/Ship4.png",
+        "cost": 1000000,
+        "sheets": [
+          { "grids": [1, 1], "useCount": 1 },
+          { "grids": [0, 0], "useCount": 0 },
+          { "grids": [0, 0], "useCount": 0 }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 30,
+        "collisionSize": 3,
+        "speed": 250
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 6,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 6,
+          "pos": [4, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 6,
+          "pos": [-4, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 7,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 10
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 7,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -10
+        }
+      ],
+      "Lv3": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 7,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 20
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 7,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -20
+        }
+      ],
+      "Lv4": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 7,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 30
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 7,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -30
+        }
+      ],
+      "Lv5": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 7,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 5
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 7,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -5
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 7,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 15
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 7,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -15
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 7,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 25
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 7,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -25
+        }
+      ]
+    },
+    "Ship5": {
+      "datas": {
+        "imagePath": "res/img/ship/player/Ship5.png",
+        "cost": 20000000,
+        "sheets": [
+          { "grids": [4, 2], "useCount": 6 },
+          { "grids": [4, 3], "useCount": 10 },
+          { "grids": [4, 2], "useCount": 6 }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 80,
+        "collisionSize": 3,
+        "speed": 250
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 9,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 9,
+          "pos": [4, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 9,
+          "pos": [-4, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 9,
+          "pos": [8, 4],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 9,
+          "pos": [-8, 4],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 10
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -10
+        }
+      ],
+      "Lv3": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 20
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -20
+        }
+      ],
+      "Lv4": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 30
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -30
+        }
+      ],
+      "Lv5": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 5
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -5
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 15
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -15
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 25
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -25
+        }
+      ]
+    },
+    "SubShip1_L": {
+      "datas": {
+        "imagePath": "res/img/ship/player/SubShip1_L.png",
+        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "frameRate": 0.1,
+        "imageSize": 80,
+        "speed": 250
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 100,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        }
+      ]
+    },
+    "SubShip1_R": {
+      "datas": {
+        "imagePath": "res/img/ship/player/SubShip1_R.png",
+        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "frameRate": 0.1,
+        "imageSize": 80,
+        "speed": 250
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 100,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        }
+      ]
+    },
+    "SubShip2_L": {
+      "datas": {
+        "imagePath": "res/img/ship/player/SubShip2_L.png",
+        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "frameRate": 0.1,
+        "imageSize": 80,
+        "speed": 250
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 100,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        }
+      ]
+    },
+    "SubShip2_R": {
+      "datas": {
+        "imagePath": "res/img/ship/player/SubShip2_R.png",
+        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "frameRate": 0.1,
+        "imageSize": 80,
+        "speed": 250
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 100,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        }
+      ]
+    },
+    "SubShip3_L": {
+      "datas": {
+        "imagePath": "res/img/ship/player/SubShip3_L.png",
+        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "frameRate": 0.1,
+        "imageSize": 80,
+        "speed": 250
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [-4, 8],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [4, -8],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        }
+      ]
+    },
+    "SubShip3_R": {
+      "datas": {
+        "imagePath": "res/img/ship/player/SubShip3_R.png",
+        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "frameRate": 0.1,
+        "imageSize": 80,
+        "speed": 250
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [-4, -8],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [4, 8],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        }
+      ]
+    },
+    "SubShip4_L": {
+      "datas": {
+        "imagePath": "res/img/ship/player/SubShip4_L.png",
+        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "frameRate": 0.1,
+        "imageSize": 80,
+        "speed": 250
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -3
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -1
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 1
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 3
+        }
+      ]
+    },
+    "SubShip4_R": {
+      "datas": {
+        "imagePath": "res/img/ship/player/SubShip4_R.png",
+        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "frameRate": 0.1,
+        "imageSize": 80,
+        "speed": 250
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -3
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -1
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 1
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 3
+        }
+      ]
+    },
+    "SubShip5_L": {
+      "datas": {
+        "imagePath": "res/img/ship/player/SubShip5_L.png",
+        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "frameRate": 0.1,
+        "imageSize": 80,
+        "speed": 250
+      },
+      "Lv0": [
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        }
+      ]
+    },
+    "SubShip5_R": {
+      "datas": {
+        "imagePath": "res/img/ship/player/SubShip5_R.png",
+        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "frameRate": 0.1,
+        "imageSize": 80,
+        "speed": 250
+      },
+      "Lv0": [
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        }
+      ]
+    }
+  },
+  "ENEMY": {
+    "Enemy1": {
+      "datas": {
+        "imagePath": "res/img/ship/enemy/Enemy1.png",
+        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "frameRate": 0.1,
+        "imageSize": 30,
+        "collisionSize": 20,
+        "hp": 80,
+        "speed": 100,
+        "score": 50,
+        "coins": "0~3"
+      },
+      "Lv0": [],
+      "Lv1": [
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0
+        }
+      ]
+    },
+    "Enemy2": {
+      "datas": {
+        "imagePath": "res/img/ship/enemy/Enemy2.png",
+        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "frameRate": 0.1,
+        "imageSize": 30,
+        "collisionSize": 20,
+        "hp": 100,
+        "speed": 100,
+        "score": 100,
+        "coins": "2~4"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [-4, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [4, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [-8, -3],
+          "bulletVecRef": "down",
+          "vecAdj": 0
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [8, -3],
+          "bulletVecRef": "down",
+          "vecAdj": 0
+        }
+      ]
+    },
+    "Enemy3": {
+      "datas": {
+        "imagePath": "res/img/ship/enemy/Enemy2.png",
+        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "frameRate": 0.1,
+        "imageSize": 30,
+        "collisionSize": 20,
+        "hp": 100,
+        "speed": 100,
+        "score": 100,
+        "coins": "2~4"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 0
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [-4, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 0
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [4, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 0
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [-8, -3],
+          "bulletVecRef": "target",
+          "vecAdj": 0
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [8, -3],
+          "bulletVecRef": "target",
+          "vecAdj": 0
+        }
+      ]
+    },
+    "Enemy4": {
+      "datas": {
+        "imagePath": "res/img/ship/enemy/Enemy3.png",
+        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "frameRate": 0.1,
+        "imageSize": 30,
+        "collisionSize": 20,
+        "hp": 120,
+        "speed": 100,
+        "score": 120,
+        "coins": "3~5"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 15
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -15
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 30
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -30
+        }
+      ]
+    },
+    "Enemy5": {
+      "datas": {
+        "imagePath": "res/img/ship/enemy/Enemy4.png",
+        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "frameRate": 0.1,
+        "imageSize": 30,
+        "collisionSize": 20,
+        "hp": 120,
+        "speed": 100,
+        "score": 120,
+        "coins": "3~5"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 0
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 15
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -15
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 30
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -30
+        }
+      ]
+    },
+    "Enemy6": {
+      "datas": {
+        "imagePath": "res/img/ship/enemy/Enemy5.png",
+        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "frameRate": 0.1,
+        "imageSize": 30,
+        "collisionSize": 20,
+        "hp": 120,
+        "speed": 100,
+        "score": 120,
+        "coins": "3~5"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 7.5
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -7.5
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 22.5
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -22.5
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 37.5
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -37.5
+        }
+      ]
+    },
+    "Enemy7": {
+      "datas": {
+        "imagePath": "res/img/ship/enemy/Enemy6.png",
+        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "frameRate": 0.1,
+        "imageSize": 30,
+        "collisionSize": 20,
+        "hp": 120,
+        "speed": 100,
+        "score": 120,
+        "coins": "3~5"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 7.5
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -7.5
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 22.5
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -22.5
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 37.5
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -37.5
+        }
+      ]
+    },
+    "Enemy8": {
+      "Lv0": [],
+      "Lv1": []
+    }
+  },
+  "BOSS": {
+    "Boss1": {
+      "Lv0": [],
+      "Lv1": []
+    },
+    "Boss2": {},
+    "Boss3": {},
+    "Boss4": {},
+    "Boss5": {}
+  }
+}
