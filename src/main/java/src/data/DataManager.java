@@ -1,10 +1,12 @@
 package src.data;
 
 import src.ResourceManager.ResourceKinds;
+import src.entity.UserEntity;
 import src.utils.ANSI;
 import src.utils.LogUtils;
 import src.utils.GameUtils;
 import src.interfaces.Manager;
+import src.repository.UserRepository;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,15 +26,19 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
  * データ管理クラス
  */
+@Component
 public final class DataManager implements Manager {
     private static final String component = "[DataManager]";
     private static DataManager instance;
+    private static UserRepository userRepository;
     private static UserData userData;
     private static List<Integer> expData;
 
@@ -129,107 +135,161 @@ public final class DataManager implements Manager {
     }
 
     /**
+     * UserRepositoryのセット
+     * 
+     * @param repo
+     */
+    @Autowired
+    public void setUserRepository(UserRepository repo) {
+        DataManager.userRepository = repo;
+    }
+
+    /**
+     * UserEntityからUserDataへの変換
+     * 
+     * @param entity UserEntityオブジェクト
+     * @return
+     */
+    public static UserData convertToUserData(UserEntity entity) {
+        UserData data = new UserData();
+
+        // 基本情報のコピー
+        data.setLastPlayTime(entity.getLastPlayTime());
+        data.setTotalPlayTime(entity.getTotalPlayTime());
+        data.setSelectedShip(entity.getSelectedShip());
+        data.setSubShip(entity.getSubShip());
+
+        // 進捗のコピー
+        data.getProgress().setExp(entity.getExp());
+        data.getProgress().setClearedStage(entity.getClearedStage());
+        data.getProgress().setHighScores(entity.getHighScores());
+
+        // 資源のコピー
+        data.getResources().setCoins(entity.getCoins());
+        data.getResources().setEquipment(entity.getEquipment());
+
+        // 船の情報のコピー
+        entity.getShipUpgrades().forEach((key, level) -> {
+            String[] parts = key.split(":");
+            if (parts.length == 2) {
+                String shipId = parts[0];
+                String upgradeName = parts[1];
+
+                // 船がまだ存在しない場合は追加
+                data.unlockShip(shipId);
+
+                // 強化状況の更新
+                data.getShips().get(shipId).getUpgrades().put(upgradeName, level);
+            }
+        });
+
+        return data;
+    }
+
+    public static void syncUserDataToEntity(UserEntity entity) {
+        // 基本フィールド
+        entity.setLastPlayTime(userData.getLastPlayTime());
+        entity.setTotalPlayTime(userData.getTotalPlayTime());
+        entity.setSelectedShip(userData.getSelectedShip());
+        entity.setSubShip(userData.getSubShip());
+
+        // 進捗
+        entity.setExp(userData.getProgress().getExp());
+        entity.setClearedStage(userData.getProgress().getClearedStage());
+        entity.setHighScores(userData.getProgress().getHighScores());
+
+        // 資源
+        entity.setCoins(userData.getResources().getCoins());
+        entity.setEquipment(userData.getResources().getEquipment());
+
+        // 船の情報
+        Map<String, Integer> shipUpgrades = new HashMap<>();
+        userData.getShips().forEach((shipId, stats) -> {
+            stats.getUpgrades().forEach((upgradeName, level) -> {
+                String key = shipId + ":" + upgradeName;
+                shipUpgrades.put(key, level);
+            });
+        });
+        entity.setShipUpgrades(shipUpgrades);
+
+    }
+
+    /**
      * データ読み込み
      */
     public static void load() {
-        File file = new File(SAVE_PATH);
-        try {
-            // ロード開始ログ
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
-                    "Attempting to load userData from " + ANSI.YELLOW + SAVE_PATH + ANSI.RESET + ".");
+        // ロード開始ログ
+        LogUtils.systemLog(
+                "[DEBUG]",
+                component,
+                "Attempting to load userData from " + ANSI.YELLOW + SAVE_PATH + ANSI.RESET + ".");
 
-            sessionStartTime = LocalDateTime.now();
+        sessionStartTime = LocalDateTime.now();
 
-            // セーブデータが存在した場合は読み込む、存在しなければ新規作成
+        UserEntity entity = userRepository.findById(1L).orElse(null);
+
+        // セーブデータが存在した場合は読み込む、存在しなければ新規作成
+        if (entity != null) {
+            userData = convertToUserData(entity);
+        } else {
+            // 移行用
+            File file = new File(SAVE_PATH);
             if (file.exists()) {
-                userData = mapper.readValue(new File(SAVE_PATH), UserData.class); // 読み込み
-
-                printWelcomeMessage();
-
-                // ロード成功ログ
-                LogUtils.systemLog(
-                        "[DEBUG]",
-                        component,
-                        "UserData loaded successfully.");
+                try {
+                    userData = mapper.readValue(file, UserData.class);
+                    LogUtils.systemLog(
+                            "[INFO]",
+                            component,
+                            "Existing userData file detected. Attempting migration to database.");
+                    save(); // データベースに保存
+                } catch (IOException e) {
+                    LogUtils.systemLog(
+                            "[ERROR]",
+                            component,
+                            "Failed to load existing userData file during migration.", e);
+                }
             } else {
-                // ファイル未発見ログ
-                LogUtils.systemLog(
-                        "[WARN]",
-                        component,
-                        "No existing userData file detected.");
-
                 create();
             }
-
-            save();
-        } catch (IOException e) {
-            // ロード失敗ログ
-            LogUtils.systemLog(
-                    "[ERROR]",
-                    component,
-                    "Failed to load data file " + ANSI.YELLOW + SAVE_PATH + ANSI.RESET + ".",
-                    e);
         }
-
-        final String CONFIG_PATH = "static/configs/Exp.json";
-        ObjectMapper mapper = new ObjectMapper();
-
-        try (InputStream is = DataManager.class.getClassLoader().getResourceAsStream(CONFIG_PATH)) {
-            // ロード開始ログ
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
-                    "Attempting to load configuration from " + ANSI.YELLOW + CONFIG_PATH + ANSI.RESET + ".");
-
-            // nullチェック
-            if (is == null)
-                throw new IOException("Resource not found: " + CONFIG_PATH);
-
-            // データを読み込む
-            expData = mapper.readValue(is, TYPE_REF);
-
-            // ロード成功ログ
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
-                    "Configuration loaded successfully");
-        } catch (IOException e) {
-            // ロードエラーログ
-            LogUtils.systemLog(
-                    "[FATAL]",
-                    component,
-                    "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + "." + ANSI.RESET);
-            LogUtils.systemLog(
-                    "[FATAL]",
-                    component,
-                    ANSI.RED + "Application will terminate." + ANSI.RESET,
-                    e);
-        }
+        loadExpConfig();
+        printWelcomeMessage();
     }
 
     /**
      * データ保存
      */
     public static void save() {
-        try {
-            // userDataが存在する場合は時間を保存
-            if (userData != null) {
-                LocalDateTime now = LocalDateTime.now();
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyy-MM-dd HH:mm:ss");
-                userData.setLastPlayTime(now.format(formatter));
-            }
+        if (userData == null || userRepository == null) {
+            LogUtils.systemLog(
+                    "[ERROR]",
+                    component,
+                    "Cannot save user data: UserData or UserRepository is not initialized.");
+            return;
+        }
 
-            // 保存
-            mapper.writeValue(new File(SAVE_PATH), userData);
+        try {
+            // 時間を保存
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyy-MM-dd HH:mm:ss");
+            userData.setLastPlayTime(now.format(formatter));
+
+            // データベースのエンティティを取得（存在しない場合は新規作成）
+            UserEntity entity = userRepository.findById(1L).orElse(new UserEntity());
+            entity.setId(1L);
+
+            // データの同期
+            syncUserDataToEntity(entity);
+
+            // データベースに保存
+            userRepository.save(entity);
 
             // セーブ成功ログ
             LogUtils.systemLog(
                     "[INFO]",
                     component,
                     "Game state successfully synchronized to " + ANSI.YELLOW + SAVE_PATH + ANSI.RESET + ".");
-        } catch (IOException e) {
+        } catch (Exception e) {
             // セーブ失敗ログ
             LogUtils.systemLog(
                     "[ERROR]",
@@ -289,6 +349,47 @@ public final class DataManager implements Manager {
                     "[ERROR]",
                     component,
                     "Failed to initialize userData at " + ANSI.YELLOW + SAVE_PATH + ANSI.RESET + ".", e);
+        }
+    }
+
+    /**
+     * 経験値テーブルの読み込み
+     */
+    private static void loadExpConfig() {
+        final String CONFIG_PATH = "static/configs/Exp.json";
+        ObjectMapper mapper = new ObjectMapper();
+
+        try (
+                InputStream is = DataManager.class.getClassLoader().getResourceAsStream(CONFIG_PATH)) {
+            // ロード開始ログ
+            LogUtils.systemLog(
+                    "[DEBUG]",
+                    component,
+                    "Attempting to load configuration from " + ANSI.YELLOW + CONFIG_PATH + ANSI.RESET + ".");
+
+            // nullチェック
+            if (is == null)
+                throw new IOException("Resource not found: " + CONFIG_PATH);
+
+            // データを読み込む
+            expData = mapper.readValue(is, TYPE_REF);
+
+            // ロード成功ログ
+            LogUtils.systemLog(
+                    "[DEBUG]",
+                    component,
+                    "Configuration loaded successfully");
+        } catch (IOException e) {
+            // ロードエラーログ
+            LogUtils.systemLog(
+                    "[FATAL]",
+                    component,
+                    "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + "." + ANSI.RESET);
+            LogUtils.systemLog(
+                    "[FATAL]",
+                    component,
+                    ANSI.RED + "Application will terminate." + ANSI.RESET,
+                    e);
         }
     }
 

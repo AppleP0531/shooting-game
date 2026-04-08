@@ -20,12 +20,16 @@ import javax.swing.JFrame;
 import javax.swing.KeyStroke;
 import javax.swing.JComponent;
 import javax.swing.AbstractAction;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.SpringApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import lombok.Getter;
 import lombok.Setter;
 
 /**
  * メインクラス
  */
+@SpringBootApplication
 public final class ShootingGameMain extends JPanel implements Runnable {
     private static final String component = "[MAIN]";
     private static ShootingGameMain instance;
@@ -94,6 +98,12 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                 "[INFO]",
                 component,
                 ANSI.GREEN + "Initializing Game Setup..." + ANSI.RESET);
+
+        // Spring Bootの起動
+        ConfigurableApplicationContext context = SpringApplication.run(ShootingGameMain.class, args);
+
+        // DataManagerをSpringから取得して初期化
+        context.getBean(DataManager.class);
 
         JFrame frame = new JFrame("ShootingGame");
         ShootingGameMain panel = new ShootingGameMain();

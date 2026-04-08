@@ -1,0 +1,1411 @@
+@startuml game
+
+skinparam style strictuml
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam linetype ortho
+
+package "src" {
+    class ShootingGameMain {
+        - {static} instance: ShootingGameMain
+        - {static} glassPane: CommandGlassPane
+        - cardLayout: CardLayout
+        - lastScene: SceneType
+        - {static} screenSizeAdj: double
+        - fps: int
+        - gameThread: Thread
+        - loaded: boolean
+        - running: boolean
+        --
+        - ShootingGameMain()
+        + {static} getInstance(): ShootingGameMain
+        + {static} main(args: String[]): void
+        - start(): void
+        + run(): void
+        - update(dt: double): void
+        + paintComponent(g: Graphics): void
+        + getScreenSizeAdj(): double
+        + setFps(fps: int): void
+    }
+
+    class SceneManager <<Singleton>> {
+        - {static} instance: SceneManager
+        - scenes: Map<SceneType, Manager>
+        - previousScenes: List<SceneType>
+        - sceneName: SceneType
+        --
+        - SceneManager()
+        + {static} getInstance(): SceneManager
+        + setup(): void
+        + update(dt: double): void
+        + draw(g: Graphics): void
+        + changeScene(target: SceneType): void
+        + changeToPreviousScene(): void
+        - getCurrentManager(): Manager
+        + getSceneName(): SceneType
+    }
+
+    enum SceneType {
+        TITLE
+        LOBBY
+        BAG
+        UPGRADE
+        SHOP
+        SELECTSTAGE
+        NORMALSTAGE
+        INFINITYSTAGE
+        SETTING
+        GAME
+        GAMERESULT
+        TEST
+    }
+
+    class CommandGlassPane {
+        - MAIN: ShootingGameMain
+        - SM: SceneManager
+        - RM: ResourceManager
+        - NSM: NormalStageManager
+        - GM: GameManager
+        - IM: ItemManager
+        - SHIP_M: ShipManager
+        - BM: BulletManager
+        - STAGE_M: StageManager
+        - rootCommands: Map<String, CommandNode>
+        - commandField: JTextField
+        - commandHistory: List<String>
+        - historyIndex: int
+        - MAX_HISTORY: int
+        - currentInput: String
+        - historyList: JList<String>
+        - MAX_HISTORY_DISPLAY: int
+        - historyDiff: int
+        - historyModel: DefaultListModel<String>
+        - adminMode: boolean
+        --
+        + CommandGlassPane(onEnter: Runnable)
+        - moveHistory(diff: int): void
+        + executeCommand(): void
+        + showCommandBar(): void
+        + hideCommandBar(): void
+        - showHistoryList(diff: int): void
+        - hideHistoryList(): void
+        - processCommand(text: String): void
+        - register(name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
+        - isSceneValid(allowedTypes: SceneType...): boolean
+        - registCommands(): void
+        - showHelp(): void
+        - tryParse(value: String): Integer
+        - reload(): void
+        - unknownCommand(text: String): void
+    }
+
+    class CommandNode <<Lomboc @Data>> {
+        - description: String
+        - adminOnly: boolean
+        - action: CommandAction
+        - subCommands: Map<String, CommandNode>
+        --
+        + CommandNode(description: String, adminOnly: boolean, action: CommandAction)
+    }
+
+    interface CommandAction <<functional>> {
+        + execute(args: String[]): void
+    }
+
+    class ResourceManager <<Singleton>> {
+        - {static} component: String
+        - {static} instance: ResourceManager
+        - resourceConfigMap: Map<ResourceKinds, ResourceConfig>
+        - resourceImageCache: Map<ResourceKinds, Map<String, BufferedImage[]>>
+        --
+        - ResourceManager()
+        + {static} getInstance(): ResourceManager
+        - loadConfig(): void
+        - loadImages(): void
+        + setup(): void
+        + update(dt: double): void
+        + draw(g: Graphics): void 
+        + reload(): void
+        + getResourceConfig(): Map<ResourceKinds, ResourceConfig>
+        + getResourceImage(): Map<ResourceKinds, Map<String, BufferedImage[]>>
+    }
+
+    class ResourceConfig <<Lomboc @Data>> {
+        - id: int
+        - rarity: Map<String, ResourceData>
+    }
+
+    class ResourceData <<Lomboc @Data>> {
+        - imagePath: String
+        - grids: Vector2
+        - useCount: int
+        - frameRate: double
+        - imageSize: int
+    }
+
+    enum ResourceKinds {
+        COIN
+        RESOURCE_1
+        RESOURCE_2
+        RESOURCE_3
+        RESOURCE_4
+    }
+
+    package "titleScene" {
+        class TitleManager <<Singleton>> {
+            - {static} component: String
+            - {static} instance: TitleManager
+            - titleUI: TitleSceneUI
+            - MAIN: ShootingGameMain
+            - startButton: JButton
+            --
+            - TitleManager()
+            + initComponents(): void
+            + {static} getInstance(): TitleManager
+            + setup(): void
+            + update(dt: double): void
+            + draw(g: Graphics): void
+        }
+
+        class TitleSceneUI {
+            - MAIN: ShootingGameMain
+            --
+            + TitleSceneUI()
+            + draw(g: Graphics): void
+            - drawTitle(g: Graphics): void
+        }
+    }
+
+    package "stageScene" {
+        class SelectStageManager <<Singleton>> {
+            - {static} component: String
+            - {static} instance: SelectStageManager
+            - MAIN: ShootingGameMain
+            - goBackButton: JButton
+            - normalModeButton: JButton
+            - infinityModeButton: JButton
+            --
+            - SelectStageManager()
+            + initComponents(): void
+            + {static} getInstance(): SelectStageManager
+            + setup(): void
+            + update(dt: double): void
+            + draw(g: Graphics): void
+        }
+
+        class SelectStageSceneUI {
+            --
+            + SelectStageSceneUI()
+            + draw(g: Graphics): void
+        }
+
+        package "normal" {
+            class NormalStageManager <<Singleton>> {
+                - {static} component: String
+                - {static} instance: NormalStageManager
+                - normalStageUI: NormalStageSceneUI
+                - stageButtonPanel: StageButtonPanel
+                - MAIN: ShootingGameMain
+                - SM: SceneManager
+                - lobbyButton: JButton
+                - settingButton: JButton
+                - stageButtonConfigList: List<StageButtonData>
+                - stageButtonConfigMap: Map<Integer, StageButtonData>
+                - stageButtonImageCache: Map<Integer, BufferedImage>
+                --
+                - NormalStageManager()
+                + initComponents(): void
+                + {static} getInstance(): NormalStageManager
+                - loadConfig(): void
+                - loadImages(): void
+                + setup(): void
+                + update(dt: double): void
+                + draw(g: Graphics): void
+                + reload(): void
+                + getStageButtonPanel(): StageButtonPanel
+            }
+
+            class StageButtonData <<lomboc @Data>> {
+                - id: int
+                - pos: Vector2
+            }
+
+            class StageDetailData <<lomboc @Data>> {
+                - id: int
+                - text: String
+            }
+
+            class NormalStageSceneUI {
+                + NormalStageSceneUI()
+                + draw(g: Graphics): void
+            }
+
+            package "subPanels" {
+                class StageButtonPanel {
+                    - {static} component: String
+                    - stageDetailPanel: StageDetailPanel
+                    - MAIN: ShootingGameMain
+                    - NSM: NormalStageManager
+                    - STAGE_M: StageManager
+                    - lockImage: BufferedImage
+                    - panelSize: Vector2
+                    - stageButtonOrigin: Vector2
+                    - scrollOffset: double
+                    - buttonMap: Map<Integer, JButton>
+                    --
+                    + StageButtonPanel()
+                    + initComponents(): void
+                    + setup(): void
+                    + reload(): void
+                    - loadImages(): void
+                    - drawPanel(): void
+                    - drawButton(): void
+                }
+
+                class StageDetailPanel {
+                    - {static} component: String
+                    - SM: SceneManager
+                    - GM: GameManager
+                    - NSM: NormalStageManager
+                    - STAGE_M: StageManager
+                    - panelSize: Vector2
+                    - spacing: int
+                    - stageId: int
+                    - startStageButton: JButton
+                    - skipStageButton: JButton
+                    --
+                    + StageDetailPanel()
+                    + initComponents(): void
+                    + showStageDetail(stageId: int): void
+                    - drawButton(stageId: int): void
+                    - getRewardList(stageId: int): Map<ResourceKinds, String>
+                    - getEnemyList(stageId: int): List<String>
+                }
+            }
+        }
+
+        package "infinity" {
+            class InfinityStageManager <<Singleton>> {
+                - {static} component: String
+                - {static} instance: InfinityStageManager
+                - MAIN: ShootingGameMain
+                - SM: SceneManager
+                - lobbyButton: JButton
+                - settingButton: JButton
+                --
+                - InfinityStageManager()
+                - {static} getInstance(): InfinityStageManager()
+                + initComponents(): void
+                + setup()
+                + update(dt: double)
+                + draw(g: Graphics)
+            }
+
+            class InfinityStageSceneUI {
+                --
+                + InfinityStageSceneUI()
+                + draw(g: Graphics): void
+            }
+        }
+    }
+    
+    package "settingScene" {
+        class SettingManager <<Singleton>> {
+            - {static} component: String
+            - {static} instance: SettingManager
+            - settingUI: SettingSceneUI
+            - goBackButton: JButton
+            --
+            - SettingManager()
+            + initComponents(): void
+            + {static} getInstance: SettingManager
+            + setup(): void
+            + update(dt: double): void
+            + draw(g: Graphics): void
+        }
+        
+        class SettingSceneUI {
+            + SettingSceneUI()
+            + draw(g: Graphics): void
+        }
+    }
+
+    package "lobbyScene" {
+        class LobbyManager <<Singleton>> {
+            - {static} component: String
+            - {static} instance: LobbyManager
+            - lobbyUI: LobbySceneUI
+            - MAIN: ShootingGameMain
+            - SM: SceneManager
+            - SHIP_M: ShipManager
+            - BM: BulletManager
+            - upgradeButton: JButton
+            - settingButton: JButton
+            - backpackButton: JButton
+            - nextShipButton: JButton
+            - previousShipButton: JButton
+            - sellectShipButton: JButton
+            - unlockShipButton: JButton
+            - selectStageButton: JButton
+            - viewingShipInd: int
+            - ships: String[]
+            --
+            - LobbyManager()
+            + initComponents(): void
+            + {static} getInstance: LobbyManager
+            + setup(): void
+            + update(dt: double): void
+            + draw(g: Graphics): void
+            - updateButtonStates(): void
+        }
+
+        class LobbySceneUI {
+            - MAIN: ShootingGameMain
+            - GM: GameManager
+            - BM: BulletManager
+            - SHIP_M: ShipManager
+            - latestViewingShipName: String
+            - levelUpInterval: double
+            - levelUpIntervalTimer: double
+            --
+            + LobbySceneUI()
+            + setup(): void
+            + update(dt: double): void
+            + draw(g: Graphics, uiData: LobbySceneUIData): void
+            - drawPreviewShip(g: Graphics, shipName: String): void
+            - drawTabBar(g: Graphics, totalLength: int, ind: int): void
+            - drawUserLevel(g: Graphics): void
+        }
+
+        class LobbySceneUIData <<record>> {
+            ~ ships: String[]
+            ~ ind: int
+        }
+    }
+
+    package "bagScene" {
+        class BagManager <<Singleton>> {
+            - {static} component: String
+            - {static} instance: BagManager
+            - bagUI: BagSceneUI
+            - MAIN: ShootingGameMain
+            - goBackButton: JButton
+            - shopButton: JButton
+            --
+            - BagManager()
+            + initComponents(): void
+            + {static} getInstance(): BagManager
+            + setup(): void
+            + update(dt: double): void
+            + draw(g: Graphics): void
+        }
+
+        class BagSceneUI {
+            --
+            + BagSceneUI ()
+            + draw(g: Graphics): void
+            - drawEquipmentsList(g: Graphics, equipments: Map<ResourceKinds, Integer>): void
+            - drawEquipmentsListItem(g: Graphics, pos: Vector2, size: Vector2, image: BufferedImage, name: ResourceKinds, amount: int): void
+        }
+
+        class BagSceneUIData <<record>> {
+            ~ equipments: Map<ResourceKinds, Integer>
+        }
+    }
+
+    package "shopScene" {
+        class ShopManager <<Singleton>> {
+            - {static} component: String
+            - {static} instance: BagManager
+            - goBackButton: JButton
+            --
+            - ShopManager()
+            + initComponents(): void
+            + {static} getInstance(): BagManager
+            + setup(): void
+            + update(dt: double): void
+            + draw(g: Graphics): void
+        }
+
+        class ShopSceneUI {
+            + ShopSceneUI ()
+            + draw(g: Graphics): void
+        }
+    }
+
+    package "upgradeScene" {
+        class UpgradeManager <<Singleton>> {
+            - {static} component: String
+            - {static} instance: UpgradeManager
+            - upgradeUI: UpgradeSceneUI
+            - MAIN: ShootingGameMain
+            - skillTreeButtonPanel: SkillTreeButtonPanel
+            - skillTreeButtonConfigMap: List<SkillTreeButtonData>
+            - skillTreeButtonImageCache: Map<String,BufferedImage>
+            - lobbyButton: JButton
+            - saveButton: JButton
+            --
+            - UpgradeManager()
+            + initComponents(): void
+            + {static} getInstance(): UpgradeManager
+            - loadConfig(): void
+            - loadSkilltreeButtonImage(): void
+            + setup(): void
+            + update(dt: double): void
+            + draw(g: Graphics): void
+            - reload(): void
+        }
+
+        class SkillTreeButtonData <<lombok @Data>> {
+            - name: String
+            - rootNode: String
+            - dist: int
+            - pos: int
+        }
+
+        class UpgradeSceneUI {
+            + UpgradeSceneUI()
+            + draw(g: Graphics): void
+        }
+
+        package "subPanels" {
+            class SkillTreeButtonPanel {
+                - {static} component: String
+                - MAIN: ShootingGameMain
+                - UM: UpgradeManager
+                - skillDetailPanel: SkillDetailPanel
+                - mouseHandler: MouseAdapter
+                - dragStartPos: Vector2
+                - dragStartOriginPos: Vector2
+                - dragMousePos: Vector2
+                - scale: double
+                - panelSize: Vector2
+                - skillTreeButtonOrigin: Vector2
+                - buttonMap: Map<String, JButton>
+                --
+                + SkillTreeButtonPanel()
+                + initComponents(): void
+                + setup(): void
+                + draw(g: Graphics): void
+                + reload(): void
+                - drawPanel(): void
+                - drawButton(): void
+                + addHandler(): void
+                + removeHandler(): void
+            }
+
+            class SkillDetailPanel {
+                - {static} component: String
+                - UM: UpgradeManager
+                - panelSize: Vector2
+                - spacing: int
+                - skillName: String
+                - upgradeButton: JButton
+                --
+                + SkillDetailPanel()
+                + imitComponents(): void
+                + showSkillDetail(skillName: String): void
+            }
+        }
+    }
+
+    package "gameScene" {
+        class GameManager <<Singleton>> {
+            - {static} component: String
+            - {static} instance: GameManager
+            - gameSceneUI: GameSceneUI
+            - pausePanel: PausePanel
+            - SM: SceneManager
+            - SHIP_M: ShipManager
+            - STAGE_M: StageManager
+            - BM: BulletManager
+            - IM: ItemManager
+            - animationName: String
+            - animateTimer: double
+            - gameover: boolean
+            - pause: boolean
+            - score: int
+            - coin: int
+            - managers: List<Manager>
+            - effectList: Map<String, Double>
+            --
+            - GameManager()
+            + initComponents(): void
+            + {static} getInstance(): GameManager
+            + setup(): void
+            + update(dt: double): void
+            + draw(graphics: Graphics): void
+            - animation(name: String): void
+            - updateEffectData(): void
+            + result(): void
+            + checkCollisions(): void
+            + addScore(value: double): void
+            + addCoin(value: int): void
+            + getGameResult(): boolean
+            + gameover(state: boolean): void
+            + setPause(pause: boolean): void
+        }
+
+        class GameSceneUI {
+            - MAIN: ShootingGameMain
+            - RM: ResourceManager
+            - IM: ItemManager
+            --
+            + GameSceneUI()
+            + draw(g: Graphics, uiData: GameSceneUIData): void
+            - drawAnimation(g: Graphics, animationName: String, animateTimer: double): void
+            - drawEffects(g: Graphics, list: Map<String, Double>): void
+            - drawActiveEffects(g, name, time, index): void
+            - drawCoin(g: Graphics, coin: int): void
+            - drawScore(g: Graphics, score: int): void
+        }
+
+        class GameSceneUIData <<record>> {
+            ~ animationName: String
+            ~ animateTimer: double
+            ~ score: int
+            ~ coin: int
+            ~ effectList: Map<String, Double>
+        }
+
+
+        package "subPanels" {
+            class PausePanel {
+                - {static} component: String
+                - MAIN: ShootingGameMain
+                - SM: SceneManager
+                - GM: GameManager
+                - panelSize: Vector2
+                - spacing: int
+                - quitButton: JButton
+                - resumeButton: JButton
+                --
+                + PausePanel()
+                + initComponents(): void
+                + showPausePanel(): void
+            }
+        }
+
+        package "stage" {
+            class StageManager <<Singleton>> {
+                - {static} component: String
+                - {static} instance: StageManager
+                - stageConfigMap: Map<String, StageData>
+                - stage: Stage
+                --
+                - StageManager()
+                + {static} getInstance(): StageManager
+                + loadConfig(): void
+                + setup(): void
+                + update(dt: double): void
+                + draw(g: Graphics): void
+                + reload(): void
+                + getStageConfig(): Map<String, StageData>
+                + getStageId(): int
+                + getStage(): Stage
+            }
+
+            class Stage {
+                - {static} component: String
+                - stageId: int
+                - waveId: int
+                - MAIN: ShootingGameMain
+                - SM: SceneManager
+                - SHIP_M: ShipManager
+                - STAGE_M: StageManager
+                --
+                + Stage()
+                + reset(): void
+                + update(dt: double): void
+                + draw(g: Graphics): void
+                - newWave(id: int): void
+                + setStageId(id: int): void
+                + getStageId(): int
+            }
+
+            class StageData <<Lomboc @Data>> {
+                - rewardList: Map<ResourceKinds, String>
+                - enemyList: Map<String, EnemyConfig[]>
+                --
+                + getRandomResourceAmount(itemKey: ResourceKinds): int
+            }
+
+            class EnemyConfig <<Lomboc @Data>> {
+                - owner: ShipKinds
+                - enemyId: String
+                - level: int
+                - spawnPos: Vector2
+                - stayPos: Vector2
+                --
+                + setEnemyId(enemyId: String): void
+            }
+        }
+
+        package "ship" {
+            class ShipManager <<Singleton>> {
+                - {static} component: String
+                - {static} instance: ShipManager
+                - player: Player
+                - enemyList: List<Ship>
+                - bossList: List<Ship>
+                - shipConfigMap: Map<ShipKinds, Map<String, ShipDefinition>>
+                - shipImageCache: Map<String, BufferedImage[]>
+                - playerShieldImage: BufferedImage
+                - MAIN: ShootingGameMain
+                - GM: GameManager
+                - IM: ItemManager
+                --
+                - ShipManager()
+                + {static} getInstance(): ShipManager
+                - loadCinfig(): void
+                - loadImages(): void
+                + setup(): void
+                + update(dt: double): void
+                + draw(g: Graphics): void
+                + reload(): void
+                + updateAndClean(List<Ship>, double): void
+                - dropItem(ship: Ship): void
+                - dropCoin(ship: Ship): void
+                + clear(target: String): void
+                + kill(target: String): void
+                + addShip(ship: Ship): void
+                + getNearestTargetForPlayer(pos: Vector2): Ship
+                + findEnemy(target: Ship): boolean
+                + getShipConfig(): Map<ShipKinds, Map<String, ShipDefinition>>
+                + getShipImage(): Map<String, BufferedImage[]>
+                + getAllEnemies(): List<Ship>
+                + getPlayer(): Player
+                + getEnemyList(): List<Ship>
+                + getBossList(): List<Ship>
+            }
+
+            enum ShipKinds {
+                PLAYER
+                ENEMY
+                BOSS
+            }
+
+            class ShipDefinition <<lomboc @Data>> {
+                - stats: ShipConfig
+                - levels: Map<String, ShotConfig[]>
+                --
+                + addLevelData(key: String, configs: ShotConfig[]): void
+                + getLevelData(levelKey: String): ShotConfig[]
+            }
+
+            class ShipConfig <<lomboc @Data>> {
+                - imagePath: String
+                - sheets: SheetConfig[]
+                - frameRate: double
+                - imageSize: int
+                - collisionSize: double
+                - hp: double
+                - speed: double
+                - score: double
+                - coins: String
+            }
+
+            class SheetConfig <<lomboc @Data>> {
+                - grids: Vector2
+                - useCount: int
+            }
+
+            class ShotConfig <<lomboc @Data>> {
+                - bulletKind: BulletKinds
+                - ShotConfig: int
+                - pos: Vector2
+                - bulletVecRef: String
+                - vecAdj: int
+            }
+
+            abstract class Ship {
+                - {static} component: String
+                # MAIN: ShootingGameMain
+                # SM: SceneManager
+                # GM: GameManager
+                # SHIP_M: ShipManager
+                # BM: BulletManager
+                # owner: ShipKinds
+                # shipId: String
+                # shipLevel: int
+                # shipState: String
+                # pos: Vector2
+                # vec: double
+                # rotate: double
+                # speed: double
+                # collisionSize: double
+                # hp: double
+                # maxHp: double
+                # alpha: float
+                # score: double
+                # coins: String
+                # dropItem: boolean
+                # shieldTimer: double
+                # coolDownTimers: Map<BulletKinds, Map<Integer, Double>>
+                # imageMap: Map<String, BufferedImage[]>
+                # currentFrame: Map<String, Integer>
+                # frameTimer: Map<String, Double>
+                # frameRate: Map<String, Double>
+                # imageSize: Map<String, Integer>
+                # useCount: Map<String, Integer[]>
+                # frameAdj: int
+                # animationName: String
+                # animateTimer: double
+                - shotData: List<ShotConfig>
+                - shotBullet: Map<BulletKinds, List<Integer>>
+                --
+                + Ship(owner: ShipKinds, type: String, level: int, pos: Vector2)
+                + update(dt: double): void
+                + draw(g: Graphics): void
+                + move(dt: double): move
+                + {abstract} drawHpBar(g: Graphics): void
+                + inScreen(): boolean
+                - updateCooldownTimer(dt: double): void
+                # addNewBullet(level: int, id: String, state: String): void
+                - resetTimer(kinds: BulletKinds, id: int, state: String): void
+                - initializeMap(): Map<BulletKinds, Double>
+                + animation(name: String): void
+                + addScore(): void
+                + heal(damage: double): void
+                + addDamage(damage: double): void
+                + kill(dropItem: boolean): void
+                + isDead(): boolean
+                + setShipType(type: String): void
+                + setShipLevel(level: int): void
+                + getShipLevel(): int
+                + getPos(pos: Vector2): void
+                + getPos(): Vector2
+                + getCollisionSize(): double
+                + setHp(hp: double): void
+                + getHp(): double
+                + getScore(): double
+                + getDropCoinAmount(): void
+                + setShieldTimer(time: double): void
+                + getShieldTimer(): double
+            }
+
+            class ShipFactory{
+                + {static} createShip(owner: ShipKinds, shipId: String, level: int, spawnPos: Vector2, stayPos: Vector2): Ship
+            }
+
+            package "types" {
+                class Player {
+                    - mouseHandler: MouseAdapter
+                    - dragStartPos: Vector2
+                    - dragStartPlayerPos: Vector2
+                    - dragMousePos: Vector2
+                    - autoFire: boolean
+                    - up: boolean
+                    - down: boolean
+                    - left: boolean
+                    - right: boolean
+                    - space: boolean
+                    - lastHorizontal: String
+                    - lastVertical: String
+                    - subShip: List<SubShip>
+                    - OOCTime: double
+                    - OOCTimer: double
+                    - damagedTimer: double
+                    - defaultCollisionSize: double
+                    - breakawaySpeed: double
+                    --
+                    + Player(id: String, pos: Vector2)
+                    + update(dt: double): void
+                    + draw(g: Graphics): void
+                    + move(dt: double): void
+                    + drawHpBar(g: Graphics): void
+                    + keyPressed(e: KeyEvent): void
+                    + keyTyped(e: KeyEvent): void
+                    + keyReleased(e: KeyEvent): void
+                    + mouseMoved(e: MouseEvent): void
+                    + mouseDragged(e: MouseEvent): void
+                    + addDamage(damage: double): void
+                    + levelUp(): void
+                    + setShieldTimer(time: double): void
+                    + setOOCTimer(time: double): void
+                    + getOOCTimer(): double
+                    + getDamagedTimer(): double
+                    + addHandler(): void
+                    + removeHandler(): void
+                    + clearAnimation(): void
+                }
+
+                class SubShip {
+                    - {static} component: String
+                    - player: Player
+                    - posDiff: Vector2
+                    --
+                    + SubShip(id: String, pos: Vector2)
+                    + update(dt: double): void
+                    + draw(g: Graphics): void
+                    + move(dt: double): void
+                    + drawHpBar(g: Graphics): void
+                }
+
+                class Enemy {
+                    - {static} component: String
+                    - stayPos: Vector2
+                    - elapsedTime: double
+                    - breakAwayTime: int
+                    --
+                    + Enemy(id: String, level: int, spawnPos: Vector2, stayPos: Vector2)
+                    + update(dt: double): void
+                    + draw(g: Graphics): void
+                    + move(dt: double): void
+                    + drawHpBar(g): void
+                }
+
+                class Boss {
+                    - {static} component: String
+                    - stayPos: Vector2
+                    --
+                    + Boss(id: String, level: int, spawnPos: Vector2, stayPos: Vector2)
+                    + update(dt: double): void
+                    + draw(g: Graphics): void
+                    + move(dt: double): void
+                    + drawHpBar(g: Graphics): void
+                }
+            }
+        }
+
+        package "bullet" {
+            class BulletManager <<Singleton>> {
+                - {static} component: String
+                - {static} instance: BulletManager
+                - bulletConfigMap: Map<ShipKinds, Map<BulletKinds, Map<Integer, BulletConfig>>>
+                - bulletImageCache: Map<ShipKinds, Map<BulletKinds, Map<Integer, BufferedImage[]>>>
+                - bulletList: List<Bullet>
+                - bulletListToRemove: List<Bullet>
+                --
+                - BulletManager()
+                + {static} getInstance(): BulletManager
+                - loadConfig(): void
+                - loadImages(): void
+                + setup(): void
+                + update(dt: double): void
+                + draw(g: Graphics): void
+                + reload(): void
+                + addBullet(bullet: Bullet): void
+                + clearBullets(): void
+                + removeBullet(bullet: Bullet): void
+                + getBulletConfig(): Map<ShipKinds, Map<BulletKinds, Map<Integer, BulletConfig>>>
+                + getBulletImage(): Map<ShipKinds, Map<BulletKinds, Map<Integer, BufferedImage[]>>>
+                + getBulletList(): List<Bullet>
+            }
+
+            enum BulletKinds {
+                STRAIGHT
+                TRACKING
+                LASER
+                BALL
+            }
+
+            class BulletConfig <<lomboc @Data>> {
+                - imagePath: String
+                - grids: Vector2
+                - useCount: int
+                - frameRate: double
+                - imageSize: int
+                - collisionSize: double
+                - speed: double
+                - damage: double
+                - cooldowns: Map<String, Double>
+            }
+
+            abstract class Bullet {
+                # MAIN: ShootingGameMain
+                # BM: BulletManager
+                # GM: GameManager
+                # SHIP_M: ShipManager
+                # pos: Vector2
+                # speed: double
+                # collisionSize: double
+                # vec: double
+                # damage: double
+                # lifeTime: double
+                # lifeTimer: double
+                # alpha: float
+                # owner: ShipKinds
+                # kind: BulletKinds
+                # bulletImages: BufferedImage[]
+                # currentFrame: int
+                # frameTimer: double
+                # frameRate: double
+                --
+                + Bullet(owner: ShipKinds, kind: BulletKinds, id: int, pos: Vector2, vec: double)
+                + move(dt: double): void
+                + update(dt: double): void
+                + draw(g: Graphics): void
+                + inScreen(): boolean
+                + isLife(): boolean
+                + destroySelf(): void
+                + inScreen(): boolean
+                + isLife(): boolean
+                + destroySelf(): void
+                + getPos(): Vector2
+                + getCollisionSize(): double
+                + getDamage(): damage
+                + getOwner(): ShipKinds
+            }
+
+            class BulletFactory {
+                + {static} createBullet(owner: ShipKinds, kind: BulletKinds, pos: Vector2, vec: double): Bullet
+            }
+
+            package "types" {
+                class Tracking {
+                    - maxSpeed: double
+                    - target: Ship
+                    - TURNING_SMOOTHNESS: double
+                    --
+                    + Tracking(owner ShipKinds, id: int, pos Vector2, vec double)
+                    + update(dt: double): void
+                    + draw(g: Graphics): void
+                    - speedAdj(dt: double): void
+                    - vecAdj(dt: double): void
+                    - setTarget(): Ship
+                }
+
+                class Straight {
+                    + Straight(owner ShipKinds, id: int, pos Vector2, vec double)
+                    + draw(g: Graphics): void
+                }
+
+                class Laser {
+                    + Laser(owner ShipKinds, id: int, pos Vector2, vec double)
+                    + draw(g: Graphics): void
+                }
+
+                class Ball {
+                    + Ball(owner ShipKinds, id: int, pos Vector2, vec double)
+                    + draw(g: Graphics): void
+                }
+            }
+        }
+
+        package "item" {
+            class ItemManager <<Singleton>> {
+                - {static} component: String
+                - {static} instance: ItemManager
+                - itemList: List<Item>
+                - itemListToRemove: List<Item>
+                - itemConfigMap: Map<ItemKinds, ItemConfig>
+                - itemImageCache: Map<ItemKinds, BufferedImage[]>
+                --
+                - ItemManager()
+                + {static} getInstance(): ItemManager
+                - loadConfig(): void
+                - loadImages(): void
+                + setup(): void
+                + update(dt: double): void
+                + draw(g: Graphics): void
+                + reload(): void
+                + getItemConfig(): Map<ItemKinds, ItemConfig>
+                + getItemImage(): Map<ItemKinds, BufferedImage[]>
+                + addItem(item: Item): void
+                + removeItem(item: Item): void
+                + clearItems(): void
+                + getItemList(): List<Item>
+            }
+
+            enum ItemKinds {
+                HEAL
+                LEVEL_UP
+                SHIELD
+            }
+
+            class ItemConfig <<lomboc @Data>> {
+                - imagePath: String
+                - grids: Vector2
+                - useCount: int
+                - frameRate: double
+                - imageSize: int
+                - collisionSize: double
+                - speed: double
+            }
+
+            abstract class Item {
+                # MAIN: ShootingGameMain
+                # RM: ResourceManager
+                # GM: GameManager
+                # SHIP_M: ShipManager
+                # IM: ItemManager
+                - ATTRACT_RANGE: double
+                - ATTRACT_SPEED: double
+                # collisionSize: double
+                # kind: Collectible
+                # pos: Vector2
+                # vec: double
+                # speed: double
+                # itemImages: BufferedImage[]
+                # currentFrame: int
+                # frameTimer: double
+                # frameRate: double
+                --
+                + Item(kind Collectible, pos Vector2)
+                + update(dt: double): void
+                + draw(g: Graphics): void
+                + move(dt: double): void
+                + {abstract} effect(): void
+                + destroySelf(): void
+                + getCollisionSize(): double
+                + getPos(): Vector2
+            }
+
+            class ItemFactory {
+                - {static} random: Random
+                - {static} DROP_TABLE: Map<Collectible, Integer>
+                --
+                + {static} createItem(pos: Vector2): Item
+                + {static} createItem(pos: Vector2, kind: Collectible): Item
+                - {static} lottery(): Collectible
+            }
+
+            package "types" {
+                class Coin {
+                    - moveDir: Vector2
+                    - floorY: double
+                    - elapsedTime: double
+                    - targetPos: Vector2
+                    --
+                    + Coin(pos: Vector2)
+                    + update(dt: double): void
+                    + draw(g: Grraphics): void
+                    + move(dt: double): void
+                    + effect(): void
+                }
+
+                class Heal {
+                    + Heal(pos: Vector2)
+                    + draw(g: Graphics): void
+                    + effect(): void
+                }
+
+                class LevelUp {
+                    + LevelUp(pos: Vector2)
+                    + draw(g: Graphics): void
+                    + effect(): void
+                }
+
+                class Shield {
+                    + Shield(pos: Vector2)
+                    + draw(g: Graphics): void
+                    + effect(): void
+                }
+            }
+        }
+    }
+
+    package "gameResultScene" {
+        class GameResultManager  <<Singleton>> {
+            - {static} component: String
+            - {static} instance: GameResultManager
+            - gameResultUI: GameResultSceneUI
+            - lobbyButton: JButton
+            - replayButton: JButton
+            --
+            - GameResultManager()
+            + initComponents(): void
+            + {static} getInstance(): GameResultManager
+            + setup(): void
+            + update(dt: double): void
+            + draw(g: Graphics): void
+        }
+
+        class GameResultSceneUI {
+            - MAIN: ShootingGameMain
+            - GM: GameManager
+            --
+            + GameResultSceneUI()
+            + draw(g: Graphics): void
+            - drawTitle(g: Graphics): void
+        }
+    }
+
+    package "testScene" {
+        class TestManager  <<Singleton>> {
+            - {static} instance: TestManager
+            - testUI: TestSceneUI
+            - GM: GameManager
+            - STAGE_M: StageManager
+            - SHIP_M: ShipManager
+            - BM: BulletManager
+            - IM: ItemManager
+            - managers: List<Manager>
+            --
+            - TestManager()
+            + initComponents(): void
+            + {static} getInstance(): TestManager
+            + setup(): void
+            + update(dt: double): void
+            + draw(g: Graphics): void
+        }
+
+        class TestSceneUI {
+            + TestSceneUI()
+            + draw(g: Graphics): void
+        }
+    }
+
+    package "utils" {
+        class GameUtils {
+            + {static} distance(target1: Vector2, target2: Vector2): double
+            + {static} targetVec(target1: Vector2, target2: Vector2): double
+            + {static} normalizeAngle(angle: double): double
+            + {static} collidesWith(entity1: Entity, entity2: Entity): boolean
+            + {static} calcFlashAlpha(time: double, x: double, y: double): float
+            + {static} parseTimeToSeconds(time: String): long
+            + {static} formatSecondsToTime(time: long): String
+        }
+
+        class LogUtils {
+            - {static} ENABLE_LOG: boolean
+            - {static} ENABLE_DEV_LOG: boolean
+            - {static} ENABLE_DEBUG_LOG: boolean
+            - {static} ENABLE_INFO_LOG: boolean
+            - {static} ENABLE_WARN_LOG: boolean
+            - {static} ENABLE_ERROR_LOG: boolean
+            - {static} ENABLE_FATAL_LOG: boolean
+            - {static} ENABLE_STACKTRACE_LOG: boolean
+            --
+            + {static} systemLog(tag: String, className: String, msg: String): void
+            + {static} systemLog(tag: String, className: String, msg: String, e: Exception): void
+            + {static} debugLog(message: Object): void
+        }
+
+        enum LogLevel {
+            DEBUG
+            INFO
+            WARN
+            ERROR
+            FATAL
+            --
+            - tag: String
+            - color: String
+            - {static} TAG_MAP: Map<String, LogLevel>
+            --
+            - LogLevel(tag: String, color: String)
+            + getDecoratedTag(): String
+            + {static} fromTag(tag: String): LogLevel
+            + isEnabled(): boolean
+        }
+
+        class UIBuilder {
+            + {static} loadImage(path: String): BufferedImage
+            + {static} cutSpriteSheet(masterSheet: BufferedImage, grids: Vector2, useCount: int, imageSize: double)
+            + {static} createImageButton(component: String, path: String, size: Vector2, fallBackText: String): JButton
+            + {static} createImageButton(component: String, image: BufferedImage, size: Vector2, fallBackText: String): JButton
+            + {static} resizeImage(originImage: BufferedImage, imageSize: double): BufferedImage
+            + {static} applyHighQualityRenderSettings(g2: Graphics2D): void
+            - {static} applyStateIcon(component: String, button: JButton, basePath: String, suffix: String, size: Vector2): void
+            - {static} createPathWithSuffix(path: String, suffix: String): String
+            + {static} drawString(g: Graphics, pos: Vector2, size: double, color: Color, style: int, text: String): void
+            + {static} openPanel(p: JPanel, title: String): void
+            - {static} findComponentByName(panel: JPanel, name: String): Component
+        }
+
+        class ANSI {
+            + {static} CYAN: String
+            + {static} GREEN: String
+            + {static} YELLOW: String
+            + {static} RED: String
+            + {static} BOLD: String
+            + {static} RESET: String
+        }
+
+        class Vector2 {
+            - x: double
+            - y: double
+            --
+            + Vector2(vec: Vector2)
+        }
+    }
+
+    package "data" {
+        class DataManager <<Singleton>> {
+            - {static} instance: DataManager
+            - {static} userData: UserData
+            - {static} SAVE_PATH: String
+            - {static} expData: List<Integer>
+            --
+            - DataManager()
+            + {static} getInstance(): DataManager
+            + {static} load(): void
+            + {static} save(): void
+            + {static} create(): void
+            - {static} printWelcomeMessage(): void
+            + {static} saveSessionPlayTime(): void
+            - {static} parseTimeToSeconds
+            + getUserData(): UserData
+            + setup(): void
+            + update(dt: double): void
+            + draw(g: Graphics): void
+            + {static} getUserLevel(): getUserLevel
+            + {static} getExpData(): List<Integer>
+        }
+
+        class UserData <<lomboc @Data>> {
+            - lastPlayTime: String
+            - totalPlayTime: String
+            - selectedShip: String
+            - subShip: String
+            - progress: Progress
+            - resources: Resources
+            - ships: Map<String, ShipStats>
+            - sessionStartTime: LocalDateTime
+            --
+            + UserData()
+            + unlockShip(): void
+        }
+
+        class Progress <<lomboc @Data>> {
+            - level: int
+            - exp: int
+            - clearedStage: int
+            - highScores: Map<String, Integer>
+            --
+            + updateHighScore(stageKey: String, score: int): void
+        }
+
+        class Resources <<lomboc @Data>> {
+            - coins: int
+            - equipment: Map<ResourceKinds, Integer>
+        }
+
+        class ShipStats <<lomboc @Data>> {
+            - upgrades: Map<String, Integer>
+        }
+
+        class getUserLevel <<record>> {
+            ~ level: int
+            ~ exp: int
+        }
+    }
+
+    package "interfaces" {
+        interface Collectible <<interface>> {
+
+        }
+
+        interface Manager <<interface>> {
+            + setup(): void
+            + update(dt: double): void
+            + draw(g: Graphics): void
+            + {method} initComponents(): void {default}
+        }
+
+        interface Entity <<interface>> {
+            + getPos(): Vector2
+            + getCollisionSize(): double
+        }
+
+        interface GameObject <<interface>> {
+            + update(dt: double): void
+            + draw(g: Graphics): void
+        }
+
+        interface Moveable <<interface>> {
+            + move(speed: double): void
+        }
+    }
+}
+
+' 内部構造
+src.utils.LogUtils +-- LogLevel
+src.SceneManager +-- SceneType
+src.CommandGlassPane +-- CommandNode
+src.CommandGlassPane +-- CommandAction
+src.ResourceManager +-- ResourceKinds
+src.ResourceManager +-- ResourceConfig
+ResourceConfig +-- ResourceData
+src.data.DataManager +-- UserData
+src.data.UserData +-- Progress
+src.data.UserData +-- Resources
+src.data.UserData +-- ShipStats
+src.stageScene.normal.NormalStageManager +-- StageButtonData
+src.stageScene.normal.NormalStageManager +-- StageDetailData
+src.lobbyScene.LobbySceneUI +-- LobbySceneUIData
+src.gameScene.GameManager +-- GameSceneUIData
+src.gameScene.GameSceneUI +-- GameSceneUIData
+src.gameScene.stage.StageManager +-- StageData
+StageData +-- EnemyConfig
+src.gameScene.ship.ShipManager +-- ShipKinds
+src.gameScene.ship.ShipManager +-- ShipDefinition
+ShipDefinition +-- ShipConfig
+ShipConfig +-- SheetConfig
+ShipDefinition +-- ShotConfig
+src.gameScene.bullet.BulletManager +-- BulletKinds
+src.gameScene.bullet.BulletManager +-- BulletConfig
+src.gameScene.item.ItemManager +-- ItemKinds
+src.gameScene.item.ItemManager +-- ItemConfig
+
+' extends関係
+src.ShootingGameMain --|> javax.swing.JPanel
+src.CommandGlassPane --|> javax.swing.JPanel
+src.titleScene.TitleManager --|> javax.swing.JPanel
+src.stageScene.SelectStageManager --|> javax.swing.JPanel
+src.stageScene.normal.NormalStageManager --|> javax.swing.JPanel
+src.stageScene.normal.subPanels.StageButtonPanel --|> javax.swing.JPanel
+src.stageScene.normal.subPanels.StageDetailPanel --|> javax.swing.JPanel
+src.stageScene.infinity.InfinityStageManager --|> javax.swing.JPanel
+src.settingScene.SettingManager --|> javax.swing.JPanel
+src.lobbyScene.LobbyManager --|> javax.swing.JPanel
+src.upgradeScene.UpgradeManager --|> javax.swing.JPanel
+src.upgradeScene.subPanels.SkillTreeButtonPanel --|> javax.swing.JPanel
+src.upgradeScene.subPanels.SkillDetailPanel --|> javax.swing.JPanel
+src.gameScene.GameManager --|> javax.swing.JPanel
+src.gameScene.subPanels.PausePanel --|> javax.swing.JPanel
+src.gameScene.ship.types.Player --* src.gameScene.ship.Ship
+src.gameScene.ship.types.SubShip --* src.gameScene.ship.Ship
+src.gameScene.ship.types.Enemy --* src.gameScene.ship.Ship
+src.gameScene.ship.types.Boss --* src.gameScene.ship.Ship
+src.gameScene.bullet.types.Ball --* src.gameScene.bullet.Bullet
+src.gameScene.bullet.types.Laser --* src.gameScene.bullet.Bullet
+src.gameScene.bullet.types.Straight --* src.gameScene.bullet.Bullet
+src.gameScene.bullet.types.Tracking --* src.gameScene.bullet.Bullet
+src.gameScene.item.types.Shield --* src.gameScene.item.Item
+src.gameScene.item.types.LevelUp --* src.gameScene.item.Item
+src.gameScene.item.types.Heal --* src.gameScene.item.Item
+src.gameResultScene.GameResultManager --|> javax.swing.JPanel
+src.testScene.TestManager --|> javax.swing.JPanel
+
+' implements関係
+src.ShootingGameMain ..|> Runnable
+src.SceneManager ..|> src.interfaces.Manager
+src.titleScene.TitleManager ..|> src.interfaces.Manager
+src.stageScene.SelectStageManager ..|> src.interfaces.Manager
+src.stageScene.normal.NormalStageManager ..|> src.interfaces.Manager
+src.stageScene.infinity.InfinityStageManager ..|> src.interfaces.Manager
+src.settingScene.SettingManager ..|> src.interfaces.Manager
+src.lobbyScene.LobbyManager ..|> src.interfaces.Manager
+src.upgradeScene.UpgradeManager ..|> src.interfaces.Manager
+src.gameScene.GameManager ..|> src.interfaces.Manager
+src.ResourceManager ..|> src.interfaces.Manager
+ResourceKinds ..|> src.interfaces.Collectible
+src.gameScene.stage.StageManager ..|> src.interfaces.Manager
+src.gameScene.ship.ShipManager ..|> src.interfaces.Manager
+src.gameScene.stage.Stage ..|> src.interfaces.GameObject
+src.gameScene.ship.Ship ..|> src.interfaces.GameObject
+src.gameScene.ship.Ship ..|> src.interfaces.Entity
+src.gameScene.ship.Ship ..|> src.interfaces.Moveable
+src.gameScene.bullet.Bullet ..|> src.interfaces.GameObject
+src.gameScene.bullet.Bullet ..|> src.interfaces.Entity
+src.gameScene.bullet.Bullet ..|> src.interfaces.Moveable
+src.gameScene.item.Item ..|> src.interfaces.GameObject
+src.gameScene.item.Item ..|> src.interfaces.Entity
+src.gameScene.item.Item ..|> src.interfaces.Moveable
+src.gameScene.bullet.BulletManager ..|> src.interfaces.Manager
+src.gameScene.item.ItemManager ..|> src.interfaces.Manager
+ItemKinds ..|> src.interfaces.Collectible
+src.gameResultScene.GameResultManager ..|> src.interfaces.Manager
+src.testScene.TestManager ..|> src.interfaces.Manager
+src.data.DataManager ..|> src.interfaces.Manager
+src.bagScene.BagManager ..|> src.interfaces.Manager
+src.shopScene.ShopManager ..|> src.interfaces.Manager
+src.gameScene.ship.types.Player ..|> java.awt.event.KeyListener
+
+@enduml
+
+' https://www.graphviz.org/download/ install to use
+' press "alt + d" to view map
+' press "ctrl + shift + p" type "PlantUML: Export Current Diagram" and sellect "svg" to export
