@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -218,11 +219,12 @@ public final class DataManager implements Manager {
      * データ読み込み
      */
     public static void load() {
+
         // ロード開始ログ
         LogUtils.systemLog(
                 "[DEBUG]",
                 component,
-                "Attempting to load userData from " + ANSI.YELLOW + SAVE_PATH + ANSI.RESET + ".");
+                "Attempting to load user data from " + ANSI.YELLOW + SAVE_PATH + ANSI.RESET + ".");
 
         sessionStartTime = LocalDateTime.now();
 
@@ -241,7 +243,6 @@ public final class DataManager implements Manager {
                             "[INFO]",
                             component,
                             "Existing userData file detected. Attempting migration to database.");
-                    save(); // データベースに保存
                 } catch (IOException e) {
                     LogUtils.systemLog(
                             "[ERROR]",
@@ -259,7 +260,7 @@ public final class DataManager implements Manager {
     /**
      * データ保存
      */
-    public static void save() {
+    public static synchronized void save() {
         if (userData == null || userRepository == null) {
             LogUtils.systemLog(
                     "[ERROR]",
@@ -271,12 +272,14 @@ public final class DataManager implements Manager {
         try {
             // 時間を保存
             LocalDateTime now = LocalDateTime.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyy-MM-dd HH:mm:ss");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             userData.setLastPlayTime(now.format(formatter));
 
             // データベースのエンティティを取得（存在しない場合は新規作成）
-            UserEntity entity = userRepository.findById(1L).orElse(new UserEntity());
-            entity.setId(1L);
+            UserEntity entity = userRepository.findById(1L).orElseGet(() -> {
+                UserEntity newEntity = new UserEntity();
+                return newEntity;
+            });
 
             // データの同期
             syncUserDataToEntity(entity);
@@ -335,15 +338,12 @@ public final class DataManager implements Manager {
                 }
             }
 
-            // 保存
-            mapper.writeValue(new File(SAVE_PATH), userData);
-
             // データ作成成功ログ
             LogUtils.systemLog(
                     "[INFO]",
                     component,
                     "New userData successfully created at " + ANSI.YELLOW + SAVE_PATH + ANSI.RESET + ".");
-        } catch (IOException e) {
+        } catch (Exception e) {
             // 新規作成失敗ログ
             LogUtils.systemLog(
                     "[ERROR]",

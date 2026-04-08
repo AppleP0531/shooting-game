@@ -21,6 +21,8 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String username;
+
     // --- 基本情報 ---
     private String lastPlayTime;
     private String totalPlayTime;
@@ -32,7 +34,7 @@ public class UserEntity {
     private int clearedStage;
 
     // ステージごとのハイスコア (JSONの progress.highScores)
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_high_scores", joinColumns = @JoinColumn(name = "user_id"))
     @MapKeyColumn(name = "stage_key")
     @Column(name = "score")
@@ -42,7 +44,7 @@ public class UserEntity {
     private int coins;
 
     // 所有資源 (JSONの resources.equipment)
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_equipment", joinColumns = @JoinColumn(name = "user_id"))
     @MapKeyColumn(name = "resource_kind")
     @Enumerated(EnumType.STRING)
@@ -50,7 +52,7 @@ public class UserEntity {
     private Map<ResourceKinds, Integer> equipment = new HashMap<>();
 
     // --- Ships (機体強化情報(JSONの ships.ShipID.upgrades.UpgradeName : Level)) ---
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_ship_upgrades", joinColumns = @JoinColumn(name = "user_id"))
     @MapKeyColumn(name = "ship_upgrade_key") // 例: "Ship5:Origin"
     @Column(name = "level")

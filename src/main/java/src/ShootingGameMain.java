@@ -93,14 +93,26 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                     ANSI.YELLOW + "Fail to reset logs" + ANSI.RESET);
         }
 
+        // サーバー接続開始ログ
+        LogUtils.systemLog(
+                "[INFO]",
+                component,
+                ANSI.GREEN + "Connecting to game server..." + ANSI.RESET);
+
+        // Spring Bootの起動
+        ConfigurableApplicationContext context = SpringApplication.run(ShootingGameMain.class, args);
+
+        // サーバー接続成功ログ
+        LogUtils.systemLog(
+                "[INFO]",
+                component,
+                ANSI.GREEN + "Connected to game server successfully." + ANSI.RESET);
+
         // 初期設定開始ログ
         LogUtils.systemLog(
                 "[INFO]",
                 component,
                 ANSI.GREEN + "Initializing Game Setup..." + ANSI.RESET);
-
-        // Spring Bootの起動
-        ConfigurableApplicationContext context = SpringApplication.run(ShootingGameMain.class, args);
 
         // DataManagerをSpringから取得して初期化
         context.getBean(DataManager.class);
