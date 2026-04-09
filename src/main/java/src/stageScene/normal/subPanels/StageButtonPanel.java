@@ -39,7 +39,6 @@ public class StageButtonPanel extends JPanel {
 
     private Map<Integer, JButton> buttonMap;
 
-    // コンストラクタ
     public StageButtonPanel() {
         MAIN = ShootingGameMain.getInstance();
         NSM = NormalStageManager.getInstance();

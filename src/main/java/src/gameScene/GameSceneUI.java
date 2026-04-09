@@ -34,7 +34,6 @@ public class GameSceneUI {
             Map<String, Double> effectList) {
     }
 
-    // コンストラクタ
     public GameSceneUI() {
         MAIN = ShootingGameMain.getInstance();
         RM = ResourceManager.getInstance();
@@ -128,7 +127,6 @@ public class GameSceneUI {
                 case "OOC" -> originImage = IM.getItemImage().get(ItemKinds.LEVEL_UP)[0];
                 case "Shield" -> originImage = IM.getItemImage().get(ItemKinds.SHIELD)[0];
             }
-
 
             // 画像のリサイズ
             BufferedImage image = UIBuilder.resizeImage(originImage, iconSize);

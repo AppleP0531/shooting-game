@@ -62,7 +62,6 @@ public final class UpgradeManager extends JPanel implements Manager {
     private static final TypeReference<List<SkillTreeButtonData>> TYPE_REF = new TypeReference<>() {
     };
 
-    // コンストラクタ
     private UpgradeManager() {
         UpgradeManager.instance = this;
         upgradeUI = new UpgradeSceneUI();
@@ -94,7 +93,6 @@ public final class UpgradeManager extends JPanel implements Manager {
         this.add(lobbyButton);
 
         skillTreeButtonPanel.initComponents();
-        reload();
     }
 
     /**
@@ -182,6 +180,7 @@ public final class UpgradeManager extends JPanel implements Manager {
 
     @Override
     public void setup() {
+        reload();
         skillTreeButtonPanel.setup();
         skillTreeButtonPanel.addHandler();
     }

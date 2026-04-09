@@ -51,7 +51,6 @@ public class Player extends Ship implements KeyListener {
     private double defaultCollisionSize; // デフォルトの当たり判定の大きさ
     private double breakawaySpeed; // 離脱速度
 
-    // コンストラクタ
     public Player(String id, Vector2 pos) {
         super(ShipKinds.PLAYER, id, 0, pos);
 

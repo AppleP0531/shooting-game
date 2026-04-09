@@ -23,7 +23,6 @@ public final class TitleManager extends JPanel implements Manager {
     private final ShootingGameMain MAIN;
     private JButton startButton;
 
-    // コンストラクタ
     private TitleManager() {
         TitleManager.instance = this;
         titleUI = new TitleSceneUI();

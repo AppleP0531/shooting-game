@@ -11,8 +11,6 @@ import java.awt.Graphics;
  * 回復アイテムを処理するクラス
  */
 public class Heal extends Item {
-
-    // コンストラクタ
     public Heal(Vector2 pos) {
         super(ItemKinds.HEAL, pos);
     }

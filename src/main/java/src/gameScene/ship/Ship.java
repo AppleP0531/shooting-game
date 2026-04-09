@@ -93,7 +93,6 @@ public abstract class Ship implements Moveable, GameObject, Entity {
     private List<ShotConfig> shotData = new ArrayList<>(); // 発射する弾のデータ
     private Map<BulletKinds, List<Integer>> shotBullet = new HashMap<>(); // 発射した弾のデータ
 
-    // コンストラクタ
     public Ship(ShipKinds owner, String id, int level, Vector2 pos) {
         MAIN = ShootingGameMain.getInstance();
         SM = SceneManager.getInstance();

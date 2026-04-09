@@ -133,7 +133,6 @@ public final class ShipManager implements Manager {
     private final GameManager GM;
     private final ItemManager IM;
 
-    // コンストラクタ
     private ShipManager() {
         ShipManager.instance = this;
         MAIN = ShootingGameMain.getInstance();

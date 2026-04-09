@@ -68,7 +68,6 @@ public final class GameManager extends JPanel implements Manager {
 
     private Map<String, Double> effectList; // プレイヤーが所有するエフェクトのマップ
 
-    // コンストラクタ
     private GameManager() {
         GameManager.instance = this;
         gameSceneUI = new GameSceneUI();
@@ -272,9 +271,6 @@ public final class GameManager extends JPanel implements Manager {
 
             // 経験値加算
             data.getProgress().addExp(score / 10);
-
-            // 情報更新
-            DataManager.save();
         }
         SHIP_M.getPlayer().removeHandler();
 

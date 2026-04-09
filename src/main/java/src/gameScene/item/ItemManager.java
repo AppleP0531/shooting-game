@@ -64,7 +64,6 @@ public final class ItemManager implements Manager {
     private static final TypeReference<Map<ItemKinds, ItemConfig>> TYPE_REF = new TypeReference<>() {
     };
 
-    // コンストラクタ
     private ItemManager() {
         ItemManager.instance = this;
 

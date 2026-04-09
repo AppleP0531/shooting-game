@@ -29,7 +29,6 @@ public final class TestManager extends JPanel implements Manager {
 
     private final List<Manager> managers = new ArrayList<>();
 
-    // コンストラクタ
     private TestManager() {
         TestManager.instance = this;
         testUI = new TestSceneUI();

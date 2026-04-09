@@ -23,7 +23,6 @@ public class Enemy extends Ship {
     private double elapsedTime; // 出現してからの経過時間
     private int breakAwayTime = 20; // 離脱する時間(20秒後に離脱)
 
-    // コンストラクタ
     public Enemy(String id, int level, Vector2 spawnPos, Vector2 stayPos) {
         super(ShipKinds.ENEMY, id, level, spawnPos);
 

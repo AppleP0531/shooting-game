@@ -25,7 +25,6 @@ public final class GameResultManager extends JPanel implements Manager {
     private JButton lobbyButton;
     private JButton replayButton;
 
-    // コンストラクタ
     private GameResultManager() {
         GameResultManager.instance = this;
         gameResultUI = new GameResultSceneUI();

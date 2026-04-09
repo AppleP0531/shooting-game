@@ -49,7 +49,6 @@ public final class ShootingGameMain extends JPanel implements Runnable {
     private boolean loaded = false; // 初期設定が完了したかどうか
     private boolean running = false; // 処理するか
 
-    // コンストラクタ
     private ShootingGameMain() {
         ShootingGameMain.instance = this;
 
@@ -132,9 +131,6 @@ public final class ShootingGameMain extends JPanel implements Runnable {
         panel.start();
 
         new Thread(() -> {
-            // プレイヤーデータの読み込み
-            DataManager.load();
-
             // GlassPaneの設定
             glassPane = new CommandGlassPane(() -> {
             });
@@ -164,6 +160,9 @@ public final class ShootingGameMain extends JPanel implements Runnable {
 
             panel.setLoaded(true);
 
+            // プレイヤーデータの読み込み
+            DataManager.load();
+
             // 初期設定完了ログ
             LogUtils.systemLog(
                     "[INFO]",
@@ -189,8 +188,6 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                         component,
                         ANSI.GREEN + "Saving game data..." + ANSI.RESET);
 
-                // 総プレイ時間の更新
-                DataManager.saveSessionPlayTime();
                 // データ保存
                 DataManager.save();
 
@@ -224,7 +221,6 @@ public final class ShootingGameMain extends JPanel implements Runnable {
 
         while (running) {
             try {
-
                 long now = System.nanoTime();
                 double nsPerFrame = 1_000_000_000.0 / fps;
 

@@ -3,8 +3,9 @@ package src.entity;
 import src.ResourceManager.ResourceKinds;
 
 import java.util.Map;
+import java.util.List;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
 
 import lombok.Data;
 import jakarta.persistence.*;
@@ -52,9 +53,7 @@ public class UserEntity {
     private Map<ResourceKinds, Integer> equipment = new HashMap<>();
 
     // --- Ships (機体強化情報(JSONの ships.ShipID.upgrades.UpgradeName : Level)) ---
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_ship_upgrades", joinColumns = @JoinColumn(name = "user_id"))
-    @MapKeyColumn(name = "ship_upgrade_key") // 例: "Ship5:Origin"
-    @Column(name = "level")
-    private Map<String, Integer> shipUpgrades = new LinkedHashMap<>();
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id")
+    private List<UserShipEntity> ownedShips = new ArrayList<>();
 }

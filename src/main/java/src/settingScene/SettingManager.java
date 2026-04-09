@@ -23,7 +23,6 @@ public final class SettingManager extends JPanel implements Manager {
 
     private JButton goBackButton;
 
-    // コンストラクタ
     private SettingManager() {
         SettingManager.instance = this;
         settingUI = new SettingSceneUI();

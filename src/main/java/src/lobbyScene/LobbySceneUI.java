@@ -32,7 +32,6 @@ public class LobbySceneUI {
             int ind) {
     }
 
-    // コンストラクタ
     public LobbySceneUI() {
         MAIN = ShootingGameMain.getInstance();
         GM = GameManager.getInstance();

@@ -20,7 +20,6 @@ public class Tracking extends Bullet {
     private Ship target;
     private final double TURNING_SMOOTHNESS = 5.0;
 
-    // コンストラクタ
     public Tracking(ShipKinds owner, int id, Vector2 pos, double vec) {
         super(owner, BulletKinds.TRACKING, id, pos, vec);
         target = setTarget();

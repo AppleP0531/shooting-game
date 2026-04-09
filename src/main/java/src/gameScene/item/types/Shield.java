@@ -11,7 +11,6 @@ import java.awt.Graphics;
  * シールドアイテムを処理するクラス
  */
 public class Shield extends Item {
-    // コンストラクタ
     public Shield(Vector2 pos) {
         super(ItemKinds.SHIELD, pos);
     }

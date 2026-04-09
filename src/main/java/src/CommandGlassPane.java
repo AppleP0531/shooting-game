@@ -97,7 +97,6 @@ public class CommandGlassPane extends JPanel {
 
     private boolean adminMode = false;
 
-    // コンストラクタ
     public CommandGlassPane(Runnable onEnter) {
         MAIN = ShootingGameMain.getInstance();
         SM = SceneManager.getInstance();
@@ -591,7 +590,6 @@ public class CommandGlassPane extends JPanel {
                 Integer id = tryParse(args[0].replace("ship", ""));
 
                 DataManager.getUserData().unlockShip("Ship" + id);
-                DataManager.save();
             } catch (NumberFormatException ne) {
                 System.out.println("Unknnown param: " + param);
             } catch (Exception e) {
@@ -769,7 +767,6 @@ public class CommandGlassPane extends JPanel {
                             "[INFO]",
                             component,
                             "Added " + amount + " coins. Current coins: " + resData.getCoins() + ".");
-                    DataManager.save();
                     return;
                 } else {
                     int amountOwned = resData.getEquipment().getOrDefault(resName, 0);
@@ -779,7 +776,6 @@ public class CommandGlassPane extends JPanel {
                     } else {
                         resData.getEquipment().put(resName, newAmount);
                     }
-                    DataManager.save();
                 }
 
             } catch (NumberFormatException ne) {
@@ -832,7 +828,6 @@ public class CommandGlassPane extends JPanel {
                 boolean isCleared = stageId <= data.getProgress().getClearedStage();
                 if (!isCleared) {
                     data.getProgress().setClearedStage(stageId);
-                    DataManager.save();
                     NSM.getStageButtonPanel().setup();
 
                     // クリア進捗更新ログ

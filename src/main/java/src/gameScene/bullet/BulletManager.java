@@ -75,7 +75,6 @@ public final class BulletManager implements Manager {
     private static final TypeReference<Map<ShipKinds, Map<BulletKinds, Map<Integer, BulletConfig>>>> TYPE_REF = new TypeReference<>() {
     };
 
-    // コンストラクタ
     private BulletManager() {
         BulletManager.instance = this;
 

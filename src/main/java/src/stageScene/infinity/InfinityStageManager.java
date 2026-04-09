@@ -25,7 +25,6 @@ public final class InfinityStageManager extends JPanel implements Manager {
     private JButton lobbyButton;
     private JButton settingButton;
 
-    // コンストラクタ
     private InfinityStageManager() {
         InfinityStageManager.instance = this;
 

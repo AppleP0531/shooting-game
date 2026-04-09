@@ -14,7 +14,6 @@ import java.awt.Graphics;
 public class TitleSceneUI {
     private final ShootingGameMain MAIN;
 
-    // コンストラクタ
     public TitleSceneUI() {
         MAIN = ShootingGameMain.getInstance();
     }

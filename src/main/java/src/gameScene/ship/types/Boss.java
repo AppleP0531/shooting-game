@@ -21,7 +21,6 @@ public class Boss extends Ship {
 
     private Vector2 stayPos; // 待機位置
 
-    // コンストラクタ
     public Boss(String id, int level, Vector2 spawnPos, Vector2 stayPos) {
         super(ShipKinds.BOSS, id, level, spawnPos);
 

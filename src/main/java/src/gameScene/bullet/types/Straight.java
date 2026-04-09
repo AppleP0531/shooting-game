@@ -14,7 +14,6 @@ import java.awt.BasicStroke;
  * 直進弾を処理するクラス
  */
 public class Straight extends Bullet {
-    // コンストラクタ
     public Straight(ShipKinds owner, int id, Vector2 pos, double vec) {
         super(owner, BulletKinds.STRAIGHT, id, pos, vec);
     }

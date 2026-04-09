@@ -42,7 +42,6 @@ public class SkillTreeButtonPanel extends JPanel {
 
     private Map<String, JButton> buttonMap;
 
-    // コンストラクタ
     public SkillTreeButtonPanel() {
         MAIN = ShootingGameMain.getInstance();
         UM = UpgradeManager.getInstance();

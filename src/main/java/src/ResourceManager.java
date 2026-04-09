@@ -66,7 +66,6 @@ public final class ResourceManager implements Manager {
     private static final TypeReference<Map<ResourceKinds, ResourceConfig>> TYPE_REF = new TypeReference<>() {
     };
 
-    // コンストラクタ
     private ResourceManager() {
         ResourceManager.instance = this;
 

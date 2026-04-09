@@ -42,7 +42,6 @@ public class StageDetailPanel extends JPanel {
     private JButton startStageButton;
     private JButton skipStageButton;
 
-    // コンストラクタ
     public StageDetailPanel() {
         SM = SceneManager.getInstance();
         GM = GameManager.getInstance();

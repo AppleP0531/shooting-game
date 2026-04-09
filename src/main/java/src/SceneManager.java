@@ -54,7 +54,6 @@ public final class SceneManager implements Manager {
     @Getter
     private SceneType sceneName;
 
-    // コンストラクタ
     private SceneManager() {
         SceneManager.instance = this;
         scenes.put(SceneType.TITLE, TitleManager.getInstance());

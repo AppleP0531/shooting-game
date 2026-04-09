@@ -14,7 +14,6 @@ import java.awt.BasicStroke;
  * レーザー弾を処理するクラス
  */
 public class Laser extends Bullet {
-    // コンストラクタ
     public Laser(ShipKinds owner, int id, Vector2 pos, double vec) {
         super(owner, BulletKinds.LASER, id, pos, vec);
     }

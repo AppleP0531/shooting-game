@@ -151,6 +151,27 @@ package "src" {
         RESOURCE_4
     }
 
+    package entity {
+        class UserEntity {
+            - id: Long
+            - username: String
+            - lastPlayTime: String
+            - totalPlayTime: String
+            - subShip: String
+            - exp: int
+            - highScores: Map<String, Integer>
+            - coins: int
+            - equipment: Map<ResourceKinds, Integer>
+            - shipUpgrades: Map<String, Integer>
+        }
+    }
+
+    package repository {
+        interface UserRepository extends JpaRepository<UserEntity, Long> {
+            Optional<UserEntity> findByUsername(String username);
+        }
+    }
+
     package "titleScene" {
         class TitleManager <<Singleton>> {
             - {static} component: String
@@ -356,6 +377,7 @@ package "src" {
             + setup(): void
             + update(dt: double): void
             + draw(g: Graphics): void
+            + setDefaultViewingShip(shipName: String): void
             - updateButtonStates(): void
         }
 
@@ -1230,9 +1252,13 @@ package "src" {
             --
             - DataManager()
             + {static} getInstance(): DataManager
+            + setUserRepository(repo: UserRepository): void
+            + {static} convertUserData(entity: UserEntity): UserData
+            + {static} syncUserDataToEntity(entity: UserEntity): void
             + {static} load(): void
             + {static} save(): void
             + {static} create(): void
+            - {static} loadExpData(): void
             - {static} printWelcomeMessage(): void
             + {static} saveSessionPlayTime(): void
             - {static} parseTimeToSeconds

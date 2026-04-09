@@ -90,7 +90,6 @@ public final class StageManager implements Manager {
     @Getter
     private Stage stage;
 
-    // コンストラクタ
     private StageManager() {
         StageManager.instance = this;
         stage = new Stage();

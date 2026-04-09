@@ -13,7 +13,6 @@ import java.awt.Graphics2D;
  * ボール弾を処理するクラス
  */
 public class Ball extends Bullet {
-    // コンストラクタ
     public Ball(ShipKinds owner, int id, Vector2 pos, double vec) {
         super(owner, BulletKinds.BALL, id, pos, vec);
     }

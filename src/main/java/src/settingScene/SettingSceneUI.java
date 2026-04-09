@@ -6,7 +6,6 @@ import java.awt.Graphics;
  * セッティングシーンのUI描画クラス
  */
 public class SettingSceneUI {
-    // コンストラクタ
     public SettingSceneUI() {
 
     }

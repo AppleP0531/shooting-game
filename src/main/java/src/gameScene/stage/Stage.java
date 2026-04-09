@@ -32,7 +32,6 @@ public class Stage implements GameObject {
     private final ShipManager SHIP_M;
     private final StageManager STAGE_M;
 
-    // コンストラクタ
     public Stage() {
         MAIN = ShootingGameMain.getInstance();
         SM = SceneManager.getInstance();

@@ -2,13 +2,13 @@ package src.data;
 
 import src.ResourceManager.ResourceKinds;
 import src.entity.UserEntity;
+import src.entity.UserShipEntity;
 import src.utils.ANSI;
 import src.utils.LogUtils;
 import src.utils.GameUtils;
 import src.interfaces.Manager;
 import src.repository.UserRepository;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.awt.Graphics;
@@ -22,7 +22,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -59,7 +58,6 @@ public final class DataManager implements Manager {
         private Resources resources = new Resources();
         private Map<String, ShipStats> ships = new LinkedHashMap<>();
 
-        // コンストラクタ
         public UserData() {
             unlockShip("Ship1");
         }
@@ -110,8 +108,13 @@ public final class DataManager implements Manager {
         // 新しい船のアンロック
         public void unlockShip(String shipId) {
             // まだ所有していない場合は追加
-            if (!ships.containsKey(shipId))
+            if (!ships.containsKey(shipId)) {
                 ships.put(shipId, new ShipStats());
+                LogUtils.systemLog(
+                        "[INFO]",
+                        component,
+                        shipId + " unlocked.");
+            }
         }
     }
 
@@ -119,8 +122,6 @@ public final class DataManager implements Manager {
     public record UserLevelResult(int level, int exp) {
     }
 
-    private static final String SAVE_PATH = "saves/UserData.json";
-    private static final ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
     private static final TypeReference<List<Integer>> TYPE_REF = new TypeReference<>() {
     };
 
@@ -130,6 +131,11 @@ public final class DataManager implements Manager {
         DataManager.instance = this;
     }
 
+    /**
+     * インスタンスの取得
+     * 
+     * @return インスタンス
+     */
     public static DataManager getInstance() {
         // 初回呼び出され時は初期化してから返す
         return instance = Objects.requireNonNullElseGet(instance, DataManager::new);
@@ -170,23 +176,24 @@ public final class DataManager implements Manager {
         data.getResources().setEquipment(entity.getEquipment());
 
         // 船の情報のコピー
-        entity.getShipUpgrades().forEach((key, level) -> {
-            String[] parts = key.split(":");
-            if (parts.length == 2) {
-                String shipId = parts[0];
-                String upgradeName = parts[1];
+        entity.getOwnedShips().forEach(shipEntity -> {
+            String shipId = shipEntity.getShipId();
+            data.unlockShip(shipId);
 
-                // 船がまだ存在しない場合は追加
-                data.unlockShip(shipId);
-
-                // 強化状況の更新
-                data.getShips().get(shipId).getUpgrades().put(upgradeName, level);
+            // アップグレード情報のコピー
+            if (shipEntity.getUpgrades() != null) {
+                data.getShips().get(shipId).getUpgrades().putAll(shipEntity.getUpgrades());
             }
         });
 
         return data;
     }
 
+    /**
+     * UserDataからUserEntityへの変換と同期
+     * 
+     * @param entity
+     */
     public static void syncUserDataToEntity(UserEntity entity) {
         // 基本フィールド
         entity.setLastPlayTime(userData.getLastPlayTime());
@@ -197,22 +204,29 @@ public final class DataManager implements Manager {
         // 進捗
         entity.setExp(userData.getProgress().getExp());
         entity.setClearedStage(userData.getProgress().getClearedStage());
-        entity.setHighScores(userData.getProgress().getHighScores());
+        entity.getHighScores().clear();
+        if (userData.getProgress().getHighScores() != null) {
+            entity.getHighScores().putAll(userData.getProgress().getHighScores());
+        }
 
         // 資源
         entity.setCoins(userData.getResources().getCoins());
-        entity.setEquipment(userData.getResources().getEquipment());
+        entity.getEquipment().clear();
+        if (userData.getResources().getEquipment() != null) {
+            entity.getEquipment().putAll(userData.getResources().getEquipment());
+        }
 
         // 船の情報
-        Map<String, Integer> shipUpgrades = new HashMap<>();
+        entity.getOwnedShips().clear();
         userData.getShips().forEach((shipId, stats) -> {
-            stats.getUpgrades().forEach((upgradeName, level) -> {
-                String key = shipId + ":" + upgradeName;
-                shipUpgrades.put(key, level);
-            });
-        });
-        entity.setShipUpgrades(shipUpgrades);
+            UserShipEntity shipEntity = new UserShipEntity();
+            shipEntity.setShipId(shipId);
 
+            if (stats.getUpgrades() != null) {
+                shipEntity.getUpgrades().putAll(stats.getUpgrades());
+            }
+            entity.getOwnedShips().add(shipEntity);
+        });
     }
 
     /**
@@ -224,7 +238,7 @@ public final class DataManager implements Manager {
         LogUtils.systemLog(
                 "[DEBUG]",
                 component,
-                "Attempting to load user data from " + ANSI.YELLOW + SAVE_PATH + ANSI.RESET + ".");
+                "Attempting to load user data...");
 
         sessionStartTime = LocalDateTime.now();
 
@@ -234,24 +248,7 @@ public final class DataManager implements Manager {
         if (entity != null) {
             userData = convertToUserData(entity);
         } else {
-            // 移行用
-            File file = new File(SAVE_PATH);
-            if (file.exists()) {
-                try {
-                    userData = mapper.readValue(file, UserData.class);
-                    LogUtils.systemLog(
-                            "[INFO]",
-                            component,
-                            "Existing userData file detected. Attempting migration to database.");
-                } catch (IOException e) {
-                    LogUtils.systemLog(
-                            "[ERROR]",
-                            component,
-                            "Failed to load existing userData file during migration.", e);
-                }
-            } else {
-                create();
-            }
+            create();
         }
         loadExpConfig();
         printWelcomeMessage();
@@ -270,6 +267,9 @@ public final class DataManager implements Manager {
         }
 
         try {
+            // 総プレイ時間の更新
+            saveSessionPlayTime();
+
             // 時間を保存
             LocalDateTime now = LocalDateTime.now();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -291,7 +291,7 @@ public final class DataManager implements Manager {
             LogUtils.systemLog(
                     "[INFO]",
                     component,
-                    "Game state successfully synchronized to " + ANSI.YELLOW + SAVE_PATH + ANSI.RESET + ".");
+                    "User data saved successfully.");
         } catch (Exception e) {
             // セーブ失敗ログ
             LogUtils.systemLog(
@@ -301,7 +301,7 @@ public final class DataManager implements Manager {
             LogUtils.systemLog(
                     "[ERROR]",
                     component,
-                    "Please check write permissions at " + ANSI.YELLOW + SAVE_PATH + ANSI.RESET + ".", e);
+                    "Failed to persist user data.", e);
         }
     }
 
@@ -309,47 +309,13 @@ public final class DataManager implements Manager {
      * データ新規作成(初期化)
      */
     public static void create() {
-        try {
-            // 新規作成開始ログ
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
-                    "Initializing a new profile...");
+        // 新規作成開始ログ
+        LogUtils.systemLog(
+                "[DEBUG]",
+                component,
+                "Initializing a new profile...");
 
-            File file = new File(SAVE_PATH);
-            userData = new UserData();
-
-            // フォルダがなければ作成
-            File parentDir = file.getParentFile();
-            if (parentDir != null && !parentDir.exists()) {
-                // フォルダ未発見ログ
-                LogUtils.systemLog(
-                        "[WARN]",
-                        component,
-                        ANSI.YELLOW + parentDir.getPath() + ANSI.RESET + " directory not found.");
-
-                // フォルダ新規作成
-                if (parentDir.mkdirs()) {
-                    // 新規作成成功ログ
-                    LogUtils.systemLog(
-                            "[DEBUG]",
-                            component,
-                            "Created missing directory " + ANSI.YELLOW + parentDir.getPath() + ANSI.RESET + ".");
-                }
-            }
-
-            // データ作成成功ログ
-            LogUtils.systemLog(
-                    "[INFO]",
-                    component,
-                    "New userData successfully created at " + ANSI.YELLOW + SAVE_PATH + ANSI.RESET + ".");
-        } catch (Exception e) {
-            // 新規作成失敗ログ
-            LogUtils.systemLog(
-                    "[ERROR]",
-                    component,
-                    "Failed to initialize userData at " + ANSI.YELLOW + SAVE_PATH + ANSI.RESET + ".", e);
-        }
+        userData = new UserData();
     }
 
     /**
@@ -441,7 +407,8 @@ public final class DataManager implements Manager {
      * このセッションのプレイ時間を加算
      */
     public static void saveSessionPlayTime() {
-        Duration sessionDuration = Duration.between(sessionStartTime, LocalDateTime.now());
+        Duration sessionDuration = Duration.between(sessionStartTime,
+                LocalDateTime.now());
         long sessionSeconds = sessionDuration.toSeconds();
 
         // 時間の合算
