@@ -164,6 +164,12 @@ package "src" {
             - equipment: Map<ResourceKinds, Integer>
             - shipUpgrades: Map<String, Integer>
         }
+
+        class UserShipEntity {
+            - id: Long
+            - shipId: String
+            - upgrades: Map<String, Integer>
+        }
     }
 
     package repository {
