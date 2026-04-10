@@ -15,7 +15,7 @@ public class ShootingGameApplication {
         builder.run(args);
 
         SwingUtilities.invokeLater(() -> {
-            ShootingGameMain.main(args);
+            ShootingGameMain.setup(args);
         });
     }
 

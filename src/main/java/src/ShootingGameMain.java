@@ -76,7 +76,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
         return instance = Objects.requireNonNullElseGet(instance, ShootingGameMain::new);
     }
 
-    public static void main(String[] args) {
+    public static void setup(String[] args) {
         // ターミナルのクリア
         try {
             if (System.getProperty("os.name").contains("Windows")) { // windows用

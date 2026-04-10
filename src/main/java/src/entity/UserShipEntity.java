@@ -14,7 +14,7 @@ public class UserShipEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // private String shipId;
+    private String shipId;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_ship_upgrades", joinColumns = @JoinColumn(name = "ship_entity_id"))
