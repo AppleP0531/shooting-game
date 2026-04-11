@@ -1316,6 +1316,16 @@ package "src" {
             ~ exp: int
         }
 
+        class LoginDialog {
+            - usernameField: JTextField
+            - passwordField: JPasswordField
+            - successed: boolean
+            --
+            + LoginDialog(parent: Frame, userService: UserService)
+            + isSuccessed(): boolean
+            + getUsername(): String
+        }
+
         class SecurityConfig {
             + passwordEncoder: PasswordEncoder
         }
@@ -1325,6 +1335,8 @@ package "src" {
             - userRepository: UserRepository
             --
             + registerUser(username: String, password: String): void
+            + authenticate(username: String, password: String): boolean
+            + changePassword(username: String, newPassword: String): void
         }
     }
 

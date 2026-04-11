@@ -2,6 +2,8 @@ package src;
 
 import src.SceneManager.SceneType;
 import src.data.DataManager;
+import src.data.LoginDialog;
+import src.data.UserService;
 import src.utils.ANSI;
 import src.utils.LogUtils;
 import src.interfaces.Manager;
@@ -157,8 +159,24 @@ public final class ShootingGameMain extends JPanel implements Runnable {
 
             panel.setLoaded(true);
 
-            // プレイヤーデータの読み込み
-            DataManager.load("test");
+            // ログインダイアログの表示
+            UserService userService = context.getBean(UserService.class);
+            LoginDialog loginDialog = new LoginDialog(frame, userService);
+            loginDialog.setVisible(true);
+
+            if (loginDialog.isSuccessed()) {
+                LogUtils.systemLog(
+                        "[INFO]",
+                        component,
+                        ANSI.GREEN + "Login successful." + ANSI.RESET);
+                // プレイヤーデータの読み込み
+                DataManager.load(loginDialog.getUsername());
+            } else {
+                LogUtils.systemLog(
+                        "[WARN]",
+                        component,
+                        ANSI.YELLOW + "Login failed. Starting game with default settings." + ANSI.RESET);
+            }
 
             // 初期設定完了ログ
             LogUtils.systemLog(

@@ -31,4 +31,34 @@ public class UserService {
 
         userRepository.save(entity);
     }
+
+    /**
+     * ユーザーの認証
+     * 
+     * @param username
+     * @param password
+     * @return
+     */
+    public boolean authenticate(String username, String password) {
+        return userRepository.findByUsername(username)
+                .map(user -> passwordEncoder.matches(password, user.getPassword()))
+                .orElse(false);
+    }
+
+    /**
+     * ユーザーのパスワード変更
+     * 
+     * @param username
+     * @param newPassword
+     */
+    public void changePassword(String username, String newPassword) {
+        UserEntity entity = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("ユーザーが見つかりません"));
+
+        // 新しいパスワードをハッシュ化して保存
+        String hashedPassword = passwordEncoder.encode(newPassword);
+        entity.setPassword(hashedPassword);
+
+        userRepository.save(entity);
+    }
 }
