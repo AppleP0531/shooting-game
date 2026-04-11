@@ -20,9 +20,6 @@ import javax.swing.JButton;
 import javax.swing.ImageIcon;
 import lombok.Getter;
 
-/**
- * ステージボタン描画クラス
- */
 public class StageButtonPanel extends JPanel {
     private static final String component = "[StageButtonPanel]";
     @Getter

@@ -18,9 +18,6 @@ import java.awt.AlphaComposite;
 import java.awt.image.BufferedImage;
 import java.util.Map;
 
-/**
- * ゲームシーンUI描画クラス
- */
 public class GameSceneUI {
     private final ShootingGameMain MAIN;
     private final ResourceManager RM;

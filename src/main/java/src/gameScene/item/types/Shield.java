@@ -7,9 +7,6 @@ import src.utils.Vector2;
 import java.awt.Color;
 import java.awt.Graphics;
 
-/**
- * シールドアイテムを処理するクラス
- */
 public class Shield extends Item {
     public Shield(Vector2 pos) {
         super(ItemKinds.SHIELD, pos);

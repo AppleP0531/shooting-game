@@ -25,9 +25,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import lombok.Getter;
 
-/**
- * シーン管理クラス
- */
 public final class SceneManager implements Manager {
     private static SceneManager instance;
     private static final String component = "[SceneManager] ";

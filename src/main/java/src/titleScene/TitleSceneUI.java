@@ -8,9 +8,6 @@ import java.awt.Font;
 import java.awt.Color;
 import java.awt.Graphics;
 
-/**
- * タイトルシーンのUI描画クラス
- */
 public class TitleSceneUI {
     private final ShootingGameMain MAIN;
 

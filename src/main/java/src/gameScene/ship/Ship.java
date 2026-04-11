@@ -35,9 +35,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * 船の親クラス
- */
 public abstract class Ship implements Moveable, GameObject, Entity {
     private static final String component = "[Ship]";
 

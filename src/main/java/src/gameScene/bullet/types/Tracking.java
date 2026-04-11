@@ -12,9 +12,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.BasicStroke;
 
-/**
- * 追尾弾を処理するクラス
- */
 public class Tracking extends Bullet {
     private double maxSpeed;
     private Ship target;

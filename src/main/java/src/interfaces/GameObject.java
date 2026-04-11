@@ -2,10 +2,6 @@ package src.interfaces;
 
 import java.awt.Graphics;
 
-/**
- * void update(double);
- * void draw(Graphics);
- */
 public interface GameObject {
     /**
      * 更新

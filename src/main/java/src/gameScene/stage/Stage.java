@@ -17,9 +17,6 @@ import java.util.Map;
 import lombok.Setter;
 import lombok.Getter;
 
-/**
- * ステージUI描画クラス
- */
 public class Stage implements GameObject {
     private static final String component = "[Stage]";
 

@@ -27,9 +27,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-/**
- * アップグレードシーン管理クラス
- */
 public final class UpgradeManager extends JPanel implements Manager {
     private static final String component = "[UpgradeManager]";
     private static UpgradeManager instance;

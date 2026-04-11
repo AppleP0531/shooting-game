@@ -13,9 +13,6 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
-/**
- * 敵船を処理するクラス
- */
 public class Enemy extends Ship {
     private static final String component = "[Ship:Enemy]";
 

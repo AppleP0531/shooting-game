@@ -10,9 +10,6 @@ import java.util.ArrayList;
 import lombok.Data;
 import jakarta.persistence.*;
 
-/**
- * ユーザーデータのエンティティクラス
- */
 @Entity
 @Table(name = "users")
 @Data
@@ -23,6 +20,7 @@ public class UserEntity {
     private Long id;
 
     private String username;
+    private String password;
 
     // --- 基本情報 ---
     private String lastPlayTime;

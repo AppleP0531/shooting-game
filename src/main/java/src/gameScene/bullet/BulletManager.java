@@ -25,9 +25,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * 弾管理クラス
- */
 public final class BulletManager implements Manager {
     private static final String component = "[BulletManager]";
     private static BulletManager instance;

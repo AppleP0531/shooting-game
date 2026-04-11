@@ -36,9 +36,6 @@ import lombok.Setter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-/**
- * 船管理クラス
- */
 public final class ShipManager implements Manager {
     private static final String component = "[ShipManager]";
     private static ShipManager instance;

@@ -12,9 +12,6 @@ import java.util.Objects;
 import javax.swing.JPanel;
 import javax.swing.JButton;
 
-/**
- * タイトルシーン管理クラス
- */
 public final class TitleManager extends JPanel implements Manager {
     private static final String component = "[TitleManager]";
     private static TitleManager instance;

@@ -7,9 +7,6 @@ import src.utils.Vector2;
 import java.awt.Color;
 import java.awt.Graphics;
 
-/**
- * 回復アイテムを処理するクラス
- */
 public class Heal extends Item {
     public Heal(Vector2 pos) {
         super(ItemKinds.HEAL, pos);

@@ -10,9 +10,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.BasicStroke;
 
-/**
- * 直進弾を処理するクラス
- */
 public class Straight extends Bullet {
     public Straight(ShipKinds owner, int id, Vector2 pos, double vec) {
         super(owner, BulletKinds.STRAIGHT, id, pos, vec);

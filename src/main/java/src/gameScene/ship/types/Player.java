@@ -23,9 +23,6 @@ import java.util.ArrayList;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * プレイヤー船を処理するクラス
- */
 public class Player extends Ship implements KeyListener {
     private static final String component = "[Ship:Player]";
 

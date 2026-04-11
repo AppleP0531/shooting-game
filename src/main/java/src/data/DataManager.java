@@ -31,9 +31,6 @@ import org.springframework.stereotype.Component;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * データ管理クラス
- */
 @Component
 public final class DataManager implements Manager {
     private static final String component = "[DataManager]";
@@ -50,6 +47,7 @@ public final class DataManager implements Manager {
     @JsonIgnoreProperties(ignoreUnknown = true) // 余計な項目の無視
     @JsonPropertyOrder({ "lastPlayTime", "totalPlayTime", "selectedShip", "subShip", "progress", "resources", "ships" }) // 並び順の指定
     public static class UserData {
+        private String username;
         private String lastPlayTime;
         private String totalPlayTime = "00:00:00";
         private String selectedShip = "Ship1";
@@ -161,6 +159,7 @@ public final class DataManager implements Manager {
         UserData data = new UserData();
 
         // 基本情報のコピー
+        data.setUsername(entity.getUsername());
         data.setLastPlayTime(entity.getLastPlayTime());
         data.setTotalPlayTime(entity.getTotalPlayTime());
         data.setSelectedShip(entity.getSelectedShip());
@@ -232,7 +231,7 @@ public final class DataManager implements Manager {
     /**
      * データ読み込み
      */
-    public static void load() {
+    public static void load(String username) {
 
         // ロード開始ログ
         LogUtils.systemLog(
@@ -242,7 +241,7 @@ public final class DataManager implements Manager {
 
         sessionStartTime = LocalDateTime.now();
 
-        UserEntity entity = userRepository.findById(1L).orElse(null);
+        UserEntity entity = userRepository.findByUsername(username).orElse(null);
 
         // セーブデータが存在した場合は読み込む、存在しなければ新規作成
         if (entity != null) {
@@ -276,7 +275,7 @@ public final class DataManager implements Manager {
             userData.setLastPlayTime(now.format(formatter));
 
             // データベースのエンティティを取得（存在しない場合は新規作成）
-            UserEntity entity = userRepository.findById(1L).orElseGet(() -> {
+            UserEntity entity = userRepository.findByUsername(userData.getUsername()).orElseGet(() -> {
                 UserEntity newEntity = new UserEntity();
                 return newEntity;
             });

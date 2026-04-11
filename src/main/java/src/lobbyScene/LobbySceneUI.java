@@ -14,9 +14,6 @@ import src.gameScene.bullet.BulletManager;
 import java.awt.Color;
 import java.awt.Graphics;
 
-/**
- * ロビーシーンのUI描画クラス
- */
 public class LobbySceneUI {
     private final ShootingGameMain MAIN;
     private final GameManager GM;

@@ -25,9 +25,6 @@ import javax.swing.JPanel;
 import javax.swing.JButton;
 import javax.swing.BorderFactory;
 
-/**
- * ステージ詳細パネル描画クラス
- */
 public class StageDetailPanel extends JPanel {
     private static final String component = "[StageDetail]";
 

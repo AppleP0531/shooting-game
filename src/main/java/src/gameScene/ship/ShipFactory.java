@@ -6,9 +6,6 @@ import src.gameScene.ship.types.Enemy;
 import src.gameScene.ship.types.Player;
 import src.utils.Vector2;
 
-/**
- * 船新規作成クラス
- */
 public class ShipFactory {
     /**
      * 船の新規作成

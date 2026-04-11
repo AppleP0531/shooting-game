@@ -1,8 +1,5 @@
 package src.utils;
 
-/**
- * ANSIエスケープシーケンス定義クラス
- */
 public class ANSI {
     public static final String CYAN = "\u001b[36m";
     public static final String GREEN = "\u001b[32m";

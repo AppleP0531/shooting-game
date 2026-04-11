@@ -38,9 +38,6 @@ import javax.swing.AbstractAction;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * ゲームシーン管理クラス
- */
 public final class GameManager extends JPanel implements Manager {
     private static final String component = "[GameManager]";
     private static GameManager instance;

@@ -2,9 +2,6 @@ package src.testScene;
 
 import java.awt.Graphics;
 
-/**
- * テストシーンのUI描画クラス
- */
 public class TestSceneUI {
     public TestSceneUI() {
     }

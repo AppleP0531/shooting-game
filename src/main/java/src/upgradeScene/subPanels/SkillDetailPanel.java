@@ -12,9 +12,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JButton;
 
-/**
- * スキル詳細パネル描画クラス
- */
 public class SkillDetailPanel extends JPanel {
     private static final String component = "[SkillDetailPanel]";
 

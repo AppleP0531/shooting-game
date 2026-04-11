@@ -20,9 +20,6 @@ import java.util.Optional;
 
 import lombok.Getter;
 
-/**
- * アイテムの親クラス
- */
 public abstract class Item implements Moveable, GameObject, Entity {
     protected final ShootingGameMain MAIN;
     protected final ResourceManager RM;

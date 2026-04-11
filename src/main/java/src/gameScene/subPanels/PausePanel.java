@@ -15,9 +15,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
-/**
- * ポーズパネルクラス
- */
 public class PausePanel extends JPanel {
     private static final String component = "[pausePanel]";
 

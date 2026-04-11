@@ -28,9 +28,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-/**
- * ノーマルステージシーン管理クラス
- */
 public final class NormalStageManager extends JPanel implements Manager {
     private static final String component = "[NormalStageManager]";
     private static NormalStageManager instance;

@@ -17,9 +17,6 @@ import java.util.Objects;
 import javax.swing.JPanel;
 import javax.swing.JButton;
 
-/**
- * ロビーシーン管理クラス
- */
 public final class LobbyManager extends JPanel implements Manager {
     private static final String component = "[LobbyManager]";
     private static LobbyManager instance;

@@ -20,9 +20,6 @@ import javax.swing.BorderFactory;
 import javax.swing.SwingConstants;
 import javax.imageio.ImageIO;
 
-/**
- * UIビルダークラス
- */
 public class UIBuilder extends JPanel {
     /**
      * 画像の読み込み

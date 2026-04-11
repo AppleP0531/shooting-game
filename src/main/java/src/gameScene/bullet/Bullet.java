@@ -20,9 +20,6 @@ import java.awt.image.BufferedImage;
 import java.util.Optional;
 import lombok.Getter;
 
-/**
- * 弾の親クラス
- */
 public abstract class Bullet implements Moveable, GameObject, Entity {
     protected final ShootingGameMain MAIN;
     protected final GameManager GM;

@@ -12,9 +12,6 @@ import java.util.Objects;
 import javax.swing.JPanel;
 import javax.swing.JButton;
 
-/**
- * インフィニティステージシーン管理クラス
- */
 public final class InfinityStageManager extends JPanel implements Manager {
     private static final String component = "[InfinityStageManager]";
     private static InfinityStageManager instance;

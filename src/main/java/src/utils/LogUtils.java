@@ -3,9 +3,6 @@ package src.utils;
 import java.util.Map;
 import java.util.HashMap;
 
-/**
- * ログ出力用のユーティリティクラス
- */
 public class LogUtils {
     // ログ関連
     private static final boolean ENABLE_LOG = true; // ログ全体のON/OFF

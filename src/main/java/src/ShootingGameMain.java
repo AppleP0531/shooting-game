@@ -26,9 +26,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * メインクラス
- */
 @SpringBootApplication
 public final class ShootingGameMain extends JPanel implements Runnable {
     private static final String component = "[MAIN]";
@@ -161,7 +158,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
             panel.setLoaded(true);
 
             // プレイヤーデータの読み込み
-            DataManager.load();
+            DataManager.load("test");
 
             // 初期設定完了ログ
             LogUtils.systemLog(

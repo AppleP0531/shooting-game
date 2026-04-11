@@ -155,6 +155,7 @@ package "src" {
         class UserEntity {
             - id: Long
             - username: String
+            - password: String
             - lastPlayTime: String
             - totalPlayTime: String
             - subShip: String
@@ -1261,7 +1262,7 @@ package "src" {
             + setUserRepository(repo: UserRepository): void
             + {static} convertUserData(entity: UserEntity): UserData
             + {static} syncUserDataToEntity(entity: UserEntity): void
-            + {static} load(): void
+            + {static} load(username: String): void
             + {static} save(): void
             + {static} create(): void
             - {static} loadExpData(): void
@@ -1277,6 +1278,8 @@ package "src" {
         }
 
         class UserData <<lomboc @Data>> {
+            - username: String
+            - password: String
             - lastPlayTime: String
             - totalPlayTime: String
             - selectedShip: String
@@ -1311,6 +1314,17 @@ package "src" {
         class getUserLevel <<record>> {
             ~ level: int
             ~ exp: int
+        }
+
+        class SecurityConfig {
+            + passwordEncoder: PasswordEncoder
+        }
+
+        class UserService {
+            - passwordEncoder: PasswordEncoder
+            - userRepository: UserRepository
+            --
+            + registerUser(username: String, password: String): void
         }
     }
 

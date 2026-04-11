@@ -36,9 +36,6 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import lombok.Data;
 
-/**
- * コマンド処理用クラス
- */
 public class CommandGlassPane extends JPanel {
     private static final String component = "[Command] ";
 

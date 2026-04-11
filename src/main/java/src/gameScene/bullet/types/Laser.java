@@ -10,9 +10,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.BasicStroke;
 
-/**
- * レーザー弾を処理するクラス
- */
 public class Laser extends Bullet {
     public Laser(ShipKinds owner, int id, Vector2 pos, double vec) {
         super(owner, BulletKinds.LASER, id, pos, vec);
