@@ -7,7 +7,6 @@ import src.ShootingGameMain;
 import src.data.DataManager;
 
 import java.awt.Color;
-import java.awt.event.MouseAdapter;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JButton;
@@ -62,12 +61,6 @@ public class SkillDetailPanel extends JPanel {
             setVisible(false);
         });
         this.add(upgradeButton);
-
-        // 背後へのクリックを阻止
-        MouseAdapter blocker = new MouseAdapter() {
-        };
-        addMouseListener(blocker);
-        addMouseMotionListener(blocker);
     }
 
     /**
@@ -80,6 +73,6 @@ public class SkillDetailPanel extends JPanel {
                 UM.getSkillTreeButtonPanel().getHeight() / 2 - (int) panelSize.getY() / 2,
                 (int) panelSize.getX(), (int) panelSize.getY());
 
-        UIBuilder.openPanel(this, skillName);
+        UIBuilder.openPanel(this, skillName, true);
     }
 }

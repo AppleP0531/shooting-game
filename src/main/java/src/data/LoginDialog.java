@@ -17,7 +17,7 @@ public class LoginDialog extends JDialog {
     private boolean successed = false;
 
     public LoginDialog(Frame parent, UserService userService) {
-        super(parent, "Login", true);
+        setTitle("Login");
 
         JPanel panel = new JPanel(new GridLayout(3, 2, 5, 5));
         panel.add(new JLabel("Username:"));
@@ -25,17 +25,52 @@ public class LoginDialog extends JDialog {
         panel.add(new JLabel("Password:"));
         panel.add(passwordField);
 
+        JButton changeStateBtn = new JButton("Create Account");
+        changeStateBtn.addActionListener(e -> {
+            if (getTitle().equals("Login")) {
+                setTitle("Create Account");
+                changeStateBtn.setText("Create Account");
+            } else if (getTitle().equals("Create Account")) {
+                setTitle("Login");
+                changeStateBtn.setText("Sign in");
+            }
+
+            usernameField.setText("");
+            passwordField.setText("");
+
+            revalidate();
+            repaint();
+        });
+        panel.add(changeStateBtn);
+
         JButton loginBtn = new JButton("Login");
         loginBtn.addActionListener(e -> {
-            if (userService.authenticate(usernameField.getText(), new String(passwordField.getPassword()))) {
-                successed = true;
-                dispose();
-            } else {
-                JOptionPane.showMessageDialog(this, "Invalid username or password", "Error", JOptionPane.ERROR_MESSAGE);
+            if (getTitle().equals("Login")) {
+                loginBtn.setText("Login");
+
+                if (userService.authenticate(usernameField.getText(), new String(passwordField.getPassword()))) {
+                    successed = true;
+                    dispose();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Invalid username or password", "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            } else if (getTitle().equals("Create Account")) {
+                loginBtn.setText("Create");
+
+                if (usernameField.getText().isEmpty() || new String(passwordField.getPassword()).isEmpty())
+                    JOptionPane.showMessageDialog(this, "Can not create empty account name or password", "Error",
+                            JOptionPane.ERROR_MESSAGE);
+
+                if (userService.registerUser(usernameField.getText(), new String(passwordField.getPassword()))) {
+                    successed = true;
+                    dispose();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Account has already exists", "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
-
-        panel.add(new JLabel(""));
         panel.add(loginBtn);
 
         getContentPane().add(panel, BorderLayout.CENTER);

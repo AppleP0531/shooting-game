@@ -212,8 +212,10 @@ public final class LobbyManager extends JPanel implements Manager {
 
     @Override
     public void setup() {
-        if (viewingShipInd == -1)
+        if (viewingShipInd == -1) {
+            viewingShipInd = 0;
             setDefaultViewingShip(DataManager.getUserData().getSelectedShip());
+        }
 
         BM.clearBullets();
         updateButtonStates();

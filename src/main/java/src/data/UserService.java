@@ -21,15 +21,21 @@ public class UserService {
      * @param password
      * @return
      */
-    public void registerUser(String username, String password) {
-        UserEntity entity = new UserEntity();
-        entity.setUsername(username);
+    public boolean registerUser(String username, String password) {
+        UserEntity entity = userRepository.findByUsername(username).orElse(null);
+        if (entity == null) {
+            entity = new UserEntity();
+            entity.setUsername(username);
 
-        // パスワードをハッシュ化して保存
-        String hashedPassword = passwordEncoder.encode(password);
-        entity.setPassword(hashedPassword);
+            // パスワードをハッシュ化して保存
+            String hashedPassword = passwordEncoder.encode(password);
+            entity.setPassword(hashedPassword);
 
-        userRepository.save(entity);
+            userRepository.save(entity);
+
+            return true;
+        }
+        return false;
     }
 
     /**

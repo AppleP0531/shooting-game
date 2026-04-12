@@ -1229,7 +1229,7 @@ package "src" {
             - {static} applyStateIcon(component: String, button: JButton, basePath: String, suffix: String, size: Vector2): void
             - {static} createPathWithSuffix(path: String, suffix: String): String
             + {static} drawString(g: Graphics, pos: Vector2, size: double, color: Color, style: int, text: String): void
-            + {static} openPanel(p: JPanel, title: String): void
+            + {static} openPanel(p: JPanel, title: String, focus: Boolean): void
             - {static} findComponentByName(panel: JPanel, name: String): Component
         }
 
@@ -1334,7 +1334,7 @@ package "src" {
             - passwordEncoder: PasswordEncoder
             - userRepository: UserRepository
             --
-            + registerUser(username: String, password: String): void
+            + registerUser(username: String, password: String): boolean
             + authenticate(username: String, password: String): boolean
             + changePassword(username: String, newPassword: String): void
         }

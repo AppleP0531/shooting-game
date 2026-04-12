@@ -159,7 +159,6 @@ public final class ShootingGameMain extends JPanel implements Runnable {
 
             panel.setLoaded(true);
 
-            // ログインダイアログの表示
             UserService userService = context.getBean(UserService.class);
             LoginDialog loginDialog = new LoginDialog(frame, userService);
             loginDialog.setVisible(true);
@@ -169,8 +168,6 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                         "[INFO]",
                         component,
                         ANSI.GREEN + "Login successful." + ANSI.RESET);
-                // プレイヤーデータの読み込み
-                DataManager.load(loginDialog.getUsername());
             } else {
                 LogUtils.systemLog(
                         "[WARN]",
