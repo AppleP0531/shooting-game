@@ -118,7 +118,7 @@ public class Player extends Ship implements KeyListener {
         String subShipId = DataManager.getUserData().getSubShip();
         double shipDist = 40 * ShootingGameMain.getScreenSizeAdj();
         double yDiff = 5 * ShootingGameMain.getScreenSizeAdj();
-        if (!subShipId.isEmpty()) {
+        if (subShipId != null) {
             subShip.add(new SubShip(this, subShipId + "_L", new Vector2(pos.getX() - shipDist, pos.getY() + yDiff)));
             subShip.add(new SubShip(this, subShipId + "_R", new Vector2(pos.getX() + shipDist, pos.getY() + yDiff)));
         }

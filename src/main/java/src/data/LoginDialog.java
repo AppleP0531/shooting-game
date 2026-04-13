@@ -1,20 +1,26 @@
 package src.data;
 
-import java.awt.BorderLayout;
 import java.awt.Frame;
+import java.awt.Color;
+import java.awt.Insets;
 import java.awt.GridLayout;
+import java.awt.BorderLayout;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JTextField;
+
+import src.utils.ANSI;
+import src.utils.LogUtils;
+
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 
 public class LoginDialog extends JDialog {
+    private final static String component = "[LoginDialog]";
     private JTextField usernameField = new JTextField(20);
     private JPasswordField passwordField = new JPasswordField(20);
-    private boolean successed = false;
 
     public LoginDialog(Frame parent, UserService userService) {
         setTitle("Login");
@@ -26,13 +32,17 @@ public class LoginDialog extends JDialog {
         panel.add(passwordField);
 
         JButton changeStateBtn = new JButton("Create Account");
+        JButton loginBtn = new JButton("Login");
+
         changeStateBtn.addActionListener(e -> {
             if (getTitle().equals("Login")) {
                 setTitle("Create Account");
-                changeStateBtn.setText("Create Account");
+                loginBtn.setText("Create");
+                changeStateBtn.setText("Sign in");
             } else if (getTitle().equals("Create Account")) {
                 setTitle("Login");
-                changeStateBtn.setText("Sign in");
+                loginBtn.setText("Login");
+                changeStateBtn.setText("Create Account");
             }
 
             usernameField.setText("");
@@ -41,29 +51,40 @@ public class LoginDialog extends JDialog {
             revalidate();
             repaint();
         });
+        changeStateBtn.setContentAreaFilled(false);
+        changeStateBtn.setBorderPainted(false);
+        changeStateBtn.setFocusPainted(false);
+        changeStateBtn.setMargin(new Insets(0, 0, 0, 0));
+        changeStateBtn.setForeground(Color.BLUE);
         panel.add(changeStateBtn);
 
-        JButton loginBtn = new JButton("Login");
         loginBtn.addActionListener(e -> {
-            if (getTitle().equals("Login")) {
-                loginBtn.setText("Login");
+            String username = usernameField.getText();
+            String password = new String(passwordField.getPassword());
 
-                if (userService.authenticate(usernameField.getText(), new String(passwordField.getPassword()))) {
-                    successed = true;
+            if (getTitle().equals("Login")) {
+                if (userService.authenticate(username, password)) {
+                    LogUtils.systemLog(
+                            "[INFO]",
+                            component,
+                            ANSI.GREEN + "Login successful." + ANSI.RESET);
+                    DataManager.load(username, "login");
                     dispose();
                 } else {
                     JOptionPane.showMessageDialog(this, "Invalid username or password", "Error",
                             JOptionPane.ERROR_MESSAGE);
                 }
             } else if (getTitle().equals("Create Account")) {
-                loginBtn.setText("Create");
-
-                if (usernameField.getText().isEmpty() || new String(passwordField.getPassword()).isEmpty())
+                if (username.equals("") || password.equals(""))
                     JOptionPane.showMessageDialog(this, "Can not create empty account name or password", "Error",
                             JOptionPane.ERROR_MESSAGE);
 
-                if (userService.registerUser(usernameField.getText(), new String(passwordField.getPassword()))) {
-                    successed = true;
+                if (userService.registerUser(username, password)) {
+                    LogUtils.systemLog(
+                            "[INFO]",
+                            component,
+                            ANSI.GREEN + "Login successful." + ANSI.RESET);
+                    DataManager.load(username, "create");
                     dispose();
                 } else {
                     JOptionPane.showMessageDialog(this, "Account has already exists", "Error",
@@ -76,23 +97,5 @@ public class LoginDialog extends JDialog {
         getContentPane().add(panel, BorderLayout.CENTER);
         pack();
         setLocationRelativeTo(parent);
-    }
-
-    /**
-     * ログイン成功かどうかを返す
-     * 
-     * @return
-     */
-    public boolean isSuccessed() {
-        return successed;
-    }
-
-    /**
-     * ユーザー名を取得する
-     * 
-     * @return
-     */
-    public String getUsername() {
-        return usernameField.getText();
     }
 }

@@ -163,18 +163,6 @@ public final class ShootingGameMain extends JPanel implements Runnable {
             LoginDialog loginDialog = new LoginDialog(frame, userService);
             loginDialog.setVisible(true);
 
-            if (loginDialog.isSuccessed()) {
-                LogUtils.systemLog(
-                        "[INFO]",
-                        component,
-                        ANSI.GREEN + "Login successful." + ANSI.RESET);
-            } else {
-                LogUtils.systemLog(
-                        "[WARN]",
-                        component,
-                        ANSI.YELLOW + "Login failed. Starting game with default settings." + ANSI.RESET);
-            }
-
             // 初期設定完了ログ
             LogUtils.systemLog(
                     "[INFO]",

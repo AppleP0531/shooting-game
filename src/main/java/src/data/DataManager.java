@@ -51,7 +51,7 @@ public final class DataManager implements Manager {
         private String lastPlayTime;
         private String totalPlayTime = "00:00:00";
         private String selectedShip = "Ship1";
-        private String subShip = "";
+        private String subShip;
         private Progress progress = new Progress();
         private Resources resources = new Resources();
         private Map<String, ShipStats> ships = new LinkedHashMap<>();
@@ -231,7 +231,7 @@ public final class DataManager implements Manager {
     /**
      * データ読み込み
      */
-    public static void load(String username) {
+    public static void load(String username, String mode) {
 
         // ロード開始ログ
         LogUtils.systemLog(
@@ -241,13 +241,12 @@ public final class DataManager implements Manager {
 
         sessionStartTime = LocalDateTime.now();
 
-        UserEntity entity = userRepository.findByUsername(username).orElse(null);
-
         // セーブデータが存在した場合は読み込む、存在しなければ新規作成
-        if (entity != null) {
+        if (mode.equals("login")) {
+            UserEntity entity = userRepository.findByUsername(username).orElse(null);
             userData = convertToUserData(entity);
-        } else {
-            create();
+        } else if (mode.equals("create")) {
+            create(username);
         }
         loadExpConfig();
         printWelcomeMessage();
@@ -307,7 +306,7 @@ public final class DataManager implements Manager {
     /**
      * データ新規作成(初期化)
      */
-    public static void create() {
+    public static void create(String username) {
         // 新規作成開始ログ
         LogUtils.systemLog(
                 "[DEBUG]",
@@ -315,6 +314,7 @@ public final class DataManager implements Manager {
                 "Initializing a new profile...");
 
         userData = new UserData();
+        userData.setUsername(username);
     }
 
     /**

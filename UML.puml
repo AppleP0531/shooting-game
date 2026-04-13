@@ -1262,9 +1262,9 @@ package "src" {
             + setUserRepository(repo: UserRepository): void
             + {static} convertUserData(entity: UserEntity): UserData
             + {static} syncUserDataToEntity(entity: UserEntity): void
-            + {static} load(username: String): void
+            + {static} load(username: String, mode: String): void
             + {static} save(): void
-            + {static} create(): void
+            + {static} create(username: String): void
             - {static} loadExpData(): void
             - {static} printWelcomeMessage(): void
             + {static} saveSessionPlayTime(): void
@@ -1317,13 +1317,11 @@ package "src" {
         }
 
         class LoginDialog {
+            - {static} component: String
             - usernameField: JTextField
             - passwordField: JPasswordField
-            - successed: boolean
             --
             + LoginDialog(parent: Frame, userService: UserService)
-            + isSuccessed(): boolean
-            + getUsername(): String
         }
 
         class SecurityConfig {

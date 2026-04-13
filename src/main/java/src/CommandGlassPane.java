@@ -848,12 +848,13 @@ public class CommandGlassPane extends JPanel {
         // データリセット /clearsaves
         register("/clearsaves", "Reset data.", true, args -> {
             // 引数が不適切な場合
-            if (args.length != 0) {
+            if (args.length != 1) {
                 System.out.println("/clearsaves");
                 return;
             }
 
-            DataManager.create();
+            String username = args[0];
+            DataManager.create(username);
             reload();
         });
     }
