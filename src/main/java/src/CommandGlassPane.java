@@ -855,7 +855,6 @@ public class CommandGlassPane extends JPanel {
 
             String username = args[0];
             DataManager.delete(username);
-            reload();
         });
     }
 

@@ -82,6 +82,10 @@ public class UserService {
                     "[INFO]",
                     component,
                     "User '" + username + "' and all associated data have been deleted.");
+
+            // 自身のデータだった場合削除して強制終了
+            if (username.equals(DataManager.getUserData().getUsername()))
+                System.exit(0);
         }, () -> {
             LogUtils.systemLog(
                     "[WARN]",
