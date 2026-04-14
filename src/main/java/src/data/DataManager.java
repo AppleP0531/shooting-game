@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -34,6 +35,7 @@ import lombok.NoArgsConstructor;
 @Component
 public final class DataManager implements Manager {
     private static final String component = "[DataManager]";
+    private static ConfigurableApplicationContext context;
     private static DataManager instance;
     private static UserRepository userRepository;
     private static UserData userData;
@@ -274,10 +276,7 @@ public final class DataManager implements Manager {
             userData.setLastPlayTime(now.format(formatter));
 
             // データベースのエンティティを取得（存在しない場合は新規作成）
-            UserEntity entity = userRepository.findByUsername(userData.getUsername()).orElseGet(() -> {
-                UserEntity newEntity = new UserEntity();
-                return newEntity;
-            });
+            UserEntity entity = userRepository.findByUsername(userData.getUsername()).orElse(null);
 
             // データの同期
             syncUserDataToEntity(entity);
@@ -296,10 +295,6 @@ public final class DataManager implements Manager {
                     "[ERROR]",
                     component,
                     "Failed to persist user data.");
-            LogUtils.systemLog(
-                    "[ERROR]",
-                    component,
-                    "Failed to persist user data.", e);
         }
     }
 
@@ -315,6 +310,16 @@ public final class DataManager implements Manager {
 
         userData = new UserData();
         userData.setUsername(username);
+    }
+
+    /**
+     * データの削除
+     * 
+     * @param username
+     */
+    public static void delete(String username) {
+        UserService userService = context.getBean(UserService.class);
+        userService.deleteUser(username);
     }
 
     /**
@@ -441,6 +446,11 @@ public final class DataManager implements Manager {
     @Override
     public void draw(Graphics g) {
 
+    }
+
+    @Autowired
+    public static void setContext(ConfigurableApplicationContext context) {
+        DataManager.context = context;
     }
 
     public static UserLevelResult getUserLevel() {

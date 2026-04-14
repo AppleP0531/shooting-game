@@ -2,6 +2,7 @@ package src.data;
 
 import src.entity.UserEntity;
 import src.repository.UserRepository;
+import src.utils.LogUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
+    private static final String component = "[UserService]";
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
@@ -66,5 +68,25 @@ public class UserService {
         entity.setPassword(hashedPassword);
 
         userRepository.save(entity);
+    }
+
+    /**
+     * ユーザーの削除
+     * 
+     * @param username
+     */
+    public void deleteUser(String username) {
+        userRepository.findByUsername(username).ifPresentOrElse(entity -> {
+            userRepository.delete(entity);
+            LogUtils.systemLog(
+                    "[INFO]",
+                    component,
+                    "User '" + username + "' and all associated data have been deleted.");
+        }, () -> {
+            LogUtils.systemLog(
+                    "[WARN]",
+                    component,
+                    "Delete failed: User '" + username + "' not found.");
+        });
     }
 }

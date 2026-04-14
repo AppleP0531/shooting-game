@@ -1265,6 +1265,7 @@ package "src" {
             + {static} load(username: String, mode: String): void
             + {static} save(): void
             + {static} create(username: String): void
+            + {static} delete(username: String): void
             - {static} loadExpData(): void
             - {static} printWelcomeMessage(): void
             + {static} saveSessionPlayTime(): void
@@ -1273,6 +1274,7 @@ package "src" {
             + setup(): void
             + update(dt: double): void
             + draw(g: Graphics): void
+            + {static} setContext(context: ConfigurableApplicationContext): void
             + {static} getUserLevel(): getUserLevel
             + {static} getExpData(): List<Integer>
         }
@@ -1329,12 +1331,14 @@ package "src" {
         }
 
         class UserService {
+            - {static} component: String
             - passwordEncoder: PasswordEncoder
             - userRepository: UserRepository
             --
             + registerUser(username: String, password: String): boolean
             + authenticate(username: String, password: String): boolean
             + changePassword(username: String, newPassword: String): void
+            + deleteUser(username: String): void
         }
     }
 

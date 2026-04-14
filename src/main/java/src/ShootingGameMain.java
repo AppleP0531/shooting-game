@@ -99,6 +99,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
 
         // Spring Bootの起動
         ConfigurableApplicationContext context = SpringApplication.run(ShootingGameMain.class, args);
+        DataManager.setContext(context);
 
         // サーバー接続成功ログ
         LogUtils.systemLog(
