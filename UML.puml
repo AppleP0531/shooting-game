@@ -174,8 +174,8 @@ package "src" {
     }
 
     package repository {
-        interface UserRepository extends JpaRepository<UserEntity, Long> {
-            Optional<UserEntity> findByUsername(String username);
+        interface UserRepository  <<interface>>{
+            ~ findByUsername(username: String): Optional<UserEntity>;
         }
     }
 
@@ -1400,6 +1400,8 @@ src.gameScene.item.ItemManager +-- ItemKinds
 src.gameScene.item.ItemManager +-- ItemConfig
 
 ' extends関係
+src.repository.UserRepository --|> org.springframework.data.jpa.repository.JpaRepository
+src.data.LoginDialog --|> javax.swing.JDialog
 src.ShootingGameMain --|> javax.swing.JPanel
 src.CommandGlassPane --|> javax.swing.JPanel
 src.titleScene.TitleManager --|> javax.swing.JPanel
