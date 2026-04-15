@@ -1,8 +1,9 @@
 package src.data;
 
+import src.utils.ANSI;
+import src.utils.LogUtils;
 import src.entity.UserEntity;
 import src.repository.UserRepository;
-import src.utils.LogUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -74,9 +75,21 @@ public class UserService {
      * ユーザーの削除
      * 
      * @param username
+     * @param password forceを指定した場合強制削除
      */
-    public void deleteUser(String username) {
+    public void deleteUser(String username, String password) {
         userRepository.findByUsername(username).ifPresentOrElse(entity -> {
+            // パスワードの認証
+            if (!password.equals("force")) {
+                if (!authenticate(username, password)) {
+                    LogUtils.systemLog(
+                            "[WARN]",
+                            component,
+                            "Password is not true");
+                    return;
+                }
+            }
+
             userRepository.delete(entity);
             LogUtils.systemLog(
                     "[INFO]",
@@ -86,11 +99,12 @@ public class UserService {
             // 自身のデータだった場合削除して強制終了
             if (username.equals(DataManager.getUserData().getUsername()))
                 System.exit(0);
+
         }, () -> {
             LogUtils.systemLog(
                     "[WARN]",
                     component,
-                    "Delete failed: User '" + username + "' not found.");
+                    "Unknown username: " + ANSI.YELLOW + username + ANSI.RESET);
         });
     }
 }

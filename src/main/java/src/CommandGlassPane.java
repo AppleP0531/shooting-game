@@ -848,13 +848,14 @@ public class CommandGlassPane extends JPanel {
         // データリセット /deleteuser
         register("/deleteuser", "Reset data.", true, args -> {
             // 引数が不適切な場合
-            if (args.length != 1) {
-                System.out.println("/deleteuser <username>");
+            if (args.length != 2) {
+                System.out.println("/deleteuser <username> <password>");
                 return;
             }
 
             String username = args[0];
-            DataManager.delete(username);
+            String password = args[1];
+            DataManager.delete(username, password);
         });
     }
 

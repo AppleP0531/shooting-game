@@ -316,10 +316,11 @@ public final class DataManager implements Manager {
      * データの削除
      * 
      * @param username
+     * @param password
      */
-    public static void delete(String username) {
+    public static void delete(String username, String password) {
         UserService userService = context.getBean(UserService.class);
-        userService.deleteUser(username);
+        userService.deleteUser(username, password);
     }
 
     /**

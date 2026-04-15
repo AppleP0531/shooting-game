@@ -1265,7 +1265,7 @@ package "src" {
             + {static} load(username: String, mode: String): void
             + {static} save(): void
             + {static} create(username: String): void
-            + {static} delete(username: String): void
+            + {static} delete(username: String, password: String): void
             - {static} loadExpData(): void
             - {static} printWelcomeMessage(): void
             + {static} saveSessionPlayTime(): void
@@ -1338,7 +1338,7 @@ package "src" {
             + registerUser(username: String, password: String): boolean
             + authenticate(username: String, password: String): boolean
             + changePassword(username: String, newPassword: String): void
-            + deleteUser(username: String): void
+            + deleteUser(username: String, password: String): void
         }
     }
 
