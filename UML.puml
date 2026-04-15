@@ -151,7 +151,7 @@ package "src" {
         RESOURCE_4
     }
 
-    package entity {
+    package "entity" {
         class UserEntity {
             - id: Long
             - username: String
@@ -1265,6 +1265,7 @@ package "src" {
             + {static} load(username: String, mode: String): void
             + {static} save(): void
             + {static} create(username: String): void
+            + {static} authenticate(username: String, password: String): boolean
             + {static} delete(username: String, password: String): void
             - {static} loadExpData(): void
             - {static} printWelcomeMessage(): void

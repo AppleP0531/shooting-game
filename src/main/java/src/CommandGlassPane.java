@@ -438,8 +438,14 @@ public class CommandGlassPane extends JPanel {
         // 管理者権限切替 /admin
         register("/admin", "Toggle admin mode.", false, args -> {
             // 引数が不適切な場合
-            if (args.length != 0) {
-                System.out.println("/admin");
+            if (args.length != 1) {
+                System.out.println("/admin <password>");
+                return;
+            }
+
+            String password = args[0];
+            if (!DataManager.authenticate("admin", password)) {
+                LogUtils.systemLog("[INFO]", component, "password is not true");
                 return;
             }
 

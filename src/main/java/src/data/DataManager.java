@@ -313,6 +313,17 @@ public final class DataManager implements Manager {
     }
 
     /**
+     * パスワードの認証
+     * 
+     * @param username
+     * @param password
+     */
+    public static boolean authenticate(String username, String password) {
+        UserService userService = context.getBean(UserService.class);
+        return userService.authenticate(username, password);
+    }
+
+    /**
      * データの削除
      * 
      * @param username
