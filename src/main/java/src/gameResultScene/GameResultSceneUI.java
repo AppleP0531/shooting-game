@@ -9,9 +9,6 @@ import java.awt.Font;
 import java.awt.Color;
 import java.awt.Graphics;
 
-/**
- * ゲームリザルトシーンUI描画クラス
- */
 public class GameResultSceneUI {
     private final ShootingGameMain MAIN;
     private final GameManager GM;

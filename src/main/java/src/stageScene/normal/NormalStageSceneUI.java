@@ -2,11 +2,7 @@ package src.stageScene.normal;
 
 import java.awt.Graphics;
 
-/**
- * ノーマルステージシーンのUI描画クラス
- */
 public class NormalStageSceneUI {
-    // コンストラクタ
     public NormalStageSceneUI() {
 
     }

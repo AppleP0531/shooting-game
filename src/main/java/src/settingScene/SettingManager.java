@@ -13,9 +13,6 @@ import java.util.Objects;
 import javax.swing.JPanel;
 import javax.swing.JButton;
 
-/**
- * セッティングシーン管理クラス
- */
 public final class SettingManager extends JPanel implements Manager {
     private static final String component = "[TitleManager]";
     private static SettingManager instance;
@@ -23,7 +20,6 @@ public final class SettingManager extends JPanel implements Manager {
 
     private JButton goBackButton;
 
-    // コンストラクタ
     private SettingManager() {
         SettingManager.instance = this;
         settingUI = new SettingSceneUI();

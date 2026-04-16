@@ -35,10 +35,8 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import lombok.Data;
+import lombok.Setter;
 
-/**
- * コマンド処理用クラス
- */
 public class CommandGlassPane extends JPanel {
     private static final String component = "[Command] ";
 
@@ -89,15 +87,9 @@ public class CommandGlassPane extends JPanel {
     private int inputHistoryIndex = -1; // 入力履歴参照用インデックス
     private int inputHistoryDiff = 0; // 入力履歴リストの表示差分(表示最大数以上の回数さかのぼった時用)
 
-    // ログ履歴
-    // private final List<String> logHistory = new LinkedList<>(); // ログ履歴リスト
-    // private final DefaultListModel<String> logHistoryModel; // ログ履歴表示用モデル
-    // private final int MAX_LOG_HISTORY = 10; // ログ履歴の表示最大数
-    // private final JList<String> logHistoryList; // ログ履歴表示用リスト
-
+    @Setter
     private boolean adminMode = false;
 
-    // コンストラクタ
     public CommandGlassPane(Runnable onEnter) {
         MAIN = ShootingGameMain.getInstance();
         SM = SceneManager.getInstance();
@@ -175,17 +167,6 @@ public class CommandGlassPane extends JPanel {
                 return this;
             }
         });
-
-        // ログリストの設定
-        // logHistoryModel = new DefaultListModel<>();
-        // logHistoryList = new JList<>(logHistoryModel);
-        // logHistoryList.setBackground(new Color(0, 0, 0, 180));
-        // logHistoryList.setForeground(Color.LIGHT_GRAY);
-        // logHistoryList.setFont(new Font("Monospaced", Font.PLAIN, (int) (14 *
-        // ShootingGameMain.getScreenSizeAdj())));
-        // logHistoryList.setBorder(null);
-        // logHistoryList.setVisible(false);
-        // add(logHistoryList);
 
         // 入力中にマウスイベントをほかにとられないようにする
         addMouseListener(new MouseAdapter() {
@@ -442,8 +423,14 @@ public class CommandGlassPane extends JPanel {
         // 管理者権限切替 /admin
         register("/admin", "Toggle admin mode.", false, args -> {
             // 引数が不適切な場合
-            if (args.length != 0) {
-                System.out.println("/admin");
+            if (args.length != 1) {
+                System.out.println("/admin <password>");
+                return;
+            }
+
+            String password = args[0];
+            if (!DataManager.authenticate("admin", password)) {
+                LogUtils.systemLog("[INFO]", component, "password is not true");
                 return;
             }
 
@@ -591,7 +578,6 @@ public class CommandGlassPane extends JPanel {
                 Integer id = tryParse(args[0].replace("ship", ""));
 
                 DataManager.getUserData().unlockShip("Ship" + id);
-                DataManager.save();
             } catch (NumberFormatException ne) {
                 System.out.println("Unknnown param: " + param);
             } catch (Exception e) {
@@ -769,7 +755,6 @@ public class CommandGlassPane extends JPanel {
                             "[INFO]",
                             component,
                             "Added " + amount + " coins. Current coins: " + resData.getCoins() + ".");
-                    DataManager.save();
                     return;
                 } else {
                     int amountOwned = resData.getEquipment().getOrDefault(resName, 0);
@@ -779,7 +764,6 @@ public class CommandGlassPane extends JPanel {
                     } else {
                         resData.getEquipment().put(resName, newAmount);
                     }
-                    DataManager.save();
                 }
 
             } catch (NumberFormatException ne) {
@@ -832,7 +816,6 @@ public class CommandGlassPane extends JPanel {
                 boolean isCleared = stageId <= data.getProgress().getClearedStage();
                 if (!isCleared) {
                     data.getProgress().setClearedStage(stageId);
-                    DataManager.save();
                     NSM.getStageButtonPanel().setup();
 
                     // クリア進捗更新ログ
@@ -853,16 +836,83 @@ public class CommandGlassPane extends JPanel {
             }
         });
 
-        // データリセット /clearsaves
-        register("/clearsaves", "Reset data.", true, args -> {
+        // データリセット /deleteuser
+        register("/deleteuser", "Reset data.", true, args -> {
             // 引数が不適切な場合
-            if (args.length != 0) {
-                System.out.println("/clearsaves");
+            if (args.length != 2) {
+                System.out.println("/deleteuser <username> <password>");
                 return;
             }
 
-            DataManager.create();
-            reload();
+            String username = args[0];
+            String password = args[1];
+
+            // adminアカウントの削除防止
+            if (username.equals("admin")) {
+                LogUtils.systemLog(
+                        "[WARN]",
+                        component,
+                        "Can't delete admin account");
+                return;
+            }
+
+            // ユーザー名がadminかつforceオプションが渡された場合強制削除
+            if (DataManager.getUserData().getUsername().equals("admin") && password.equals("force")) {
+                if (DataManager.forceDelete(username)) {
+                    LogUtils.systemLog(
+                            "[INFO]",
+                            component,
+                            "Delete successful");
+                    return;
+                }
+            }
+
+            // 通常モードでデータ削除
+            if (DataManager.delete(username, password))
+                LogUtils.systemLog(
+                        "[INFO]",
+                        component,
+                        "Delete successfull");
+            else
+                LogUtils.systemLog(
+                        "[WARN]",
+                        component,
+                        "Deletion failed");
+        });
+
+        register("/changepassword", "Change user password", true, args -> {
+            // 引数が不適切な場合
+            if (args.length != 3) {
+                System.out.println("/changepassword <username> <oldPassword> <newPassword>");
+                return;
+            }
+
+            String username = args[0];
+            String oldPassword = args[1];
+            String newPassword = args[2];
+
+            // ユーザー名がadminかつforceオプションが渡された場合パスワード強制変更
+            if (DataManager.getUserData().getUsername().equals("admin") && oldPassword.equals("force")) {
+                if (DataManager.forceChangePassword(username, newPassword)) {
+                    LogUtils.systemLog(
+                            "[INFO]",
+                            component,
+                            "Change password successful");
+                    return;
+                }
+            }
+
+            // 通常モードでパスワード変更
+            if (DataManager.changePassword(username, oldPassword, newPassword))
+                LogUtils.systemLog(
+                        "[INFO]",
+                        component,
+                        "Change password successful");
+            else
+                LogUtils.systemLog(
+                        "[INFO]",
+                        component,
+                        "Change password failed");
         });
     }
 

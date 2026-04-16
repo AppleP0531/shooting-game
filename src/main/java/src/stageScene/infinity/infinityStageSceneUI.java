@@ -2,11 +2,7 @@ package src.stageScene.infinity;
 
 import java.awt.Graphics;
 
-/**
- * インフィニティステージシーンのUI描画クラス
- */
 public class infinityStageSceneUI {
-    // コンストラクタ
     public infinityStageSceneUI() {
 
     }

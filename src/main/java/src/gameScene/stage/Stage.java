@@ -17,9 +17,6 @@ import java.util.Map;
 import lombok.Setter;
 import lombok.Getter;
 
-/**
- * ステージUI描画クラス
- */
 public class Stage implements GameObject {
     private static final String component = "[Stage]";
 
@@ -32,7 +29,6 @@ public class Stage implements GameObject {
     private final ShipManager SHIP_M;
     private final StageManager STAGE_M;
 
-    // コンストラクタ
     public Stage() {
         MAIN = ShootingGameMain.getInstance();
         SM = SceneManager.getInstance();

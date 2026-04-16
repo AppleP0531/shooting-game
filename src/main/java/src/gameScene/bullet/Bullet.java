@@ -20,9 +20,6 @@ import java.awt.image.BufferedImage;
 import java.util.Optional;
 import lombok.Getter;
 
-/**
- * 弾の親クラス
- */
 public abstract class Bullet implements Moveable, GameObject, Entity {
     protected final ShootingGameMain MAIN;
     protected final GameManager GM;
@@ -48,7 +45,6 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
     protected double frameTimer = 0; // 表示画像フレーム計算タイマー
     protected double frameRate = 0; // 画像の切替速度
 
-    // コンストラクタ
     public Bullet(ShipKinds owner, BulletKinds kind, int id, Vector2 pos, double vec) {
         MAIN = ShootingGameMain.getInstance();
         GM = GameManager.getInstance();

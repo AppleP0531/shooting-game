@@ -16,7 +16,6 @@ import src.utils.LogUtils;
 import src.utils.UIBuilder;
 
 import java.awt.Color;
-import java.awt.event.MouseAdapter;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
@@ -25,9 +24,6 @@ import javax.swing.JPanel;
 import javax.swing.JButton;
 import javax.swing.BorderFactory;
 
-/**
- * ステージ詳細パネル描画クラス
- */
 public class StageDetailPanel extends JPanel {
     private static final String component = "[StageDetail]";
 
@@ -42,7 +38,6 @@ public class StageDetailPanel extends JPanel {
     private JButton startStageButton;
     private JButton skipStageButton;
 
-    // コンストラクタ
     public StageDetailPanel() {
         SM = SceneManager.getInstance();
         GM = GameManager.getInstance();
@@ -94,12 +89,6 @@ public class StageDetailPanel extends JPanel {
             setVisible(false);
         });
         this.add(skipStageButton);
-
-        // 背後へのクリックを阻止
-        MouseAdapter blocker = new MouseAdapter() {
-        };
-        addMouseListener(blocker);
-        addMouseMotionListener(blocker);
     }
 
     /**
@@ -126,7 +115,7 @@ public class StageDetailPanel extends JPanel {
             System.out.println(component + " : " + enemyId);
         }
 
-        UIBuilder.openPanel(this, "Stage" + stageId);
+        UIBuilder.openPanel(this, "Stage" + stageId, true);
     }
 
     /**

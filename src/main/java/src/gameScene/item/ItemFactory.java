@@ -10,9 +10,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.LinkedHashMap;
 
-/**
- * アイテム新規作成クラス
- */
 public class ItemFactory {
     private static final Random random = new Random();
 
