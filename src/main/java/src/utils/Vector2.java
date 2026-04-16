@@ -6,9 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-/**
- * 二次元ベクトルクラス
- */
 @Data // Getter, Setterの自動生成
 @NoArgsConstructor // 引数なしコンストラクタの生成
 @AllArgsConstructor // 全引数コンストラクタの生成

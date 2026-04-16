@@ -1,8 +1,5 @@
 package src.interfaces;
 
-/**
- * void move(double);
- */
 public interface Moveable {
     /**
      * 移動

@@ -2,10 +2,6 @@ package src.interfaces;
 
 import src.utils.Vector2;
 
-/**
- * Vector2 getPos();
- * double getCollisionSize();
- */
 public interface Entity {
     /**
      * 位置の取得

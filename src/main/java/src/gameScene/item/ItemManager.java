@@ -25,9 +25,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * アイテム管理クラス
- */
 public final class ItemManager implements Manager {
     private static final String component = "[ItemManager]";
     private static ItemManager instance;
@@ -64,7 +61,6 @@ public final class ItemManager implements Manager {
     private static final TypeReference<Map<ItemKinds, ItemConfig>> TYPE_REF = new TypeReference<>() {
     };
 
-    // コンストラクタ
     private ItemManager() {
         ItemManager.instance = this;
 

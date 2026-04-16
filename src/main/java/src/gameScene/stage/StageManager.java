@@ -21,9 +21,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-/**
- * ステージ管理クラス
- */
 public final class StageManager implements Manager {
     private static final String component = "[StageManager]";
     private static StageManager instance;
@@ -90,7 +87,6 @@ public final class StageManager implements Manager {
     @Getter
     private Stage stage;
 
-    // コンストラクタ
     private StageManager() {
         StageManager.instance = this;
         stage = new Stage();

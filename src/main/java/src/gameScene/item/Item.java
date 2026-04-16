@@ -20,9 +20,6 @@ import java.util.Optional;
 
 import lombok.Getter;
 
-/**
- * アイテムの親クラス
- */
 public abstract class Item implements Moveable, GameObject, Entity {
     protected final ShootingGameMain MAIN;
     protected final ResourceManager RM;
@@ -45,7 +42,6 @@ public abstract class Item implements Moveable, GameObject, Entity {
     protected double frameTimer = 0; // 表示画像フレーム計算タイマー
     protected double frameRate = 0; // 画像の切替速度
 
-    // コンストラクタ
     public Item(Collectible kind, Vector2 pos) {
         MAIN = ShootingGameMain.getInstance();
         RM = ResourceManager.getInstance();

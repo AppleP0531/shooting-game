@@ -2,6 +2,8 @@ package src;
 
 import src.SceneManager.SceneType;
 import src.data.DataManager;
+import src.data.LoginDialog;
+import src.data.UserService;
 import src.utils.ANSI;
 import src.utils.LogUtils;
 import src.interfaces.Manager;
@@ -20,12 +22,13 @@ import javax.swing.JFrame;
 import javax.swing.KeyStroke;
 import javax.swing.JComponent;
 import javax.swing.AbstractAction;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.SpringApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * メインクラス
- */
+@SpringBootApplication
 public final class ShootingGameMain extends JPanel implements Runnable {
     private static final String component = "[MAIN]";
     private static ShootingGameMain instance;
@@ -45,7 +48,6 @@ public final class ShootingGameMain extends JPanel implements Runnable {
     private boolean loaded = false; // 初期設定が完了したかどうか
     private boolean running = false; // 処理するか
 
-    // コンストラクタ
     private ShootingGameMain() {
         ShootingGameMain.instance = this;
 
@@ -73,7 +75,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
         return instance = Objects.requireNonNullElseGet(instance, ShootingGameMain::new);
     }
 
-    public static void main(String[] args) {
+    public static void setup(String[] args) {
         // ターミナルのクリア
         try {
             if (System.getProperty("os.name").contains("Windows")) { // windows用
@@ -89,11 +91,30 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                     ANSI.YELLOW + "Fail to reset logs" + ANSI.RESET);
         }
 
+        // サーバー接続開始ログ
+        LogUtils.systemLog(
+                "[INFO]",
+                component,
+                ANSI.GREEN + "Connecting to game server..." + ANSI.RESET);
+
+        // Spring Bootの起動
+        ConfigurableApplicationContext context = SpringApplication.run(ShootingGameMain.class, args);
+        DataManager.setContext(context);
+
+        // サーバー接続成功ログ
+        LogUtils.systemLog(
+                "[INFO]",
+                component,
+                ANSI.GREEN + "Connected to game server successfully." + ANSI.RESET);
+
         // 初期設定開始ログ
         LogUtils.systemLog(
                 "[INFO]",
                 component,
                 ANSI.GREEN + "Initializing Game Setup..." + ANSI.RESET);
+
+        // DataManagerをSpringから取得して初期化
+        context.getBean(DataManager.class);
 
         JFrame frame = new JFrame("ShootingGame");
         ShootingGameMain panel = new ShootingGameMain();
@@ -110,9 +131,6 @@ public final class ShootingGameMain extends JPanel implements Runnable {
         panel.start();
 
         new Thread(() -> {
-            // プレイヤーデータの読み込み
-            DataManager.load();
-
             // GlassPaneの設定
             glassPane = new CommandGlassPane(() -> {
             });
@@ -142,6 +160,10 @@ public final class ShootingGameMain extends JPanel implements Runnable {
 
             panel.setLoaded(true);
 
+            UserService userService = context.getBean(UserService.class);
+            LoginDialog loginDialog = new LoginDialog(frame, userService, glassPane);
+            loginDialog.setVisible(true);
+
             // 初期設定完了ログ
             LogUtils.systemLog(
                     "[INFO]",
@@ -167,8 +189,6 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                         component,
                         ANSI.GREEN + "Saving game data..." + ANSI.RESET);
 
-                // 総プレイ時間の更新
-                DataManager.saveSessionPlayTime();
                 // データ保存
                 DataManager.save();
 
@@ -202,7 +222,6 @@ public final class ShootingGameMain extends JPanel implements Runnable {
 
         while (running) {
             try {
-
                 long now = System.nanoTime();
                 double nsPerFrame = 1_000_000_000.0 / fps;
 

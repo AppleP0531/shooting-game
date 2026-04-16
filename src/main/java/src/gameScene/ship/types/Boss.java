@@ -13,15 +13,11 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
-/**
- * ボス船を処理するクラス
- */
 public class Boss extends Ship {
     private static final String component = "[Ship:Boss]";
 
     private Vector2 stayPos; // 待機位置
 
-    // コンストラクタ
     public Boss(String id, int level, Vector2 spawnPos, Vector2 stayPos) {
         super(ShipKinds.BOSS, id, level, spawnPos);
 

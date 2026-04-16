@@ -5,9 +5,6 @@ import src.utils.Vector2;
 import src.gameScene.bullet.BulletManager.BulletKinds;
 import src.gameScene.bullet.types.*;
 
-/**
- * 弾新規作成クラス
- */
 public class BulletFactory {
     /**
      * 弾の作成

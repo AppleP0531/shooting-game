@@ -14,9 +14,6 @@ import java.util.Objects;
 import java.util.ArrayList;
 import javax.swing.JPanel;
 
-/**
- * テストシーン管理クラス
- */
 public final class TestManager extends JPanel implements Manager {
     private static TestManager instance;
     private final TestSceneUI testUI;
@@ -29,7 +26,6 @@ public final class TestManager extends JPanel implements Manager {
 
     private final List<Manager> managers = new ArrayList<>();
 
-    // コンストラクタ
     private TestManager() {
         TestManager.instance = this;
         testUI = new TestSceneUI();
