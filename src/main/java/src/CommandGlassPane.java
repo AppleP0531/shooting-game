@@ -861,7 +861,73 @@ public class CommandGlassPane extends JPanel {
 
             String username = args[0];
             String password = args[1];
-            DataManager.delete(username, password);
+
+            // adminアカウントの削除防止
+            if (username.equals("admin")) {
+                LogUtils.systemLog(
+                        "[WARN]",
+                        component,
+                        "Can't delete admin account");
+                return;
+            }
+
+            // ユーザー名がadminかつforceオプションが渡された場合強制削除
+            if (DataManager.getUserData().getUsername().equals("admin") && password.equals("force")) {
+                if (DataManager.forceDelete(username)) {
+                    LogUtils.systemLog(
+                            "[INFO]",
+                            component,
+                            "Delete successful");
+                    return;
+                }
+            }
+
+            // 通常モードでデータ削除
+            if (DataManager.delete(username, password))
+                LogUtils.systemLog(
+                        "[INFO]",
+                        component,
+                        "Delete successfull");
+            else
+                LogUtils.systemLog(
+                        "[WARN]",
+                        component,
+                        "Deletion failed");
+        });
+
+        register("/changepassword", "Change user password", true, args -> {
+            // 引数が不適切な場合
+            if (args.length != 3) {
+                System.out.println("/changepassword <username> <oldPassword> <newPassword>");
+                return;
+            }
+
+            String username = args[0];
+            String oldPassword = args[1];
+            String newPassword = args[2];
+
+            // ユーザー名がadminかつforceオプションが渡された場合パスワード強制変更
+            if (DataManager.getUserData().getUsername().equals("admin") && oldPassword.equals("force")) {
+                if (DataManager.forceChangePassword(username, newPassword)) {
+                    LogUtils.systemLog(
+                            "[INFO]",
+                            component,
+                            "Change password successful");
+                    return;
+                }
+            }
+
+            // 通常モードでパスワード変更
+            if (DataManager.changePassword(username, oldPassword, newPassword))
+                LogUtils.systemLog(
+                        "[INFO]",
+                        component,
+                        "Change password successful");
+            else
+                LogUtils.systemLog(
+                        "[INFO]",
+                        component,
+                        "Change password failed");
         });
     }
 

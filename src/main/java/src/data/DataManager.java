@@ -317,6 +317,7 @@ public final class DataManager implements Manager {
      * 
      * @param username
      * @param password
+     * @return 認証成功したかどうか
      */
     public static boolean authenticate(String username, String password) {
         UserService userService = context.getBean(UserService.class);
@@ -324,14 +325,50 @@ public final class DataManager implements Manager {
     }
 
     /**
-     * データの削除
+     * パスワードの変更
      * 
      * @param username
      * @param password
+     * @return 変更成功したかどうか
      */
-    public static void delete(String username, String password) {
+    public static boolean changePassword(String username, String oldPassword, String newPassword) {
         UserService userService = context.getBean(UserService.class);
-        userService.deleteUser(username, password);
+        return userService.changePassword(username, oldPassword, newPassword);
+    }
+
+    /**
+     * パスワードの強制変更
+     * 
+     * @param username
+     * @param password
+     * @return 変更成功したかどうか
+     */
+    public static boolean forceChangePassword(String username, String newPassword) {
+        UserService userService = context.getBean(UserService.class);
+        return userService.forceChangePassword(username, newPassword);
+    }
+
+    /**
+     * ユーザーの削除
+     * 
+     * @param username
+     * @param password
+     * @return 削除成功したかどうか
+     */
+    public static boolean delete(String username, String password) {
+        UserService userService = context.getBean(UserService.class);
+        return userService.deleteUser(username, password);
+    }
+
+    /**
+     * ユーザーの強制削除
+     * 
+     * @param username
+     * @return 削除成功したかどうか
+     */
+    public static boolean forceDelete(String username) {
+        UserService userServise = context.getBean(UserService.class);
+        return userServise.forceDeleteUser(username);
     }
 
     /**

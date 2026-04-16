@@ -1266,7 +1266,10 @@ package "src" {
             + {static} save(): void
             + {static} create(username: String): void
             + {static} authenticate(username: String, password: String): boolean
-            + {static} delete(username: String, password: String): void
+            + {static} changePassword(username: String, oldPassword: String, newPassword: String): boolean
+            + {static} forceChangePassword(username: String, newPassword: String): boolean
+            + {static} delete(username: String, password: String): boolean
+            + {static} forceDelete(username: String): boolean
             - {static} loadExpData(): void
             - {static} printWelcomeMessage(): void
             + {static} saveSessionPlayTime(): void
@@ -1338,8 +1341,10 @@ package "src" {
             --
             + registerUser(username: String, password: String): boolean
             + authenticate(username: String, password: String): boolean
-            + changePassword(username: String, newPassword: String): void
-            + deleteUser(username: String, password: String): void
+            + changePassword(username: String, oldPassword: String, newPassword: String): boolean
+            + forceChangePassword(username: String, newPassword: String): boolean
+            + deleteUser(username: String, password: String): boolean
+            + forceDeleteUser(username: String): boolean
         }
     }
 
