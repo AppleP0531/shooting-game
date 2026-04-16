@@ -23,9 +23,6 @@ import java.util.ArrayList;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * プレイヤー船を処理するクラス
- */
 public class Player extends Ship implements KeyListener {
     private static final String component = "[Ship:Player]";
 
@@ -51,7 +48,6 @@ public class Player extends Ship implements KeyListener {
     private double defaultCollisionSize; // デフォルトの当たり判定の大きさ
     private double breakawaySpeed; // 離脱速度
 
-    // コンストラクタ
     public Player(String id, Vector2 pos) {
         super(ShipKinds.PLAYER, id, 0, pos);
 
@@ -122,7 +118,7 @@ public class Player extends Ship implements KeyListener {
         String subShipId = DataManager.getUserData().getSubShip();
         double shipDist = 40 * ShootingGameMain.getScreenSizeAdj();
         double yDiff = 5 * ShootingGameMain.getScreenSizeAdj();
-        if (!subShipId.isEmpty()) {
+        if (subShipId != null) {
             subShip.add(new SubShip(this, subShipId + "_L", new Vector2(pos.getX() - shipDist, pos.getY() + yDiff)));
             subShip.add(new SubShip(this, subShipId + "_R", new Vector2(pos.getX() + shipDist, pos.getY() + yDiff)));
         }

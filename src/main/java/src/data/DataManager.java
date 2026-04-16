@@ -1,12 +1,14 @@
 package src.data;
 
 import src.ResourceManager.ResourceKinds;
+import src.entity.UserEntity;
+import src.entity.UserShipEntity;
 import src.utils.ANSI;
 import src.utils.LogUtils;
 import src.utils.GameUtils;
 import src.interfaces.Manager;
+import src.repository.UserRepository;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.awt.Graphics;
@@ -20,19 +22,22 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.stereotype.Component;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * データ管理クラス
- */
+@Component
 public final class DataManager implements Manager {
     private static final String component = "[DataManager]";
+    private static ConfigurableApplicationContext context;
     private static DataManager instance;
+    private static UserRepository userRepository;
     private static UserData userData;
     private static List<Integer> expData;
 
@@ -44,15 +49,15 @@ public final class DataManager implements Manager {
     @JsonIgnoreProperties(ignoreUnknown = true) // 余計な項目の無視
     @JsonPropertyOrder({ "lastPlayTime", "totalPlayTime", "selectedShip", "subShip", "progress", "resources", "ships" }) // 並び順の指定
     public static class UserData {
+        private String username;
         private String lastPlayTime;
         private String totalPlayTime = "00:00:00";
         private String selectedShip = "Ship1";
-        private String subShip = "";
+        private String subShip;
         private Progress progress = new Progress();
         private Resources resources = new Resources();
         private Map<String, ShipStats> ships = new LinkedHashMap<>();
 
-        // コンストラクタ
         public UserData() {
             unlockShip("Ship1");
         }
@@ -103,8 +108,13 @@ public final class DataManager implements Manager {
         // 新しい船のアンロック
         public void unlockShip(String shipId) {
             // まだ所有していない場合は追加
-            if (!ships.containsKey(shipId))
+            if (!ships.containsKey(shipId)) {
                 ships.put(shipId, new ShipStats());
+                LogUtils.systemLog(
+                        "[INFO]",
+                        component,
+                        shipId + " unlocked.");
+            }
         }
     }
 
@@ -112,8 +122,6 @@ public final class DataManager implements Manager {
     public record UserLevelResult(int level, int exp) {
     }
 
-    private static final String SAVE_PATH = "saves/UserData.json";
-    private static final ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
     private static final TypeReference<List<Integer>> TYPE_REF = new TypeReference<>() {
     };
 
@@ -123,60 +131,254 @@ public final class DataManager implements Manager {
         DataManager.instance = this;
     }
 
+    /**
+     * インスタンスの取得
+     * 
+     * @return インスタンス
+     */
     public static DataManager getInstance() {
         // 初回呼び出され時は初期化してから返す
         return instance = Objects.requireNonNullElseGet(instance, DataManager::new);
     }
 
     /**
+     * UserRepositoryのセット
+     * 
+     * @param repo
+     */
+    @Autowired
+    public void setUserRepository(UserRepository repo) {
+        DataManager.userRepository = repo;
+    }
+
+    /**
+     * UserEntityからUserDataへの変換
+     * 
+     * @param entity UserEntityオブジェクト
+     * @return
+     */
+    public static UserData convertToUserData(UserEntity entity) {
+        UserData data = new UserData();
+
+        // 基本情報のコピー
+        data.setUsername(entity.getUsername());
+        data.setLastPlayTime(entity.getLastPlayTime());
+        data.setTotalPlayTime(entity.getTotalPlayTime());
+        data.setSelectedShip(entity.getSelectedShip());
+        data.setSubShip(entity.getSubShip());
+
+        // 進捗のコピー
+        data.getProgress().setExp(entity.getExp());
+        data.getProgress().setClearedStage(entity.getClearedStage());
+        data.getProgress().setHighScores(entity.getHighScores());
+
+        // 資源のコピー
+        data.getResources().setCoins(entity.getCoins());
+        data.getResources().setEquipment(entity.getEquipment());
+
+        // 船の情報のコピー
+        entity.getOwnedShips().forEach(shipEntity -> {
+            String shipId = shipEntity.getShipId();
+            data.unlockShip(shipId);
+
+            // アップグレード情報のコピー
+            if (shipEntity.getUpgrades() != null) {
+                data.getShips().get(shipId).getUpgrades().putAll(shipEntity.getUpgrades());
+            }
+        });
+
+        return data;
+    }
+
+    /**
+     * UserDataからUserEntityへの変換と同期
+     * 
+     * @param entity
+     */
+    public static void syncUserDataToEntity(UserEntity entity) {
+        // 基本フィールド
+        entity.setLastPlayTime(userData.getLastPlayTime());
+        entity.setTotalPlayTime(userData.getTotalPlayTime());
+        entity.setSelectedShip(userData.getSelectedShip());
+        entity.setSubShip(userData.getSubShip());
+
+        // 進捗
+        entity.setExp(userData.getProgress().getExp());
+        entity.setClearedStage(userData.getProgress().getClearedStage());
+        entity.getHighScores().clear();
+        if (userData.getProgress().getHighScores() != null) {
+            entity.getHighScores().putAll(userData.getProgress().getHighScores());
+        }
+
+        // 資源
+        entity.setCoins(userData.getResources().getCoins());
+        entity.getEquipment().clear();
+        if (userData.getResources().getEquipment() != null) {
+            entity.getEquipment().putAll(userData.getResources().getEquipment());
+        }
+
+        // 船の情報
+        entity.getOwnedShips().clear();
+        userData.getShips().forEach((shipId, stats) -> {
+            UserShipEntity shipEntity = new UserShipEntity();
+            shipEntity.setShipId(shipId);
+
+            if (stats.getUpgrades() != null) {
+                shipEntity.getUpgrades().putAll(stats.getUpgrades());
+            }
+            entity.getOwnedShips().add(shipEntity);
+        });
+    }
+
+    /**
      * データ読み込み
      */
-    public static void load() {
-        File file = new File(SAVE_PATH);
-        try {
-            // ロード開始ログ
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
-                    "Attempting to load userData from " + ANSI.YELLOW + SAVE_PATH + ANSI.RESET + ".");
+    public static void load(String username, String mode) {
+        // ロード開始ログ
+        LogUtils.systemLog(
+                "[DEBUG]",
+                component,
+                "Attempting to load user data...");
 
-            sessionStartTime = LocalDateTime.now();
+        sessionStartTime = LocalDateTime.now();
 
-            // セーブデータが存在した場合は読み込む、存在しなければ新規作成
-            if (file.exists()) {
-                userData = mapper.readValue(new File(SAVE_PATH), UserData.class); // 読み込み
+        // セーブデータが存在した場合は読み込む、存在しなければ新規作成
+        if (mode.equals("login")) {
+            UserEntity entity = userRepository.findByUsername(username).orElse(null);
+            userData = convertToUserData(entity);
+        } else if (mode.equals("create")) {
+            create(username);
+        }
+        loadExpConfig();
+        printWelcomeMessage();
+    }
 
-                printWelcomeMessage();
-
-                // ロード成功ログ
-                LogUtils.systemLog(
-                        "[DEBUG]",
-                        component,
-                        "UserData loaded successfully.");
-            } else {
-                // ファイル未発見ログ
-                LogUtils.systemLog(
-                        "[WARN]",
-                        component,
-                        "No existing userData file detected.");
-
-                create();
-            }
-
-            save();
-        } catch (IOException e) {
-            // ロード失敗ログ
+    /**
+     * データ保存
+     */
+    public static synchronized void save() {
+        if (userData == null || userRepository == null) {
             LogUtils.systemLog(
                     "[ERROR]",
                     component,
-                    "Failed to load data file " + ANSI.YELLOW + SAVE_PATH + ANSI.RESET + ".",
-                    e);
+                    "Cannot save user data: UserData or UserRepository is not initialized.");
+            return;
         }
 
+        try {
+            // 総プレイ時間の更新
+            saveSessionPlayTime();
+
+            // 時間を保存
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            userData.setLastPlayTime(now.format(formatter));
+
+            // データベースのエンティティを取得（存在しない場合は新規作成）
+            UserEntity entity = userRepository.findByUsername(userData.getUsername()).orElse(null);
+
+            // データの同期
+            syncUserDataToEntity(entity);
+
+            // データベースに保存
+            userRepository.save(entity);
+
+            // セーブ成功ログ
+            LogUtils.systemLog(
+                    "[INFO]",
+                    component,
+                    "User data saved successfully.");
+        } catch (Exception e) {
+            // セーブ失敗ログ
+            LogUtils.systemLog(
+                    "[ERROR]",
+                    component,
+                    "Failed to persist user data.");
+        }
+    }
+
+    /**
+     * データ新規作成(初期化)
+     */
+    public static void create(String username) {
+        // 新規作成開始ログ
+        LogUtils.systemLog(
+                "[DEBUG]",
+                component,
+                "Initializing a new profile...");
+
+        userData = new UserData();
+        userData.setUsername(username);
+    }
+
+    /**
+     * パスワードの認証
+     * 
+     * @param username
+     * @param password
+     * @return 認証成功したかどうか
+     */
+    public static boolean authenticate(String username, String password) {
+        UserService userService = context.getBean(UserService.class);
+        return userService.authenticate(username, password);
+    }
+
+    /**
+     * パスワードの変更
+     * 
+     * @param username
+     * @param password
+     * @return 変更成功したかどうか
+     */
+    public static boolean changePassword(String username, String oldPassword, String newPassword) {
+        UserService userService = context.getBean(UserService.class);
+        return userService.changePassword(username, oldPassword, newPassword);
+    }
+
+    /**
+     * パスワードの強制変更
+     * 
+     * @param username
+     * @param password
+     * @return 変更成功したかどうか
+     */
+    public static boolean forceChangePassword(String username, String newPassword) {
+        UserService userService = context.getBean(UserService.class);
+        return userService.forceChangePassword(username, newPassword);
+    }
+
+    /**
+     * ユーザーの削除
+     * 
+     * @param username
+     * @param password
+     * @return 削除成功したかどうか
+     */
+    public static boolean delete(String username, String password) {
+        UserService userService = context.getBean(UserService.class);
+        return userService.deleteUser(username, password);
+    }
+
+    /**
+     * ユーザーの強制削除
+     * 
+     * @param username
+     * @return 削除成功したかどうか
+     */
+    public static boolean forceDelete(String username) {
+        UserService userServise = context.getBean(UserService.class);
+        return userServise.forceDeleteUser(username);
+    }
+
+    /**
+     * 経験値テーブルの読み込み
+     */
+    private static void loadExpConfig() {
         final String CONFIG_PATH = "static/configs/Exp.json";
         ObjectMapper mapper = new ObjectMapper();
 
-        try (InputStream is = DataManager.class.getClassLoader().getResourceAsStream(CONFIG_PATH)) {
+        try (
+                InputStream is = DataManager.class.getClassLoader().getResourceAsStream(CONFIG_PATH)) {
             // ロード開始ログ
             LogUtils.systemLog(
                     "[DEBUG]",
@@ -206,89 +408,6 @@ public final class DataManager implements Manager {
                     component,
                     ANSI.RED + "Application will terminate." + ANSI.RESET,
                     e);
-        }
-    }
-
-    /**
-     * データ保存
-     */
-    public static void save() {
-        try {
-            // userDataが存在する場合は時間を保存
-            if (userData != null) {
-                LocalDateTime now = LocalDateTime.now();
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyy-MM-dd HH:mm:ss");
-                userData.setLastPlayTime(now.format(formatter));
-            }
-
-            // 保存
-            mapper.writeValue(new File(SAVE_PATH), userData);
-
-            // セーブ成功ログ
-            LogUtils.systemLog(
-                    "[INFO]",
-                    component,
-                    "Game state successfully synchronized to " + ANSI.YELLOW + SAVE_PATH + ANSI.RESET + ".");
-        } catch (IOException e) {
-            // セーブ失敗ログ
-            LogUtils.systemLog(
-                    "[ERROR]",
-                    component,
-                    "Failed to persist user data.");
-            LogUtils.systemLog(
-                    "[ERROR]",
-                    component,
-                    "Please check write permissions at " + ANSI.YELLOW + SAVE_PATH + ANSI.RESET + ".", e);
-        }
-    }
-
-    /**
-     * データ新規作成(初期化)
-     */
-    public static void create() {
-        try {
-            // 新規作成開始ログ
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
-                    "Initializing a new profile...");
-
-            File file = new File(SAVE_PATH);
-            userData = new UserData();
-
-            // フォルダがなければ作成
-            File parentDir = file.getParentFile();
-            if (parentDir != null && !parentDir.exists()) {
-                // フォルダ未発見ログ
-                LogUtils.systemLog(
-                        "[WARN]",
-                        component,
-                        ANSI.YELLOW + parentDir.getPath() + ANSI.RESET + " directory not found.");
-
-                // フォルダ新規作成
-                if (parentDir.mkdirs()) {
-                    // 新規作成成功ログ
-                    LogUtils.systemLog(
-                            "[DEBUG]",
-                            component,
-                            "Created missing directory " + ANSI.YELLOW + parentDir.getPath() + ANSI.RESET + ".");
-                }
-            }
-
-            // 保存
-            mapper.writeValue(new File(SAVE_PATH), userData);
-
-            // データ作成成功ログ
-            LogUtils.systemLog(
-                    "[INFO]",
-                    component,
-                    "New userData successfully created at " + ANSI.YELLOW + SAVE_PATH + ANSI.RESET + ".");
-        } catch (IOException e) {
-            // 新規作成失敗ログ
-            LogUtils.systemLog(
-                    "[ERROR]",
-                    component,
-                    "Failed to initialize userData at " + ANSI.YELLOW + SAVE_PATH + ANSI.RESET + ".", e);
         }
     }
 
@@ -340,7 +459,8 @@ public final class DataManager implements Manager {
      * このセッションのプレイ時間を加算
      */
     public static void saveSessionPlayTime() {
-        Duration sessionDuration = Duration.between(sessionStartTime, LocalDateTime.now());
+        Duration sessionDuration = Duration.between(sessionStartTime,
+                LocalDateTime.now());
         long sessionSeconds = sessionDuration.toSeconds();
 
         // 時間の合算
@@ -374,6 +494,11 @@ public final class DataManager implements Manager {
     @Override
     public void draw(Graphics g) {
 
+    }
+
+    @Autowired
+    public static void setContext(ConfigurableApplicationContext context) {
+        DataManager.context = context;
     }
 
     public static UserLevelResult getUserLevel() {

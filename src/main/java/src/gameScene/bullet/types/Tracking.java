@@ -12,15 +12,11 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.BasicStroke;
 
-/**
- * 追尾弾を処理するクラス
- */
 public class Tracking extends Bullet {
     private double maxSpeed;
     private Ship target;
     private final double TURNING_SMOOTHNESS = 5.0;
 
-    // コンストラクタ
     public Tracking(ShipKinds owner, int id, Vector2 pos, double vec) {
         super(owner, BulletKinds.TRACKING, id, pos, vec);
         target = setTarget();

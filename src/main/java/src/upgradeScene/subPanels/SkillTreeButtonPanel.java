@@ -22,9 +22,6 @@ import javax.swing.JButton;
 import javax.swing.ImageIcon;
 import lombok.Getter;
 
-/**
- * スキルツリーボタン描画クラス
- */
 public class SkillTreeButtonPanel extends JPanel {
     private static final String component = "[SkillTreeButtonPanel]";
     private final ShootingGameMain MAIN;
@@ -42,7 +39,6 @@ public class SkillTreeButtonPanel extends JPanel {
 
     private Map<String, JButton> buttonMap;
 
-    // コンストラクタ
     public SkillTreeButtonPanel() {
         MAIN = ShootingGameMain.getInstance();
         UM = UpgradeManager.getInstance();

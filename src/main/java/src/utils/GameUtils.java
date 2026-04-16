@@ -2,9 +2,6 @@ package src.utils;
 
 import src.interfaces.Entity;
 
-/**
- * ゲームユーティリティクラス
- */
 public class GameUtils {
     /**
      * 二点間の距離の二乗の取得

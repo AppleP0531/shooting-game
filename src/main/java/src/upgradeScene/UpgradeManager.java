@@ -27,9 +27,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-/**
- * アップグレードシーン管理クラス
- */
 public final class UpgradeManager extends JPanel implements Manager {
     private static final String component = "[UpgradeManager]";
     private static UpgradeManager instance;
@@ -62,7 +59,6 @@ public final class UpgradeManager extends JPanel implements Manager {
     private static final TypeReference<List<SkillTreeButtonData>> TYPE_REF = new TypeReference<>() {
     };
 
-    // コンストラクタ
     private UpgradeManager() {
         UpgradeManager.instance = this;
         upgradeUI = new UpgradeSceneUI();
@@ -94,7 +90,6 @@ public final class UpgradeManager extends JPanel implements Manager {
         this.add(lobbyButton);
 
         skillTreeButtonPanel.initComponents();
-        reload();
     }
 
     /**
@@ -182,6 +177,7 @@ public final class UpgradeManager extends JPanel implements Manager {
 
     @Override
     public void setup() {
+        reload();
         skillTreeButtonPanel.setup();
         skillTreeButtonPanel.addHandler();
     }

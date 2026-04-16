@@ -11,6 +11,7 @@ import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.FontMetrics;
 import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
 import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
@@ -18,11 +19,9 @@ import javax.swing.JButton;
 import javax.swing.ImageIcon;
 import javax.swing.BorderFactory;
 import javax.swing.SwingConstants;
+
 import javax.imageio.ImageIO;
 
-/**
- * UIビルダークラス
- */
 public class UIBuilder extends JPanel {
     /**
      * 画像の読み込み
@@ -299,8 +298,35 @@ public class UIBuilder extends JPanel {
      * 
      * @param p     パネル
      * @param title タイトル
+     * @param focus フォーカスの有無
      */
-    public static void openPanel(JPanel p, String title) {
+    public static void openPanel(JPanel p, String title, Boolean focus) {
+        JPanel parent = (JPanel) p.getParent();
+        ShootingGameMain MAIN = ShootingGameMain.getInstance();
+        // フォーカスを奪う
+        if (focus) {
+            JPanel shield = (JPanel) findComponentByName(parent, "globalShield");
+            if (shield == null) {
+                shield = new JPanel();
+                shield.setName("globalShield");
+                shield.setBounds(0, 0, MAIN.getWidth(), MAIN.getHeight());
+                shield.setOpaque(false);
+
+                MouseAdapter blocker = new MouseAdapter() {
+                };
+                shield.addMouseListener(blocker);
+                shield.addMouseMotionListener(blocker);
+
+                parent.add(shield);
+            }
+
+            // フォーカスを奪うシールドを敷く
+            shield.setVisible(true);
+            parent.setComponentZOrder(shield, 1);
+        }
+        // 最前面に配置
+        parent.setComponentZOrder(p, 0);
+
         p.setLayout(null);
         p.setBackground(new Color(0, 0, 0, 220));
         p.setBorder(BorderFactory.createLineBorder(Color.CYAN, 2));
@@ -331,6 +357,12 @@ public class UIBuilder extends JPanel {
                     closePanelButtonSize, "X");
             closePanelButton.addActionListener(e -> {
                 p.setVisible(false);
+                if (MAIN instanceof JPanel parentPanel) {
+                    Component shield = findComponentByName(parentPanel, "globalShield");
+                    if (shield != null) {
+                        shield.setVisible(false);
+                    }
+                }
             });
 
             closePanelButton.setName("closeBtn");
@@ -341,10 +373,6 @@ public class UIBuilder extends JPanel {
                 0,
                 (int) closePanelButton.getWidth(),
                 (int) closePanelButton.getHeight());
-
-        // 最前面に持ってくる
-        if (p.getParent() != null)
-            p.getParent().setComponentZOrder(p, 0);
 
         p.revalidate();
         p.repaint();
@@ -359,6 +387,9 @@ public class UIBuilder extends JPanel {
      * @return
      */
     private static Component findComponentByName(JPanel panel, String name) {
+        if (panel == null)
+            return null;
+
         for (Component comp : panel.getComponents()) {
             if (comp.getName() != null && comp.getName().equals(name)) {
                 return comp;

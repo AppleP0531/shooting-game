@@ -7,11 +7,7 @@ import src.utils.Vector2;
 import java.awt.Color;
 import java.awt.Graphics;
 
-/**
- * レベルアップアイテムを処理するクラス
- */
 public class LevelUp extends Item {
-    // コンストラクタ
     public LevelUp(Vector2 pos) {
         super(ItemKinds.LEVEL_UP, pos);
 

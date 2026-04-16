@@ -14,9 +14,6 @@ import java.util.Objects;
 import javax.swing.JPanel;
 import javax.swing.JButton;
 
-/**
- * ゲームリザルトシーン管理クラス
- */
 public final class GameResultManager extends JPanel implements Manager {
     private static final String component = "[GameResultManager]";
     private static GameResultManager instance;
@@ -25,7 +22,6 @@ public final class GameResultManager extends JPanel implements Manager {
     private JButton lobbyButton;
     private JButton replayButton;
 
-    // コンストラクタ
     private GameResultManager() {
         GameResultManager.instance = this;
         gameResultUI = new GameResultSceneUI();

@@ -18,9 +18,6 @@ import java.awt.AlphaComposite;
 import java.awt.image.BufferedImage;
 import java.util.Map;
 
-/**
- * ゲームシーンUI描画クラス
- */
 public class GameSceneUI {
     private final ShootingGameMain MAIN;
     private final ResourceManager RM;
@@ -34,7 +31,6 @@ public class GameSceneUI {
             Map<String, Double> effectList) {
     }
 
-    // コンストラクタ
     public GameSceneUI() {
         MAIN = ShootingGameMain.getInstance();
         RM = ResourceManager.getInstance();
@@ -128,7 +124,6 @@ public class GameSceneUI {
                 case "OOC" -> originImage = IM.getItemImage().get(ItemKinds.LEVEL_UP)[0];
                 case "Shield" -> originImage = IM.getItemImage().get(ItemKinds.SHIELD)[0];
             }
-
 
             // 画像のリサイズ
             BufferedImage image = UIBuilder.resizeImage(originImage, iconSize);
