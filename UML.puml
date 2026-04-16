@@ -1327,7 +1327,7 @@ package "src" {
             - usernameField: JTextField
             - passwordField: JPasswordField
             --
-            + LoginDialog(parent: Frame, userService: UserService)
+            + LoginDialog(parent: Frame, userService: UserService, glassPane: CommandGlassPane)
         }
 
         class SecurityConfig {

@@ -161,16 +161,8 @@ public final class ShootingGameMain extends JPanel implements Runnable {
             panel.setLoaded(true);
 
             UserService userService = context.getBean(UserService.class);
-            LoginDialog loginDialog = new LoginDialog(frame, userService);
+            LoginDialog loginDialog = new LoginDialog(frame, userService, glassPane);
             loginDialog.setVisible(true);
-            loginDialog.addWindowListener(new WindowAdapter() {
-                @Override
-                public void windowClosing(WindowEvent e) {
-                    if (DataManager.getUserData().getUsername().equals("admin")) {
-                        glassPane.setAdminMode(true);
-                    }
-                }
-            });
 
             // 初期設定完了ログ
             LogUtils.systemLog(

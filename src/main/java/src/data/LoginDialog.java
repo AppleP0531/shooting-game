@@ -1,5 +1,9 @@
 package src.data;
 
+import src.CommandGlassPane;
+import src.utils.ANSI;
+import src.utils.LogUtils;
+
 import java.awt.Frame;
 import java.awt.Color;
 import java.awt.Insets;
@@ -10,10 +14,6 @@ import javax.swing.JLabel;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JTextField;
-
-import src.utils.ANSI;
-import src.utils.LogUtils;
-
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 
@@ -22,7 +22,7 @@ public class LoginDialog extends JDialog {
     private JTextField usernameField = new JTextField(20);
     private JPasswordField passwordField = new JPasswordField(20);
 
-    public LoginDialog(Frame parent, UserService userService) {
+    public LoginDialog(Frame parent, UserService userService, CommandGlassPane glassPane) {
         setTitle("Login");
 
         JPanel panel = new JPanel(new GridLayout(3, 2, 5, 5));
@@ -69,6 +69,11 @@ public class LoginDialog extends JDialog {
                             component,
                             ANSI.GREEN + "Login successful." + ANSI.RESET);
                     DataManager.load(username, "login");
+
+                    // adminの場合アドミン権限を付与
+                    if (username.equals("admin"))
+                        glassPane.setAdminMode(true);
+
                     dispose();
                 } else {
                     JOptionPane.showMessageDialog(this, "Invalid username or password", "Error",
