@@ -35,9 +35,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * 船の親クラス
- */
 public abstract class Ship implements Moveable, GameObject, Entity {
     private static final String component = "[Ship]";
 
@@ -93,7 +90,6 @@ public abstract class Ship implements Moveable, GameObject, Entity {
     private List<ShotConfig> shotData = new ArrayList<>(); // 発射する弾のデータ
     private Map<BulletKinds, List<Integer>> shotBullet = new HashMap<>(); // 発射した弾のデータ
 
-    // コンストラクタ
     public Ship(ShipKinds owner, String id, int level, Vector2 pos) {
         MAIN = ShootingGameMain.getInstance();
         SM = SceneManager.getInstance();

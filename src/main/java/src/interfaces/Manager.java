@@ -2,11 +2,6 @@ package src.interfaces;
 
 import java.awt.Graphics;
 
-/**
- * void setup();
- * void update(double);
- * void draw(Graphics);
- */
 public interface Manager {
     /**
      * セットアップ

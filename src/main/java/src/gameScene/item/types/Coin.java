@@ -9,9 +9,6 @@ import src.utils.Vector2;
 import java.awt.Color;
 import java.awt.Graphics;
 
-/**
- * コインを処理するクラス
- */
 public class Coin extends Item {
     private Vector2 moveDir; // 移動方向
     private double floorY; // 床

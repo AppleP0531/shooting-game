@@ -28,9 +28,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-/**
- * ノーマルステージシーン管理クラス
- */
 public final class NormalStageManager extends JPanel implements Manager {
     private static final String component = "[NormalStageManager]";
     private static NormalStageManager instance;
@@ -64,7 +61,6 @@ public final class NormalStageManager extends JPanel implements Manager {
     private static final TypeReference<List<StageButtonData>> TYPE_REF = new TypeReference<>() {
     };
 
-    // コンストラクタ
     private NormalStageManager() {
         NormalStageManager.instance = this;
         lobbyUI = new NormalStageSceneUI();
@@ -106,7 +102,6 @@ public final class NormalStageManager extends JPanel implements Manager {
         settingButton.addActionListener(e -> SM.changeScene(SceneType.SETTING));
         this.add(settingButton);
 
-        reload();
         stageButtonPanel.initComponents();
     }
 
@@ -200,6 +195,7 @@ public final class NormalStageManager extends JPanel implements Manager {
 
     @Override
     public void setup() {
+        reload();
         stageButtonPanel.setup();
     }
 

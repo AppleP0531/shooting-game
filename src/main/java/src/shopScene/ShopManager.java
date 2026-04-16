@@ -19,7 +19,6 @@ public final class ShopManager extends JPanel implements Manager {
 
     private JButton goBackButton;
 
-    // コンストラクタ
     private ShopManager() {
 
     }

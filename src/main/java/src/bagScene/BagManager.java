@@ -28,7 +28,6 @@ public final class BagManager extends JPanel implements Manager {
 
     private Map<ResourceKinds, Integer> equipments;
 
-    // コンストラクタ
     private BagManager() {
         MAIN = ShootingGameMain.getInstance();
 
