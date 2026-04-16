@@ -35,6 +35,7 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import lombok.Data;
+import lombok.Setter;
 
 public class CommandGlassPane extends JPanel {
     private static final String component = "[Command] ";
@@ -86,12 +87,7 @@ public class CommandGlassPane extends JPanel {
     private int inputHistoryIndex = -1; // 入力履歴参照用インデックス
     private int inputHistoryDiff = 0; // 入力履歴リストの表示差分(表示最大数以上の回数さかのぼった時用)
 
-    // ログ履歴
-    // private final List<String> logHistory = new LinkedList<>(); // ログ履歴リスト
-    // private final DefaultListModel<String> logHistoryModel; // ログ履歴表示用モデル
-    // private final int MAX_LOG_HISTORY = 10; // ログ履歴の表示最大数
-    // private final JList<String> logHistoryList; // ログ履歴表示用リスト
-
+    @Setter
     private boolean adminMode = false;
 
     public CommandGlassPane(Runnable onEnter) {
@@ -171,17 +167,6 @@ public class CommandGlassPane extends JPanel {
                 return this;
             }
         });
-
-        // ログリストの設定
-        // logHistoryModel = new DefaultListModel<>();
-        // logHistoryList = new JList<>(logHistoryModel);
-        // logHistoryList.setBackground(new Color(0, 0, 0, 180));
-        // logHistoryList.setForeground(Color.LIGHT_GRAY);
-        // logHistoryList.setFont(new Font("Monospaced", Font.PLAIN, (int) (14 *
-        // ShootingGameMain.getScreenSizeAdj())));
-        // logHistoryList.setBorder(null);
-        // logHistoryList.setVisible(false);
-        // add(logHistoryList);
 
         // 入力中にマウスイベントをほかにとられないようにする
         addMouseListener(new MouseAdapter() {

@@ -234,7 +234,6 @@ public final class DataManager implements Manager {
      * データ読み込み
      */
     public static void load(String username, String mode) {
-
         // ロード開始ログ
         LogUtils.systemLog(
                 "[DEBUG]",
