@@ -250,6 +250,8 @@ package "src" {
                 + update(dt: double): void
                 + draw(g: Graphics): void
                 + reload(): void
+                - reloadConfigs(): void
+                - reloadScreen(): void
                 + getStageButtonPanel(): StageButtonPanel
             }
 
@@ -482,7 +484,9 @@ package "src" {
             + setup(): void
             + update(dt: double): void
             + draw(g: Graphics): void
-            - reload(): void
+            + reload(): void
+            - reloadConfigs(): void
+            - reloadScreen(): void
         }
 
         class SkillTreeButtonData <<lombok @Data>> {

@@ -65,6 +65,8 @@ public final class UpgradeManager extends JPanel implements Manager {
         skillTreeButtonPanel = new SkillTreeButtonPanel();
 
         MAIN = ShootingGameMain.getInstance();
+
+        reloadConfigs();
     }
 
     public void initComponents() {
@@ -177,7 +179,6 @@ public final class UpgradeManager extends JPanel implements Manager {
 
     @Override
     public void setup() {
-        reload();
         skillTreeButtonPanel.setup();
         skillTreeButtonPanel.addHandler();
     }
@@ -194,11 +195,25 @@ public final class UpgradeManager extends JPanel implements Manager {
     }
 
     /**
-     * リソースの再読み込み
+     * 再読み込み
      */
     public void reload() {
+        reloadConfigs();
+        reloadScreen();
+    }
+
+    /**
+     * リソースの再読み込み
+     */
+    private void reloadConfigs() {
         loadConfig();
         loadSkillTreeButtonImages();
+    }
+
+    /**
+     * 画面状態の再読み込み
+     */
+    private void reloadScreen() {
         skillTreeButtonPanel.reload();
     }
 }
