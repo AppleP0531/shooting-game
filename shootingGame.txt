@@ -1,0 +1,25 @@
+[shootingGame db commands]
+
+docker-compose down
+docker-compose up -d
+
+docker exec -it game-mysql mysql -u shooting_game -p
+apple
+
+USE shooting_game_db;
+
+SHOW TABLES;
+
+SELECT * FROM users;
+
+DESC users;
+
+
+[行カウント方法]
+press "ctrl + shift + p" ane type "VsCodeCounter: Count lines in workspace"
+
+
+[PlantUML使用方法]
+https://www.graphviz.org/download/ install to use
+press "alt + d" to view map
+press "ctrl + shift + p" type "PlantUML: Export Current Diagram" and sellect "svg" to export
