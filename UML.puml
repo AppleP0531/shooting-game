@@ -1234,6 +1234,7 @@ package "src" {
             - {static} createPathWithSuffix(path: String, suffix: String): String
             + {static} drawString(g: Graphics, pos: Vector2, size: double, color: Color, style: int, text: String): void
             + {static} openPanel(p: JPanel, title: String, focus: Boolean): void
+            + {static} closePanel(p: JPanel): void
             - {static} findComponentByName(panel: JPanel, name: String): Component
         }
 
@@ -1326,12 +1327,15 @@ package "src" {
             ~ exp: int
         }
 
-        class LoginDialog {
+        class LoginPanel {
             - {static} component: String
+            - state: String
             - usernameField: JTextField
             - passwordField: JPasswordField
+            - panelSize: Vector2
             --
-            + LoginDialog(parent: Frame, userService: UserService, glassPane: CommandGlassPane)
+            + LoginPanel(parent: JPanel, userService: UserService, glassPane: CommandGlassPane)
+            + showLoginPanel(): void
         }
 
         class SecurityConfig {

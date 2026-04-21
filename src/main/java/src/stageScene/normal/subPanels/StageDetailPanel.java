@@ -15,14 +15,12 @@ import src.utils.Vector2;
 import src.utils.LogUtils;
 import src.utils.UIBuilder;
 
-import java.awt.Color;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import javax.swing.JPanel;
 import javax.swing.JButton;
-import javax.swing.BorderFactory;
 
 public class StageDetailPanel extends JPanel {
     private static final String component = "[StageDetail]";
@@ -50,8 +48,6 @@ public class StageDetailPanel extends JPanel {
      */
     public void initComponents() {
         setLayout(null);
-        setBackground(new Color(0, 0, 0, 220));
-        setBorder(BorderFactory.createLineBorder(Color.CYAN, 2));
         setVisible(false);
 
         panelSize = new Vector2(350 * ShootingGameMain.getScreenSizeAdj(),
@@ -66,7 +62,7 @@ public class StageDetailPanel extends JPanel {
         startStageButton = UIBuilder.createImageButton(component, startStageImagePath, startStageButtonSize,
                 "START");
         startStageButton.addActionListener(e -> {
-            setVisible(false);
+            UIBuilder.closePanel(this);
 
             SM.changeScene(SceneType.GAME);
         });
@@ -86,7 +82,7 @@ public class StageDetailPanel extends JPanel {
         skipStageButton.addActionListener(e -> {
             SM.changeScene(SceneType.GAME);
             GM.result();
-            setVisible(false);
+            UIBuilder.closePanel(this);
         });
         this.add(skipStageButton);
     }
@@ -115,7 +111,7 @@ public class StageDetailPanel extends JPanel {
             System.out.println(component + " : " + enemyId);
         }
 
-        UIBuilder.openPanel(this, "Stage" + stageId, true);
+        UIBuilder.openPanel(this, "Stage" + stageId, false);
     }
 
     /**
