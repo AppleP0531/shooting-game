@@ -1481,7 +1481,3 @@ src.shopScene.ShopManager ..|> src.interfaces.Manager
 src.gameScene.ship.types.Player ..|> java.awt.event.KeyListener
 
 @enduml
-
-' https://www.graphviz.org/download/ install to use
-' press "alt + d" to view map
-' press "ctrl + shift + p" type "PlantUML: Export Current Diagram" and sellect "svg" to export
