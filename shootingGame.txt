@@ -1,18 +1,5 @@
-[shootingGame db commands]
-
-docker-compose down
-docker-compose up -d
-
-docker exec -it game-mysql mysql -u shooting_game -p
-apple
-
-USE shooting_game_db;
-
-SHOW TABLES;
-
-SELECT * FROM users;
-
-DESC users;
+[shootingGame db]
+copy command from AWS GUI about RDS console
 
 
 [行カウント方法]
