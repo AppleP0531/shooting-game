@@ -303,7 +303,7 @@ public class UIBuilder extends JPanel {
     public static void openPanel(JPanel p, String title, Boolean focus) {
         JPanel parent = (JPanel) p.getParent();
         ShootingGameMain MAIN = ShootingGameMain.getInstance();
-        // フォーカスを奪う
+        // パネル外のフォーカスを奪うシールドの生成
         if (focus) {
             JPanel shield = (JPanel) findComponentByName(parent, "globalShield");
             if (shield == null) {
@@ -322,8 +322,27 @@ public class UIBuilder extends JPanel {
 
             // フォーカスを奪うシールドを敷く
             shield.setVisible(true);
-            parent.setComponentZOrder(shield, 1);
+            parent.setComponentZOrder(shield, 0);
         }
+
+        // パネルのフォーカスを奪う
+        JPanel panelFocus = (JPanel) findComponentByName(parent, "panelFocus");
+        if (panelFocus == null) {
+            panelFocus = new JPanel();
+            panelFocus.setName("panelFocus");
+            panelFocus.setBounds(p.getX(), p.getY(), p.getWidth(), p.getHeight());
+            panelFocus.setOpaque(false);
+
+            MouseAdapter blocker = new MouseAdapter() {
+            };
+            panelFocus.addMouseListener(blocker);
+            panelFocus.addMouseMotionListener(blocker);
+
+            parent.add(panelFocus);
+        }
+        panelFocus.setVisible(true);
+        parent.setComponentZOrder(panelFocus, 0);
+
         // 最前面に配置
         parent.setComponentZOrder(p, 0);
 
@@ -356,13 +375,7 @@ public class UIBuilder extends JPanel {
             closePanelButton = UIBuilder.createImageButton("[UIBuilder]", closePanelButtonImagePath,
                     closePanelButtonSize, "X");
             closePanelButton.addActionListener(e -> {
-                p.setVisible(false);
-                if (MAIN instanceof JPanel parentPanel) {
-                    Component shield = findComponentByName(parentPanel, "globalShield");
-                    if (shield != null) {
-                        shield.setVisible(false);
-                    }
-                }
+                UIBuilder.closePanel(p);
             });
 
             closePanelButton.setName("closeBtn");
@@ -377,6 +390,25 @@ public class UIBuilder extends JPanel {
         p.revalidate();
         p.repaint();
         p.setVisible(true);
+    }
+
+    /**
+     * パネルを閉じる
+     * 
+     * @param p パネル情報
+     */
+    public static void closePanel(JPanel p) {
+        Component shield = findComponentByName((JPanel) p.getParent(), "globalShield");
+        if (shield != null) {
+            shield.setVisible(false);
+        }
+
+        Component blocker = findComponentByName((JPanel) p.getParent(), "panelFocus");
+        if (blocker != null) {
+            blocker.setVisible(false);
+        }
+
+        p.setVisible(false);
     }
 
     /**

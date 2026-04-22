@@ -6,8 +6,6 @@ import src.utils.Vector2;
 import src.ShootingGameMain;
 import src.data.DataManager;
 
-import java.awt.Color;
-import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JButton;
 
@@ -31,8 +29,6 @@ public class SkillDetailPanel extends JPanel {
      */
     public void initComponents() {
         setLayout(null);
-        setBackground(new Color(0, 0, 0, 220));
-        setBorder(BorderFactory.createLineBorder(Color.CYAN, 2));
         setVisible(false);
 
         panelSize = new Vector2(250 * ShootingGameMain.getScreenSizeAdj(),
@@ -58,7 +54,7 @@ public class SkillDetailPanel extends JPanel {
                     .put(skillName, upgradeLevel + 1);
             UM.setup();
 
-            setVisible(false);
+            UIBuilder.closePanel(this);
         });
         this.add(upgradeButton);
     }
@@ -73,6 +69,6 @@ public class SkillDetailPanel extends JPanel {
                 UM.getSkillTreeButtonPanel().getHeight() / 2 - (int) panelSize.getY() / 2,
                 (int) panelSize.getX(), (int) panelSize.getY());
 
-        UIBuilder.openPanel(this, skillName, true);
+        UIBuilder.openPanel(this, skillName, false);
     }
 }
