@@ -11,6 +11,7 @@ import src.gameScene.GameManager;
 import src.gameScene.item.ItemManager;
 import src.gameScene.ship.ShipManager;
 import src.gameScene.stage.StageManager;
+import src.lobbyScene.LobbyManager;
 import src.stageScene.normal.NormalStageManager;
 import src.gameScene.bullet.BulletManager;
 import src.upgradeScene.UpgradeManager;
@@ -578,6 +579,7 @@ public class CommandGlassPane extends JPanel {
                 Integer id = tryParse(args[0].replace("ship", ""));
 
                 DataManager.getUserData().unlockShip("Ship" + id);
+                LobbyManager.getInstance().updateButtonStates();
             } catch (NumberFormatException ne) {
                 System.out.println("Unknnown param: " + param);
             } catch (Exception e) {

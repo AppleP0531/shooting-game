@@ -15,14 +15,12 @@ import src.utils.Vector2;
 import src.utils.LogUtils;
 import src.utils.UIBuilder;
 
-import java.awt.Color;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import javax.swing.JPanel;
 import javax.swing.JButton;
-import javax.swing.BorderFactory;
 
 public class StageDetailPanel extends JPanel {
     private static final String component = "[StageDetail]";
@@ -50,8 +48,6 @@ public class StageDetailPanel extends JPanel {
      */
     public void initComponents() {
         setLayout(null);
-        setBackground(new Color(0, 0, 0, 220));
-        setBorder(BorderFactory.createLineBorder(Color.CYAN, 2));
         setVisible(false);
 
         panelSize = new Vector2(350 * ShootingGameMain.getScreenSizeAdj(),
@@ -66,7 +62,7 @@ public class StageDetailPanel extends JPanel {
         startStageButton = UIBuilder.createImageButton(component, startStageImagePath, startStageButtonSize,
                 "START");
         startStageButton.addActionListener(e -> {
-            setVisible(false);
+            UIBuilder.closePanel(this);
 
             SM.changeScene(SceneType.GAME);
         });
@@ -86,7 +82,7 @@ public class StageDetailPanel extends JPanel {
         skipStageButton.addActionListener(e -> {
             SM.changeScene(SceneType.GAME);
             GM.result();
-            setVisible(false);
+            UIBuilder.closePanel(this);
         });
         this.add(skipStageButton);
     }
@@ -104,18 +100,21 @@ public class StageDetailPanel extends JPanel {
 
         drawButton(stageId);
 
-        // temporaryLogs 報酬内容をログに出力
+        // 報酬内容をログに出力
         for (Map.Entry<ResourceKinds, String> list : getRewardList(stageId).entrySet()) {
             ResourceKinds resName = list.getKey();
             String amount = list.getValue();
-            System.out.println(component + " : " + resName + ": " + amount);
+            LogUtils.debugLog(resName + ": " + amount);
         }
-        // temporaryLogs 出現する敵をログに出力
+        // 出現する敵をログに出力
         for (String enemyId : getEnemyList(stageId)) {
-            System.out.println(component + " : " + enemyId);
+            LogUtils.debugLog(enemyId);
         }
+        // 最高スコアをログに出力
+        LogUtils.debugLog("High Score: "
+                + DataManager.getUserData().getProgress().getHighScores().getOrDefault("stage" + stageId, 0));
 
-        UIBuilder.openPanel(this, "Stage" + stageId, true);
+        UIBuilder.openPanel(this, "Stage" + stageId, false);
     }
 
     /**

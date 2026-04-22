@@ -1,12 +1,13 @@
 package src;
 
 import src.SceneManager.SceneType;
+import src.data.LoginPanel;
 import src.data.DataManager;
-import src.data.LoginDialog;
 import src.data.UserService;
 import src.utils.ANSI;
 import src.utils.LogUtils;
 import src.interfaces.Manager;
+import src.titleScene.TitleManager;
 
 import java.awt.Color;
 import java.awt.Toolkit;
@@ -161,8 +162,8 @@ public final class ShootingGameMain extends JPanel implements Runnable {
             panel.setLoaded(true);
 
             UserService userService = context.getBean(UserService.class);
-            LoginDialog loginDialog = new LoginDialog(frame, userService, glassPane);
-            loginDialog.setVisible(true);
+            LoginPanel loginPanel = new LoginPanel(TitleManager.getInstance(), userService, glassPane);
+            loginPanel.showLoginPanel();
 
             // 初期設定完了ログ
             LogUtils.systemLog(
