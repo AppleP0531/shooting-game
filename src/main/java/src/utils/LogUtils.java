@@ -8,7 +8,7 @@ public class LogUtils {
     private static final boolean ENABLE_LOG = true; // ログ全体のON/OFF
     private static final boolean ENABLE_DEV_LOG = true; // 開発用ログのON/OFF
     private static final boolean ENABLE_DEBUG_LOG = true; // デバッグログのON/OFF
-    private static final boolean ENABLE_DEBUG_INFO_LOG = false; // デバッグ用情報ログのON/OFF
+    private static final boolean ENABLE_DEBUG_INFO_LOG = true; // デバッグ用情報ログのON/OFF
     private static final boolean ENABLE_INFO_LOG = true; // 情報ログのON/OFF
     private static final boolean ENABLE_WARN_LOG = true; // 警告ログのON/OFF
     private static final boolean ENABLE_ERROR_LOG = true; // エラーログのON/OFF

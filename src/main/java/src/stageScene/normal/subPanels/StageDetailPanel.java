@@ -100,16 +100,19 @@ public class StageDetailPanel extends JPanel {
 
         drawButton(stageId);
 
-        // temporaryLogs 報酬内容をログに出力
+        // 報酬内容をログに出力
         for (Map.Entry<ResourceKinds, String> list : getRewardList(stageId).entrySet()) {
             ResourceKinds resName = list.getKey();
             String amount = list.getValue();
-            System.out.println(component + " : " + resName + ": " + amount);
+            LogUtils.debugLog(resName + ": " + amount);
         }
-        // temporaryLogs 出現する敵をログに出力
+        // 出現する敵をログに出力
         for (String enemyId : getEnemyList(stageId)) {
-            System.out.println(component + " : " + enemyId);
+            LogUtils.debugLog(enemyId);
         }
+        // 最高スコアをログに出力
+        LogUtils.debugLog("High Score: "
+                + DataManager.getUserData().getProgress().getHighScores().getOrDefault("stage" + stageId, 0));
 
         UIBuilder.openPanel(this, "Stage" + stageId, false);
     }
