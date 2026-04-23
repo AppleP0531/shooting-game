@@ -858,8 +858,8 @@ public class CommandGlassPane extends JPanel {
                 return;
             }
 
-            // ユーザー名がadminかつforceオプションが渡された場合強制削除
-            if (DataManager.getUserData().getUsername().equals("admin") && password.equals("force")) {
+            // forceオプションが渡された場合強制削除
+            if (password.equals("force")) {
                 if (DataManager.forceDelete(username)) {
                     LogUtils.systemLog(
                             "[INFO]",
@@ -893,8 +893,8 @@ public class CommandGlassPane extends JPanel {
             String oldPassword = args[1];
             String newPassword = args[2];
 
-            // ユーザー名がadminかつforceオプションが渡された場合パスワード強制変更
-            if (DataManager.getUserData().getUsername().equals("admin") && oldPassword.equals("force")) {
+            // forceオプションが渡された場合パスワード強制変更
+            if (oldPassword.equals("force")) {
                 if (DataManager.forceChangePassword(username, newPassword)) {
                     LogUtils.systemLog(
                             "[INFO]",
