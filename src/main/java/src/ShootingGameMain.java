@@ -1,5 +1,7 @@
 package src;
 
+import com.game.shooting_game.ShootingGameApplication;
+
 import src.SceneManager.SceneType;
 import src.data.LoginPanel;
 import src.data.DataManager;
@@ -23,13 +25,11 @@ import javax.swing.JFrame;
 import javax.swing.KeyStroke;
 import javax.swing.JComponent;
 import javax.swing.AbstractAction;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import lombok.Getter;
 import lombok.Setter;
 
-@SpringBootApplication
 public final class ShootingGameMain extends JPanel implements Runnable {
     private static final String component = "[MAIN]";
     private static ShootingGameMain instance;
@@ -59,6 +59,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
         setPreferredSize(new Dimension(
                 (int) (405 * ShootingGameMain.getScreenSizeAdj()),
                 (int) (720 * ShootingGameMain.getScreenSizeAdj())));
+
         setBackground(Color.black);
         setFocusable(true);
         requestFocusInWindow();
@@ -92,6 +93,20 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                     ANSI.YELLOW + "Fail to reset logs" + ANSI.RESET);
         }
 
+        JFrame frame = new JFrame("ShootingGame");
+        ShootingGameMain panel = ShootingGameMain.getInstance();
+        frame.add(panel);
+        frame.pack();
+
+        frame.setTitle("ShootingGame");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+        frame.setResizable(false);
+        frame.toFront(); // ウィンドウを最前面に移動
+
+        panel.start();
+
         // サーバー接続開始ログ
         LogUtils.systemLog(
                 "[INFO]",
@@ -99,7 +114,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                 ANSI.GREEN + "Connecting to game server..." + ANSI.RESET);
 
         // Spring Bootの起動
-        ConfigurableApplicationContext context = SpringApplication.run(ShootingGameMain.class, args);
+        ConfigurableApplicationContext context = SpringApplication.run(ShootingGameApplication.class, args);
         DataManager.setContext(context);
 
         // サーバー接続成功ログ
@@ -117,21 +132,13 @@ public final class ShootingGameMain extends JPanel implements Runnable {
         // DataManagerをSpringから取得して初期化
         context.getBean(DataManager.class);
 
-        JFrame frame = new JFrame("ShootingGame");
-        ShootingGameMain panel = new ShootingGameMain();
-        frame.add(panel);
-        frame.pack();
-
-        frame.setTitle("ShootingGame");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
-        frame.setResizable(false);
-        frame.toFront(); // ウィンドウを最前面に移動
-
-        panel.start();
-
         new Thread(() -> {
+            System.out.println(
+                    "--------------------------------------------------------------------------------------------");
+            System.out.println(panel.getWidth() + "," + panel.getHeight());
+            System.out.println(
+                    ShootingGameMain.getInstance().getWidth() + "," + ShootingGameMain.getInstance().getHeight());
+
             // GlassPaneの設定
             glassPane = new CommandGlassPane(() -> {
             });
