@@ -133,12 +133,6 @@ public final class ShootingGameMain extends JPanel implements Runnable {
         context.getBean(DataManager.class);
 
         new Thread(() -> {
-            System.out.println(
-                    "--------------------------------------------------------------------------------------------");
-            System.out.println(panel.getWidth() + "," + panel.getHeight());
-            System.out.println(
-                    ShootingGameMain.getInstance().getWidth() + "," + ShootingGameMain.getInstance().getHeight());
-
             // GlassPaneの設定
             glassPane = new CommandGlassPane(() -> {
             });
