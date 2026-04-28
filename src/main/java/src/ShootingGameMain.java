@@ -38,6 +38,8 @@ public final class ShootingGameMain extends JPanel implements Runnable {
 
     private final CardLayout CARDLAYOUT = new CardLayout();
 
+    private static String loadStat;
+
     private SceneType lastScene = null;
     @Getter
     private static double screenSizeAdj = 1;
@@ -107,32 +109,34 @@ public final class ShootingGameMain extends JPanel implements Runnable {
 
         panel.start();
 
-        // サーバー接続開始ログ
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
-                ANSI.GREEN + "Connecting to game server..." + ANSI.RESET);
-
-        // Spring Bootの起動
-        ConfigurableApplicationContext context = SpringApplication.run(ShootingGameApplication.class, args);
-        DataManager.setContext(context);
-
-        // サーバー接続成功ログ
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
-                ANSI.GREEN + "Connected to game server successfully." + ANSI.RESET);
-
-        // 初期設定開始ログ
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
-                ANSI.GREEN + "Initializing Game Setup..." + ANSI.RESET);
-
-        // DataManagerをSpringから取得して初期化
-        context.getBean(DataManager.class);
-
         new Thread(() -> {
+            // サーバー接続開始ログ
+            LogUtils.systemLog(
+                    "[INFO]",
+                    component,
+                    ANSI.GREEN + "Connecting to game server..." + ANSI.RESET);
+            loadStat = "Server connecting...";
+
+            // Spring Bootの起動
+            ConfigurableApplicationContext context = SpringApplication.run(ShootingGameApplication.class, args);
+            DataManager.setContext(context);
+
+            // サーバー接続成功ログ
+            LogUtils.systemLog(
+                    "[INFO]",
+                    component,
+                    ANSI.GREEN + "Connected to game server successfully." + ANSI.RESET);
+
+            // 初期設定開始ログ
+            LogUtils.systemLog(
+                    "[INFO]",
+                    component,
+                    ANSI.GREEN + "Initializing Game Setup..." + ANSI.RESET);
+            loadStat = "Loading game configs...";
+
+            // DataManagerをSpringから取得して初期化
+            context.getBean(DataManager.class);
+
             // GlassPaneの設定
             glassPane = new CommandGlassPane(() -> {
             });
@@ -279,7 +283,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
         if (!loaded) {
             // ロゴ表示
             g.setColor(Color.WHITE);
-            g.drawString("Loading...", (int) (150 * screenSizeAdj), (int) (360 * screenSizeAdj));
+            g.drawString(loadStat, (int) (150 * screenSizeAdj), (int) (360 * screenSizeAdj));
         } else {
             SceneManager.getInstance().draw(g);
         }

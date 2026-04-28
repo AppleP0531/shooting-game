@@ -10,6 +10,7 @@ package "src" {
         - {static} instance: ShootingGameMain
         - {static} glassPane: CommandGlassPane
         - cardLayout: CardLayout
+        - loadStat: String
         - lastScene: SceneType
         - {static} screenSizeAdj: double
         - fps: int
