@@ -29,67 +29,45 @@ public class LoginPanel extends JPanel {
 
         panelSize = new Vector2(
                 300 * ShootingGameMain.getScreenSizeAdj(),
-                450 * ShootingGameMain.getScreenSizeAdj());
+                200 * ShootingGameMain.getScreenSizeAdj());
 
         // 入力フィールド
         JLabel usernameLabel = new JLabel("Username:");
         usernameLabel.setForeground(Color.WHITE);
         usernameLabel.setBounds(
-                (int) panelSize.getX() / 2 - 100,
-                (int) panelSize.getY() / 2 - 60, 80, 25);
+                (int) (panelSize.getX() / 2 - 100 * ShootingGameMain.getScreenSizeAdj()),
+                (int) (30 * ShootingGameMain.getScreenSizeAdj()),
+                (int) (200 * ShootingGameMain.getScreenSizeAdj()),
+                (int) (10 * ShootingGameMain.getScreenSizeAdj()));
         add(usernameLabel);
         usernameField.setBounds(
-                (int) panelSize.getX() / 2 - 100,
-                (int) panelSize.getY() / 2 - 30, 200, 25);
+                (int) (panelSize.getX() / 2 - 100 * ShootingGameMain.getScreenSizeAdj()),
+                (int) (40 * ShootingGameMain.getScreenSizeAdj()),
+                (int) (200 * ShootingGameMain.getScreenSizeAdj()),
+                (int) (20 * ShootingGameMain.getScreenSizeAdj()));
         add(usernameField);
         JLabel passwordLabel = new JLabel("Password:");
         passwordLabel.setForeground(Color.WHITE);
         passwordLabel.setBounds(
-                (int) panelSize.getX() / 2 - 100,
-                (int) panelSize.getY() / 2 + 10, 80, 25);
+                (int) (panelSize.getX() / 2 - 100 * ShootingGameMain.getScreenSizeAdj()),
+                (int) (70 * ShootingGameMain.getScreenSizeAdj()),
+                (int) (200 * ShootingGameMain.getScreenSizeAdj()),
+                (int) (10 * ShootingGameMain.getScreenSizeAdj()));
         add(passwordLabel);
         passwordField.setBounds(
-                (int) panelSize.getX() / 2 - 100,
-                (int) panelSize.getY() / 2 + 40, 200, 25);
+                (int) (panelSize.getX() / 2 - 100 * ShootingGameMain.getScreenSizeAdj()),
+                (int) (80 * ShootingGameMain.getScreenSizeAdj()),
+                (int) (200 * ShootingGameMain.getScreenSizeAdj()),
+                (int) (20 * ShootingGameMain.getScreenSizeAdj()));
         add(passwordField);
 
-        // アカウント作成、ログインのトグルボタン
+        // ログイン、作成ボタン
         JButton loginBtn = new JButton("Login");
         loginBtn.setBounds(
-                (int) panelSize.getX() / 2 - 100,
-                (int) panelSize.getY() / 2 + 90, 200, 25);
-        JButton changeStateBtn = new JButton("Create Account");
-        changeStateBtn.setBounds(
-                (int) panelSize.getX() / 2 - 100,
-                (int) panelSize.getY() / 2 + 120, 200, 25);
-
-        changeStateBtn.addActionListener(e -> {
-            if (state.equals("Login")) {
-                state = "Create Account";
-                loginBtn.setText("Create");
-                changeStateBtn.setText("Sign in");
-
-                // 開きなおす
-                UIBuilder.closePanel(this);
-                showLoginPanel();
-            } else if (state.equals("Create Account")) {
-                state = "Login";
-                loginBtn.setText("Login");
-                changeStateBtn.setText("Create Account");
-
-                // 開きなおす
-                UIBuilder.closePanel(this);
-                showLoginPanel();
-            }
-        });
-        changeStateBtn.setContentAreaFilled(false);
-        changeStateBtn.setBorderPainted(false);
-        changeStateBtn.setFocusPainted(false);
-        changeStateBtn.setMargin(new Insets(0, 0, 0, 0));
-        changeStateBtn.setForeground(Color.BLUE);
-        add(changeStateBtn);
-
-        // ログイン、作成ボタン
+                (int) (panelSize.getX() / 2 - 100 * ShootingGameMain.getScreenSizeAdj()),
+                (int) (120 * ShootingGameMain.getScreenSizeAdj()),
+                (int) (200 * ShootingGameMain.getScreenSizeAdj()),
+                (int) (20 * ShootingGameMain.getScreenSizeAdj()));
         loginBtn.addActionListener(e -> {
             String username = usernameField.getText();
             String password = new String(passwordField.getPassword());
@@ -135,6 +113,40 @@ public class LoginPanel extends JPanel {
             }
         });
         add(loginBtn);
+
+        // ログイン、アカウント作成切り替えボタン
+        JButton changeStateBtn = new JButton("Create Account");
+        changeStateBtn.setBounds(
+                (int) (panelSize.getX() / 2 - 100 * ShootingGameMain.getScreenSizeAdj()),
+                (int) (150 * ShootingGameMain.getScreenSizeAdj()),
+                (int) (200 * ShootingGameMain.getScreenSizeAdj()),
+                (int) (20 * ShootingGameMain.getScreenSizeAdj()));
+
+        changeStateBtn.addActionListener(e -> {
+            if (state.equals("Login")) {
+                state = "Create Account";
+                loginBtn.setText("Create");
+                changeStateBtn.setText("Sign in");
+
+                // 開きなおす
+                UIBuilder.closePanel(this);
+                showLoginPanel();
+            } else if (state.equals("Create Account")) {
+                state = "Login";
+                loginBtn.setText("Login");
+                changeStateBtn.setText("Create Account");
+
+                // 開きなおす
+                UIBuilder.closePanel(this);
+                showLoginPanel();
+            }
+        });
+        changeStateBtn.setContentAreaFilled(false);
+        changeStateBtn.setBorderPainted(false);
+        changeStateBtn.setFocusPainted(false);
+        changeStateBtn.setMargin(new Insets(0, 0, 0, 0));
+        changeStateBtn.setForeground(new Color(89, 150, 251));
+        add(changeStateBtn);
 
         parent.add(this);
     }

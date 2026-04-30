@@ -8,9 +8,12 @@ import src.data.DataManager;
 import src.data.UserService;
 import src.utils.ANSI;
 import src.utils.LogUtils;
+import src.utils.UIBuilder;
+import src.utils.Vector2;
 import src.interfaces.Manager;
 import src.titleScene.TitleManager;
 
+import java.awt.Font;
 import java.awt.Color;
 import java.awt.Toolkit;
 import java.awt.Graphics;
@@ -115,7 +118,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                     "[INFO]",
                     component,
                     ANSI.GREEN + "Connecting to game server..." + ANSI.RESET);
-            loadStat = "Server connecting...";
+            loadStat = "Server connecting";
 
             // Spring Bootの起動
             ConfigurableApplicationContext context = SpringApplication.run(ShootingGameApplication.class, args);
@@ -132,7 +135,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                     "[INFO]",
                     component,
                     ANSI.GREEN + "Initializing Game Setup..." + ANSI.RESET);
-            loadStat = "Loading game configs...";
+            loadStat = "Loading game configs";
 
             // DataManagerをSpringから取得して初期化
             context.getBean(DataManager.class);
@@ -282,8 +285,16 @@ public final class ShootingGameMain extends JPanel implements Runnable {
 
         if (!loaded) {
             // ロゴ表示
-            g.setColor(Color.WHITE);
-            g.drawString(loadStat, (int) (150 * screenSizeAdj), (int) (360 * screenSizeAdj));
+
+            // ロードステータスの表示
+            double size = 14 * ShootingGameMain.getScreenSizeAdj();
+            Vector2 pos = new Vector2(
+                    getWidth() - g.getFontMetrics().stringWidth(loadStat + "...")
+                            - 10 * ShootingGameMain.getScreenSizeAdj(),
+                    getHeight() - 20 * ShootingGameMain.getScreenSizeAdj());
+            UIBuilder.drawString(g, pos, size, Color.WHITE, Font.BOLD, loadStat + "...");
+
+            // System.out.println(System.currentTimeMillis());
         } else {
             SceneManager.getInstance().draw(g);
         }
