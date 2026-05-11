@@ -882,6 +882,7 @@ public class CommandGlassPane extends JPanel {
                         "Deletion failed");
         });
 
+        // パスワード変更 /changepassword
         register("/changepassword", "Change user password", true, args -> {
             // 引数が不適切な場合
             if (args.length != 3) {
