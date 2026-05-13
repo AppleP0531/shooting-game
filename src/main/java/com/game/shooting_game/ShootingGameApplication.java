@@ -16,11 +16,13 @@ public class ShootingGameApplication {
     public static void main(String[] args) {
         SpringApplication builder = new SpringApplication(ShootingGameApplication.class);
         builder.setHeadless(false);
-        builder.run(args);
+        try {
+            builder.run(args);
+        } catch (Exception e) {
+        }
 
         SwingUtilities.invokeLater(() -> {
             ShootingGameMain.setup(args);
         });
     }
-
 }

@@ -43,7 +43,7 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
     @Getter
     protected ShipKinds owner; // 弾を発射者
     protected BulletKinds kind; // 弾の種類
-    protected double animationId = -1; // アニメーションId
+    protected Double animationId; // アニメーションId
 
     public Bullet(ShipKinds owner, BulletKinds kind, int id, Vector2 pos, double vec) {
         MAIN = ShootingGameMain.getInstance();
@@ -95,7 +95,7 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
         Vector2 drawPos = new Vector2(pos.getX(), pos.getY());
         // 画像が存在するときは読み込む
-        if (animationId != -1) {
+        if (animationId != null) {
             BufferedImage image = AM.getCurrentImage(animationId);
 
             // 回転処理

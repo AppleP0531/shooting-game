@@ -66,29 +66,24 @@ public class Boss extends Ship {
         super.draw(g);
 
         // 画像が存在しなければ仮描画
-        for (String object : animationId.keySet()) {
-            if (animationId.get(object) == -1) {
-                switch (object) {
-                    case "ship" -> {
-                        g2.rotate(rotate, pos.getX(), pos.getY());
-                        g2.setColor(Color.RED);
-                        g.fillPolygon(
-                                new int[] {
-                                        (int) pos.getX(),
-                                        (int) pos.getX() - imageSize.get(object) / 2,
-                                        (int) pos.getX() + imageSize.get(object) / 2
-                                },
-                                new int[] {
-                                        (int) pos.getY() - imageSize.get(object) / 2,
-                                        (int) pos.getY() + imageSize.get(object) / 2,
-                                        (int) pos.getY() + imageSize.get(object) / 2
-                                },
-                                3);
-                        // 回転リセット
-                        g2.rotate(-rotate, pos.getX(), pos.getY());
-                    }
-                }
-            }
+        // 船
+        if (animationId.get("ship") == null) {
+            g2.rotate(rotate, pos.getX(), pos.getY());
+            g2.setColor(Color.RED);
+            g.fillPolygon(
+                    new int[] {
+                            (int) pos.getX(),
+                            (int) pos.getX() - imageSize.get("ship") / 2,
+                            (int) pos.getX() + imageSize.get("ship") / 2
+                    },
+                    new int[] {
+                            (int) pos.getY() - imageSize.get("ship") / 2,
+                            (int) pos.getY() + imageSize.get("ship") / 2,
+                            (int) pos.getY() + imageSize.get("ship") / 2
+                    },
+                    3);
+            // 回転リセット
+            g2.rotate(-rotate, pos.getX(), pos.getY());
         }
 
         switch (animationName) {

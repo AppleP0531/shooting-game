@@ -20,7 +20,7 @@ public class LevelUp extends Item {
         super.draw(g);
 
         // 画像が存在しなければ仮描画
-        if (animationId == -1) {
+        if (animationId == null) {
             g.setColor(Color.YELLOW);
             g.fillOval((int) pos.getX() - (int) collisionSize / 2, (int) pos.getY() - (int) collisionSize / 2,
                     (int) collisionSize, (int) collisionSize);
