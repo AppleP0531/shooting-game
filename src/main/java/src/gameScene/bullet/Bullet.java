@@ -11,6 +11,8 @@ import src.interfaces.GameObject;
 import src.interfaces.Moveable;
 import src.utils.Vector2;
 import src.utils.UIBuilder;
+import src.utils.animation.Animation;
+import src.utils.animation.AnimationManager;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -22,6 +24,7 @@ import lombok.Getter;
 
 public abstract class Bullet implements Moveable, GameObject, Entity {
     protected final ShootingGameMain MAIN;
+    protected final AnimationManager AM;
     protected final GameManager GM;
     protected final BulletManager BM;
     protected final ShipManager SHIP_M;
@@ -40,13 +43,11 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
     @Getter
     protected ShipKinds owner; // 弾を発射者
     protected BulletKinds kind; // 弾の種類
-    protected BufferedImage[] bulletImages; // 画像
-    protected int currentFrame = 0; // 表示画像フレーム
-    protected double frameTimer = 0; // 表示画像フレーム計算タイマー
-    protected double frameRate = 0; // 画像の切替速度
+    protected double animationId = -1; // アニメーションId
 
     public Bullet(ShipKinds owner, BulletKinds kind, int id, Vector2 pos, double vec) {
         MAIN = ShootingGameMain.getInstance();
+        AM = AnimationManager.getInstance();
         GM = GameManager.getInstance();
         BM = BulletManager.getInstance();
         SHIP_M = ShipManager.getInstance();
@@ -59,10 +60,17 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
         this.collisionSize = bulletConfig.getCollisionSize() * ShootingGameMain.getScreenSizeAdj();
         this.speed = bulletConfig.getSpeed() * ShootingGameMain.getScreenSizeAdj();
         this.damage = bulletConfig.getDamage();
-        this.bulletImages = Optional.ofNullable(BM.getBulletImage())
+
+        // 画像の取得とアニメーション登録
+        BufferedImage[] bulletImages = Optional.ofNullable(BM.getBulletImage())
                 .map(images -> images.get(owner).get(kind).get(id))
                 .orElse(null);
-        this.frameRate = BM.getBulletConfig().get(owner).get(kind).get(id).getFrameRate();
+        if (bulletImages != null) {
+            double frameRate = BM.getBulletConfig().get(owner).get(kind).get(id).getFrameRate();
+            this.animationId = Math.random();
+
+            AM.addAnimation(animationId, new Animation(bulletImages, frameRate));
+        }
     }
 
     @Override
@@ -75,15 +83,6 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
     public void update(double dt) {
         move(dt);
         lifeTimer += dt;
-
-        // 何フレーム目の画像を表示するかの計算
-        if (bulletImages != null) {
-            frameTimer += dt;
-            if (frameTimer >= frameRate) {
-                frameTimer = 0;
-                currentFrame = (currentFrame + 1) % bulletImages.length;
-            }
-        }
     }
 
     public void draw(Graphics g) {
@@ -96,14 +95,16 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
         Vector2 drawPos = new Vector2(pos.getX(), pos.getY());
         // 画像が存在するときは読み込む
-        if (bulletImages != null) {
+        if (animationId != -1) {
+            BufferedImage image = AM.getCurrentImage(animationId);
+
             // 回転処理
             g2.translate((int) drawPos.getX(), (int) drawPos.getY());
             g2.rotate(vec + Math.PI / 2);
             // 描画処理
-            g.drawImage(bulletImages[currentFrame],
-                    -bulletImages[currentFrame].getWidth() / 2, -bulletImages[currentFrame].getHeight() / 2,
-                    bulletImages[currentFrame].getWidth(), bulletImages[currentFrame].getHeight(),
+            g.drawImage(image,
+                    -image.getWidth() / 2, -image.getHeight() / 2,
+                    image.getWidth(), image.getHeight(),
                     MAIN);
         }
         g2.setTransform(oldTransform);

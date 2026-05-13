@@ -2,6 +2,7 @@ package src;
 
 import src.utils.ANSI;
 import src.utils.LogUtils;
+import src.utils.animation.AnimationManager;
 import src.bagScene.BagManager;
 import src.shopScene.ShopManager;
 import src.testScene.TestManager;
@@ -29,6 +30,8 @@ public final class SceneManager implements Manager {
     private static SceneManager instance;
     private static final String component = "[SceneManager] ";
 
+    AnimationManager animation; // アニメーションマネージャー
+
     // シーンの種類
     public static enum SceneType {
         TITLE,
@@ -53,6 +56,8 @@ public final class SceneManager implements Manager {
 
     private SceneManager() {
         SceneManager.instance = this;
+        animation = AnimationManager.getInstance();
+
         scenes.put(SceneType.TITLE, TitleManager.getInstance());
         scenes.put(SceneType.LOBBY, LobbyManager.getInstance());
         scenes.put(SceneType.BAG, BagManager.getInstance());
@@ -99,6 +104,9 @@ public final class SceneManager implements Manager {
 
     @Override
     public void update(double dt) {
+        // アニメーションの更新
+        animation.update(dt);
+
         // マネージャーの更新
         Manager current = getCurrentManager();
         if (current != null)
