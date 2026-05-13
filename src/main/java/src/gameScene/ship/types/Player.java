@@ -55,7 +55,6 @@ public class Player extends Ship implements KeyListener {
         // 画像の読み込みとアニメーション登録
         ShipDefinition def = SHIP_M.getShipConfig().get(owner).get(shipId);
         BufferedImage[] collisionImages = SHIP_M.getShipImage().get("collision");
-        animationId.put("collision", -1.0);
         if (collisionImages != null) {
             double frameRate = def.getDatas().getFrameRate();
             animationId.put("collision", Math.random());
@@ -64,7 +63,6 @@ public class Player extends Ship implements KeyListener {
                     new Animation(collisionImages, frameRate));
         }
         BufferedImage[] shieldImages = SHIP_M.getShipImage().get("shield");
-        animationId.put("shield", -1.0);
         if (shieldImages != null) {
             double frameRate = def.getDatas().getFrameRate();
             animationId.put("shield", Math.random());
@@ -73,7 +71,6 @@ public class Player extends Ship implements KeyListener {
                     new Animation(shieldImages, frameRate));
         }
         BufferedImage[] explosionImages = SHIP_M.getShipImage().get("explosion");
-        animationId.put("explosion", -1.0);
         if (explosionImages != null) {
             double frameRate = def.getDatas().getFrameRate();
             animationId.put("explosion", Math.random());
@@ -185,33 +182,28 @@ public class Player extends Ship implements KeyListener {
         super.draw(g);
 
         // 画像が存在しなければ仮描画
-        for (String object : animationId.keySet()) {
-            if (animationId.get(object) == null) {
-                switch (object) {
-                    case "ship" -> {
-                        g2.rotate(rotate, pos.getX(), pos.getY());
-                        g2.setColor(new Color(0, 1, 1, alpha));
-                        g.fillPolygon(
-                                new int[] {
-                                        (int) pos.getX(),
-                                        (int) pos.getX() - imageSize.get(object) / 2,
-                                        (int) pos.getX() + imageSize.get(object) / 2
-                                },
-                                new int[] {
-                                        (int) pos.getY() - imageSize.get(object) / 2,
-                                        (int) pos.getY() + imageSize.get(object) / 2,
-                                        (int) pos.getY() + imageSize.get(object) / 2
-                                },
-                                3);
-                        // 回転リセット
-                        g2.rotate(-rotate, pos.getX(), pos.getY());
-                    }
-                }
-            }
+        // 船
+        if (animationId.get("ship") == null) {
+            g2.rotate(rotate, pos.getX(), pos.getY());
+            g2.setColor(new Color(0, 1, 1, alpha));
+            g.fillPolygon(
+                    new int[] {
+                            (int) pos.getX(),
+                            (int) pos.getX() - imageSize.get("ship") / 2,
+                            (int) pos.getX() + imageSize.get("ship") / 2
+                    },
+                    new int[] {
+                            (int) pos.getY() - imageSize.get("ship") / 2,
+                            (int) pos.getY() + imageSize.get("ship") / 2,
+                            (int) pos.getY() + imageSize.get("ship") / 2
+                    },
+                    3);
+            // 回転リセット
+            g2.rotate(-rotate, pos.getX(), pos.getY());
         }
 
         // 当たり判定画像の描画(存在するとき)
-        if (animationId.get("collision") != -1) {
+        if (animationId.get("collision") != null) {
             BufferedImage image = AM.getCurrentImage(animationId.get("collision"));
 
             // 描画処理
@@ -223,7 +215,7 @@ public class Player extends Ship implements KeyListener {
         }
 
         // シールド画像の描画(存在するとき)
-        if (animationId.get("shield") != -1 && shieldTimer > 0 && damagedTimer == 0) {
+        if (animationId.get("shield") != null && shieldTimer > 0 && damagedTimer == 0) {
             BufferedImage image = AM.getCurrentImage(animationId.get("shield"));
 
             g2.drawImage(

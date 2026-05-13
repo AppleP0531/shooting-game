@@ -119,7 +119,6 @@ public abstract class Ship implements Moveable, GameObject, Entity {
             BufferedImage[] shipImage = Optional.ofNullable(SHIP_M.getShipImage())
                     .map(images -> images.get(shipId))
                     .orElse(null);
-            animationId.put("ship", -1.0);
             if (shipImage != null) {
                 double frameRate = datas.getFrameRate();
 
@@ -150,7 +149,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
         shieldTimer = Math.max(0, shieldTimer - dt);
 
         // アニメーション更新処理
-        if (animationId.get("ship") != -1) {
+        if (animationId.get("ship") != null) {
             Animation shipAnim = AM.getAnimationCache().get(animationId.get("ship"));
 
             shipAnim.setCustomLogic((current, anim) -> {
@@ -197,7 +196,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
         Vector2 drawPos = new Vector2(pos.getX(), pos.getY());
         // 画像が存在するときは読み込む
-        if (animationId.get("ship") != -1) {
+        if (animationId.get("ship") != null) {
             BufferedImage image = AM.getCurrentImage(animationId.get("ship"));
 
             // 回転処理

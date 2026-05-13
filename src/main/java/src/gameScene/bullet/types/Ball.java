@@ -20,7 +20,7 @@ public class Ball extends Bullet {
         super.draw(g);
 
         // 画像が存在しなければ仮描画
-        if (animationId == -1) {
+        if (animationId == null) {
             Graphics2D g2 = (Graphics2D) g;
             // プレイヤーなら青、敵なら赤
             g2.setColor(owner == ShipKinds.PLAYER ? new Color(0, 1, 1, alpha) : new Color(1, 0, 0, alpha));
