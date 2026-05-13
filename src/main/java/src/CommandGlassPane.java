@@ -742,7 +742,7 @@ public class CommandGlassPane extends JPanel {
         register("/get", "get resource", true, args -> {
             // 引数が不適切な場合
             if (args.length != 2) {
-                System.out.println("/get <resource name> <number>");
+                System.out.println("/get <resource name> <ammount>");
                 return;
             }
 
