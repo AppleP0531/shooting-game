@@ -233,7 +233,12 @@ public final class DataManager implements Manager {
     /**
      * データ読み込み
      */
+<<<<<<< Updated upstream
     public static void load(String username, String mode) {
+=======
+    public static void load(String username) {
+
+>>>>>>> Stashed changes
         // ロード開始ログ
         LogUtils.systemLog(
                 "[DEBUG]",
@@ -242,6 +247,11 @@ public final class DataManager implements Manager {
 
         sessionStartTime = LocalDateTime.now();
 
+<<<<<<< Updated upstream
+=======
+        UserEntity entity = userRepository.findByUsername(username).orElse(null);
+
+>>>>>>> Stashed changes
         // セーブデータが存在した場合は読み込む、存在しなければ新規作成
         if (mode.equals("login")) {
             UserEntity entity = userRepository.findByUsername(username).orElse(null);
@@ -275,7 +285,14 @@ public final class DataManager implements Manager {
             userData.setLastPlayTime(now.format(formatter));
 
             // データベースのエンティティを取得（存在しない場合は新規作成）
+<<<<<<< Updated upstream
             UserEntity entity = userRepository.findByUsername(userData.getUsername()).orElse(null);
+=======
+            UserEntity entity = userRepository.findByUsername(userData.getUsername()).orElseGet(() -> {
+                UserEntity newEntity = new UserEntity();
+                return newEntity;
+            });
+>>>>>>> Stashed changes
 
             // データの同期
             syncUserDataToEntity(entity);

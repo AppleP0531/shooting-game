@@ -1292,7 +1292,11 @@ package "src" {
             + setUserRepository(repo: UserRepository): void
             + {static} convertUserData(entity: UserEntity): UserData
             + {static} syncUserDataToEntity(entity: UserEntity): void
+<<<<<<< Updated upstream
             + {static} load(username: String, mode: String): void
+=======
+            + {static} load(username: String): void
+>>>>>>> Stashed changes
             + {static} save(): void
             + {static} create(username: String): void
             + {static} authenticate(username: String, password: String): boolean
