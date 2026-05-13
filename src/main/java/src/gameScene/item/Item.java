@@ -40,7 +40,7 @@ public abstract class Item implements Moveable, GameObject, Entity {
     protected Vector2 pos; // 位置
     protected double vec; // 方向
     protected double speed = 0; // 速度
-    protected double animationId = -1; // アニメーションId
+    protected Double animationId; // アニメーションId
 
     public Item(Collectible kind, Vector2 pos) {
         MAIN = ShootingGameMain.getInstance();
@@ -87,7 +87,7 @@ public abstract class Item implements Moveable, GameObject, Entity {
     @Override
     public void draw(Graphics g) {
         // 画像が存在するときは読み込む
-        if (animationId != -1) {
+        if (animationId != null) {
             BufferedImage image = AM.getCurrentImage(animationId);
             g.drawImage(
                     image,

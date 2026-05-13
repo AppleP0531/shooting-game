@@ -963,7 +963,7 @@ package "src" {
                 # alpha: float
                 # owner: ShipKinds
                 # kind: BulletKinds
-                # animationId: double
+                # animationId: Double
                 --
                 + Bullet(owner: ShipKinds, kind: BulletKinds, id: int, pos: Vector2, vec: double)
                 + move(dt: double): void
@@ -1071,7 +1071,7 @@ package "src" {
                 # pos: Vector2
                 # vec: double
                 # speed: double
-                # animationId: double
+                # animationId: Double
                 --
                 + Item(kind Collectible, pos Vector2)
                 + update(dt: double): void

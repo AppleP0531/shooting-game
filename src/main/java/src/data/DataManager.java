@@ -49,7 +49,7 @@ public final class DataManager implements Manager {
     @JsonIgnoreProperties(ignoreUnknown = true) // 余計な項目の無視
     @JsonPropertyOrder({ "lastPlayTime", "totalPlayTime", "selectedShip", "subShip", "progress", "resources", "ships" }) // 並び順の指定
     public static class UserData {
-        private String username;
+        private String username = "";
         private String lastPlayTime;
         private String totalPlayTime = "00:00:00";
         private String selectedShip = "Ship1";
