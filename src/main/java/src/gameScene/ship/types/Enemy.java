@@ -29,8 +29,8 @@ public class Enemy extends Ship {
             collisionSize = 3 * ShootingGameMain.getScreenSizeAdj();
             speed = 300 * ShootingGameMain.getScreenSizeAdj();
         }
-        for (String object : imageMap.keySet()) {
-            if (imageMap.get(object) == null) {
+        for (String object : animationId.keySet()) {
+            if (animationId.get(object) == null) {
                 switch (object) {
                     case "ship" -> {
                         imageSize.put("ship", (int) (30 * ShootingGameMain.getScreenSizeAdj()));
@@ -68,8 +68,8 @@ public class Enemy extends Ship {
         super.draw(g);
 
         // 画像が存在しなければ仮描画
-        for (String object : imageMap.keySet()) {
-            if (imageMap.get(object) == null) {
+        for (String object : animationId.keySet()) {
+            if (animationId.get(object) == -1) {
                 switch (object) {
                     case "ship" -> {
                         g2.rotate(rotate, pos.getX(), pos.getY());

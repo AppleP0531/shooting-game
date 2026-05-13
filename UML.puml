@@ -10,6 +10,7 @@ package "src" {
         - {static} instance: ShootingGameMain
         - {static} glassPane: CommandGlassPane
         - cardLayout: CardLayout
+        - loadStat: String
         - lastScene: SceneType
         - {static} screenSizeAdj: double
         - fps: int
@@ -109,7 +110,7 @@ package "src" {
     }
 
     interface CommandAction <<functional>> {
-        + execute(args: String[]): void
+        ~ execute(args: String[]): void
     }
 
     class ResourceManager <<Singleton>> {
@@ -250,6 +251,8 @@ package "src" {
                 + update(dt: double): void
                 + draw(g: Graphics): void
                 + reload(): void
+                - reloadConfigs(): void
+                - reloadScreen(): void
                 + getStageButtonPanel(): StageButtonPanel
             }
 
@@ -482,7 +485,9 @@ package "src" {
             + setup(): void
             + update(dt: double): void
             + draw(g: Graphics): void
-            - reload(): void
+            + reload(): void
+            - reloadConfigs(): void
+            - reloadScreen(): void
         }
 
         class SkillTreeButtonData <<lombok @Data>> {
@@ -750,6 +755,7 @@ package "src" {
             abstract class Ship {
                 - {static} component: String
                 # MAIN: ShootingGameMain
+                # AM: AnimationManager
                 # SM: SceneManager
                 # GM: GameManager
                 # SHIP_M: ShipManager
@@ -943,6 +949,7 @@ package "src" {
 
             abstract class Bullet {
                 # MAIN: ShootingGameMain
+                # AM: AnimationManager
                 # BM: BulletManager
                 # GM: GameManager
                 # SHIP_M: ShipManager
@@ -956,10 +963,7 @@ package "src" {
                 # alpha: float
                 # owner: ShipKinds
                 # kind: BulletKinds
-                # bulletImages: BufferedImage[]
-                # currentFrame: int
-                # frameTimer: double
-                # frameRate: double
+                # animationId: double
                 --
                 + Bullet(owner: ShipKinds, kind: BulletKinds, id: int, pos: Vector2, vec: double)
                 + move(dt: double): void
@@ -1055,6 +1059,7 @@ package "src" {
 
             abstract class Item {
                 # MAIN: ShootingGameMain
+                # AM: AnimationManager
                 # RM: ResourceManager
                 # GM: GameManager
                 # SHIP_M: ShipManager
@@ -1066,10 +1071,7 @@ package "src" {
                 # pos: Vector2
                 # vec: double
                 # speed: double
-                # itemImages: BufferedImage[]
-                # currentFrame: int
-                # frameTimer: double
-                # frameRate: double
+                # animationId: double
                 --
                 + Item(kind Collectible, pos Vector2)
                 + update(dt: double): void
@@ -1177,6 +1179,39 @@ package "src" {
     }
 
     package "utils" {
+        package "Animation" {
+            interface AnimationLogic <<interface>> {
+                ~ calculateFrame(frameCount: int, currentFrame: int, frameTimer: double, frameRate: double): int
+            }
+
+            class Animation {
+                - customLogic: AnimationLogic
+                - images: BufferedImage[]
+                - currentFrame: int
+                - frameTimer: double
+                - frameRate: double
+                --
+                + Animation(images: BufferedImage[], useCount: int[],frameRate: double)
+                + setCustomLogic(logic: AnimationLogic): void
+                + update(dt: double): void
+                + getCurrentFrame(): BufferedImage
+            }
+
+            class AnimationManager <<Singleton>> {
+                - {static} instance: AnimationManager
+                - animationCache: Map<Double, Animation>
+                --
+                - AnimationManager()
+                + {static} getInstance(): AnimationManager
+                + setup(): void
+                + update(dt: double): void
+                + draw(g: Graphics): void
+                + addAnimation(id: double, animation: Animation): void
+                + removeAnimation(id: double): void
+                + getCurrentFrame(id: double): BufferedImage
+            }
+        }
+
         class GameUtils {
             + {static} distance(target1: Vector2, target2: Vector2): double
             + {static} targetVec(target1: Vector2, target2: Vector2): double
@@ -1230,6 +1265,7 @@ package "src" {
             - {static} createPathWithSuffix(path: String, suffix: String): String
             + {static} drawString(g: Graphics, pos: Vector2, size: double, color: Color, style: int, text: String): void
             + {static} openPanel(p: JPanel, title: String, focus: Boolean): void
+            + {static} closePanel(p: JPanel): void
             - {static} findComponentByName(panel: JPanel, name: String): Component
         }
 
@@ -1262,7 +1298,11 @@ package "src" {
             + setUserRepository(repo: UserRepository): void
             + {static} convertUserData(entity: UserEntity): UserData
             + {static} syncUserDataToEntity(entity: UserEntity): void
+<<<<<<< Updated upstream
             + {static} load(username: String, mode: String): void
+=======
+            + {static} load(username: String): void
+>>>>>>> Stashed changes
             + {static} save(): void
             + {static} create(username: String): void
             + {static} authenticate(username: String, password: String): boolean
@@ -1322,12 +1362,15 @@ package "src" {
             ~ exp: int
         }
 
-        class LoginDialog {
+        class LoginPanel {
             - {static} component: String
+            - state: String
             - usernameField: JTextField
             - passwordField: JPasswordField
+            - panelSize: Vector2
             --
-            + LoginDialog(parent: Frame, userService: UserService, glassPane: CommandGlassPane)
+            + LoginPanel(parent: JPanel, userService: UserService, glassPane: CommandGlassPane)
+            + showLoginPanel(): void
         }
 
         class SecurityConfig {
@@ -1381,6 +1424,7 @@ src.utils.LogUtils +-- LogLevel
 src.SceneManager +-- SceneType
 src.CommandGlassPane +-- CommandNode
 src.CommandGlassPane +-- CommandAction
+src.utils.animation.Animation +-- AnimationLogic
 src.ResourceManager +-- ResourceKinds
 src.ResourceManager +-- ResourceConfig
 ResourceConfig +-- ResourceData
@@ -1473,7 +1517,3 @@ src.shopScene.ShopManager ..|> src.interfaces.Manager
 src.gameScene.ship.types.Player ..|> java.awt.event.KeyListener
 
 @enduml
-
-' https://www.graphviz.org/download/ install to use
-' press "alt + d" to view map
-' press "ctrl + shift + p" type "PlantUML: Export Current Diagram" and sellect "svg" to export
