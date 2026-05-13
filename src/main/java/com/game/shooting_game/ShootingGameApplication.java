@@ -5,8 +5,12 @@ import src.ShootingGameMain;
 import javax.swing.SwingUtilities;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "src")
+@EnableJpaRepositories(basePackages = "src.repository")
+@EntityScan(basePackages = "src.entity")
 public class ShootingGameApplication {
 
     public static void main(String[] args) {

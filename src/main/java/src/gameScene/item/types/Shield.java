@@ -17,7 +17,7 @@ public class Shield extends Item {
         super.draw(g);
 
         // 画像が存在しなければ仮描画
-        if (itemImages == null) {
+        if (animationId == -1) {
             g.setColor(Color.CYAN);
             g.fillOval((int) pos.getX() - (int) collisionSize / 2, (int) pos.getY() - (int) collisionSize / 2,
                     (int) collisionSize, (int) collisionSize);
