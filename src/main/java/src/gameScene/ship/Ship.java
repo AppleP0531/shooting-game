@@ -147,41 +147,41 @@ public abstract class Ship implements Moveable, GameObject, Entity {
         // 無敵時間処理(タイマーが0になるまで減らす)
         shieldTimer = Math.max(0, shieldTimer - dt);
 
-        各画像のフレーム計算
-        for (String object : imageMap.keySet()) {
-        if (imageMap.get(object) != null) {
-        frameTimer.put(object, frameTimer.get(object) + dt);
-        if (frameTimer.get(object) > frameRate.get(object)) {
-        frameTimer.put(object, 0.0);
+        // //各画像のフレーム計算
+        // for (String object : imageMap.keySet()) {
+        // if (imageMap.get(object) != null) {
+        // frameTimer.put(object, frameTimer.get(object) + dt);
+        // if (frameTimer.get(object) > frameRate.get(object)) {
+        // frameTimer.put(object, 0.0);
 
-        // 船本体画像の処理
-        if (object.equals("ship")) {
-        // 通常状態の使用画像フレーム更新
-        if (frameAdj == 0)
-        currentFrame.put(object,
-        (currentFrame.get(object) + 1) % useCount.get(object)[0] + frameAdj);
+        // // 船本体画像の処理
+        // if (object.equals("ship")) {
+        // // 通常状態の使用画像フレーム更新
+        // if (frameAdj == 0)
+        // currentFrame.put(object,
+        // (currentFrame.get(object) + 1) % useCount.get(object)[0] + frameAdj);
 
-        // 状態遷移時の使用画像フレーム更新
-        // 通常状態→OOC状態
-        if (shipState.equals("OOC") || useCount.get(object)[1] < frameAdj) {
-        if (currentFrame.get(object) == 0 || 0 < frameAdj) {
-        frameAdj++;
-        if (imageMap.get(object).length < useCount.get(object)[0] + frameAdj) {
-        frameAdj = useCount.get(object)[1] + 1;
-        }
-        currentFrame.put(object, useCount.get(object)[0] - 1 + frameAdj);
-        }
-        }
-        // OOC状態→通常状態
-        if (shipState.equals("Normal") && 0 < frameAdj && frameAdj <=
-        useCount.get(object)[1] + 1) {
-        frameAdj = Math.max(0, frameAdj - 1);
-        currentFrame.put(object, useCount.get(object)[0] - 1 + frameAdj);
-        }
-        }
-        }
-        }
-        }
+        // // 状態遷移時の使用画像フレーム更新
+        // // 通常状態→OOC状態
+        // if (shipState.equals("OOC") || useCount.get(object)[1] < frameAdj) {
+        // if (currentFrame.get(object) == 0 || 0 < frameAdj) {
+        // frameAdj++;
+        // if (imageMap.get(object).length < useCount.get(object)[0] + frameAdj) {
+        // frameAdj = useCount.get(object)[1] + 1;
+        // }
+        // currentFrame.put(object, useCount.get(object)[0] - 1 + frameAdj);
+        // }
+        // }
+        // // OOC状態→通常状態
+        // if (shipState.equals("Normal") && 0 < frameAdj && frameAdj <=
+        // useCount.get(object)[1] + 1) {
+        // frameAdj = Math.max(0, frameAdj - 1);
+        // currentFrame.put(object, useCount.get(object)[0] - 1 + frameAdj);
+        // }
+        // }
+        // }
+        // }
+        // }
     }
 
     @Override
