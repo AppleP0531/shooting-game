@@ -4,10 +4,10 @@ import src.ShootingGameMain;
 import src.data.DataManager;
 import src.utils.ANSI;
 import src.utils.Vector2;
+import src.utils.animation.Animation;
 import src.utils.LogUtils;
 import src.utils.GameUtils;
 import src.gameScene.ship.ShipManager.ShipKinds;
-import src.gameScene.ship.ShipManager.ShipConfig;
 import src.gameScene.ship.ShipManager.ShipDefinition;
 import src.gameScene.ship.Ship;
 
@@ -18,6 +18,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
+import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.ArrayList;
 import lombok.Getter;
@@ -51,27 +52,44 @@ public class Player extends Ship implements KeyListener {
     public Player(String id, Vector2 pos) {
         super(ShipKinds.PLAYER, id, 0, pos);
 
-        imageMap.put("collision", SHIP_M.getShipImage().get("collision"));
-        imageMap.put("shield", SHIP_M.getShipImage().get("shield"));
-        imageMap.put("explosion", SHIP_M.getShipImage().get("explosion"));
+        // 画像の読み込みとアニメーション登録
         ShipDefinition def = SHIP_M.getShipConfig().get(owner).get(shipId);
+        BufferedImage[] collisionImage = SHIP_M.getShipImage().get("collision");
+        if (collisionImage != null) {
+            double frameRate = def.getDatas().getFrameRate();
+            animationId.put("collision", Math.random());
+
+            AM.addAnimation(animationId.get("collision"), new Animation(collisionImage, frameRate));
+        }
+        BufferedImage[] shieldImage = SHIP_M.getShipImage().get("shield");
+        if (shieldImage != null) {
+            double frameRate = def.getDatas().getFrameRate();
+            animationId.put("shield", Math.random());
+
+            AM.addAnimation(animationId.get("shield"), new Animation(shieldImage, frameRate));
+        }
+        BufferedImage[] explosionImage = SHIP_M.getShipImage().get("explosion");
+        if (explosionImage != null) {
+            double frameRate = def.getDatas().getFrameRate();
+            animationId.put("explosion", Math.random());
+
+            AM.addAnimation(animationId.get("explosion"), new Animation(explosionImage, frameRate));
+        }
+
         if (def != null && def.getDatas() != null) {
             // 画像が存在すれば読み込む
-            for (String object : imageMap.keySet()) {
-                if (imageMap.get(object) != null) {
-                    ShipConfig datas = def.getDatas();
-
+            for (String object : animationId.keySet()) {
+                if (animationId.get(object) != null) {
                     int sheetCount = SHIP_M.getShipConfig().get(owner).get(shipId).getDatas().getSheets().length;
                     useCount.put(object, new Integer[sheetCount]);
-                    for (int i = 0; i < sheetCount; i++) {
-                        useCount.get(
-                                object)[i] = SHIP_M.getShipConfig().get(owner).get(shipId).getDatas().getSheets()[i]
-                                        .getUseCount();
-                    }
-                    imageSize.put(object, (int) (datas.getImageSize() * ShootingGameMain.getScreenSizeAdj()));
-                    currentFrame.put(object, 0);
-                    frameTimer.put(object, 0.0);
-                    frameRate.put(object, datas.getFrameRate());
+                    // for (int i = 0; i < sheetCount; i++) {
+                    // useCount.get(
+                    // object)[i] =
+                    // SHIP_M.getShipConfig().get(owner).get(shipId).getDatas().getSheets()[i]
+                    // .getUseCount();
+                    // }
+
+                    imageSize.put(object, (int) (def.getDatas().getImageSize() * ShootingGameMain.getScreenSizeAdj()));
                 } else {
                     switch (object) {
                         case "ship" -> {
@@ -146,7 +164,8 @@ public class Player extends Ship implements KeyListener {
 
                 // 被弾無敵時間処理(タイマーが0になるまで減らす)
                 damagedTimer = Math.max(0, damagedTimer - dt);
-                collisionSize = (shieldTimer > 0 && damagedTimer == 0) ? imageMap.get("shield")[0].getWidth() / 2
+                BufferedImage shieldImage = AM.getCurrentImage(animationId.get("shield"));
+                collisionSize = (shieldTimer > 0 && damagedTimer == 0) ? shieldImage.getWidth() / 2
                         : defaultCollisionSize;
             }
         }
@@ -161,8 +180,8 @@ public class Player extends Ship implements KeyListener {
         super.draw(g);
 
         // 画像が存在しなければ仮描画
-        for (String object : imageMap.keySet()) {
-            if (imageMap.get(object) == null) {
+        for (String object : animationId.keySet()) {
+            if (animationId.get(object) == null) {
                 switch (object) {
                     case "ship" -> {
                         g2.rotate(rotate, pos.getX(), pos.getY());
@@ -187,22 +206,26 @@ public class Player extends Ship implements KeyListener {
         }
 
         // 当たり判定画像の描画(存在するとき)
-        if (imageMap.get("collision") != null) {
+        if (animationId.get("collision") != -1) {
+            BufferedImage image = AM.getCurrentImage(animationId.get("collision"));
+
             // 描画処理
-            g2.drawImage(imageMap.get("collision")[0],
-                    (int) (pos.getX() - imageMap.get("collision")[0].getWidth() / 2),
-                    (int) (pos.getY() - imageMap.get("collision")[0].getHeight() / 2),
-                    imageMap.get("collision")[0].getWidth(), imageMap.get("collision")[0].getHeight(),
+            g2.drawImage(image,
+                    (int) (pos.getX() - image.getWidth() / 2),
+                    (int) (pos.getY() - image.getHeight() / 2),
+                    image.getWidth(), image.getHeight(),
                     MAIN);
         }
 
         // シールド画像の描画(存在するとき)
-        if (imageMap.get("shield") != null && shieldTimer > 0 && damagedTimer == 0) {
+        if (animationId.get("shield") != -1 && shieldTimer > 0 && damagedTimer == 0) {
+            BufferedImage image = AM.getCurrentImage(animationId.get("shield"));
+
             g2.drawImage(
-                    imageMap.get("shield")[0],
-                    (int) (pos.getX() - imageMap.get("shield")[0].getWidth() / 2),
-                    (int) (pos.getY() - imageMap.get("shield")[0].getHeight() / 2),
-                    (int) imageMap.get("shield")[0].getWidth(), (int) imageMap.get("shield")[0].getHeight(),
+                    image,
+                    (int) (pos.getX() - image.getWidth() / 2),
+                    (int) (pos.getY() - image.getHeight() / 2),
+                    (int) image.getWidth(), (int) image.getHeight(),
                     MAIN);
         }
 

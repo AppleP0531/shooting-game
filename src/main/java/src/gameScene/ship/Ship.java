@@ -5,6 +5,8 @@ import src.SceneManager.SceneType;
 import src.ShootingGameMain;
 import src.utils.ANSI;
 import src.utils.Vector2;
+import src.utils.animation.Animation;
+import src.utils.animation.AnimationManager;
 import src.utils.LogUtils;
 import src.utils.GameUtils;
 import src.gameScene.GameManager;
@@ -39,6 +41,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
     private static final String component = "[Ship]";
 
     protected final ShootingGameMain MAIN;
+    protected final AnimationManager AM;
     protected final SceneManager SM;
     protected final GameManager GM;
     protected final ShipManager SHIP_M;
@@ -76,10 +79,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
     @Getter
     protected double shieldTimer; // 無敵タイマー
     protected Map<BulletKinds, Map<Integer, Double>> coolDownTimers; // クールダウンタイマー
-    protected Map<String, BufferedImage[]> imageMap = new HashMap<>(); // 画像
-    protected Map<String, Integer> currentFrame = new HashMap<>(); // 表示画像フレーム
-    protected Map<String, Double> frameTimer = new HashMap<>(); // 表示画像フレーム計算タイマー
-    protected Map<String, Double> frameRate = new HashMap<>(); // 画像の切替速度
+    protected Map<String, Double> animationId = new HashMap<>(); // アニメーションId
     protected Map<String, Integer> imageSize = new HashMap<>(); // 画像の大きさ
     protected Map<String, Integer[]> useCount = new HashMap<>(); // 使用枚数
     protected int frameAdj = 0; // 使用画像の調整用
@@ -92,6 +92,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
 
     public Ship(ShipKinds owner, String id, int level, Vector2 pos) {
         MAIN = ShootingGameMain.getInstance();
+        AM = AnimationManager.getInstance();
         SM = SceneManager.getInstance();
         GM = GameManager.getInstance();
         SHIP_M = ShipManager.getInstance();
@@ -109,16 +110,18 @@ public abstract class Ship implements Moveable, GameObject, Entity {
 
             maxHp = hp = 100;
             collisionSize = datas.getCollisionSize() * ShootingGameMain.getScreenSizeAdj();
+            imageSize.put("ship", (int) (datas.getImageSize() * ShootingGameMain.getScreenSizeAdj()));
             speed = datas.getSpeed() * ShootingGameMain.getScreenSizeAdj();
             score = datas.getScore();
             coins = datas.getCoins();
-            imageMap.put(
-                    "ship",
-                    Optional.ofNullable(SHIP_M.getShipImage())
-                            .map(images -> images.get(shipId))
-                            .orElse(null));
-            // 画像が存在すれば読み込む
-            if (imageMap.get("ship") != null) {
+
+            // 画像の取得とアニメーション登録
+            BufferedImage[] shipImage = Optional.ofNullable(SHIP_M.getShipImage())
+                    .map(images -> images.get(shipId))
+                    .orElse(null);
+            if (shipImage != null) {
+                double frameRate = datas.getFrameRate();
+
                 // 各状態の画像使用枚数の取得
                 int sheetCount = SHIP_M.getShipConfig().get(owner).get(shipId).getDatas().getSheets().length;
                 useCount.put("ship", new Integer[sheetCount]);
@@ -126,10 +129,10 @@ public abstract class Ship implements Moveable, GameObject, Entity {
                     useCount.get("ship")[i] = SHIP_M.getShipConfig().get(owner).get(shipId).getDatas().getSheets()[i]
                             .getUseCount();
                 }
-                imageSize.put("ship", (int) (datas.getImageSize() * ShootingGameMain.getScreenSizeAdj()));
-                currentFrame.put("ship", 0);
-                frameTimer.put("ship", 0.0);
-                frameRate.put("ship", datas.getFrameRate());
+
+                animationId.put("ship", Math.random());
+
+                AM.addAnimation(animationId.get("ship"), new Animation(shipImage, frameRate));
             }
         }
     }
@@ -144,39 +147,40 @@ public abstract class Ship implements Moveable, GameObject, Entity {
         // 無敵時間処理(タイマーが0になるまで減らす)
         shieldTimer = Math.max(0, shieldTimer - dt);
 
-        // 各画像のフレーム計算
+        各画像のフレーム計算
         for (String object : imageMap.keySet()) {
-            if (imageMap.get(object) != null) {
-                frameTimer.put(object, frameTimer.get(object) + dt);
-                if (frameTimer.get(object) > frameRate.get(object)) {
-                    frameTimer.put(object, 0.0);
+        if (imageMap.get(object) != null) {
+        frameTimer.put(object, frameTimer.get(object) + dt);
+        if (frameTimer.get(object) > frameRate.get(object)) {
+        frameTimer.put(object, 0.0);
 
-                    // 船本体画像の処理
-                    if (object.equals("ship")) {
-                        // 通常状態の使用画像フレーム更新
-                        if (frameAdj == 0)
-                            currentFrame.put(object,
-                                    (currentFrame.get(object) + 1) % useCount.get(object)[0] + frameAdj);
+        // 船本体画像の処理
+        if (object.equals("ship")) {
+        // 通常状態の使用画像フレーム更新
+        if (frameAdj == 0)
+        currentFrame.put(object,
+        (currentFrame.get(object) + 1) % useCount.get(object)[0] + frameAdj);
 
-                        // 状態遷移時の使用画像フレーム更新
-                        // 通常状態→OOC状態
-                        if (shipState.equals("OOC") || useCount.get(object)[1] < frameAdj) {
-                            if (currentFrame.get(object) == 0 || 0 < frameAdj) {
-                                frameAdj++;
-                                if (imageMap.get(object).length < useCount.get(object)[0] + frameAdj) {
-                                    frameAdj = useCount.get(object)[1] + 1;
-                                }
-                                currentFrame.put(object, useCount.get(object)[0] - 1 + frameAdj);
-                            }
-                        }
-                        // OOC状態→通常状態
-                        if (shipState.equals("Normal") && 0 < frameAdj && frameAdj <= useCount.get(object)[1] + 1) {
-                            frameAdj = Math.max(0, frameAdj - 1);
-                            currentFrame.put(object, useCount.get(object)[0] - 1 + frameAdj);
-                        }
-                    }
-                }
-            }
+        // 状態遷移時の使用画像フレーム更新
+        // 通常状態→OOC状態
+        if (shipState.equals("OOC") || useCount.get(object)[1] < frameAdj) {
+        if (currentFrame.get(object) == 0 || 0 < frameAdj) {
+        frameAdj++;
+        if (imageMap.get(object).length < useCount.get(object)[0] + frameAdj) {
+        frameAdj = useCount.get(object)[1] + 1;
+        }
+        currentFrame.put(object, useCount.get(object)[0] - 1 + frameAdj);
+        }
+        }
+        // OOC状態→通常状態
+        if (shipState.equals("Normal") && 0 < frameAdj && frameAdj <=
+        useCount.get(object)[1] + 1) {
+        frameAdj = Math.max(0, frameAdj - 1);
+        currentFrame.put(object, useCount.get(object)[0] - 1 + frameAdj);
+        }
+        }
+        }
+        }
         }
     }
 
@@ -192,16 +196,17 @@ public abstract class Ship implements Moveable, GameObject, Entity {
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
         Vector2 drawPos = new Vector2(pos.getX(), pos.getY());
         // 画像が存在するときは読み込む
-        if (imageMap.get("ship") != null) {
+        if (animationId.get("ship") != -1) {
+            BufferedImage image = AM.getCurrentImage(animationId.get("ship"));
+
             // 回転処理
             g2.translate((int) drawPos.getX(), (int) drawPos.getY());
             g2.rotate(rotate);
             // 描画処理
-            g2.drawImage(imageMap.get("ship")[currentFrame.get("ship")],
-                    -imageMap.get("ship")[currentFrame.get("ship")].getWidth() / 2,
-                    -imageMap.get("ship")[currentFrame.get("ship")].getHeight() / 2,
-                    imageMap.get("ship")[currentFrame.get("ship")].getWidth(),
-                    imageMap.get("ship")[currentFrame.get("ship")].getHeight(),
+            g2.drawImage(image,
+                    -image.getWidth() / 2,
+                    -image.getHeight() / 2,
+                    image.getWidth(), image.getHeight(),
                     MAIN);
         }
         g2.setTransform(oldTransform);

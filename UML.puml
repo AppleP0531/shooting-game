@@ -110,7 +110,7 @@ package "src" {
     }
 
     interface CommandAction <<functional>> {
-        + execute(args: String[]): void
+        ~ execute(args: String[]): void
     }
 
     class ResourceManager <<Singleton>> {
@@ -755,6 +755,7 @@ package "src" {
             abstract class Ship {
                 - {static} component: String
                 # MAIN: ShootingGameMain
+                # AM: AnimationManager
                 # SM: SceneManager
                 # GM: GameManager
                 # SHIP_M: ShipManager
@@ -948,6 +949,7 @@ package "src" {
 
             abstract class Bullet {
                 # MAIN: ShootingGameMain
+                # AM: AnimationManager
                 # BM: BulletManager
                 # GM: GameManager
                 # SHIP_M: ShipManager
@@ -961,10 +963,7 @@ package "src" {
                 # alpha: float
                 # owner: ShipKinds
                 # kind: BulletKinds
-                # bulletImages: BufferedImage[]
-                # currentFrame: int
-                # frameTimer: double
-                # frameRate: double
+                # animationId: double
                 --
                 + Bullet(owner: ShipKinds, kind: BulletKinds, id: int, pos: Vector2, vec: double)
                 + move(dt: double): void
@@ -1060,6 +1059,7 @@ package "src" {
 
             abstract class Item {
                 # MAIN: ShootingGameMain
+                # AM: AnimationManager
                 # RM: ResourceManager
                 # GM: GameManager
                 # SHIP_M: ShipManager
@@ -1071,10 +1071,7 @@ package "src" {
                 # pos: Vector2
                 # vec: double
                 # speed: double
-                # itemImages: BufferedImage[]
-                # currentFrame: int
-                # frameTimer: double
-                # frameRate: double
+                # animationId: double
                 --
                 + Item(kind Collectible, pos Vector2)
                 + update(dt: double): void
@@ -1182,6 +1179,33 @@ package "src" {
     }
 
     package "utils" {
+        package "Animation" {
+            class Animation {
+                - images: BufferedImage[]
+                - currentFrame: int
+                - frameTimer: double
+                - frameRate: double
+                --
+                + Animation(images: BufferedImage[], frameRate: double)
+                + update(dt: double): void
+                + getCurrentFrame(): BufferedImage
+            }
+
+            class AnimationManager <<Singleton>> {
+                - {static} instance: AnimationManager
+                - animationCache: Map<Double, Animation>
+                --
+                - AnimationManager()
+                + {static} getInstance(): AnimationManager
+                + setup(): void
+                + update(dt: double): void
+                + draw(g: Graphics): void
+                + addAnimation(id: double, animation: Animation): void
+                + removeAnimation(id: double): void
+                + getCurrentFrame(id: double): BufferedImage
+            }
+        }
+
         class GameUtils {
             + {static} distance(target1: Vector2, target2: Vector2): double
             + {static} targetVec(target1: Vector2, target2: Vector2): double
