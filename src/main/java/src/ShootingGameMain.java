@@ -41,7 +41,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
 
     private final CardLayout CARDLAYOUT = new CardLayout();
 
-    private static Boolean onlineMode;
+    private static Boolean onlineMode = true;
     private static String loadStat;
 
     private SceneType lastScene = null;
