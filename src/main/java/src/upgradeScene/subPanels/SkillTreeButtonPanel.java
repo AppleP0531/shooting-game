@@ -4,6 +4,7 @@ import src.ShootingGameMain;
 import src.data.DataManager;
 import src.upgradeScene.UpgradeManager;
 import src.upgradeScene.UpgradeManager.SkillTreeButtonData;
+import src.utils.LogUtils;
 import src.utils.UIBuilder;
 import src.utils.Vector2;
 
@@ -251,6 +252,11 @@ public class SkillTreeButtonPanel extends JPanel {
                     component, image, skillTreeButtonSize, skillName);
 
             button.addActionListener(e -> {
+                String nowShip = DataManager.getUserData().getSelectedShip();
+                int upgradeLevel = DataManager.getUserData().getShips().get(nowShip).getUpgrades()
+                        .getOrDefault(skillName, 0);
+                LogUtils.debugLog("skill level: " + upgradeLevel);
+
                 skillDetailPanel.showSkillDetai(skillName);
             });
             button.setRolloverEnabled(false);

@@ -4,6 +4,8 @@ import src.ResourceManager;
 import src.ShootingGameMain;
 import src.ResourceManager.ResourceKinds;
 import src.utils.Vector2;
+import src.utils.animation.Animation;
+import src.utils.animation.AnimationManager;
 import src.utils.GameUtils;
 import src.gameScene.GameManager;
 import src.gameScene.ship.ShipManager;
@@ -22,6 +24,7 @@ import lombok.Getter;
 
 public abstract class Item implements Moveable, GameObject, Entity {
     protected final ShootingGameMain MAIN;
+    protected final AnimationManager AM;
     protected final ResourceManager RM;
     protected final GameManager GM;
     protected final ShipManager SHIP_M;
@@ -37,13 +40,11 @@ public abstract class Item implements Moveable, GameObject, Entity {
     protected Vector2 pos; // 位置
     protected double vec; // 方向
     protected double speed = 0; // 速度
-    protected BufferedImage[] itemImages; // 画像
-    protected int currentFrame = 0; // 表示画像フレーム
-    protected double frameTimer = 0; // 表示画像フレーム計算タイマー
-    protected double frameRate = 0; // 画像の切替速度
+    protected double animationId = -1; // アニメーションId
 
     public Item(Collectible kind, Vector2 pos) {
         MAIN = ShootingGameMain.getInstance();
+        AM = AnimationManager.getInstance();
         RM = ResourceManager.getInstance();
         GM = GameManager.getInstance();
         SHIP_M = ShipManager.getInstance();
@@ -52,44 +53,47 @@ public abstract class Item implements Moveable, GameObject, Entity {
         this.kind = kind;
         this.pos = pos;
         this.vec = Math.random() * 2 * Math.PI; // ランダムな方向に飛ぶ
+        BufferedImage[] itemImages = null;
+        double frameRate = 0;
         if (kind instanceof ItemKinds) {
             ItemConfig itemConfig = IM.getItemConfig().get(kind);
             this.speed = itemConfig.getSpeed() * ShootingGameMain.getScreenSizeAdj();
             this.collisionSize = itemConfig.getCollisionSize() * ShootingGameMain.getScreenSizeAdj();
-            this.itemImages = Optional.ofNullable(IM.getItemImage())
+
+            // 画像の取得
+            itemImages = Optional.ofNullable(IM.getItemImage())
                     .map(images -> images.get(kind))
                     .orElse(null);
-            this.frameRate = itemConfig.getFrameRate();
+            frameRate = itemConfig.getFrameRate();
         } else if (kind instanceof ResourceKinds) {
-            this.itemImages = Optional.ofNullable(RM.getResourceImage())
+            itemImages = Optional.ofNullable(RM.getResourceImage())
                     .map(images -> images.get(kind).get("common"))
                     .orElse(null);
+        }
+
+        // アニメーション登録
+        if (itemImages != null) {
+            animationId = Math.random();
+
+            AM.addAnimation(animationId, new Animation(itemImages, frameRate));
         }
     }
 
     @Override
     public void update(double dt) {
         move(dt);
-
-        // 何フレーム目の画像を表示するかの計算
-        if (itemImages != null) {
-            frameTimer += dt;
-            if (frameTimer >= frameRate) {
-                frameTimer = 0;
-                currentFrame = (currentFrame + 1) % itemImages.length;
-            }
-        }
     }
 
     @Override
     public void draw(Graphics g) {
         // 画像が存在するときは読み込む
-        if (itemImages != null) {
+        if (animationId != -1) {
+            BufferedImage image = AM.getCurrentImage(animationId);
             g.drawImage(
-                    itemImages[currentFrame],
-                    (int) pos.getX() - itemImages[currentFrame].getWidth() / 2,
-                    (int) pos.getY() - itemImages[currentFrame].getHeight() / 2,
-                    itemImages[currentFrame].getWidth(), itemImages[currentFrame].getHeight(),
+                    image,
+                    (int) pos.getX() - image.getWidth() / 2,
+                    (int) pos.getY() - image.getHeight() / 2,
+                    image.getWidth(), image.getHeight(),
                     MAIN);
         }
     }

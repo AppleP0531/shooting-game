@@ -32,7 +32,7 @@ public class UserEntity {
     private int exp;
     private int clearedStage;
 
-    // ステージごとのハイスコア (JSONの progress.highScores)
+    // --- ステージごとのハイスコア --- 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_high_scores", joinColumns = @JoinColumn(name = "user_id"))
     @MapKeyColumn(name = "stage_key")
@@ -42,15 +42,15 @@ public class UserEntity {
     // --- Resources ---
     private int coins;
 
-    // 所有資源 (JSONの resources.equipment)
+    // --- 所有資源 --- 
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_equipment", joinColumns = @JoinColumn(name = "user_id"))
+    @CollectionTable(name = "user_equipments", joinColumns = @JoinColumn(name = "user_id"))
     @MapKeyColumn(name = "resource_kind")
     @Enumerated(EnumType.STRING)
     @Column(name = "amount")
     private Map<ResourceKinds, Integer> equipment = new HashMap<>();
 
-    // --- Ships (機体強化情報(JSONの ships.ShipID.upgrades.UpgradeName : Level)) ---
+    // --- 所有機体 --- 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private List<UserShipEntity> ownedShips = new ArrayList<>();

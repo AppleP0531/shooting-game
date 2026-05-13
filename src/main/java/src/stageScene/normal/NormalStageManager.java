@@ -68,6 +68,8 @@ public final class NormalStageManager extends JPanel implements Manager {
 
         MAIN = ShootingGameMain.getInstance();
         SM = SceneManager.getInstance();
+
+        reloadConfigs();
     }
 
     public void initComponents() {
@@ -195,7 +197,6 @@ public final class NormalStageManager extends JPanel implements Manager {
 
     @Override
     public void setup() {
-        reload();
         stageButtonPanel.setup();
     }
 
@@ -210,11 +211,25 @@ public final class NormalStageManager extends JPanel implements Manager {
     }
 
     /**
-     * リソースの再読み込み
+     * 再読み込み
      */
     public void reload() {
+        reloadConfigs();
+        reloadScreen();
+    }
+
+    /**
+     * リソースの再読み込み
+     */
+    private void reloadConfigs() {
         loadConfig();
         loadImages();
+    }
+
+    /**
+     * 画面状態の再読み込み
+     */
+    private void reloadScreen() {
         stageButtonPanel.reload();
     }
 }

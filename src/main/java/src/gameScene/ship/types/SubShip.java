@@ -26,21 +26,18 @@ public class SubShip extends Ship {
         ShipDefinition def = SHIP_M.getShipConfig().get(owner).get(shipId);
         if (def != null && def.getDatas() != null) {
             // 画像が存在すれば読み込む
-            for (String object : imageMap.keySet()) {
-                if (imageMap.get(object) != null) {
+            for (String object : animationId.keySet()) {
+                if (animationId.get(object) != -1) {
                     ShipConfig datas = def.getDatas();
 
                     int sheetCount = SHIP_M.getShipConfig().get(owner).get(shipId).getDatas().getSheets().length;
-                    useCount.put(object, new Integer[sheetCount]);
+                    useCount.put(object, new int[sheetCount]);
                     for (int i = 0; i < sheetCount; i++) {
                         useCount.get(
                                 object)[i] = SHIP_M.getShipConfig().get(owner).get(shipId).getDatas().getSheets()[i]
                                         .getUseCount();
                     }
                     imageSize.put(object, (int) (datas.getImageSize() * ShootingGameMain.getScreenSizeAdj()));
-                    currentFrame.put(object, 0);
-                    frameTimer.put(object, 0.0);
-                    frameRate.put(object, datas.getFrameRate());
                 } else {
                     switch (object) {
                         case "ship" -> {
@@ -89,8 +86,8 @@ public class SubShip extends Ship {
         super.draw(g);
 
         // 画像が存在しなければ仮描画
-        for (String object : imageMap.keySet()) {
-            if (imageMap.get(object) == null) {
+        for (String object : animationId.keySet()) {
+            if (animationId.get(object) == -1) {
                 switch (object) {
                     case "ship" -> {
                         g2.rotate(rotate, pos.getX(), pos.getY());
