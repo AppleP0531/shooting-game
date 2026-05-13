@@ -35,7 +35,7 @@ public class Coin extends Item {
         super.draw(g);
 
         // 画像が存在しなければ仮描画
-        if (animationId == -1) {
+        if (animationId == null) {
             int size = (int) (6 * ShootingGameMain.getScreenSizeAdj());
 
             g.setColor(Color.YELLOW);
