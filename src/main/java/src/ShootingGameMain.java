@@ -169,14 +169,9 @@ public final class ShootingGameMain extends JPanel implements Runnable {
 
             panel.setLoaded(true);
 
-<<<<<<< Updated upstream
             UserService userService = context.getBean(UserService.class);
             LoginPanel loginPanel = new LoginPanel(TitleManager.getInstance(), userService, glassPane);
             loginPanel.showLoginPanel();
-=======
-            // プレイヤーデータの読み込み
-            DataManager.load("test");
->>>>>>> Stashed changes
 
             // 初期設定完了ログ
             LogUtils.systemLog(
