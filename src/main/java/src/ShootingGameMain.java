@@ -41,6 +41,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
 
     private final CardLayout CARDLAYOUT = new CardLayout();
 
+    private static Boolean onlineMode;
     private static String loadStat;
 
     private SceneType lastScene = null;
@@ -113,23 +114,38 @@ public final class ShootingGameMain extends JPanel implements Runnable {
         panel.start();
 
         new Thread(() -> {
-            // サーバー接続開始ログ
-            LogUtils.systemLog(
-                    "[INFO]",
-                    component,
-                    ANSI.GREEN + "Connecting to game server..." + ANSI.RESET);
-            loadStat = "Server connecting";
+            // サーバー接続
+            ConfigurableApplicationContext context = null;
+            try {
+                // サーバー接続開始ログ
+                LogUtils.systemLog(
+                        "[INFO]",
+                        component,
+                        ANSI.GREEN + "Connecting to game server..." + ANSI.RESET);
+                loadStat = "Server connecting";
 
-            // Spring Bootの起動
-            ConfigurableApplicationContext context = SpringApplication.run(ShootingGameApplication.class, args);
-            DataManager.setContext(context);
+                // Spring Bootの起動
+                context = SpringApplication.run(ShootingGameApplication.class, args);
+                DataManager.setContext(context);
 
-            // サーバー接続成功ログ
-            LogUtils.systemLog(
-                    "[INFO]",
-                    component,
-                    ANSI.GREEN + "Connected to game server successfully." + ANSI.RESET);
-
+                // サーバー接続成功ログ
+                LogUtils.systemLog(
+                        "[INFO]",
+                        component,
+                        ANSI.GREEN + "Connected to game server successfully." + ANSI.RESET);
+            } catch (Exception e) {
+                // サーバー接続失敗ログ
+                LogUtils.systemLog(
+                        "[ERROR]",
+                        component,
+                        ANSI.RED + "Server connect error" + ANSI.RESET);
+                // オフライン起動ログ
+                LogUtils.systemLog(
+                        "[ERROR]",
+                        component,
+                        ANSI.YELLOW + "Starting in OFFLINE MODE." + ANSI.RESET);
+                onlineMode = false;
+            }
             // 初期設定開始ログ
             LogUtils.systemLog(
                     "[INFO]",
@@ -137,8 +153,12 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                     ANSI.GREEN + "Initializing Game Setup..." + ANSI.RESET);
             loadStat = "Loading game configs";
 
-            // DataManagerをSpringから取得して初期化
-            context.getBean(DataManager.class);
+            if (onlineMode) {
+                // DataManagerをSpringから取得して初期化
+                context.getBean(DataManager.class);
+            } else {
+                DataManager.load("guest", "create");
+            }
 
             // GlassPaneの設定
             glassPane = new CommandGlassPane(() -> {
@@ -169,9 +189,11 @@ public final class ShootingGameMain extends JPanel implements Runnable {
 
             panel.setLoaded(true);
 
-            UserService userService = context.getBean(UserService.class);
-            LoginPanel loginPanel = new LoginPanel(TitleManager.getInstance(), userService, glassPane);
-            loginPanel.showLoginPanel();
+            if (onlineMode) {
+                UserService userService = context.getBean(UserService.class);
+                LoginPanel loginPanel = new LoginPanel(TitleManager.getInstance(), userService, glassPane);
+                loginPanel.showLoginPanel();
+            }
 
             // 初期設定完了ログ
             LogUtils.systemLog(

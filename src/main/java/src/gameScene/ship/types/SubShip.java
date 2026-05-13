@@ -27,7 +27,7 @@ public class SubShip extends Ship {
         if (def != null && def.getDatas() != null) {
             // 画像が存在すれば読み込む
             for (String object : animationId.keySet()) {
-                if (animationId.get(object) != -1) {
+                if (animationId.get(object) != null) {
                     ShipConfig datas = def.getDatas();
 
                     int sheetCount = SHIP_M.getShipConfig().get(owner).get(shipId).getDatas().getSheets().length;
@@ -86,29 +86,24 @@ public class SubShip extends Ship {
         super.draw(g);
 
         // 画像が存在しなければ仮描画
-        for (String object : animationId.keySet()) {
-            if (animationId.get(object) == -1) {
-                switch (object) {
-                    case "ship" -> {
-                        g2.rotate(rotate, pos.getX(), pos.getY());
-                        g2.setColor(new Color(0, 255, 255));
-                        g.fillPolygon(
-                                new int[] {
-                                        (int) pos.getX(),
-                                        (int) pos.getX() - imageSize.get(object) / 8,
-                                        (int) pos.getX() + imageSize.get(object) / 8
-                                },
-                                new int[] {
-                                        (int) pos.getY() - imageSize.get(object) / 3,
-                                        (int) pos.getY() + imageSize.get(object) / 3,
-                                        (int) pos.getY() + imageSize.get(object) / 3
-                                },
-                                3);
-                        // 回転リセット
-                        g2.rotate(-rotate, pos.getX(), pos.getY());
-                    }
-                }
-            }
+        // 船
+        if (animationId.get("ship") == null) {
+            g2.rotate(rotate, pos.getX(), pos.getY());
+            g2.setColor(new Color(0, 255, 255));
+            g.fillPolygon(
+                    new int[] {
+                            (int) pos.getX(),
+                            (int) pos.getX() - imageSize.get("ship") / 8,
+                            (int) pos.getX() + imageSize.get("ship") / 8
+                    },
+                    new int[] {
+                            (int) pos.getY() - imageSize.get("ship") / 3,
+                            (int) pos.getY() + imageSize.get("ship") / 3,
+                            (int) pos.getY() + imageSize.get("ship") / 3
+                    },
+                    3);
+            // 回転リセット
+            g2.rotate(-rotate, pos.getX(), pos.getY());
         }
 
     }
