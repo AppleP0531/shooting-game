@@ -1180,13 +1180,19 @@ package "src" {
 
     package "utils" {
         package "Animation" {
+            interface AnimationLogic <<interface>> {
+                ~ calculateFrame(frameCount: int, currentFrame: int, frameTimer: double, frameRate: double): int
+            }
+
             class Animation {
+                - customLogic: AnimationLogic
                 - images: BufferedImage[]
                 - currentFrame: int
                 - frameTimer: double
                 - frameRate: double
                 --
-                + Animation(images: BufferedImage[], frameRate: double)
+                + Animation(images: BufferedImage[], useCount: int[],frameRate: double)
+                + setCustomLogic(logic: AnimationLogic): void
                 + update(dt: double): void
                 + getCurrentFrame(): BufferedImage
             }
@@ -1418,6 +1424,7 @@ src.utils.LogUtils +-- LogLevel
 src.SceneManager +-- SceneType
 src.CommandGlassPane +-- CommandNode
 src.CommandGlassPane +-- CommandAction
+src.utils.animation.Animation +-- AnimationLogic
 src.ResourceManager +-- ResourceKinds
 src.ResourceManager +-- ResourceConfig
 ResourceConfig +-- ResourceData

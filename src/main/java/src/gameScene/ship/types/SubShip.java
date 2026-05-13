@@ -31,13 +31,12 @@ public class SubShip extends Ship {
                     ShipConfig datas = def.getDatas();
 
                     int sheetCount = SHIP_M.getShipConfig().get(owner).get(shipId).getDatas().getSheets().length;
-                    useCount.put(object, new Integer[sheetCount]);
-                    // for (int i = 0; i < sheetCount; i++) {
-                    // useCount.get(
-                    // object)[i] =
-                    // SHIP_M.getShipConfig().get(owner).get(shipId).getDatas().getSheets()[i]
-                    // .getUseCount();
-                    // }
+                    useCount.put(object, new int[sheetCount]);
+                    for (int i = 0; i < sheetCount; i++) {
+                        useCount.get(
+                                object)[i] = SHIP_M.getShipConfig().get(owner).get(shipId).getDatas().getSheets()[i]
+                                        .getUseCount();
+                    }
                     imageSize.put(object, (int) (datas.getImageSize() * ShootingGameMain.getScreenSizeAdj()));
                 } else {
                     switch (object) {

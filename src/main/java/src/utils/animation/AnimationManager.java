@@ -8,9 +8,12 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Objects;
 
+import lombok.Getter;
+
 public final class AnimationManager implements Manager {
     private static AnimationManager instance;
 
+    @Getter
     Map<Double, Animation> animationCache = new HashMap<>();
 
     private AnimationManager() {

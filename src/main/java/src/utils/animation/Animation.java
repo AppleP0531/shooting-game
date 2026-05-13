@@ -2,15 +2,37 @@ package src.utils.animation;
 
 import java.awt.image.BufferedImage;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public class Animation {
+    private AnimationLogic customLogic = null;
     private BufferedImage[] images; // アニメーションのフレーム画像
     private int currentFrame = 0; // 表示画像のフレーム
+    @Getter
+    @Setter
     private double frameTimer = 0; // 表示画像フレーム計算タイマー
+    @Getter
+    @Setter
     private double frameRate; // 画像の切り替え速度
+
+    @FunctionalInterface
+    public interface AnimationLogic {
+        int calculateFrame(int currentFrame, Animation context);
+    }
 
     public Animation(BufferedImage[] images, double frameRate) {
         this.images = images;
         this.frameRate = frameRate;
+    }
+
+    /**
+     * カスタムロジックの注入
+     * 
+     * @param logic
+     */
+    public void setCustomLogic(AnimationLogic logic) {
+        this.customLogic = logic;
     }
 
     /**
@@ -19,14 +41,18 @@ public class Animation {
      * @param dt
      */
     public void update(double dt) {
-        if (images == null || images.length == 0) {
+        if (images == null || images.length == 0)
             return; // 画像がない場合は更新しない
-        }
 
         frameTimer += dt;
-        if (frameTimer >= frameRate) {
-            currentFrame = 0;
-            frameTimer = (currentFrame + 1) % images.length;
+
+        if (customLogic != null) {
+            currentFrame = customLogic.calculateFrame(currentFrame, this);
+        } else {
+            if (frameTimer >= frameRate) {
+                currentFrame = (currentFrame + 1) % images.length;
+                frameTimer = 0;
+            }
         }
     }
 

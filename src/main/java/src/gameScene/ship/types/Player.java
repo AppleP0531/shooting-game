@@ -54,26 +54,32 @@ public class Player extends Ship implements KeyListener {
 
         // 画像の読み込みとアニメーション登録
         ShipDefinition def = SHIP_M.getShipConfig().get(owner).get(shipId);
-        BufferedImage[] collisionImage = SHIP_M.getShipImage().get("collision");
-        if (collisionImage != null) {
+        BufferedImage[] collisionImages = SHIP_M.getShipImage().get("collision");
+        animationId.put("collision", -1.0);
+        if (collisionImages != null) {
             double frameRate = def.getDatas().getFrameRate();
             animationId.put("collision", Math.random());
 
-            AM.addAnimation(animationId.get("collision"), new Animation(collisionImage, frameRate));
+            AM.addAnimation(animationId.get("collision"),
+                    new Animation(collisionImages, frameRate));
         }
-        BufferedImage[] shieldImage = SHIP_M.getShipImage().get("shield");
-        if (shieldImage != null) {
+        BufferedImage[] shieldImages = SHIP_M.getShipImage().get("shield");
+        animationId.put("shield", -1.0);
+        if (shieldImages != null) {
             double frameRate = def.getDatas().getFrameRate();
             animationId.put("shield", Math.random());
 
-            AM.addAnimation(animationId.get("shield"), new Animation(shieldImage, frameRate));
+            AM.addAnimation(animationId.get("shield"),
+                    new Animation(shieldImages, frameRate));
         }
-        BufferedImage[] explosionImage = SHIP_M.getShipImage().get("explosion");
-        if (explosionImage != null) {
+        BufferedImage[] explosionImages = SHIP_M.getShipImage().get("explosion");
+        animationId.put("explosion", -1.0);
+        if (explosionImages != null) {
             double frameRate = def.getDatas().getFrameRate();
             animationId.put("explosion", Math.random());
 
-            AM.addAnimation(animationId.get("explosion"), new Animation(explosionImage, frameRate));
+            AM.addAnimation(animationId.get("explosion"),
+                    new Animation(explosionImages, frameRate));
         }
 
         if (def != null && def.getDatas() != null) {
@@ -81,13 +87,12 @@ public class Player extends Ship implements KeyListener {
             for (String object : animationId.keySet()) {
                 if (animationId.get(object) != null) {
                     int sheetCount = SHIP_M.getShipConfig().get(owner).get(shipId).getDatas().getSheets().length;
-                    useCount.put(object, new Integer[sheetCount]);
-                    // for (int i = 0; i < sheetCount; i++) {
-                    // useCount.get(
-                    // object)[i] =
-                    // SHIP_M.getShipConfig().get(owner).get(shipId).getDatas().getSheets()[i]
-                    // .getUseCount();
-                    // }
+                    useCount.put(object, new int[sheetCount]);
+                    for (int i = 0; i < sheetCount; i++) {
+                        useCount.get(
+                                object)[i] = SHIP_M.getShipConfig().get(owner).get(shipId).getDatas().getSheets()[i]
+                                        .getUseCount();
+                    }
 
                     imageSize.put(object, (int) (def.getDatas().getImageSize() * ShootingGameMain.getScreenSizeAdj()));
                 } else {
