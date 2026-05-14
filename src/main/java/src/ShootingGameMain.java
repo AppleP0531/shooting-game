@@ -223,8 +223,10 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                         component,
                         ANSI.GREEN + "Saving game data..." + ANSI.RESET);
 
-                // データ保存
-                DataManager.save();
+                if (onlineMode) {
+                    // データ保存
+                    DataManager.save();
+                }
 
                 // Goodbyeログ
                 LogUtils.systemLog(
