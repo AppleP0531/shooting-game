@@ -2,16 +2,19 @@ package src.lobbyScene;
 
 import src.ShootingGameMain;
 import src.data.DataManager;
+import src.utils.Vector2;
+import src.utils.Anchor;
+import src.utils.Anchor.*;
+import src.utils.UIBuilder;
 import src.gameScene.GameManager;
 import src.gameScene.ship.ShipFactory;
 import src.gameScene.ship.ShipManager;
 import src.gameScene.ship.ShipManager.ShipKinds;
 import src.gameScene.ship.types.Player;
-import src.utils.Vector2;
-import src.utils.LogUtils;
 import src.gameScene.bullet.BulletManager;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 
 public class LobbySceneUI {
@@ -171,6 +174,7 @@ public class LobbySceneUI {
         if (level < DataManager.getExpData().size())
             maxExp = DataManager.getExpData().get(level);
 
-        LogUtils.debugLog("User Level: " + level + " , Exp: " + exp + "/" + maxExp);
+        String text = "User Level: " + level + " , Exp: " + exp + "/" + maxExp;
+        UIBuilder.drawString(g, new Anchor(H.LEFT, V.TOP), new Vector2(0, 0), 20, Color.WHITE, Font.PLAIN, text);
     }
 }

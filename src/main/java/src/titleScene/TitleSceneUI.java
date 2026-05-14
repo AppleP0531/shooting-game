@@ -2,6 +2,7 @@ package src.titleScene;
 
 import src.ShootingGameMain;
 import src.utils.Vector2;
+import src.utils.Anchor;
 import src.utils.UIBuilder;
 
 import java.awt.Font;
@@ -34,6 +35,6 @@ public class TitleSceneUI {
         Vector2 pos = new Vector2(
                 MAIN.getWidth() / 2,
                 100 * ShootingGameMain.getScreenSizeAdj());
-        UIBuilder.drawString(g, pos, size, Color.CYAN, Font.BOLD, "Shooting Game");
+        UIBuilder.drawString(g, new Anchor(Anchor.CENTER), pos, size, Color.CYAN, Font.BOLD, "Shooting Game");
     }
 }

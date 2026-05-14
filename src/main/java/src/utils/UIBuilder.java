@@ -273,22 +273,24 @@ public class UIBuilder extends JPanel {
      * 中央ぞろえテキストの描画
      * 
      * @param g
-     * @param pos   位置
-     * @param size  大きさ
-     * @param color 色
-     * @param style テキストスタイル(Font.BOLD,Font.PLAIN)
-     * @param text  テキスト
+     * @param anchor 描画の基準点
+     * @param pos    位置
+     * @param size   大きさ
+     * @param color  色
+     * @param style  テキストスタイル(Font.BOLD,Font.PLAIN)
+     * @param text   テキスト
      */
-    public static void drawString(Graphics g, Vector2 pos, double size, Color color, int style, String text) {
+    public static void drawString(Graphics g, Anchor anchor, Vector2 pos, double size, Color color, int style,
+            String text) {
         // フォントとサイズ
         Font font = new Font("SansSerif", style, (int) size);
         g.setFont(font);
         g.setColor(color);
 
-        // 中央ぞろえ
+        // 基準点に基づいて配置
         FontMetrics fm = g.getFontMetrics();
-        int x = (int) (pos.getX() - fm.stringWidth(text) / 2);
-        int y = (int) (pos.getY() + fm.getHeight() / 2);
+        int x = (int) (pos.getX() - fm.stringWidth(text) * anchor.getValue().getX());
+        int y = (int) (pos.getY() + fm.getHeight() * (1 - anchor.getValue().getY()));
 
         g.drawString(text, x, y);
     }

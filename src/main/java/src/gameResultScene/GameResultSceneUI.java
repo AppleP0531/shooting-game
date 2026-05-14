@@ -2,6 +2,7 @@ package src.gameResultScene;
 
 import src.ShootingGameMain;
 import src.utils.Vector2;
+import src.utils.Anchor;
 import src.utils.UIBuilder;
 import src.gameScene.GameManager;
 
@@ -39,6 +40,6 @@ public class GameResultSceneUI {
         Vector2 pos = new Vector2(
                 MAIN.getWidth() / 2,
                 100 * ShootingGameMain.getScreenSizeAdj());
-        UIBuilder.drawString(g, pos, size, textColor, Font.BOLD, text);
+        UIBuilder.drawString(g, new Anchor(Anchor.CENTER), pos, size, textColor, Font.BOLD, text);
     }
 }

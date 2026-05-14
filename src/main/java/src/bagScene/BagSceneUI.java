@@ -3,6 +3,8 @@ package src.bagScene;
 import src.ShootingGameMain;
 import src.ResourceManager.ResourceKinds;
 import src.utils.Vector2;
+import src.utils.Anchor;
+import src.utils.Anchor.*;
 import src.utils.UIBuilder;
 
 import java.awt.Font;
@@ -91,7 +93,8 @@ public class BagSceneUI {
 
             // noImageテキストの表示
             double textSize = size.getY() / 10;
-            UIBuilder.drawString(g, pos, textSize, Color.WHITE, Font.PLAIN, "No Image");
+            UIBuilder.drawString(g, new Anchor(Anchor.CENTER), pos, textSize, Color.WHITE, Font.PLAIN,
+                    "No Image");
         }
 
         double spacing = size.getY() / 20;
@@ -99,13 +102,15 @@ public class BagSceneUI {
         double resNameTextSize = size.getY() / 10;
         Vector2 resNameTextPos = new Vector2(
                 pos.getX(),
-                pos.getY() + imageSize.getY() / 2 + spacing + resNameTextSize / 2);
-        UIBuilder.drawString(g, resNameTextPos, resNameTextSize, Color.WHITE, Font.PLAIN, name.toString());
+                pos.getY() + imageSize.getY() / 2 + spacing);
+        UIBuilder.drawString(g, new Anchor(H.CENTER, V.TOP), resNameTextPos, resNameTextSize, Color.WHITE,
+                Font.PLAIN, name.toString());
 
         double amountTextSize = size.getY() / 10;
         Vector2 amountTextPos = new Vector2(
                 resNameTextPos.getX(),
-                resNameTextPos.getY() + resNameTextSize / 2 + spacing + amountTextSize / 2);
-        UIBuilder.drawString(g, amountTextPos, amountTextSize, Color.WHITE, Font.PLAIN, String.valueOf(amount));
+                resNameTextPos.getY() + resNameTextSize / 2 + spacing);
+        UIBuilder.drawString(g, new Anchor(H.CENTER, V.TOP), amountTextPos, amountTextSize, Color.WHITE,
+                Font.PLAIN, String.valueOf(amount));
     }
 }

@@ -1284,6 +1284,36 @@ package "src" {
             --
             + Vector2(vec: Vector2)
         }
+
+        class Anchor {
+            + {static} CENTER: Anchor
+            + horizontal: H
+            + vartical: V
+            --
+            + Anchor(anchor: Anchor)
+            + Anchor(h: H, v: V)
+            + getValue(): Vector2
+        }
+
+        enum H {
+            LEFT
+            CENTER
+            RIGHT
+            --
+            - rate: double
+            --
+            ~ H(rate: double)
+        }
+
+        enum V {
+            TOP
+            CENTER
+            BOTTOM
+            --
+            - rate: double
+            --
+            ~ V(rate: double)
+        }
     }
 
     package "data" {
@@ -1298,11 +1328,7 @@ package "src" {
             + setUserRepository(repo: UserRepository): void
             + {static} convertUserData(entity: UserEntity): UserData
             + {static} syncUserDataToEntity(entity: UserEntity): void
-<<<<<<< Updated upstream
             + {static} load(username: String, mode: String): void
-=======
-            + {static} load(username: String): void
->>>>>>> Stashed changes
             + {static} save(): void
             + {static} create(username: String): void
             + {static} authenticate(username: String, password: String): boolean
@@ -1425,6 +1451,8 @@ src.SceneManager +-- SceneType
 src.CommandGlassPane +-- CommandNode
 src.CommandGlassPane +-- CommandAction
 src.utils.animation.Animation +-- AnimationLogic
+src.utils.Anchor +-- H
+src.utils.Anchor +-- V
 src.ResourceManager +-- ResourceKinds
 src.ResourceManager +-- ResourceConfig
 ResourceConfig +-- ResourceData

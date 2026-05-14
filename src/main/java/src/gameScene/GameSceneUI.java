@@ -4,6 +4,8 @@ import src.ShootingGameMain;
 import src.ResourceManager;
 import src.ResourceManager.ResourceKinds;
 import src.utils.Vector2;
+import src.utils.Anchor;
+import src.utils.Anchor.*;
 import src.utils.GameUtils;
 import src.utils.UIBuilder;
 import src.gameScene.item.ItemManager;
@@ -13,7 +15,6 @@ import java.awt.Font;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.FontMetrics;
 import java.awt.AlphaComposite;
 import java.awt.image.BufferedImage;
 import java.util.Map;
@@ -65,22 +66,22 @@ public class GameSceneUI {
                     Vector2 pos = new Vector2(
                             MAIN.getWidth() / 2,
                             300 * ShootingGameMain.getScreenSizeAdj());
-                    UIBuilder.drawString(g, pos, textSize, Color.WHITE, Font.BOLD, "3");
+                    UIBuilder.drawString(g, new Anchor(Anchor.CENTER), pos, textSize, Color.WHITE, Font.BOLD, "3");
                 } else if (animateTimer < 2) {
                     Vector2 pos = new Vector2(
                             MAIN.getWidth() / 2,
                             300 * ShootingGameMain.getScreenSizeAdj());
-                    UIBuilder.drawString(g, pos, textSize, Color.WHITE, Font.BOLD, "2");
+                    UIBuilder.drawString(g, new Anchor(Anchor.CENTER), pos, textSize, Color.WHITE, Font.BOLD, "2");
                 } else if (animateTimer < 3) {
                     Vector2 pos = new Vector2(
                             MAIN.getWidth() / 2,
                             300 * ShootingGameMain.getScreenSizeAdj());
-                    UIBuilder.drawString(g, pos, textSize, Color.WHITE, Font.BOLD, "1");
+                    UIBuilder.drawString(g, new Anchor(Anchor.CENTER), pos, textSize, Color.WHITE, Font.BOLD, "1");
                 } else if (animateTimer < 4) {
                     Vector2 pos = new Vector2(
                             MAIN.getWidth() / 2,
                             300 * ShootingGameMain.getScreenSizeAdj());
-                    UIBuilder.drawString(g, pos, textSize, Color.WHITE, Font.BOLD, "GO!");
+                    UIBuilder.drawString(g, new Anchor(Anchor.CENTER), pos, textSize, Color.WHITE, Font.BOLD, "GO!");
                 }
             }
         }
@@ -155,8 +156,8 @@ public class GameSceneUI {
         double size = 10 * ShootingGameMain.getScreenSizeAdj();
         Vector2 textPos = new Vector2(
                 pos.getX(),
-                pos.getY() + iconSize / 2 + size / 2 + ind * distance);
-        UIBuilder.drawString(g, textPos, size, Color.WHITE, Font.BOLD, text);
+                pos.getY() + iconSize / 2 + ind * distance);
+        UIBuilder.drawString(g, new Anchor(H.CENTER, V.TOP), textPos, size, Color.WHITE, Font.BOLD, text);
     }
 
     /**
@@ -204,15 +205,11 @@ public class GameSceneUI {
         }
 
         String text = String.valueOf(coin);
-        Font font = new Font("SansSerif", Font.BOLD, (int) (20 * ShootingGameMain.getScreenSizeAdj()));
-        g.setFont(font);
-        g.setColor(Color.WHITE);
-
-        FontMetrics fm = g.getFontMetrics();
-        int x = (int) (30 * ShootingGameMain.getScreenSizeAdj());
-        int y = (int) (10 * ShootingGameMain.getScreenSizeAdj()) + fm.getHeight() / 2;
-
-        g.drawString(text, x, y);
+        Vector2 pos = new Vector2(
+                (int) (30 * ShootingGameMain.getScreenSizeAdj()),
+                0);
+        int size = (int) (20 * ShootingGameMain.getScreenSizeAdj());
+        UIBuilder.drawString(g, new Anchor(H.LEFT, V.TOP), pos, size, Color.WHITE, Font.BOLD, text);
     }
 
     /**
@@ -223,15 +220,11 @@ public class GameSceneUI {
      */
     private void drawScore(Graphics g, int score) {
         String text = "Score: " + score;
-        Font font = new Font("SansSerif", Font.BOLD, (int) (20 * ShootingGameMain.getScreenSizeAdj()));
-        g.setFont(font);
-        g.setColor(Color.WHITE);
-
-        FontMetrics fm = g.getFontMetrics();
-        int x = MAIN.getWidth() - (int) (100 * ShootingGameMain.getScreenSizeAdj());
-        int y = (int) (10 * ShootingGameMain.getScreenSizeAdj()) + fm.getHeight() / 2;
-
-        g.drawString(text, x, y);
+        Vector2 pos = new Vector2(
+                MAIN.getWidth() - (int) (100 * ShootingGameMain.getScreenSizeAdj()),
+                0);
+        int size = (int) (20 * ShootingGameMain.getScreenSizeAdj());
+        UIBuilder.drawString(g, new Anchor(H.RIGHT, V.TOP), pos, size, Color.WHITE, Font.BOLD, text);
     }
 
 }

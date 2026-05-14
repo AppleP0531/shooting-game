@@ -10,6 +10,8 @@ import src.utils.ANSI;
 import src.utils.LogUtils;
 import src.utils.UIBuilder;
 import src.utils.Vector2;
+import src.utils.Anchor;
+import src.utils.Anchor.*;
 import src.interfaces.Manager;
 import src.titleScene.TitleManager;
 
@@ -310,14 +312,12 @@ public final class ShootingGameMain extends JPanel implements Runnable {
             // ロゴ表示
 
             // ロードステータスの表示
+            double spacing = 10 * ShootingGameMain.getScreenSizeAdj();
             double size = 14 * ShootingGameMain.getScreenSizeAdj();
             Vector2 pos = new Vector2(
-                    getWidth() - g.getFontMetrics().stringWidth(loadStat + "...")
-                            - 10 * ShootingGameMain.getScreenSizeAdj(),
-                    getHeight() - 20 * ShootingGameMain.getScreenSizeAdj());
-            UIBuilder.drawString(g, pos, size, Color.WHITE, Font.BOLD, loadStat + "...");
-
-            // System.out.println(System.currentTimeMillis());
+                    getWidth() - spacing,
+                    getHeight() - spacing);
+            UIBuilder.drawString(g, new Anchor(H.RIGHT, V.BOTTOM), pos, size, Color.WHITE, Font.BOLD, loadStat + "...");
         } else {
             SceneManager.getInstance().draw(g);
         }
