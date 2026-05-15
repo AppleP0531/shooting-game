@@ -1,0 +1,376 @@
+{
+  "PLAYER": {
+    "STRAIGHT": {
+      "1": {
+        "imagePath": "/static/img/bullet/player/Normal_1.png",
+        "grids": [4, 3],
+        "useCount": 12,
+        "frameRate": 0.1,
+        "imageSize": 40,
+        "collisionSize": 5,
+        "speed": 300,
+        "damage": 5,
+        "Normal": 0.3,
+        "OOC": 0.1
+      },
+      "2": {
+        "imagePath": "/static/img/bullet/player/Normal_2.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 40,
+        "collisionSize": 5,
+        "speed": 300,
+        "damage": 5,
+        "Normal": 0.3,
+        "OOC": 0.1
+      },
+      "3": {
+        "imagePath": "/static/img/bullet/player/Normal_3.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 40,
+        "collisionSize": 5,
+        "speed": 300,
+        "damage": 5,
+        "Normal": 0.3,
+        "OOC": 0.1
+      },
+      "4": {
+        "imagePath": "/static/img/bullet/player/Normal_4.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 40,
+        "collisionSize": 5,
+        "speed": 300,
+        "damage": 5,
+        "Normal": 0.3,
+        "OOC": 0.1
+      },
+      "5": {
+        "imagePath": "/static/img/bullet/player/Normal_5.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 40,
+        "collisionSize": 5,
+        "speed": 300,
+        "damage": 5,
+        "Normal": 0.3,
+        "OOC": 0.1
+      },
+      "6": {
+        "imagePath": "/static/img/bullet/player/Normal_6.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 40,
+        "collisionSize": 5,
+        "speed": 300,
+        "damage": 5,
+        "Normal": 0.3,
+        "OOC": 0.1
+      },
+      "7": {
+        "imagePath": "/static/img/bullet/player/Normal_7.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 40,
+        "collisionSize": 5,
+        "speed": 300,
+        "damage": 5,
+        "Normal": 0.3,
+        "OOC": 0.1
+      },
+      "8": {
+        "imagePath": "/static/img/bullet/player/Normal_8.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 40,
+        "collisionSize": 5,
+        "speed": 300,
+        "damage": 5,
+        "Normal": 0.3,
+        "OOC": 0.1
+      },
+      "9": {
+        "imagePath": "/static/img/bullet/player/Normal_9.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 40,
+        "collisionSize": 5,
+        "speed": 300,
+        "damage": 5,
+        "Normal": 0.3,
+        "OOC": 0.1
+      },
+      "100": {
+        "imagePath": "/static/img/bullet/player/Normal_funny_1.png",
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 40,
+        "collisionSize": 5,
+        "speed": 300,
+        "damage": 5,
+        "Normal": 0.3,
+        "OOC": 0.1
+      },
+      "101": {
+        "imagePath": "/static/img/bullet/player/Normal_funny_2.png",
+        "grids": [4, 7],
+        "useCount": 28,
+        "frameRate": 0.1,
+        "imageSize": 40,
+        "collisionSize": 5,
+        "speed": 300,
+        "damage": 5,
+        "Normal": 0.3,
+        "OOC": 0.1
+      }
+    },
+    "TRACKING": {
+      "1": {
+        "imagePath": "/static/img/bullet/player/Tracking_1.png",
+        "grids": [4, 10],
+        "useCount": 40,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 400,
+        "damage": 5,
+        "Normal": 0.4,
+        "OOC": 0.15
+      }
+    },
+    "LASER": {
+      "1": {
+        "imagePath": "/static/img/bullet/player/Laser_1.png",
+        "grids": [1, 1],
+        "useCount": 1,
+        "frameRate": 0.1,
+        "imageSize": 0,
+        "collisionSize": 0,
+        "speed": 0,
+        "damage": 0,
+        "Normal": 0,
+        "OOC": 0
+      }
+    },
+    "BALL": {
+      "1": {
+        "imagePath": "/static/img/bullet/player/Ball_1.png",
+        "grids": [1, 1],
+        "useCount": 1,
+        "frameRate": 0.1,
+        "imageSize": 20,
+        "collisionSize": 10,
+        "speed": 200,
+        "damage": 10,
+        "Normal": 2.4,
+        "OOC": 0.8
+      }
+    }
+  },
+  "ENEMY": {
+    "STRAIGHT": {
+      "1": {
+        "imagePath": "/static/img/bullet/enemy/Normal_1.png",
+        "grids": [1, 1],
+        "useCount": 1,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 150,
+        "damage": 10,
+        "Normal": 3
+      }
+    },
+    "TRACKING": {
+      "1": {
+        "imagePath": "/static/img/bullet/enemy/Tracking_1.png",
+        "grids": [1, 1],
+        "useCount": 1,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 150,
+        "damage": 10,
+        "Normal": 3
+      }
+    },
+    "LASER": {
+      "1": {
+        "imagePath": "/static/img/bullet/enemy/Laser_1.png",
+        "grids": [1, 1],
+        "useCount": 1,
+        "frameRate": 0.1,
+        "imageSize": 0,
+        "collisionSize": 0,
+        "speed": 0,
+        "damage": 0,
+        "Normal": 0
+      }
+    },
+    "BALL": {
+      "1": {
+        "imagePath": "/static/img/bullet/enemy/Ball_1.png",
+        "grids": [4, 2],
+        "useCount": 5,
+        "frameRate": 0.1,
+        "imageSize": 20,
+        "collisionSize": 10,
+        "speed": 100,
+        "damage": 10,
+        "Normal": 20
+      },
+      "2": {
+        "imagePath": "/static/img/bullet/enemy/Ball_2.png",
+        "grids": [4, 2],
+        "useCount": 5,
+        "frameRate": 0.1,
+        "imageSize": 20,
+        "collisionSize": 10,
+        "speed": 100,
+        "damage": 10,
+        "Normal": 20
+      },
+      "3": {
+        "imagePath": "/static/img/bullet/enemy/Ball_3.png",
+        "grids": [4, 2],
+        "useCount": 5,
+        "frameRate": 0.1,
+        "imageSize": 20,
+        "collisionSize": 10,
+        "speed": 100,
+        "damage": 10,
+        "Normal": 20
+      },
+      "4": {
+        "imagePath": "/static/img/bullet/enemy/Ball_4.png",
+        "grids": [4, 2],
+        "useCount": 5,
+        "frameRate": 0.1,
+        "imageSize": 20,
+        "collisionSize": 10,
+        "speed": 100,
+        "damage": 10,
+        "Normal": 20
+      },
+      "5": {
+        "imagePath": "/static/img/bullet/enemy/Ball_5.png",
+        "grids": [4, 2],
+        "useCount": 5,
+        "frameRate": 0.1,
+        "imageSize": 20,
+        "collisionSize": 10,
+        "speed": 100,
+        "damage": 10,
+        "Normal": 20
+      },
+      "6": {
+        "imagePath": "/static/img/bullet/enemy/Ball_6.png",
+        "grids": [4, 2],
+        "useCount": 5,
+        "frameRate": 0.1,
+        "imageSize": 20,
+        "collisionSize": 10,
+        "speed": 100,
+        "damage": 10,
+        "Normal": 20
+      },
+      "7": {
+        "imagePath": "/static/img/bullet/enemy/Ball_7.png",
+        "grids": [4, 2],
+        "useCount": 5,
+        "frameRate": 0.1,
+        "imageSize": 20,
+        "collisionSize": 10,
+        "speed": 100,
+        "damage": 10,
+        "Normal": 20
+      },
+      "8": {
+        "imagePath": "/static/img/bullet/enemy/Ball_8.png",
+        "grids": [4, 2],
+        "useCount": 5,
+        "frameRate": 0.1,
+        "imageSize": 20,
+        "collisionSize": 10,
+        "speed": 100,
+        "damage": 10,
+        "Normal": 20
+      },
+      "9": {
+        "imagePath": "/static/img/bullet/enemy/Ball_9.png",
+        "grids": [4, 2],
+        "useCount": 5,
+        "frameRate": 0.1,
+        "imageSize": 20,
+        "collisionSize": 10,
+        "speed": 100,
+        "damage": 10,
+        "Normal": 20
+      }
+    }
+  },
+  "BOSS": {
+    "STRAIGHT": {
+      "1": {
+        "imagePath": "/static/img/bullet/enemy/Normal_1.png",
+        "grids": [1, 1],
+        "useCount": 1,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 150,
+        "damage": 10,
+        "Normal": 3
+      }
+    },
+    "TRACKING": {
+      "1": {
+        "imagePath": "/static/img/bullet/enemy/Tracking_1.png",
+        "grids": [1, 1],
+        "useCount": 1,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 150,
+        "damage": 10,
+        "Normal": 3
+      }
+    },
+    "LASER": {
+      "1": {
+        "imagePath": "/static/img/bullet/enemy/Laser_1.png",
+        "grids": [1, 1],
+        "useCount": 1,
+        "frameRate": 0.1,
+        "imageSize": 0,
+        "collisionSize": 0,
+        "speed": 0,
+        "damage": 0,
+        "Normal": 0
+      }
+    },
+    "BALL": {
+      "1": {
+        "imagePath": "/static/img/bullet/enemy/Ball_1.png",
+        "grids": [1, 1],
+        "useCount": 1,
+        "frameRate": 0.1,
+        "imageSize": 20,
+        "collisionSize": 10,
+        "speed": 100,
+        "damage": 10,
+        "Normal": 20
+      }
+    }
+  }
+}
