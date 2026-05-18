@@ -1543,5 +1543,6 @@ src.data.DataManager ..|> src.interfaces.Manager
 src.bagScene.BagManager ..|> src.interfaces.Manager
 src.shopScene.ShopManager ..|> src.interfaces.Manager
 src.gameScene.ship.types.Player ..|> java.awt.event.KeyListener
+src.utils.animation.AnimationManager ..|> src.interfaces.Manager
 
 @enduml
