@@ -176,7 +176,6 @@ public abstract class Ship implements Moveable, GameObject, Entity {
                         frameAdj = Math.max(0, frameAdj - 1);
                         current = useCount.get("ship")[0] - 1 + frameAdj;
                     }
-
                 }
 
                 return current;
