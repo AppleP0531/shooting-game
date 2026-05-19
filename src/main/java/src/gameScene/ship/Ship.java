@@ -368,8 +368,9 @@ public abstract class Ship implements Moveable, GameObject, Entity {
                 Map<Integer, Double> cooldownIdMap = new HashMap<>();
 
                 bulletIdMap.keySet().forEach(id -> {
+                    // 最初に弾を発射するまでの時間（プレイヤー:0秒、敵:3秒）
                     if (owner == ShipKinds.PLAYER)
-                        cooldownIdMap.put(id, 0.1);
+                        cooldownIdMap.put(id, 0.0);
                     else
                         cooldownIdMap.put(id, 3.0);
                 });
