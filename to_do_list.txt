@@ -159,6 +159,7 @@ SceneManagerのpreviousScenesの片づけ
 〇コマンド一覧表示 (/help ※アドミンコマンドも出す)
 〇資源入手(/get <resName> <amount> 例: /get resource1 100, /get resource2 100) → +αリソースごとに固有IDを設定し、IDから呼び出せるようにする
 ・特定の船を入手するコマンド (/unlockShip <shipName> 例: /unlockShip ship1, /unlockShip all)
+・経験値入手コマンド(/exp add <amount>, /exp set<amount>)
 
 参考ゲーム名
 雷霆战机
