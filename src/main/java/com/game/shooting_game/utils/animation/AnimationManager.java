@@ -5,6 +5,7 @@ import com.game.shooting_game.interfaces.Manager;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.util.Map;
+import java.util.UUID;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -14,7 +15,7 @@ public final class AnimationManager implements Manager {
     private static AnimationManager instance;
 
     @Getter
-    Map<Double, Animation> animationCache = new HashMap<>();
+    Map<String, Animation> animationCache = new HashMap<>();
 
     private AnimationManager() {
         AnimationManager.instance = this;
@@ -47,16 +48,17 @@ public final class AnimationManager implements Manager {
     }
 
     /**
-     * アニメーションの追加
+     * アニメーションを追加
      * 
-     * @param id        アニメーションのID
      * @param animation アニメーション情報
+     * 
+     * @return 識別用ID
      */
-    public void addAnimation(double id, Animation animation) {
-        if (animationCache.get(id) != null)
-            return;
-
+    public String addAnimation(Animation animation) {
+        // 重複しないIDの作成
+        String id = UUID.randomUUID().toString();
         animationCache.put(id, animation);
+        return id;
     }
 
     /**
@@ -64,7 +66,7 @@ public final class AnimationManager implements Manager {
      * 
      * @param id
      */
-    public void removeAnimation(double id) {
+    public void removeAnimation(String id) {
         animationCache.remove(id);
     }
 
@@ -74,7 +76,7 @@ public final class AnimationManager implements Manager {
      * @param id
      * @return
      */
-    public BufferedImage getCurrentImage(double id) {
+    public BufferedImage getCurrentImage(String id) {
         return animationCache.get(id).getCurrentImage();
     }
 }

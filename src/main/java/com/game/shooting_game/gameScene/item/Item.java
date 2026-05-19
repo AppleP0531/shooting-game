@@ -41,7 +41,7 @@ public abstract class Item implements Moveable, GameObject, Entity {
     protected Vector2 pos; // 位置
     protected double vec; // 方向
     protected double speed = 0; // 速度
-    protected Double animationId; // アニメーションId
+    protected String animationId; // アニメーションId
 
     public Item(Collectible kind, Vector2 pos) {
         MAIN = ShootingGameMain.getInstance();
@@ -74,9 +74,7 @@ public abstract class Item implements Moveable, GameObject, Entity {
 
         // アニメーション登録
         if (itemImages != null) {
-            animationId = Math.random();
-
-            AM.addAnimation(animationId, new Animation(itemImages, frameRate));
+            animationId = AM.addAnimation(new Animation(itemImages, frameRate));
         }
     }
 

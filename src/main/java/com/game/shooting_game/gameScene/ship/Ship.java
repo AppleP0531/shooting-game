@@ -132,10 +132,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
                             .getUseCount();
                 }
 
-                animationId.put("ship", Math.random());
-
-                AM.addAnimation(animationId.get("ship"),
-                        new Animation(shipImage, frameRate));
+                animationId.put("ship", AM.addAnimation(new Animation(shipImage, frameRate)));
             }
         }
     }

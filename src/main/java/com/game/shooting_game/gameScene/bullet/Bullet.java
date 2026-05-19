@@ -45,7 +45,7 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
     @Getter
     protected ShipKinds owner; // 弾を発射者
     protected BulletKinds kind; // 弾の種類
-    protected Double animationId; // アニメーションId
+    protected String animationId; // アニメーションId
 
     public Bullet(ShipKinds owner, BulletKinds kind, int id, Vector2 pos, double vec) {
         MAIN = ShootingGameMain.getInstance();
@@ -69,9 +69,7 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
                 .orElse(null);
         if (bulletImages != null) {
             double frameRate = BM.getBulletConfig().get(owner).get(kind).get(id).getFrameRate();
-            this.animationId = Math.random();
-
-            AM.addAnimation(animationId, new Animation(bulletImages, frameRate));
+            this.animationId = AM.addAnimation(new Animation(bulletImages, frameRate));
         }
     }
 

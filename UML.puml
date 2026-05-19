@@ -777,12 +777,9 @@ package "shooting_game" {
                 # dropItem: boolean
                 # shieldTimer: double
                 # coolDownTimers: Map<BulletKinds, Map<Integer, Double>>
-                # imageMap: Map<String, BufferedImage[]>
-                # currentFrame: Map<String, Integer>
-                # frameTimer: Map<String, Double>
-                # frameRate: Map<String, Double>
+                # animationId: Map<String, String>
                 # imageSize: Map<String, Integer>
-                # useCount: Map<String, Integer[]>
+                # useCount: Map<String, int[]>
                 # frameAdj: int
                 # animationName: String
                 # animateTimer: double
@@ -963,7 +960,7 @@ package "shooting_game" {
                 # alpha: float
                 # owner: ShipKinds
                 # kind: BulletKinds
-                # animationId: Double
+                # animationId: String
                 --
                 + Bullet(owner: ShipKinds, kind: BulletKinds, id: int, pos: Vector2, vec: double)
                 + move(dt: double): void
@@ -1071,7 +1068,7 @@ package "shooting_game" {
                 # pos: Vector2
                 # vec: double
                 # speed: double
-                # animationId: Double
+                # animationId: String
                 --
                 + Item(kind Collectible, pos Vector2)
                 + update(dt: double): void
@@ -1199,16 +1196,16 @@ package "shooting_game" {
 
             class AnimationManager <<Singleton>> {
                 - {static} instance: AnimationManager
-                - animationCache: Map<Double, Animation>
+                - animationCache: Map<String, Animation>
                 --
                 - AnimationManager()
                 + {static} getInstance(): AnimationManager
                 + setup(): void
                 + update(dt: double): void
                 + draw(g: Graphics): void
-                + addAnimation(id: double, animation: Animation): void
-                + removeAnimation(id: double): void
-                + getCurrentFrame(id: double): BufferedImage
+                + addAnimation(animation: Animation): String
+                + removeAnimation(id: String): void
+                + getCurrentFrame(id: String): BufferedImage
             }
         }
 

@@ -59,26 +59,19 @@ public class Player extends Ship implements KeyListener {
         BufferedImage[] collisionImages = SHIP_M.getShipImage().get("collision");
         if (collisionImages != null) {
             double frameRate = def.getDatas().getFrameRate();
-            animationId.put("collision", Math.random());
+            animationId.put("collision", AM.addAnimation(new Animation(collisionImages, frameRate)));
 
-            AM.addAnimation(animationId.get("collision"),
-                    new Animation(collisionImages, frameRate));
+            AM.addAnimation(new Animation(collisionImages, frameRate));
         }
         BufferedImage[] shieldImages = SHIP_M.getShipImage().get("shield");
         if (shieldImages != null) {
             double frameRate = def.getDatas().getFrameRate();
-            animationId.put("shield", Math.random());
-
-            AM.addAnimation(animationId.get("shield"),
-                    new Animation(shieldImages, frameRate));
+            animationId.put("shield", AM.addAnimation(new Animation(shieldImages, frameRate)));
         }
         BufferedImage[] explosionImages = SHIP_M.getShipImage().get("explosion");
         if (explosionImages != null) {
             double frameRate = def.getDatas().getFrameRate();
-            animationId.put("explosion", Math.random());
-
-            AM.addAnimation(animationId.get("explosion"),
-                    new Animation(explosionImages, frameRate));
+            animationId.put("explosion", AM.addAnimation(new Animation(explosionImages, frameRate)));
         }
 
         if (def != null && def.getDatas() != null) {
