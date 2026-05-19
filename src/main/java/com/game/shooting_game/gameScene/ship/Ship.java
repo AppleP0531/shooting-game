@@ -81,7 +81,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
     @Getter
     protected double shieldTimer; // 無敵タイマー
     protected Map<BulletKinds, Map<Integer, Double>> coolDownTimers; // クールダウンタイマー
-    protected Map<String, Double> animationId = new HashMap<>(); // アニメーションId
+    protected Map<String, String> animationId = new HashMap<>(); // アニメーションId
     protected Map<String, Integer> imageSize = new HashMap<>(); // 画像の大きさ
     protected Map<String, int[]> useCount = new HashMap<>(); // 使用枚数
     protected int frameAdj = 0; // 使用画像の調整用
