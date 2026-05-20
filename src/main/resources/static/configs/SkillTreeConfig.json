@@ -1,0 +1,146 @@
+[
+  {
+    "name": "Origin",
+    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+  },
+  {
+    "name": "Skill1",
+    "rootNode": "Origin",
+    "dist": 100,
+    "pos": 0,
+    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+  },
+  {
+    "name": "Skill1_1",
+    "rootNode": "Skill1",
+    "dist": 50,
+    "pos": 4,
+    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+  },
+  {
+    "name": "Skill1_2",
+    "rootNode": "Skill1",
+    "dist": 50,
+    "pos": 0,
+    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+  },
+  {
+    "name": "Skill1_3",
+    "rootNode": "Skill1",
+    "dist": 50,
+    "pos": 1,
+    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+  },
+  {
+    "name": "Skill2",
+    "rootNode": "Origin",
+    "dist": 100,
+    "pos": 1,
+    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+  },
+  {
+    "name": "Skill2_1",
+    "rootNode": "Skill2",
+    "dist": 50,
+    "pos": 0,
+    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+  },
+  {
+    "name": "Skill2_2",
+    "rootNode": "Skill2",
+    "dist": 50,
+    "pos": 1,
+    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+  },
+  {
+    "name": "Skill2_3",
+    "rootNode": "Skill2",
+    "dist": 50,
+    "pos": 2,
+    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+  },
+  {
+    "name": "Skill3",
+    "rootNode": "Origin",
+    "dist": 100,
+    "pos": 2,
+    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+  },
+  {
+    "name": "Skill3_1",
+    "rootNode": "Skill3",
+    "dist": 50,
+    "pos": 1,
+    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+  },
+  {
+    "name": "Skill3_2",
+    "rootNode": "Skill3",
+    "dist": 50,
+    "pos": 2,
+    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+  },
+  {
+    "name": "Skill3_3",
+    "rootNode": "Skill3",
+    "dist": 50,
+    "pos": 3,
+    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+  },
+  {
+    "name": "Skill4",
+    "rootNode": "Origin",
+    "dist": 100,
+    "pos": 3,
+    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+  },
+  {
+    "name": "Skill4_1",
+    "rootNode": "Skill4",
+    "dist": 50,
+    "pos": 2,
+    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+  },
+  {
+    "name": "Skill4_2",
+    "rootNode": "Skill4",
+    "dist": 50,
+    "pos": 3,
+    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+  },
+  {
+    "name": "Skill4_3",
+    "rootNode": "Skill4",
+    "dist": 50,
+    "pos": 4,
+    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+  },
+  {
+    "name": "Skill5",
+    "rootNode": "Origin",
+    "dist": 100,
+    "pos": 4,
+    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+  },
+  {
+    "name": "Skill5_1",
+    "rootNode": "Skill5",
+    "dist": 50,
+    "pos": 3,
+    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+  },
+  {
+    "name": "Skill5_2",
+    "rootNode": "Skill5",
+    "dist": 50,
+    "pos": 4,
+    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+  },
+  {
+    "name": "Skill5_3",
+    "rootNode": "Skill5",
+    "dist": 50,
+    "pos": 0,
+    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+  }
+]

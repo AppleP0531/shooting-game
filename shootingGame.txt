@@ -1,3 +1,6 @@
+[JDK]
+https://adoptium.net/ja
+
 [shootingGame db]
 copy command from AWS GUI about RDS console
 
