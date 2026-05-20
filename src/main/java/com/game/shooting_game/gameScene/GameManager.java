@@ -36,6 +36,7 @@ import com.game.shooting_game.gameScene.stage.StageManager;
 import com.game.shooting_game.gameScene.stage.StageManager.StageData;
 import com.game.shooting_game.gameScene.subPanels.PausePanel;
 import com.game.shooting_game.interfaces.Manager;
+import com.game.shooting_game.model.StageRewards;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.LogUtils;
@@ -253,23 +254,29 @@ public final class GameManager extends JPanel implements Manager {
                         "Progress reached " + ANSI.YELLOW + "Stage" + STAGE_M.getStageId() + ANSI.RESET + ".");
             }
 
+            StageRewards.getInstance().resetRewards(); // 報酬キャッシュのリセット
+
+            // 経験値加算
+            data.getProgress().addExp(score / 10);
+
+            // 最高スコアの更新
+            data.getProgress().updateHighScore("stage" + STAGE_M.getStageId(), score);
+            StageRewards.getInstance().setScore(score);
+
+            // コインの加算
+            data.getResources().setCoins(data.getResources().getCoins() + coin);
+            StageRewards.getInstance().getResources().put(ResourceKinds.COIN, coin);
+
             // 報酬内容を取得
             StageData currentStageData = STAGE_M.getStageConfig().get("stage" + STAGE_M.getStageId());
             // バックパックに報酬を追加
             for (ResourceKinds resName : currentStageData.getRewardList().keySet()) {
                 int amount = currentStageData.getRandomResourceAmount(resName);
-                int amountOwned = data.getResources().getEquipment().getOrDefault(resName, 0);
-                data.getResources().getEquipment().put(resName, amountOwned + amount);
+                int amountOwned = data.getResources().getEquipments().getOrDefault(resName, 0);
+                data.getResources().getEquipments().put(resName, amountOwned + amount);
+
+                StageRewards.getInstance().getResources().put(resName, amount);
             }
-
-            // コインの加算
-            data.getResources().setCoins(data.getResources().getCoins() + coin);
-
-            // 最高スコアの更新
-            data.getProgress().updateHighScore("stage" + STAGE_M.getStageId(), score);
-
-            // 経験値加算
-            data.getProgress().addExp(score / 10);
         }
         SHIP_M.getPlayer().removeHandler();
 

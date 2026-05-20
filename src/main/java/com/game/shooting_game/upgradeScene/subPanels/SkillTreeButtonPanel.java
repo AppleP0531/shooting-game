@@ -33,7 +33,7 @@ public class SkillTreeButtonPanel extends JPanel {
 
     private MouseAdapter mouseHandler;
     private Vector2 dragStartPos; // ドラッグ開始マウス位置
-    private Vector2 dragStartOriginPos; // ドラッグ開始時の基準点の位置
+    private Vector2 originPos; // ドラッグ開始時の基準点の位置
     private Vector2 dragMousePos; // ドラッグ中のマウス位置
     private double scale = 1; // ズーム量
     private Vector2 panelSize; // パネルサイズ
@@ -50,7 +50,7 @@ public class SkillTreeButtonPanel extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
                 dragStartPos = new Vector2(e.getX(), e.getY());
-                dragStartOriginPos = new Vector2(skillTreeButtonOrigin.getX(), skillTreeButtonOrigin.getY());
+                originPos = new Vector2(skillTreeButtonOrigin.getX(), skillTreeButtonOrigin.getY());
             }
 
             @Override
@@ -62,8 +62,8 @@ public class SkillTreeButtonPanel extends JPanel {
             @Override
             public void mouseDragged(MouseEvent e) {
                 dragMousePos = new Vector2(e.getX(), e.getY());
-                skillTreeButtonOrigin.setX(dragStartOriginPos.getX() + dragMousePos.getX() - dragStartPos.getX());
-                skillTreeButtonOrigin.setY(dragStartOriginPos.getY() + dragMousePos.getY() - dragStartPos.getY());
+                skillTreeButtonOrigin.setX(originPos.getX() + dragMousePos.getX() - dragStartPos.getX());
+                skillTreeButtonOrigin.setY(originPos.getY() + dragMousePos.getY() - dragStartPos.getY());
                 drawPanel();
             }
 
@@ -86,6 +86,13 @@ public class SkillTreeButtonPanel extends JPanel {
      */
     public void initComponents() {
         panelSize = new Vector2(MAIN.getWidth(), MAIN.getHeight() * 5 / 6);
+        setLayout(null);
+        setOpaque(false);
+        setBounds(
+                MAIN.getWidth() / 2 - (int) panelSize.getX() / 2,
+                MAIN.getHeight() / 2 - (int) panelSize.getY() / 2,
+                (int) panelSize.getX(), (int) panelSize.getY());
+
         skillDetailPanel.initComponents();
     }
 
@@ -170,12 +177,6 @@ public class SkillTreeButtonPanel extends JPanel {
         if (panelSize.getX() == 0)
             return;
 
-        setLayout(null);
-        setOpaque(false);
-        setBounds(
-                MAIN.getWidth() / 2 - (int) panelSize.getX() / 2,
-                MAIN.getHeight() / 2 - (int) panelSize.getY() / 2,
-                (int) panelSize.getX(), (int) panelSize.getY());
         setVisible(true);
 
         // スキルツリーボタンの基準点の設定(画面中央)

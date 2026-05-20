@@ -39,6 +39,10 @@ public class SkillDetailPanel extends JPanel {
 
         panelSize = new Vector2(250 * ShootingGameMain.getScreenSizeAdj(),
                 300 * ShootingGameMain.getScreenSizeAdj());
+        setBounds(
+                UM.getSkillTreeButtonPanel().getWidth() / 2 - (int) panelSize.getX() / 2,
+                UM.getSkillTreeButtonPanel().getHeight() / 2 - (int) panelSize.getY() / 2,
+                (int) panelSize.getX(), (int) panelSize.getY());
         spacing = (int) (5 * ShootingGameMain.getScreenSizeAdj());
 
         // スクロール可能な詳細テキストエリアの追加
@@ -91,10 +95,6 @@ public class SkillDetailPanel extends JPanel {
      */
     public void showSkillDetail(String skillName) {
         this.skillName = skillName;
-        setBounds(
-                UM.getSkillTreeButtonPanel().getWidth() / 2 - (int) panelSize.getX() / 2,
-                UM.getSkillTreeButtonPanel().getHeight() / 2 - (int) panelSize.getY() / 2,
-                (int) panelSize.getX(), (int) panelSize.getY());
 
         // タイトルの設定
         String nowShip = DataManager.getUserData().getSelectedShip();

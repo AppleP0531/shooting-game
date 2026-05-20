@@ -33,8 +33,9 @@ public class StageButtonPanel extends JPanel {
 
     private BufferedImage lockImage; // ロックアイコン
     private Vector2 panelSize; // パネルサイズ
-    private Vector2 stageButtonOrigin; // 基準点の位置
+    private Vector2 originPos; // 基準点の位置
     private double scrollOffset = 0; // スクロール量
+    private double maxScrollOffset; // 最大スクロール量
 
     private Map<Integer, JButton> buttonMap;
 
@@ -49,11 +50,15 @@ public class StageButtonPanel extends JPanel {
      * UIコンポーネントの初期化
      */
     public void initComponents() {
+        panelSize = new Vector2(MAIN.getWidth(), MAIN.getHeight() * 4 / 5);
+        setLayout(null);
+        setOpaque(false);
+        setBounds(
+                MAIN.getWidth() / 2 - (int) panelSize.getX() / 2,
+                MAIN.getHeight() / 2 - (int) panelSize.getY() / 2,
+                (int) panelSize.getX(), (int) panelSize.getY());
+
         addMouseWheelListener(e -> {
-            // スクロール制限
-            double maxScrollOffset = NSM.getStageButtonConfigMap().get(NSM.getStageButtonConfigMap().size())
-                    .getPos().getY() * ShootingGameMain.getScreenSizeAdj() - panelSize.getY()
-                    + buttonMap.get(1).getHeight() * 2;
             scrollOffset = Math.clamp(scrollOffset - e.getPreciseWheelRotation() * 20, 0, maxScrollOffset);
             drawPanel();
         });
@@ -71,6 +76,11 @@ public class StageButtonPanel extends JPanel {
 
         if (getParent() != null) // 最前面に持ってくる
             getParent().setComponentZOrder(this, 0);
+
+        // スクロール制限
+        maxScrollOffset = NSM.getStageButtonConfigMap().get(NSM.getStageButtonConfigMap().size())
+                .getPos().getY() * ShootingGameMain.getScreenSizeAdj() - panelSize.getY()
+                + buttonMap.get(1).getHeight() * 2;
     }
 
     /**
@@ -114,23 +124,15 @@ public class StageButtonPanel extends JPanel {
      * パネルの描画
      */
     private void drawPanel() {
-        // パネル設定
-        panelSize = new Vector2(MAIN.getWidth(), MAIN.getHeight() * 4 / 5);
         // パネルサイズが正しく取得できていなかった場合処理をスキップ
         if (panelSize.getX() == 0)
             return;
 
-        setLayout(null);
-        setOpaque(false);
-        setBounds(
-                MAIN.getWidth() / 2 - (int) panelSize.getX() / 2,
-                MAIN.getHeight() / 2 - (int) panelSize.getY() / 2,
-                (int) panelSize.getX(), (int) panelSize.getY());
         setVisible(true);
 
         // ステージボタンの基準点の設定(画面中央を基準、下から50px)
         double bottom = this.getHeight() - 50 * ShootingGameMain.getScreenSizeAdj();
-        stageButtonOrigin = new Vector2(this.getWidth() / 2, Math.max(bottom + scrollOffset, bottom));
+        originPos = new Vector2(this.getWidth() / 2, Math.max(bottom + scrollOffset, bottom));
         // ステージボタンの追加
         for (StageButtonData data : NSM.getStageButtonConfigMap().values()) {
             int stageId = data.getId();
@@ -141,9 +143,9 @@ public class StageButtonPanel extends JPanel {
             button.setVisible(false);
 
             // 位置
-            int x = (int) stageButtonOrigin.getX() + (int) (buttonPos.getX() * ShootingGameMain.getScreenSizeAdj())
+            int x = (int) originPos.getX() + (int) (buttonPos.getX() * ShootingGameMain.getScreenSizeAdj())
                     - (int) button.getWidth() / 2;
-            int y = (int) stageButtonOrigin.getY() - (int) (buttonPos.getY() * ShootingGameMain.getScreenSizeAdj())
+            int y = (int) originPos.getY() - (int) (buttonPos.getY() * ShootingGameMain.getScreenSizeAdj())
                     - (int) button.getHeight() / 2;
 
             // パネル内にあるかどうか
