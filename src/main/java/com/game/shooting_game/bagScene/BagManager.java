@@ -7,11 +7,14 @@ import java.util.Objects;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+import lombok.Getter;
+
 import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.bagScene.BagSceneUI.BagSceneUIData;
+import com.game.shooting_game.bagScene.subPanels.OwnedResourcesPanel;
 import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.utils.UIBuilder;
@@ -20,24 +23,29 @@ import com.game.shooting_game.utils.Vector2;
 public final class BagManager extends JPanel implements Manager {
     private static final String component = "[BagManager]";
     private static BagManager instance;
-    private final BagSceneUI bagUI;
 
     private final ShootingGameMain MAIN;
+    private final BagSceneUI bagUI;
+    private final OwnedResourcesPanel ownedResourcesPanel;
 
     private JButton goBackButton;
     private JButton shopButton;
 
+    @Getter
     private Map<ResourceKinds, Integer> equipments;
 
     private BagManager() {
         MAIN = ShootingGameMain.getInstance();
 
         bagUI = new BagSceneUI();
+        ownedResourcesPanel = new OwnedResourcesPanel();
     }
 
     public void initComponents() {
         setLayout(null);
         setOpaque(false);
+
+        this.add(ownedResourcesPanel);
 
         // 戻るボタン(一つ前の画面に遷移)
         Vector2 goBackButtonSize = new Vector2(
@@ -72,6 +80,8 @@ public final class BagManager extends JPanel implements Manager {
             SceneManager.getInstance().changeScene(SceneType.SHOP);
         });
         this.add(shopButton);
+
+        ownedResourcesPanel.initComponents();
     }
 
     /**
@@ -87,7 +97,8 @@ public final class BagManager extends JPanel implements Manager {
     @Override
     public void setup() {
         // 入手済み資源リストの取得
-        equipments = DataManager.getUserData().getResources().getEquipment();
+        equipments = DataManager.getUserData().getResources().getEquipments();
+        ownedResourcesPanel.setup();
     }
 
     @Override
@@ -99,5 +110,6 @@ public final class BagManager extends JPanel implements Manager {
     public void draw(Graphics g) {
         BagSceneUIData uiData = new BagSceneUIData(equipments);
         bagUI.draw(g, uiData);
+        ownedResourcesPanel.drawPanel(g);
     }
 }

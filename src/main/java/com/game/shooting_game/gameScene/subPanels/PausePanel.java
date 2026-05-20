@@ -44,6 +44,10 @@ public class PausePanel extends JPanel {
         panelSize = new Vector2(
                 250 * ShootingGameMain.getScreenSizeAdj(),
                 300 * ShootingGameMain.getScreenSizeAdj());
+        setBounds(
+                MAIN.getWidth() / 2 - (int) panelSize.getX() / 2,
+                MAIN.getHeight() / 2 - (int) panelSize.getY() / 2,
+                (int) panelSize.getX(), (int) panelSize.getY());
         spacing = 5;
 
         // 再開ボタン(ゲーム画面を再開)
@@ -96,11 +100,6 @@ public class PausePanel extends JPanel {
      */
     public void showPausePanel() {
         setVisible(true);
-
-        setBounds(
-                MAIN.getWidth() / 2 - (int) panelSize.getX() / 2,
-                MAIN.getHeight() / 2 - (int) panelSize.getY() / 2,
-                (int) panelSize.getX(), (int) panelSize.getY());
 
         // ポーズログ
         LogUtils.systemLog(

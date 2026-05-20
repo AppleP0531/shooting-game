@@ -63,7 +63,7 @@ public class UserEntity {
     @MapKeyColumn(name = "resource_kind")
     @Enumerated(EnumType.STRING)
     @Column(name = "amount")
-    private Map<ResourceKinds, Integer> equipment = new HashMap<>();
+    private Map<ResourceKinds, Integer> equipments = new HashMap<>();
 
     // --- 所有機体 ---
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)

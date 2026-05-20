@@ -96,7 +96,7 @@ public final class DataManager implements Manager {
         @JsonIgnoreProperties(ignoreUnknown = true) // 余計な項目の無視
         public static class Resources {
             private int coins = 0; // コイン
-            private Map<ResourceKinds, Integer> equipment = new HashMap<>(); // 資源
+            private Map<ResourceKinds, Integer> equipments = new HashMap<>(); // 資源
         }
 
         // 船の情報
@@ -176,7 +176,7 @@ public final class DataManager implements Manager {
 
         // 資源のコピー
         data.getResources().setCoins(entity.getCoins());
-        data.getResources().setEquipment(entity.getEquipment());
+        data.getResources().setEquipments(entity.getEquipments());
 
         // 船の情報のコピー
         entity.getOwnedShips().forEach(shipEntity -> {
@@ -214,9 +214,9 @@ public final class DataManager implements Manager {
 
         // 資源
         entity.setCoins(userData.getResources().getCoins());
-        entity.getEquipment().clear();
-        if (userData.getResources().getEquipment() != null) {
-            entity.getEquipment().putAll(userData.getResources().getEquipment());
+        entity.getEquipments().clear();
+        if (userData.getResources().getEquipments() != null) {
+            entity.getEquipments().putAll(userData.getResources().getEquipments());
         }
 
         // 船の情報
