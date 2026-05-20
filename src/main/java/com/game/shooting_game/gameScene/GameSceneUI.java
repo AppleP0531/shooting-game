@@ -9,6 +9,7 @@ import java.awt.image.BufferedImage;
 import java.util.Map;
 
 import com.game.shooting_game.ResourceManager;
+import com.game.shooting_game.ResourceManager.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.gameScene.item.ItemManager;
@@ -176,7 +177,7 @@ public class GameSceneUI {
                     5 * ShootingGameMain.getScreenSizeAdj() + iconSize / 2,
                     5 * ShootingGameMain.getScreenSizeAdj() + iconSize / 2);
 
-            originImage = RM.getResourceImage().get(ResourceKinds.COIN).get("common")[0];
+            originImage = RM.getResourceImage().get(ResourceKinds.COIN).get(Rarity.COMMON)[0];
             BufferedImage image = UIBuilder.resizeImage(originImage, iconSize); // 画像のリサイズ
 
             g.drawImage( // 画像の描画

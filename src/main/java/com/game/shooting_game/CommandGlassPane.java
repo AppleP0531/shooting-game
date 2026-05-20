@@ -769,12 +769,12 @@ public class CommandGlassPane extends JPanel {
                             "Added " + amount + " coins. Current coins: " + resData.getCoins() + ".");
                     return;
                 } else {
-                    int amountOwned = resData.getEquipment().getOrDefault(resName, 0);
+                    int amountOwned = resData.getEquipments().getOrDefault(resName, 0);
                     int newAmount = amountOwned + amount;
                     if (newAmount <= 0) {
-                        resData.getEquipment().remove(resName);
+                        resData.getEquipments().remove(resName);
                     } else {
-                        resData.getEquipment().put(resName, newAmount);
+                        resData.getEquipments().put(resName, newAmount);
                     }
                 }
 

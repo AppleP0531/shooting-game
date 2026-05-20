@@ -36,6 +36,15 @@ public final class ResourceManager implements Manager {
         RESOURCE_4
     }
 
+    // レアリティの種類
+    public static enum Rarity {
+        COMMON,
+        UNCOMMON,
+        RARE,
+        EPIC,
+        LEGENDARY
+    }
+
     // ----- データクラスの定義 -----
     /**
      * リソースコンフィグ
@@ -45,7 +54,7 @@ public final class ResourceManager implements Manager {
     @JsonIgnoreProperties(ignoreUnknown = true) // 余計な項目の無視
     public static class ResourceConfig {
         private int id;
-        private Map<String, ResourceData> rarity;
+        private Map<Rarity, ResourceData> rarity;
     }
 
     /**
@@ -63,7 +72,7 @@ public final class ResourceManager implements Manager {
     }
 
     private Map<ResourceKinds, ResourceConfig> resourceConfigMap; // リソースデータが格納されたマップ
-    private Map<ResourceKinds, Map<String, BufferedImage[]>> resourceImageCache; // 画像データ
+    private Map<ResourceKinds, Map<Rarity, BufferedImage[]>> resourceImageCache; // 画像データ
     private static final TypeReference<Map<ResourceKinds, ResourceConfig>> TYPE_REF = new TypeReference<>() {
     };
 
@@ -127,11 +136,11 @@ public final class ResourceManager implements Manager {
         // ResourceKindsの階層でループ
         for (Map.Entry<ResourceKinds, ResourceConfig> kindEntry : resourceConfigMap.entrySet()) {
             ResourceKinds kind = kindEntry.getKey();
-            Map<String, ResourceData> data = kindEntry.getValue().getRarity();
+            Map<Rarity, ResourceData> data = kindEntry.getValue().getRarity();
 
             // レア度の階層でループ
-            for (Map.Entry<String, ResourceData> rarityEntry : data.entrySet()) {
-                String rarity = rarityEntry.getKey();
+            for (Map.Entry<Rarity, ResourceData> rarityEntry : data.entrySet()) {
+                Rarity rarity = rarityEntry.getKey();
                 ResourceData recourcedata = rarityEntry.getValue();
                 String imagePath = recourcedata.getImagePath();
 
@@ -213,7 +222,7 @@ public final class ResourceManager implements Manager {
      * 
      * @return 画像データ
      */
-    public Map<ResourceKinds, Map<String, BufferedImage[]>> getResourceImage() {
+    public Map<ResourceKinds, Map<Rarity, BufferedImage[]>> getResourceImage() {
         // 外部から変更できないように不変ビューを渡す
         return Collections.unmodifiableMap(resourceImageCache);
     }
