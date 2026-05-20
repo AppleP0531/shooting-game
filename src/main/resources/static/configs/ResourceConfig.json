@@ -2,7 +2,7 @@
   "COIN": {
     "id": 0,
     "rarity": {
-      "common": {
+      "COMMON": {
         "imagePath": "/static/img/resource/coin.png",
         "grids": [1, 1],
         "useCount": 1,
@@ -14,7 +14,7 @@
   "RESOURCE_1": {
     "id": 1,
     "rarity": {
-      "common": {
+      "COMMON": {
         "imagePath": "/static/img/resource/resource_1.png",
         "grids": [1, 1],
         "useCount": 1,
@@ -26,7 +26,7 @@
   "RESOURCE_2": {
     "id": 2,
     "rarity": {
-      "common": {
+      "COMMON": {
         "imagePath": "/static/img/resource/resource_2.png",
         "grids": [1, 1],
         "useCount": 1,
@@ -38,7 +38,7 @@
   "RESOURCE_3": {
     "id": 3,
     "rarity": {
-      "common": {
+      "COMMON": {
         "imagePath": "/static/img/resource/resource_3.png",
         "grids": [1, 1],
         "useCount": 1,
@@ -50,7 +50,7 @@
   "RESOURCE_4": {
     "id": 4,
     "rarity": {
-      "common": {
+      "COMMON": {
         "imagePath": "/static/img/resource/resource_4.png",
         "grids": [1, 1],
         "useCount": 1,

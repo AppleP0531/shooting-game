@@ -6,6 +6,7 @@ import java.awt.Graphics;
 
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.gameScene.GameManager;
+import com.game.shooting_game.model.StageRewards;
 import com.game.shooting_game.utils.Anchor;
 import com.game.shooting_game.utils.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
@@ -26,6 +27,7 @@ public class GameResultSceneUI {
      */
     public void draw(Graphics g) {
         drawTitle(g);
+        showRewards(g);
     }
 
     /**
@@ -41,5 +43,22 @@ public class GameResultSceneUI {
                 MAIN.getWidth() / 2,
                 100 * ShootingGameMain.getScreenSizeAdj());
         UIBuilder.drawString(g, new Anchor(Anchor.CENTER), pos, size, textColor, Font.BOLD, text);
+    }
+
+    /**
+     * 報酬の表示
+     * 
+     * @param g
+     */
+    private void showRewards(Graphics g) {
+        StageRewards rewards = StageRewards.getInstance();
+        // スコアを表示
+        String scoreText = "Score: " + rewards.getScore();
+        Vector2 scoreTextPos = new Vector2(
+                MAIN.getWidth() / 2,
+                150 * ShootingGameMain.getScreenSizeAdj());
+        double scoreTextSize = 20 * ShootingGameMain.getScreenSizeAdj();
+        UIBuilder.drawString(g, Anchor.CENTER, scoreTextPos, scoreTextSize, Color.WHITE, Font.PLAIN,
+                scoreText);
     }
 }

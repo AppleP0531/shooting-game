@@ -406,17 +406,22 @@ public final class ShipManager implements Manager {
     public void kill(String target) {
         switch (target) {
             case "player" -> {
-                player.kill(false);
+                if (player != null)
+                    player.kill(false);
             }
             case "enemy" -> {
-                enemyList.forEach(s -> s.kill(true));
+                if (!enemyList.isEmpty())
+                    enemyList.forEach(s -> s.kill(true));
             }
             case "boss" -> {
-                bossList.forEach(s -> s.kill(true));
+                if (!bossList.isEmpty())
+                    bossList.forEach(s -> s.kill(true));
             }
             case "all" -> {
-                enemyList.forEach(s -> s.kill(true));
-                bossList.forEach(s -> s.kill(true));
+                if (!enemyList.isEmpty())
+                    enemyList.forEach(s -> s.kill(true));
+                if (!bossList.isEmpty())
+                    bossList.forEach(s -> s.kill(true));
             }
         }
     }
