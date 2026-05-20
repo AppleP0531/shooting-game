@@ -6,11 +6,13 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -19,8 +21,14 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
+import com.game.shooting_game.ResourceManager;
+import com.game.shooting_game.ResourceManager.Rarity;
+import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.utils.Anchor.H;
+import com.game.shooting_game.utils.Anchor.V;
 
 public class UIBuilder extends JPanel {
     /**
@@ -462,4 +470,61 @@ public class UIBuilder extends JPanel {
         p.addMouseMotionListener(blocker);
         p.addMouseWheelListener(blocker);
     }
+
+    /**
+     * 所有資源の各々の項目の描画
+     * 
+     * @param g
+     * @param pos    位置
+     * @param image  画像
+     * @param name   名前
+     * @param amount 個数
+     */
+    public static void drawEquipmentsIcon(Component c, Graphics g, Vector2 pos, Vector2 size, ResourceKinds name,
+            int amount) {
+        // コンポーネント座標をウィンドウ座標に変換
+        Point p = new Point((int) pos.getX(), (int) pos.getY());
+        Point windowPos = SwingUtilities.convertPoint(c, p, ShootingGameMain.getInstance());
+        pos = new Vector2(windowPos.x, windowPos.y);
+
+        Map<Rarity, BufferedImage[]> resImageData = ResourceManager.getInstance().getResourceImage().get(name);
+        BufferedImage[] imageFrames = resImageData != null ? resImageData.get(Rarity.COMMON) : null;
+        BufferedImage image = imageFrames != null ? imageFrames[0] : null;
+
+        Vector2 imageSize = new Vector2(
+                size.getX() * 3 / 4,
+                size.getY() * 3 / 4);
+        if (image != null) {
+
+        } else {
+            // 枠の描画
+            g.setColor(new Color(0.5f, 0.5f, 0.5f, 0.5f));
+            g.drawRect((int) (pos.getX() - imageSize.getX() / 2),
+                    (int) (pos.getY() - imageSize.getY() / 2),
+                    (int) imageSize.getX(),
+                    (int) imageSize.getY());
+
+            // noImageテキストの表示
+            double textSize = size.getY() / 10;
+            drawString(g, new Anchor(Anchor.CENTER), pos, textSize, Color.WHITE, Font.PLAIN,
+                    "No Image");
+        }
+
+        double spacing = size.getY() / 20;
+
+        double resNameTextSize = size.getY() / 10;
+        Vector2 resNameTextPos = new Vector2(
+                pos.getX(),
+                pos.getY() + imageSize.getY() / 2 + spacing);
+        drawString(g, new Anchor(H.CENTER, V.TOP), resNameTextPos, resNameTextSize, Color.WHITE,
+                Font.PLAIN, name.toString());
+
+        double amountTextSize = size.getY() / 10;
+        Vector2 amountTextPos = new Vector2(
+                resNameTextPos.getX(),
+                resNameTextPos.getY() + resNameTextSize / 2 + spacing);
+        drawString(g, new Anchor(H.CENTER, V.TOP), amountTextPos, amountTextSize, Color.WHITE,
+                Font.PLAIN, String.valueOf(amount));
+    }
+
 }

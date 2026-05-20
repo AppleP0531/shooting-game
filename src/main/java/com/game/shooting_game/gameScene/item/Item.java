@@ -7,6 +7,7 @@ import java.util.Optional;
 import lombok.Getter;
 
 import com.game.shooting_game.ResourceManager;
+import com.game.shooting_game.ResourceManager.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.gameScene.GameManager;
@@ -67,7 +68,7 @@ public abstract class Item implements Moveable, GameObject, Entity {
             frameRate = itemConfig.getFrameRate();
         } else if (kind instanceof ResourceKinds) {
             itemImages = Optional.ofNullable(RM.getResourceImage())
-                    .map(images -> images.get(kind).get("common"))
+                    .map(images -> images.get(kind).get(Rarity.COMMON))
                     .orElse(null);
         }
 

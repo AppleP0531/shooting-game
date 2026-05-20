@@ -58,6 +58,10 @@ public class StageDetailPanel extends JPanel {
 
         panelSize = new Vector2(350 * ShootingGameMain.getScreenSizeAdj(),
                 480 * ShootingGameMain.getScreenSizeAdj());
+        setBounds(
+                NSM.getStageButtonPanel().getWidth() / 2 - (int) panelSize.getX() / 2,
+                NSM.getStageButtonPanel().getHeight() / 2 - (int) panelSize.getY() / 2,
+                (int) panelSize.getX(), (int) panelSize.getY());
         spacing = (int) (5 * ShootingGameMain.getScreenSizeAdj());
 
         // スクロール可能な詳細テキストエリアの追加
@@ -121,11 +125,6 @@ public class StageDetailPanel extends JPanel {
      * @param isCleared クリア済みステージかどうか
      */
     public void showStageDaetail(int stageId) {
-        setBounds(
-                NSM.getStageButtonPanel().getWidth() / 2 - (int) panelSize.getX() / 2,
-                NSM.getStageButtonPanel().getHeight() / 2 - (int) panelSize.getY() / 2,
-                (int) panelSize.getX(), (int) panelSize.getY());
-
         drawButton(stageId);
 
         // 詳細情報の設定
