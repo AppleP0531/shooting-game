@@ -5,7 +5,7 @@ skinparam packageStyle rectangle
 skinparam shadowing false
 skinparam linetype ortho
 
-package "src" {
+package "shooting_game" {
     class ShootingGameMain {
         - {static} instance: ShootingGameMain
         - {static} glassPane: CommandGlassPane
@@ -302,6 +302,7 @@ package "src" {
                     - panelSize: Vector2
                     - spacing: int
                     - stageId: int
+                    - detailTextArea: JTextArea
                     - startStageButton: JButton
                     - skipStageButton: JButton
                     --
@@ -472,8 +473,8 @@ package "src" {
             - upgradeUI: UpgradeSceneUI
             - MAIN: ShootingGameMain
             - skillTreeButtonPanel: SkillTreeButtonPanel
-            - skillTreeButtonConfigMap: List<SkillTreeButtonData>
-            - skillTreeButtonImageCache: Map<String,BufferedImage>
+            - skillTreeConfigMap: List<SkillTreeData>
+            - skillTreeImageCache: Map<String,BufferedImage>
             - lobbyButton: JButton
             - saveButton: JButton
             --
@@ -490,11 +491,12 @@ package "src" {
             - reloadScreen(): void
         }
 
-        class SkillTreeButtonData <<lombok @Data>> {
+        class SkillTreeData <<lombok @Data>> {
             - name: String
             - rootNode: String
             - dist: int
             - pos: int
+            - detail: String
         }
 
         class UpgradeSceneUI {
@@ -534,6 +536,7 @@ package "src" {
                 - panelSize: Vector2
                 - spacing: int
                 - skillName: String
+                - detailTextArea: JTextArea
                 - upgradeButton: JButton
                 --
                 + SkillDetailPanel()
@@ -777,12 +780,9 @@ package "src" {
                 # dropItem: boolean
                 # shieldTimer: double
                 # coolDownTimers: Map<BulletKinds, Map<Integer, Double>>
-                # imageMap: Map<String, BufferedImage[]>
-                # currentFrame: Map<String, Integer>
-                # frameTimer: Map<String, Double>
-                # frameRate: Map<String, Double>
+                # animationId: Map<String, String>
                 # imageSize: Map<String, Integer>
-                # useCount: Map<String, Integer[]>
+                # useCount: Map<String, int[]>
                 # frameAdj: int
                 # animationName: String
                 # animateTimer: double
@@ -963,7 +963,7 @@ package "src" {
                 # alpha: float
                 # owner: ShipKinds
                 # kind: BulletKinds
-                # animationId: Double
+                # animationId: String
                 --
                 + Bullet(owner: ShipKinds, kind: BulletKinds, id: int, pos: Vector2, vec: double)
                 + move(dt: double): void
@@ -1071,7 +1071,7 @@ package "src" {
                 # pos: Vector2
                 # vec: double
                 # speed: double
-                # animationId: Double
+                # animationId: String
                 --
                 + Item(kind Collectible, pos Vector2)
                 + update(dt: double): void
@@ -1199,16 +1199,16 @@ package "src" {
 
             class AnimationManager <<Singleton>> {
                 - {static} instance: AnimationManager
-                - animationCache: Map<Double, Animation>
+                - animationCache: Map<String, Animation>
                 --
                 - AnimationManager()
                 + {static} getInstance(): AnimationManager
                 + setup(): void
                 + update(dt: double): void
                 + draw(g: Graphics): void
-                + addAnimation(id: double, animation: Animation): void
-                + removeAnimation(id: double): void
-                + getCurrentFrame(id: double): BufferedImage
+                + addAnimation(animation: Animation): String
+                + removeAnimation(id: String): void
+                + getCurrentFrame(id: String): BufferedImage
             }
         }
 
@@ -1267,6 +1267,7 @@ package "src" {
             + {static} openPanel(p: JPanel, title: String, focus: Boolean): void
             + {static} closePanel(p: JPanel): void
             - {static} findComponentByName(panel: JPanel, name: String): Component
+            - {static} mouseFocus(p: JPanel): void
         }
 
         class ANSI {
@@ -1446,102 +1447,103 @@ package "src" {
 }
 
 ' 内部構造
-src.utils.LogUtils +-- LogLevel
-src.SceneManager +-- SceneType
-src.CommandGlassPane +-- CommandNode
-src.CommandGlassPane +-- CommandAction
-src.utils.animation.Animation +-- AnimationLogic
-src.utils.Anchor +-- H
-src.utils.Anchor +-- V
-src.ResourceManager +-- ResourceKinds
-src.ResourceManager +-- ResourceConfig
+shooting_game.utils.LogUtils +-- LogLevel
+shooting_game.SceneManager +-- SceneType
+shooting_game.CommandGlassPane +-- CommandNode
+shooting_game.CommandGlassPane +-- CommandAction
+shooting_game.utils.animation.Animation +-- AnimationLogic
+shooting_game.utils.Anchor +-- H
+shooting_game.utils.Anchor +-- V
+shooting_game.ResourceManager +-- ResourceKinds
+shooting_game.ResourceManager +-- ResourceConfig
 ResourceConfig +-- ResourceData
-src.data.DataManager +-- UserData
-src.data.UserData +-- Progress
-src.data.UserData +-- Resources
-src.data.UserData +-- ShipStats
-src.stageScene.normal.NormalStageManager +-- StageButtonData
-src.stageScene.normal.NormalStageManager +-- StageDetailData
-src.lobbyScene.LobbySceneUI +-- LobbySceneUIData
-src.gameScene.GameManager +-- GameSceneUIData
-src.gameScene.GameSceneUI +-- GameSceneUIData
-src.gameScene.stage.StageManager +-- StageData
+shooting_game.data.DataManager +-- UserData
+shooting_game.data.UserData +-- Progress
+shooting_game.data.UserData +-- Resources
+shooting_game.data.UserData +-- ShipStats
+shooting_game.stageScene.normal.NormalStageManager +-- StageButtonData
+shooting_game.stageScene.normal.NormalStageManager +-- StageDetailData
+shooting_game.lobbyScene.LobbySceneUI +-- LobbySceneUIData
+shooting_game.gameScene.GameManager +-- GameSceneUIData
+shooting_game.gameScene.GameSceneUI +-- GameSceneUIData
+shooting_game.gameScene.stage.StageManager +-- StageData
 StageData +-- EnemyConfig
-src.gameScene.ship.ShipManager +-- ShipKinds
-src.gameScene.ship.ShipManager +-- ShipDefinition
+shooting_game.gameScene.ship.ShipManager +-- ShipKinds
+shooting_game.gameScene.ship.ShipManager +-- ShipDefinition
 ShipDefinition +-- ShipConfig
 ShipConfig +-- SheetConfig
 ShipDefinition +-- ShotConfig
-src.gameScene.bullet.BulletManager +-- BulletKinds
-src.gameScene.bullet.BulletManager +-- BulletConfig
-src.gameScene.item.ItemManager +-- ItemKinds
-src.gameScene.item.ItemManager +-- ItemConfig
+shooting_game.gameScene.bullet.BulletManager +-- BulletKinds
+shooting_game.gameScene.bullet.BulletManager +-- BulletConfig
+shooting_game.gameScene.item.ItemManager +-- ItemKinds
+shooting_game.gameScene.item.ItemManager +-- ItemConfig
 
 ' extends関係
-src.repository.UserRepository --|> org.springframework.data.jpa.repository.JpaRepository
-src.data.LoginDialog --|> javax.swing.JDialog
-src.ShootingGameMain --|> javax.swing.JPanel
-src.CommandGlassPane --|> javax.swing.JPanel
-src.titleScene.TitleManager --|> javax.swing.JPanel
-src.stageScene.SelectStageManager --|> javax.swing.JPanel
-src.stageScene.normal.NormalStageManager --|> javax.swing.JPanel
-src.stageScene.normal.subPanels.StageButtonPanel --|> javax.swing.JPanel
-src.stageScene.normal.subPanels.StageDetailPanel --|> javax.swing.JPanel
-src.stageScene.infinity.InfinityStageManager --|> javax.swing.JPanel
-src.settingScene.SettingManager --|> javax.swing.JPanel
-src.lobbyScene.LobbyManager --|> javax.swing.JPanel
-src.upgradeScene.UpgradeManager --|> javax.swing.JPanel
-src.upgradeScene.subPanels.SkillTreeButtonPanel --|> javax.swing.JPanel
-src.upgradeScene.subPanels.SkillDetailPanel --|> javax.swing.JPanel
-src.gameScene.GameManager --|> javax.swing.JPanel
-src.gameScene.subPanels.PausePanel --|> javax.swing.JPanel
-src.gameScene.ship.types.Player --* src.gameScene.ship.Ship
-src.gameScene.ship.types.SubShip --* src.gameScene.ship.Ship
-src.gameScene.ship.types.Enemy --* src.gameScene.ship.Ship
-src.gameScene.ship.types.Boss --* src.gameScene.ship.Ship
-src.gameScene.bullet.types.Ball --* src.gameScene.bullet.Bullet
-src.gameScene.bullet.types.Laser --* src.gameScene.bullet.Bullet
-src.gameScene.bullet.types.Straight --* src.gameScene.bullet.Bullet
-src.gameScene.bullet.types.Tracking --* src.gameScene.bullet.Bullet
-src.gameScene.item.types.Shield --* src.gameScene.item.Item
-src.gameScene.item.types.LevelUp --* src.gameScene.item.Item
-src.gameScene.item.types.Heal --* src.gameScene.item.Item
-src.gameResultScene.GameResultManager --|> javax.swing.JPanel
-src.testScene.TestManager --|> javax.swing.JPanel
+shooting_game.repository.UserRepository --|> org.springframework.data.jpa.repository.JpaRepository
+shooting_game.data.LoginDialog --|> javax.swing.JDialog
+shooting_game.ShootingGameMain --|> javax.swing.JPanel
+shooting_game.CommandGlassPane --|> javax.swing.JPanel
+shooting_game.titleScene.TitleManager --|> javax.swing.JPanel
+shooting_game.stageScene.SelectStageManager --|> javax.swing.JPanel
+shooting_game.stageScene.normal.NormalStageManager --|> javax.swing.JPanel
+shooting_game.stageScene.normal.subPanels.StageButtonPanel --|> javax.swing.JPanel
+shooting_game.stageScene.normal.subPanels.StageDetailPanel --|> javax.swing.JPanel
+shooting_game.stageScene.infinity.InfinityStageManager --|> javax.swing.JPanel
+shooting_game.settingScene.SettingManager --|> javax.swing.JPanel
+shooting_game.lobbyScene.LobbyManager --|> javax.swing.JPanel
+shooting_game.upgradeScene.UpgradeManager --|> javax.swing.JPanel
+shooting_game.upgradeScene.subPanels.SkillTreeButtonPanel --|> javax.swing.JPanel
+shooting_game.upgradeScene.subPanels.SkillDetailPanel --|> javax.swing.JPanel
+shooting_game.gameScene.GameManager --|> javax.swing.JPanel
+shooting_game.gameScene.subPanels.PausePanel --|> javax.swing.JPanel
+shooting_game.gameScene.ship.types.Player --* shooting_game.gameScene.ship.Ship
+shooting_game.gameScene.ship.types.SubShip --* shooting_game.gameScene.ship.Ship
+shooting_game.gameScene.ship.types.Enemy --* shooting_game.gameScene.ship.Ship
+shooting_game.gameScene.ship.types.Boss --* shooting_game.gameScene.ship.Ship
+shooting_game.gameScene.bullet.types.Ball --* shooting_game.gameScene.bullet.Bullet
+shooting_game.gameScene.bullet.types.Laser --* shooting_game.gameScene.bullet.Bullet
+shooting_game.gameScene.bullet.types.Straight --* shooting_game.gameScene.bullet.Bullet
+shooting_game.gameScene.bullet.types.Tracking --* shooting_game.gameScene.bullet.Bullet
+shooting_game.gameScene.item.types.Shield --* shooting_game.gameScene.item.Item
+shooting_game.gameScene.item.types.LevelUp --* shooting_game.gameScene.item.Item
+shooting_game.gameScene.item.types.Heal --* shooting_game.gameScene.item.Item
+shooting_game.gameResultScene.GameResultManager --|> javax.swing.JPanel
+shooting_game.testScene.TestManager --|> javax.swing.JPanel
 
 ' implements関係
-src.ShootingGameMain ..|> Runnable
-src.SceneManager ..|> src.interfaces.Manager
-src.titleScene.TitleManager ..|> src.interfaces.Manager
-src.stageScene.SelectStageManager ..|> src.interfaces.Manager
-src.stageScene.normal.NormalStageManager ..|> src.interfaces.Manager
-src.stageScene.infinity.InfinityStageManager ..|> src.interfaces.Manager
-src.settingScene.SettingManager ..|> src.interfaces.Manager
-src.lobbyScene.LobbyManager ..|> src.interfaces.Manager
-src.upgradeScene.UpgradeManager ..|> src.interfaces.Manager
-src.gameScene.GameManager ..|> src.interfaces.Manager
-src.ResourceManager ..|> src.interfaces.Manager
-ResourceKinds ..|> src.interfaces.Collectible
-src.gameScene.stage.StageManager ..|> src.interfaces.Manager
-src.gameScene.ship.ShipManager ..|> src.interfaces.Manager
-src.gameScene.stage.Stage ..|> src.interfaces.GameObject
-src.gameScene.ship.Ship ..|> src.interfaces.GameObject
-src.gameScene.ship.Ship ..|> src.interfaces.Entity
-src.gameScene.ship.Ship ..|> src.interfaces.Moveable
-src.gameScene.bullet.Bullet ..|> src.interfaces.GameObject
-src.gameScene.bullet.Bullet ..|> src.interfaces.Entity
-src.gameScene.bullet.Bullet ..|> src.interfaces.Moveable
-src.gameScene.item.Item ..|> src.interfaces.GameObject
-src.gameScene.item.Item ..|> src.interfaces.Entity
-src.gameScene.item.Item ..|> src.interfaces.Moveable
-src.gameScene.bullet.BulletManager ..|> src.interfaces.Manager
-src.gameScene.item.ItemManager ..|> src.interfaces.Manager
-ItemKinds ..|> src.interfaces.Collectible
-src.gameResultScene.GameResultManager ..|> src.interfaces.Manager
-src.testScene.TestManager ..|> src.interfaces.Manager
-src.data.DataManager ..|> src.interfaces.Manager
-src.bagScene.BagManager ..|> src.interfaces.Manager
-src.shopScene.ShopManager ..|> src.interfaces.Manager
-src.gameScene.ship.types.Player ..|> java.awt.event.KeyListener
+shooting_game.ShootingGameMain ..|> Runnable
+shooting_game.SceneManager ..|> shooting_game.interfaces.Manager
+shooting_game.titleScene.TitleManager ..|> shooting_game.interfaces.Manager
+shooting_game.stageScene.SelectStageManager ..|> shooting_game.interfaces.Manager
+shooting_game.stageScene.normal.NormalStageManager ..|> shooting_game.interfaces.Manager
+shooting_game.stageScene.infinity.InfinityStageManager ..|> shooting_game.interfaces.Manager
+shooting_game.settingScene.SettingManager ..|> shooting_game.interfaces.Manager
+shooting_game.lobbyScene.LobbyManager ..|> shooting_game.interfaces.Manager
+shooting_game.upgradeScene.UpgradeManager ..|> shooting_game.interfaces.Manager
+shooting_game.gameScene.GameManager ..|> shooting_game.interfaces.Manager
+shooting_game.ResourceManager ..|> shooting_game.interfaces.Manager
+ResourceKinds ..|> shooting_game.interfaces.Collectible
+shooting_game.gameScene.stage.StageManager ..|> shooting_game.interfaces.Manager
+shooting_game.gameScene.ship.ShipManager ..|> shooting_game.interfaces.Manager
+shooting_game.gameScene.stage.Stage ..|> shooting_game.interfaces.GameObject
+shooting_game.gameScene.ship.Ship ..|> shooting_game.interfaces.GameObject
+shooting_game.gameScene.ship.Ship ..|> shooting_game.interfaces.Entity
+shooting_game.gameScene.ship.Ship ..|> shooting_game.interfaces.Moveable
+shooting_game.gameScene.bullet.Bullet ..|> shooting_game.interfaces.GameObject
+shooting_game.gameScene.bullet.Bullet ..|> shooting_game.interfaces.Entity
+shooting_game.gameScene.bullet.Bullet ..|> shooting_game.interfaces.Moveable
+shooting_game.gameScene.item.Item ..|> shooting_game.interfaces.GameObject
+shooting_game.gameScene.item.Item ..|> shooting_game.interfaces.Entity
+shooting_game.gameScene.item.Item ..|> shooting_game.interfaces.Moveable
+shooting_game.gameScene.bullet.BulletManager ..|> shooting_game.interfaces.Manager
+shooting_game.gameScene.item.ItemManager ..|> shooting_game.interfaces.Manager
+ItemKinds ..|> shooting_game.interfaces.Collectible
+shooting_game.gameResultScene.GameResultManager ..|> shooting_game.interfaces.Manager
+shooting_game.testScene.TestManager ..|> shooting_game.interfaces.Manager
+shooting_game.data.DataManager ..|> shooting_game.interfaces.Manager
+shooting_game.bagScene.BagManager ..|> shooting_game.interfaces.Manager
+shooting_game.shopScene.ShopManager ..|> shooting_game.interfaces.Manager
+shooting_game.gameScene.ship.types.Player ..|> java.awt.event.KeyListener
+shooting_game.utils.animation.AnimationManager ..|> shooting_game.interfaces.Manager
 
 @enduml
