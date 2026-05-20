@@ -1,39 +1,41 @@
 package com.game.shooting_game;
 
-import com.game.shooting_game.data.LoginPanel;
-import com.game.shooting_game.data.DataManager;
-import com.game.shooting_game.data.UserService;
-import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
-import com.game.shooting_game.utils.Vector2;
-import com.game.shooting_game.utils.Anchor;
-import com.game.shooting_game.utils.Anchor.*;
-import com.game.shooting_game.interfaces.Manager;
-import com.game.shooting_game.titleScene.TitleManager;
-
-import java.awt.Font;
-import java.awt.Color;
-import java.awt.Toolkit;
-import java.awt.Graphics;
-import java.awt.Dimension;
 import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Objects;
-import javax.swing.JPanel;
-import javax.swing.JFrame;
-import javax.swing.KeyStroke;
-import javax.swing.JComponent;
+
 import javax.swing.AbstractAction;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
-import com.game.shooting_game.SceneManager.SceneType;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import com.game.shooting_game.SceneManager.SceneType;
+import com.game.shooting_game.data.DataManager;
+import com.game.shooting_game.data.LoginPanel;
+import com.game.shooting_game.data.UserService;
+import com.game.shooting_game.interfaces.Manager;
+import com.game.shooting_game.titleScene.TitleManager;
+import com.game.shooting_game.utils.ANSI;
+import com.game.shooting_game.utils.Anchor;
+import com.game.shooting_game.utils.Anchor.H;
+import com.game.shooting_game.utils.Anchor.V;
+import com.game.shooting_game.utils.LogUtils;
+import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.utils.Vector2;
 
 public final class ShootingGameMain extends JPanel implements Runnable {
     private static final String component = "[MAIN]";

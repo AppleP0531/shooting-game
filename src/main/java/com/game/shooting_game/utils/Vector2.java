@@ -2,9 +2,10 @@ package com.game.shooting_game.utils;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
 @Data // Getter, Setterの自動生成
 @NoArgsConstructor // 引数なしコンストラクタの生成

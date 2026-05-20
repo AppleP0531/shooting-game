@@ -1,27 +1,26 @@
 package com.game.shooting_game.gameScene.item;
 
-import com.game.shooting_game.utils.Vector2;
-import com.game.shooting_game.utils.animation.Animation;
-import com.game.shooting_game.utils.animation.AnimationManager;
-import com.game.shooting_game.utils.GameUtils;
-import com.game.shooting_game.gameScene.GameManager;
-import com.game.shooting_game.gameScene.ship.ShipManager;
-import com.game.shooting_game.gameScene.item.ItemManager.ItemKinds;
-import com.game.shooting_game.gameScene.item.ItemManager.ItemConfig;
-import com.game.shooting_game.interfaces.Entity;
-import com.game.shooting_game.interfaces.Moveable;
-import com.game.shooting_game.interfaces.GameObject;
-import com.game.shooting_game.interfaces.Collectible;
-
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.util.Optional;
 
-import com.game.shooting_game.ResourceManager;
-import com.game.shooting_game.ShootingGameMain;
-import com.game.shooting_game.ResourceManager.ResourceKinds;
-
 import lombok.Getter;
+
+import com.game.shooting_game.ResourceManager;
+import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.gameScene.GameManager;
+import com.game.shooting_game.gameScene.item.ItemManager.ItemConfig;
+import com.game.shooting_game.gameScene.item.ItemManager.ItemKinds;
+import com.game.shooting_game.gameScene.ship.ShipManager;
+import com.game.shooting_game.interfaces.Collectible;
+import com.game.shooting_game.interfaces.Entity;
+import com.game.shooting_game.interfaces.GameObject;
+import com.game.shooting_game.interfaces.Moveable;
+import com.game.shooting_game.utils.GameUtils;
+import com.game.shooting_game.utils.Vector2;
+import com.game.shooting_game.utils.animation.Animation;
+import com.game.shooting_game.utils.animation.AnimationManager;
 
 public abstract class Item implements Moveable, GameObject, Entity {
     protected final ShootingGameMain MAIN;

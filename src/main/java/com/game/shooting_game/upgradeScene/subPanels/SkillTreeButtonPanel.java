@@ -1,29 +1,28 @@
 package com.game.shooting_game.upgradeScene.subPanels;
 
-import com.game.shooting_game.data.DataManager;
-import com.game.shooting_game.upgradeScene.UpgradeManager;
-import com.game.shooting_game.upgradeScene.UpgradeManager.SkillTreeButtonData;
-import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
-import com.game.shooting_game.utils.Vector2;
-
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.BasicStroke;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.image.BufferedImage;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 
-import com.game.shooting_game.ShootingGameMain;
-
-import javax.swing.JButton;
-import javax.swing.ImageIcon;
 import lombok.Getter;
+
+import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.data.DataManager;
+import com.game.shooting_game.upgradeScene.UpgradeManager;
+import com.game.shooting_game.upgradeScene.UpgradeManager.SkillTreeData;
+import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.utils.Vector2;
 
 public class SkillTreeButtonPanel extends JPanel {
     private static final String component = "[SkillTreeButtonPanel]";
@@ -76,7 +75,8 @@ public class SkillTreeButtonPanel extends JPanel {
                 } else {
                     scale = Math.max(scale - zoomAmount, 0.5);
                 }
-                setup();
+
+                reload();
             }
         };
     }
@@ -96,8 +96,6 @@ public class SkillTreeButtonPanel extends JPanel {
         skillTreeButtonOrigin = new Vector2(panelSize.getX() / 2, panelSize.getY() / 2);
 
         drawButton();
-        this.add(skillDetailPanel);
-        skillDetailPanel.setVisible(false);
         drawPanel();
 
         // 最前面に持ってくる
@@ -118,7 +116,7 @@ public class SkillTreeButtonPanel extends JPanel {
         g2.setColor(Color.CYAN);
         g2.setStroke(new BasicStroke(2));
 
-        for (SkillTreeButtonData data : UM.getSkillTreeButtonConfigMap()) {
+        for (SkillTreeData data : UM.getSkillTreeConfigMap()) {
             if (data.getName().equals("Origin"))
                 continue;
             JButton parent = buttonMap.get(data.getRootNode());
@@ -160,7 +158,8 @@ public class SkillTreeButtonPanel extends JPanel {
      * リソースの再読み込み
      */
     public void reload() {
-        setup();
+        drawButton();
+        drawPanel();
     }
 
     /**
@@ -184,7 +183,7 @@ public class SkillTreeButtonPanel extends JPanel {
             skillTreeButtonOrigin = new Vector2(this.getWidth() / 2, this.getHeight() / 2);
 
         // スキルツリーボタンの追加
-        for (SkillTreeButtonData data : UM.getSkillTreeButtonConfigMap()) {
+        for (SkillTreeData data : UM.getSkillTreeConfigMap()) {
             JButton button = buttonMap.get(data.getName());
 
             button.setVisible(false);
@@ -243,7 +242,7 @@ public class SkillTreeButtonPanel extends JPanel {
 
         buttonMap = new HashMap<>();
 
-        for (Map.Entry<String, BufferedImage> entry : UM.getSkillTreeButtonImageCache().entrySet()) {
+        for (Map.Entry<String, BufferedImage> entry : UM.getSkillTreeImageCache().entrySet()) {
             String skillName = entry.getKey();
             BufferedImage image = entry.getValue();
 
@@ -254,12 +253,7 @@ public class SkillTreeButtonPanel extends JPanel {
                     component, image, skillTreeButtonSize, skillName);
 
             button.addActionListener(e -> {
-                String nowShip = DataManager.getUserData().getSelectedShip();
-                int upgradeLevel = DataManager.getUserData().getShips().get(nowShip).getUpgrades()
-                        .getOrDefault(skillName, 0);
-                LogUtils.debugLog("skill level: " + upgradeLevel);
-
-                skillDetailPanel.showSkillDetai(skillName);
+                skillDetailPanel.showSkillDetail(skillName);
             });
             button.setRolloverEnabled(false);
 
@@ -277,6 +271,9 @@ public class SkillTreeButtonPanel extends JPanel {
 
             buttonMap.put(skillName, button);
         }
+
+        this.add(skillDetailPanel);
+        skillDetailPanel.setVisible(false);
     }
 
     /**

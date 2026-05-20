@@ -1,32 +1,35 @@
 package com.game.shooting_game.stageScene.normal;
 
-import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.utils.Vector2;
-import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
-import com.game.shooting_game.interfaces.Manager;
-import com.game.shooting_game.stageScene.normal.subPanels.StageButtonPanel;
-
-import java.io.IOException;
-import java.io.InputStream;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.util.Map;
-import java.util.List;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import javax.swing.JPanel;
+
 import javax.swing.JButton;
+import javax.swing.JPanel;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.game.shooting_game.SceneManager;
-import com.game.shooting_game.ShootingGameMain;
-import com.game.shooting_game.SceneManager.SceneType;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import com.game.shooting_game.SceneManager;
+import com.game.shooting_game.SceneManager.SceneType;
+import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.interfaces.Manager;
+import com.game.shooting_game.stageScene.normal.subPanels.StageButtonPanel;
+import com.game.shooting_game.utils.ANSI;
+import com.game.shooting_game.utils.LogUtils;
+import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.utils.Vector2;
 
 public final class NormalStageManager extends JPanel implements Manager {
     private static final String component = "[NormalStageManager]";

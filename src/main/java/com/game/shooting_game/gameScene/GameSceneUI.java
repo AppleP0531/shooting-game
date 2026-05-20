@@ -1,24 +1,24 @@
 package com.game.shooting_game.gameScene;
 
-import com.game.shooting_game.utils.Vector2;
-import com.game.shooting_game.utils.Anchor;
-import com.game.shooting_game.utils.Anchor.*;
-import com.game.shooting_game.utils.GameUtils;
-import com.game.shooting_game.utils.UIBuilder;
-import com.game.shooting_game.gameScene.item.ItemManager;
-import com.game.shooting_game.gameScene.item.ItemManager.ItemKinds;
-
-import java.awt.Font;
+import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.AlphaComposite;
 import java.awt.image.BufferedImage;
 import java.util.Map;
 
 import com.game.shooting_game.ResourceManager;
-import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.gameScene.item.ItemManager;
+import com.game.shooting_game.gameScene.item.ItemManager.ItemKinds;
+import com.game.shooting_game.utils.Anchor;
+import com.game.shooting_game.utils.Anchor.H;
+import com.game.shooting_game.utils.Anchor.V;
+import com.game.shooting_game.utils.GameUtils;
+import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.utils.Vector2;
 
 public class GameSceneUI {
     private final ShootingGameMain MAIN;

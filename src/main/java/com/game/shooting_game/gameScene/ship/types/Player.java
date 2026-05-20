@@ -1,30 +1,29 @@
 package com.game.shooting_game.gameScene.ship.types;
 
-import com.game.shooting_game.data.DataManager;
-import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.utils.Vector2;
-import com.game.shooting_game.utils.animation.Animation;
-import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.GameUtils;
-import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
-import com.game.shooting_game.gameScene.ship.ShipManager.ShipDefinition;
-import com.game.shooting_game.gameScene.ship.Ship;
-
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.List;
 
-import com.game.shooting_game.ShootingGameMain;
-
-import java.util.ArrayList;
 import lombok.Getter;
 import lombok.Setter;
+
+import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.data.DataManager;
+import com.game.shooting_game.gameScene.ship.Ship;
+import com.game.shooting_game.gameScene.ship.ShipManager.ShipDefinition;
+import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
+import com.game.shooting_game.utils.ANSI;
+import com.game.shooting_game.utils.GameUtils;
+import com.game.shooting_game.utils.LogUtils;
+import com.game.shooting_game.utils.Vector2;
+import com.game.shooting_game.utils.animation.Animation;
 
 public class Player extends Ship implements KeyListener {
     private static final String component = "[Ship:Player]";

@@ -1,16 +1,16 @@
 package com.game.shooting_game.gameScene.bullet.types;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+
+import com.game.shooting_game.gameScene.bullet.Bullet;
+import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
 import com.game.shooting_game.gameScene.ship.Ship;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.Vector2;
-import com.game.shooting_game.gameScene.bullet.Bullet;
-import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
-
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.BasicStroke;
 
 public class Tracking extends Bullet {
     private double maxSpeed;

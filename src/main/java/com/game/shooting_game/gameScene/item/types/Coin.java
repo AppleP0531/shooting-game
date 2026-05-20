@@ -1,14 +1,13 @@
 package com.game.shooting_game.gameScene.item.types;
 
-import com.game.shooting_game.gameScene.item.Item;
-import com.game.shooting_game.utils.GameUtils;
-import com.game.shooting_game.utils.Vector2;
-
 import java.awt.Color;
 import java.awt.Graphics;
 
-import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.gameScene.item.Item;
+import com.game.shooting_game.utils.GameUtils;
+import com.game.shooting_game.utils.Vector2;
 
 public class Coin extends Item {
     private Vector2 moveDir; // 移動方向

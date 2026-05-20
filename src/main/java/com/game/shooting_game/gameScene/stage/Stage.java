@@ -1,22 +1,21 @@
 package com.game.shooting_game.gameScene.stage;
 
-import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.utils.Vector2;
-import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.gameScene.ship.ShipManager;
-import com.game.shooting_game.gameScene.ship.ShipFactory;
-import com.game.shooting_game.gameScene.stage.StageManager.EnemyConfig;
-import com.game.shooting_game.interfaces.GameObject;
-
 import java.awt.Graphics;
 import java.util.Map;
 
-import com.game.shooting_game.SceneManager;
-import com.game.shooting_game.ShootingGameMain;
-import com.game.shooting_game.SceneManager.SceneType;
-
-import lombok.Setter;
 import lombok.Getter;
+import lombok.Setter;
+
+import com.game.shooting_game.SceneManager;
+import com.game.shooting_game.SceneManager.SceneType;
+import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.gameScene.ship.ShipFactory;
+import com.game.shooting_game.gameScene.ship.ShipManager;
+import com.game.shooting_game.gameScene.stage.StageManager.EnemyConfig;
+import com.game.shooting_game.interfaces.GameObject;
+import com.game.shooting_game.utils.ANSI;
+import com.game.shooting_game.utils.LogUtils;
+import com.game.shooting_game.utils.Vector2;
 
 public class Stage implements GameObject {
     private static final String component = "[Stage]";

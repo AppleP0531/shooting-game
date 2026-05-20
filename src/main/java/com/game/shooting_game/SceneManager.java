@@ -1,30 +1,31 @@
 package com.game.shooting_game;
 
-import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.animation.AnimationManager;
+import java.awt.Graphics;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import lombok.Getter;
+
 import com.game.shooting_game.bagScene.BagManager;
-import com.game.shooting_game.shopScene.ShopManager;
-import com.game.shooting_game.testScene.TestManager;
+import com.game.shooting_game.gameResultScene.GameResultManager;
 import com.game.shooting_game.gameScene.GameManager;
 import com.game.shooting_game.interfaces.Manager;
-import com.game.shooting_game.titleScene.TitleManager;
 import com.game.shooting_game.lobbyScene.LobbyManager;
 import com.game.shooting_game.settingScene.SettingManager;
+import com.game.shooting_game.shopScene.ShopManager;
 import com.game.shooting_game.stageScene.SelectStageManager;
 import com.game.shooting_game.stageScene.infinity.InfinityStageManager;
 import com.game.shooting_game.stageScene.normal.NormalStageManager;
+import com.game.shooting_game.testScene.TestManager;
+import com.game.shooting_game.titleScene.TitleManager;
 import com.game.shooting_game.upgradeScene.UpgradeManager;
-import com.game.shooting_game.gameResultScene.GameResultManager;
-
-import java.awt.Graphics;
-import java.util.Map;
-import java.util.List;
-import java.util.Objects;
-import java.util.EnumMap;
-import java.util.ArrayList;
-import java.util.Collections;
-import lombok.Getter;
+import com.game.shooting_game.utils.ANSI;
+import com.game.shooting_game.utils.LogUtils;
+import com.game.shooting_game.utils.animation.AnimationManager;
 
 public final class SceneManager implements Manager {
     private static SceneManager instance;

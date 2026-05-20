@@ -1,40 +1,42 @@
 package com.game.shooting_game.gameScene.ship;
 
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
-import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.utils.Vector2;
-import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.GameUtils;
-import com.game.shooting_game.utils.UIBuilder;
 import com.game.shooting_game.gameScene.GameManager;
+import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
 import com.game.shooting_game.gameScene.item.Item;
 import com.game.shooting_game.gameScene.item.ItemFactory;
 import com.game.shooting_game.gameScene.item.ItemManager;
 import com.game.shooting_game.gameScene.item.ItemManager.ItemKinds;
 import com.game.shooting_game.gameScene.ship.types.Player;
-import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
 import com.game.shooting_game.interfaces.Manager;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.awt.Graphics;
-import java.awt.image.BufferedImage;
-import java.util.Map;
-import java.util.Objects;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.game.shooting_game.ShootingGameMain;
-import com.game.shooting_game.ResourceManager.ResourceKinds;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.type.TypeReference;
-import lombok.Data;
-import lombok.Setter;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.game.shooting_game.utils.ANSI;
+import com.game.shooting_game.utils.GameUtils;
+import com.game.shooting_game.utils.LogUtils;
+import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.utils.Vector2;
 
 public final class ShipManager implements Manager {
     private static final String component = "[ShipManager]";

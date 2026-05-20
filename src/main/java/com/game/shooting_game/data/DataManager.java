@@ -1,35 +1,38 @@
 package com.game.shooting_game.data;
 
-import com.game.shooting_game.entity.UserEntity;
-import com.game.shooting_game.entity.UserShipEntity;
-import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.GameUtils;
-import com.game.shooting_game.interfaces.Manager;
-import com.game.shooting_game.repository.UserRepository;
-
+import java.awt.Graphics;
 import java.io.IOException;
 import java.io.InputStream;
-import java.awt.Graphics;
-import java.util.Map;
-import java.util.List;
-import java.util.Objects;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.game.shooting_game.ResourceManager.ResourceKinds;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.entity.UserEntity;
+import com.game.shooting_game.entity.UserShipEntity;
+import com.game.shooting_game.interfaces.Manager;
+import com.game.shooting_game.repository.UserRepository;
+import com.game.shooting_game.utils.ANSI;
+import com.game.shooting_game.utils.GameUtils;
+import com.game.shooting_game.utils.LogUtils;
 
 @Component
 public final class DataManager implements Manager {

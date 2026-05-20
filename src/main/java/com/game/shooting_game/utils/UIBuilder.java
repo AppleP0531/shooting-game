@@ -1,26 +1,26 @@
 package com.game.shooting_game.utils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.awt.Font;
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Component;
-import java.awt.Graphics2D;
+import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.image.BufferedImage;
-import javax.swing.JPanel;
-import javax.swing.JLabel;
-import javax.swing.JButton;
-import javax.swing.ImageIcon;
+import java.io.IOException;
+import java.io.InputStream;
+
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 import com.game.shooting_game.ShootingGameMain;
-
-import javax.imageio.ImageIO;
 
 public class UIBuilder extends JPanel {
     /**
@@ -296,17 +296,37 @@ public class UIBuilder extends JPanel {
     }
 
     /**
-     * パネル
+     * パネル (タイトル表示のために上部分に25px相当のパネルが張り付けられます)
      * 
      * @param p     パネル
      * @param title タイトル
      * @param focus フォーカスの有無
      */
     public static void openPanel(JPanel p, String title, Boolean focus) {
+        p.setLayout(null);
+        p.setBackground(new Color(0, 0, 0, 220));
+        p.setBorder(BorderFactory.createLineBorder(Color.CYAN, 2));
+
         JPanel parent = (JPanel) p.getParent();
         ShootingGameMain MAIN = ShootingGameMain.getInstance();
-        // パネル外のフォーカスを奪うシールドの生成
+
+        // タイトルパネル
+        double titlePanelSize = 25 * ShootingGameMain.getScreenSizeAdj();
+        JPanel titlePanel = (JPanel) findComponentByName(parent, "titlePanel");
+        if (titlePanel == null) {
+            titlePanel = new JPanel();
+            titlePanel.setLayout(null);
+            titlePanel.setBackground(new Color(0, 0, 0, 220));
+            titlePanel.setBorder(BorderFactory.createLineBorder(Color.CYAN, 2));
+            titlePanel.setName("titlePanel");
+            titlePanel.setBounds(p.getX(), p.getY() - (int) titlePanelSize,
+                    p.getWidth(), (int) titlePanelSize);
+            parent.add(titlePanel);
+        }
+        titlePanel.setVisible(true);
+
         if (focus) {
+            // 画面全体のフォーカスを奪うシールドの生成
             JPanel shield = (JPanel) findComponentByName(parent, "globalShield");
             if (shield == null) {
                 shield = new JPanel();
@@ -314,61 +334,50 @@ public class UIBuilder extends JPanel {
                 shield.setBounds(0, 0, MAIN.getWidth(), MAIN.getHeight());
                 shield.setOpaque(false);
 
-                MouseAdapter blocker = new MouseAdapter() {
-                };
-                shield.addMouseListener(blocker);
-                shield.addMouseMotionListener(blocker);
+                mouseFocus(shield);
 
                 parent.add(shield);
             }
-
-            // フォーカスを奪うシールドを敷く
             shield.setVisible(true);
             parent.setComponentZOrder(shield, 0);
+        } else {
+            // パネルのフォーカスを奪う
+            JPanel panelFocus = (JPanel) findComponentByName(parent, "panelFocus");
+            if (panelFocus == null) {
+                panelFocus = new JPanel();
+                panelFocus.setName("panelFocus");
+                panelFocus.setBounds(
+                        p.getX(),
+                        p.getY() - (int) titlePanelSize,
+                        p.getWidth(),
+                        p.getHeight() + (int) titlePanelSize);
+                panelFocus.setOpaque(false);
+
+                mouseFocus(panelFocus);
+
+                parent.add(panelFocus);
+            }
+            panelFocus.setVisible(true);
+            parent.setComponentZOrder(panelFocus, 0);
         }
-
-        // パネルのフォーカスを奪う
-        JPanel panelFocus = (JPanel) findComponentByName(parent, "panelFocus");
-        if (panelFocus == null) {
-            panelFocus = new JPanel();
-            panelFocus.setName("panelFocus");
-            panelFocus.setBounds(p.getX(), p.getY(), p.getWidth(), p.getHeight());
-            panelFocus.setOpaque(false);
-
-            MouseAdapter blocker = new MouseAdapter() {
-            };
-            panelFocus.addMouseListener(blocker);
-            panelFocus.addMouseMotionListener(blocker);
-
-            parent.add(panelFocus);
-        }
-        panelFocus.setVisible(true);
-        parent.setComponentZOrder(panelFocus, 0);
-
-        // 最前面に配置
-        parent.setComponentZOrder(p, 0);
-
-        p.setLayout(null);
-        p.setBackground(new Color(0, 0, 0, 220));
-        p.setBorder(BorderFactory.createLineBorder(Color.CYAN, 2));
 
         // パネルタイトル
-        JLabel titleLabel = (JLabel) findComponentByName(p, "titleLabel");
+        JLabel titleLabel = (JLabel) findComponentByName(titlePanel, "titleLabel");
         if (titleLabel == null) {
             titleLabel = new JLabel();
             titleLabel.setForeground(Color.WHITE); // 文字色
             titleLabel.setHorizontalAlignment(SwingConstants.CENTER); // 中央揃え
 
             titleLabel.setName("titleLabel");
-            p.add(titleLabel);
+            titlePanel.add(titleLabel);
         }
         double fontSize = 15 * ShootingGameMain.getScreenSizeAdj();
         titleLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, (int) fontSize));
         titleLabel.setText(title);
-        titleLabel.setBounds(0, 0, p.getWidth(), (int) (fontSize * 1.5));
+        titleLabel.setBounds(0, 0, titlePanel.getWidth(), (int) titlePanelSize);
 
         // closeボタン
-        JButton closePanelButton = (JButton) findComponentByName(p, "closeBtn");
+        JButton closePanelButton = (JButton) findComponentByName(titlePanel, "closeBtn");
         if (closePanelButton == null) {
             Vector2 closePanelButtonSize = new Vector2(
                     20 * ShootingGameMain.getScreenSizeAdj(),
@@ -381,13 +390,17 @@ public class UIBuilder extends JPanel {
             });
 
             closePanelButton.setName("closeBtn");
-            p.add(closePanelButton);
+            titlePanel.add(closePanelButton);
         }
         closePanelButton.setBounds(
-                (int) p.getWidth() - (int) closePanelButton.getWidth(),
-                0,
+                (int) titlePanel.getWidth() - (int) closePanelButton.getWidth(),
+                (int) titlePanelSize / 2 - (int) closePanelButton.getHeight() / 2,
                 (int) closePanelButton.getWidth(),
                 (int) closePanelButton.getHeight());
+
+        // 最前面に配置
+        parent.setComponentZOrder(p, 0);
+        parent.setComponentZOrder(titlePanel, 0);
 
         p.revalidate();
         p.repaint();
@@ -400,6 +413,11 @@ public class UIBuilder extends JPanel {
      * @param p パネル情報
      */
     public static void closePanel(JPanel p) {
+        Component titlePanel = findComponentByName((JPanel) p.getParent(), "titlePanel");
+        if (titlePanel != null) {
+            titlePanel.setVisible(false);
+        }
+
         Component shield = findComponentByName((JPanel) p.getParent(), "globalShield");
         if (shield != null) {
             shield.setVisible(false);
@@ -430,5 +448,18 @@ public class UIBuilder extends JPanel {
             }
         }
         return null;
+    }
+
+    /**
+     * マウスフォーカスを奪う
+     * 
+     * @param p フォーカスを奪うパネル
+     */
+    private static void mouseFocus(JPanel p) {
+        MouseAdapter blocker = new MouseAdapter() {
+        };
+        p.addMouseListener(blocker);
+        p.addMouseMotionListener(blocker);
+        p.addMouseWheelListener(blocker);
     }
 }

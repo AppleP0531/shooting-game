@@ -1,31 +1,34 @@
 package com.game.shooting_game.upgradeScene;
 
-import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.utils.Vector2;
-import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
-import com.game.shooting_game.interfaces.Manager;
-import com.game.shooting_game.upgradeScene.subPanels.SkillTreeButtonPanel;
-
-import java.io.IOException;
-import java.io.InputStream;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.util.Map;
-import java.util.List;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import javax.swing.JPanel;
+
 import javax.swing.JButton;
+import javax.swing.JPanel;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.game.shooting_game.SceneManager;
-import com.game.shooting_game.ShootingGameMain;
-import com.game.shooting_game.SceneManager.SceneType;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import com.game.shooting_game.SceneManager;
+import com.game.shooting_game.SceneManager.SceneType;
+import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.interfaces.Manager;
+import com.game.shooting_game.upgradeScene.subPanels.SkillTreeButtonPanel;
+import com.game.shooting_game.utils.ANSI;
+import com.game.shooting_game.utils.LogUtils;
+import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.utils.Vector2;
 
 public final class UpgradeManager extends JPanel implements Manager {
     private static final String component = "[UpgradeManager]";
@@ -43,20 +46,21 @@ public final class UpgradeManager extends JPanel implements Manager {
     @Data // Getter, Setterの自動生成
     @NoArgsConstructor // 引数なしコンストラクタの生成
     @JsonIgnoreProperties(ignoreUnknown = true) // 余計な項目の無視
-    public static class SkillTreeButtonData {
+    public static class SkillTreeData {
         private String name;
         private String rootNode;
         private int dist;
         private int pos;
+        private String detail;
     }
 
     private JButton lobbyButton;
 
     @Getter
-    private List<SkillTreeButtonData> skillTreeButtonConfigMap; // ボタンデータ
+    private List<SkillTreeData> skillTreeConfigMap; // ボタンデータ
     @Getter
-    private Map<String, BufferedImage> skillTreeButtonImageCache; // ボタン画像データ
-    private static final TypeReference<List<SkillTreeButtonData>> TYPE_REF = new TypeReference<>() {
+    private Map<String, BufferedImage> skillTreeImageCache; // ボタン画像データ
+    private static final TypeReference<List<SkillTreeData>> TYPE_REF = new TypeReference<>() {
     };
 
     private UpgradeManager() {
@@ -108,7 +112,7 @@ public final class UpgradeManager extends JPanel implements Manager {
      * config読み込み
      */
     private void loadConfig() {
-        final String CONFIG_PATH = "/static/configs/SkillTreeButtonConfig.json";
+        final String CONFIG_PATH = "/static/configs/SkillTreeConfig.json";
         ObjectMapper mapper = new ObjectMapper();
 
         try (InputStream is = getClass().getResourceAsStream(CONFIG_PATH)) {
@@ -123,7 +127,7 @@ public final class UpgradeManager extends JPanel implements Manager {
                 throw new IOException("Resource not found: " + CONFIG_PATH);
 
             // データを読み込む
-            skillTreeButtonConfigMap = mapper.readValue(is, TYPE_REF);
+            skillTreeConfigMap = mapper.readValue(is, TYPE_REF);
 
             // ロード成功ログ
             LogUtils.systemLog(
@@ -148,9 +152,9 @@ public final class UpgradeManager extends JPanel implements Manager {
      * 画像読み込み
      */
     private void loadSkillTreeButtonImages() {
-        skillTreeButtonImageCache = new HashMap<>();
+        skillTreeImageCache = new HashMap<>();
 
-        for (SkillTreeButtonData data : skillTreeButtonConfigMap) {
+        for (SkillTreeData data : skillTreeConfigMap) {
             String imagePath = "/static/img/UI/upgradeScene/" + data.getName() + ".png";
             BufferedImage image = null;
             try {
@@ -173,7 +177,7 @@ public final class UpgradeManager extends JPanel implements Manager {
                     default -> System.out.println(e);
                 }
             }
-            skillTreeButtonImageCache.put(data.getName(), image);
+            skillTreeImageCache.put(data.getName(), image);
         }
     }
 
@@ -213,7 +217,7 @@ public final class UpgradeManager extends JPanel implements Manager {
     /**
      * 画面状態の再読み込み
      */
-    private void reloadScreen() {
+    public void reloadScreen() {
         skillTreeButtonPanel.reload();
     }
 }

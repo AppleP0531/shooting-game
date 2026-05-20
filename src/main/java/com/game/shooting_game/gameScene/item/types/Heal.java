@@ -1,11 +1,11 @@
 package com.game.shooting_game.gameScene.item.types;
 
+import java.awt.Color;
+import java.awt.Graphics;
+
 import com.game.shooting_game.gameScene.item.Item;
 import com.game.shooting_game.gameScene.item.ItemManager.ItemKinds;
 import com.game.shooting_game.utils.Vector2;
-
-import java.awt.Color;
-import java.awt.Graphics;
 
 public class Heal extends Item {
     public Heal(Vector2 pos) {

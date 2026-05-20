@@ -1,7 +1,7 @@
 package com.game.shooting_game.utils;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 public class LogUtils {
     // ログ関連

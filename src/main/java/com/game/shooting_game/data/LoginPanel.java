@@ -1,22 +1,21 @@
 package com.game.shooting_game.data;
 
-import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
-import com.game.shooting_game.utils.Vector2;
-
 import java.awt.Color;
 import java.awt.Insets;
-import javax.swing.JPanel;
+
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 import com.game.shooting_game.CommandGlassPane;
 import com.game.shooting_game.ShootingGameMain;
-
-import javax.swing.JPasswordField;
+import com.game.shooting_game.utils.ANSI;
+import com.game.shooting_game.utils.LogUtils;
+import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.utils.Vector2;
 
 public class LoginPanel extends JPanel {
     private final static String component = "[LoginPanel]";

@@ -1,15 +1,15 @@
 package com.game.shooting_game.utils.animation;
 
-import com.game.shooting_game.interfaces.Manager;
-
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.util.Map;
-import java.util.UUID;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 import lombok.Getter;
+
+import com.game.shooting_game.interfaces.Manager;
 
 public final class AnimationManager implements Manager {
     private static AnimationManager instance;

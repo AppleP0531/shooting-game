@@ -1,20 +1,20 @@
 package com.game.shooting_game.gameScene.subPanels;
 
-import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.utils.Vector2;
-import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
-import com.game.shooting_game.gameScene.GameManager;
-
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import com.game.shooting_game.SceneManager;
-import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.SceneManager.SceneType;
+import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.gameScene.GameManager;
+import com.game.shooting_game.utils.ANSI;
+import com.game.shooting_game.utils.LogUtils;
+import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.utils.Vector2;
 
 public class PausePanel extends JPanel {
     private static final String component = "[pausePanel]";

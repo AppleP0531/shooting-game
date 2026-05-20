@@ -1,43 +1,42 @@
 package com.game.shooting_game.gameScene.ship;
 
-import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.utils.Vector2;
-import com.game.shooting_game.utils.animation.Animation;
-import com.game.shooting_game.utils.animation.AnimationManager;
-import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.GameUtils;
+import java.awt.AlphaComposite;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import com.game.shooting_game.SceneManager;
+import com.game.shooting_game.SceneManager.SceneType;
+import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.gameScene.GameManager;
-import com.game.shooting_game.gameScene.ship.ShipManager.ShipConfig;
-import com.game.shooting_game.gameScene.ship.ShipManager.ShipDefinition;
-import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
-import com.game.shooting_game.gameScene.ship.ShipManager.ShotConfig;
 import com.game.shooting_game.gameScene.bullet.BulletFactory;
 import com.game.shooting_game.gameScene.bullet.BulletManager;
 import com.game.shooting_game.gameScene.bullet.BulletManager.BulletConfig;
 import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
+import com.game.shooting_game.gameScene.ship.ShipManager.ShipConfig;
+import com.game.shooting_game.gameScene.ship.ShipManager.ShipDefinition;
+import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
+import com.game.shooting_game.gameScene.ship.ShipManager.ShotConfig;
 import com.game.shooting_game.interfaces.Entity;
-import com.game.shooting_game.interfaces.Moveable;
 import com.game.shooting_game.interfaces.GameObject;
-
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.AlphaComposite;
-import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
-import java.util.Map;
-import java.util.List;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
-
-import com.game.shooting_game.SceneManager;
-import com.game.shooting_game.ShootingGameMain;
-import com.game.shooting_game.SceneManager.SceneType;
-
-import lombok.Getter;
-import lombok.Setter;
+import com.game.shooting_game.interfaces.Moveable;
+import com.game.shooting_game.utils.ANSI;
+import com.game.shooting_game.utils.GameUtils;
+import com.game.shooting_game.utils.LogUtils;
+import com.game.shooting_game.utils.Vector2;
+import com.game.shooting_game.utils.animation.Animation;
+import com.game.shooting_game.utils.animation.AnimationManager;
 
 public abstract class Ship implements Moveable, GameObject, Entity {
     private static final String component = "[Ship]";

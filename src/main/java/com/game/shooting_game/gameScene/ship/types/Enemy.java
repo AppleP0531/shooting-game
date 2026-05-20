@@ -1,18 +1,17 @@
 package com.game.shooting_game.gameScene.ship.types;
 
-import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.utils.Vector2;
-import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.GameUtils;
-import com.game.shooting_game.gameScene.ship.Ship;
-import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
-import com.game.shooting_game.gameScene.ship.ShipManager.ShipDefinition;
-
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
 import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.gameScene.ship.Ship;
+import com.game.shooting_game.gameScene.ship.ShipManager.ShipDefinition;
+import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
+import com.game.shooting_game.utils.ANSI;
+import com.game.shooting_game.utils.GameUtils;
+import com.game.shooting_game.utils.LogUtils;
+import com.game.shooting_game.utils.Vector2;
 
 public class Enemy extends Ship {
     private static final String component = "[Ship:Enemy]";

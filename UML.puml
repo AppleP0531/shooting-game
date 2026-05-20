@@ -302,6 +302,7 @@ package "shooting_game" {
                     - panelSize: Vector2
                     - spacing: int
                     - stageId: int
+                    - detailTextArea: JTextArea
                     - startStageButton: JButton
                     - skipStageButton: JButton
                     --
@@ -472,8 +473,8 @@ package "shooting_game" {
             - upgradeUI: UpgradeSceneUI
             - MAIN: ShootingGameMain
             - skillTreeButtonPanel: SkillTreeButtonPanel
-            - skillTreeButtonConfigMap: List<SkillTreeButtonData>
-            - skillTreeButtonImageCache: Map<String,BufferedImage>
+            - skillTreeConfigMap: List<SkillTreeData>
+            - skillTreeImageCache: Map<String,BufferedImage>
             - lobbyButton: JButton
             - saveButton: JButton
             --
@@ -490,11 +491,12 @@ package "shooting_game" {
             - reloadScreen(): void
         }
 
-        class SkillTreeButtonData <<lombok @Data>> {
+        class SkillTreeData <<lombok @Data>> {
             - name: String
             - rootNode: String
             - dist: int
             - pos: int
+            - detail: String
         }
 
         class UpgradeSceneUI {
@@ -534,6 +536,7 @@ package "shooting_game" {
                 - panelSize: Vector2
                 - spacing: int
                 - skillName: String
+                - detailTextArea: JTextArea
                 - upgradeButton: JButton
                 --
                 + SkillDetailPanel()
@@ -1264,6 +1267,7 @@ package "shooting_game" {
             + {static} openPanel(p: JPanel, title: String, focus: Boolean): void
             + {static} closePanel(p: JPanel): void
             - {static} findComponentByName(panel: JPanel, name: String): Component
+            - {static} mouseFocus(p: JPanel): void
         }
 
         class ANSI {

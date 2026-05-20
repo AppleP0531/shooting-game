@@ -1,28 +1,27 @@
 package com.game.shooting_game.gameScene.bullet;
 
-import com.game.shooting_game.gameScene.GameManager;
-import com.game.shooting_game.gameScene.ship.ShipManager;
-import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
-import com.game.shooting_game.gameScene.bullet.BulletManager.BulletConfig;
-import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
-import com.game.shooting_game.interfaces.Entity;
-import com.game.shooting_game.interfaces.GameObject;
-import com.game.shooting_game.interfaces.Moveable;
-import com.game.shooting_game.utils.Vector2;
-import com.game.shooting_game.utils.UIBuilder;
-import com.game.shooting_game.utils.animation.Animation;
-import com.game.shooting_game.utils.animation.AnimationManager;
-
+import java.awt.AlphaComposite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.AlphaComposite;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.Optional;
 
-import com.game.shooting_game.ShootingGameMain;
-
 import lombok.Getter;
+
+import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.gameScene.GameManager;
+import com.game.shooting_game.gameScene.bullet.BulletManager.BulletConfig;
+import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
+import com.game.shooting_game.gameScene.ship.ShipManager;
+import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
+import com.game.shooting_game.interfaces.Entity;
+import com.game.shooting_game.interfaces.GameObject;
+import com.game.shooting_game.interfaces.Moveable;
+import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.utils.Vector2;
+import com.game.shooting_game.utils.animation.Animation;
+import com.game.shooting_game.utils.animation.AnimationManager;
 
 public abstract class Bullet implements Moveable, GameObject, Entity {
     protected final ShootingGameMain MAIN;

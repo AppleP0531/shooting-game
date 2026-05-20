@@ -1,15 +1,14 @@
 package com.game.shooting_game.gameResultScene;
 
-import com.game.shooting_game.utils.Vector2;
-import com.game.shooting_game.utils.Anchor;
-import com.game.shooting_game.utils.UIBuilder;
-import com.game.shooting_game.gameScene.GameManager;
-
-import java.awt.Font;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 
 import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.gameScene.GameManager;
+import com.game.shooting_game.utils.Anchor;
+import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.utils.Vector2;
 
 public class GameResultSceneUI {
     private final ShootingGameMain MAIN;

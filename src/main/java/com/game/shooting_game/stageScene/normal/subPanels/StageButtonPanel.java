@@ -1,26 +1,26 @@
 package com.game.shooting_game.stageScene.normal.subPanels;
 
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+
+import lombok.Getter;
+
+import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
-import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.utils.Vector2;
-import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
 import com.game.shooting_game.gameScene.stage.StageManager;
 import com.game.shooting_game.stageScene.normal.NormalStageManager;
 import com.game.shooting_game.stageScene.normal.NormalStageManager.StageButtonData;
-
-import java.io.IOException;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.util.Map;
-import java.util.HashMap;
-import javax.swing.JPanel;
-
-import com.game.shooting_game.ShootingGameMain;
-
-import javax.swing.JButton;
-import javax.swing.ImageIcon;
-import lombok.Getter;
+import com.game.shooting_game.utils.ANSI;
+import com.game.shooting_game.utils.LogUtils;
+import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.utils.Vector2;
 
 public class StageButtonPanel extends JPanel {
     private static final String component = "[StageButtonPanel]";
@@ -67,7 +67,6 @@ public class StageButtonPanel extends JPanel {
      */
     public void setup() {
         drawButton();
-        this.add(stageDetailPanel);
         drawPanel();
 
         if (getParent() != null) // 最前面に持ってくる
@@ -78,7 +77,8 @@ public class StageButtonPanel extends JPanel {
      * リソースの再読み込み
      */
     public void reload() {
-        setup();
+        drawButton();
+        drawPanel();
     }
 
     /**
@@ -224,5 +224,7 @@ public class StageButtonPanel extends JPanel {
 
             buttonMap.put(stageId, button);
         }
+
+        this.add(stageDetailPanel);
     }
 }

@@ -1,9 +1,12 @@
 package com.game.shooting_game.gameScene.bullet;
 
+import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
+import com.game.shooting_game.gameScene.bullet.types.Ball;
+import com.game.shooting_game.gameScene.bullet.types.Laser;
+import com.game.shooting_game.gameScene.bullet.types.Straight;
+import com.game.shooting_game.gameScene.bullet.types.Tracking;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.utils.Vector2;
-import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
-import com.game.shooting_game.gameScene.bullet.types.*;
 
 public class BulletFactory {
     /**

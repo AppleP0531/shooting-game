@@ -1,44 +1,44 @@
 package com.game.shooting_game.gameScene;
 
+import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.SceneManager;
+import com.game.shooting_game.SceneManager.SceneType;
+import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.data.DataManager.UserData;
-import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.GameUtils;
+import com.game.shooting_game.gameScene.GameSceneUI.GameSceneUIData;
+import com.game.shooting_game.gameScene.bullet.Bullet;
+import com.game.shooting_game.gameScene.bullet.BulletManager;
+import com.game.shooting_game.gameScene.item.Item;
+import com.game.shooting_game.gameScene.item.ItemManager;
 import com.game.shooting_game.gameScene.ship.Ship;
 import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
-import com.game.shooting_game.gameScene.item.Item;
-import com.game.shooting_game.gameScene.item.ItemManager;
 import com.game.shooting_game.gameScene.stage.StageManager;
 import com.game.shooting_game.gameScene.stage.StageManager.StageData;
-import com.game.shooting_game.gameScene.bullet.Bullet;
-import com.game.shooting_game.gameScene.bullet.BulletManager;
 import com.game.shooting_game.gameScene.subPanels.PausePanel;
-import com.game.shooting_game.gameScene.GameSceneUI.GameSceneUIData;
 import com.game.shooting_game.interfaces.Manager;
-
-import java.awt.Graphics;
-import java.awt.event.KeyEvent;
-import java.awt.event.ActionEvent;
-import java.util.Map;
-import java.util.Objects;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import javax.swing.JPanel;
-import javax.swing.InputMap;
-import javax.swing.ActionMap;
-import javax.swing.KeyStroke;
-
-import com.game.shooting_game.SceneManager;
-import com.game.shooting_game.ShootingGameMain;
-import com.game.shooting_game.ResourceManager.ResourceKinds;
-import com.game.shooting_game.SceneManager.SceneType;
-
-import javax.swing.AbstractAction;
-import lombok.Getter;
-import lombok.Setter;
+import com.game.shooting_game.utils.ANSI;
+import com.game.shooting_game.utils.GameUtils;
+import com.game.shooting_game.utils.LogUtils;
 
 public final class GameManager extends JPanel implements Manager {
     private static final String component = "[GameManager]";

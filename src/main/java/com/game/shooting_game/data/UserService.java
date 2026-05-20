@@ -1,13 +1,13 @@
 package com.game.shooting_game.data;
 
-import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.entity.UserEntity;
-import com.game.shooting_game.repository.UserRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import com.game.shooting_game.entity.UserEntity;
+import com.game.shooting_game.repository.UserRepository;
+import com.game.shooting_game.utils.ANSI;
+import com.game.shooting_game.utils.LogUtils;
 
 @Service
 public class UserService {

@@ -1,18 +1,19 @@
 package com.game.shooting_game.testScene;
 
+import java.awt.Graphics;
+import java.awt.GridBagLayout;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import javax.swing.JPanel;
+
 import com.game.shooting_game.gameScene.GameManager;
+import com.game.shooting_game.gameScene.bullet.BulletManager;
 import com.game.shooting_game.gameScene.item.ItemManager;
 import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.gameScene.stage.StageManager;
-import com.game.shooting_game.gameScene.bullet.BulletManager;
 import com.game.shooting_game.interfaces.Manager;
-
-import java.awt.Graphics;
-import java.awt.GridBagLayout;
-import java.util.List;
-import java.util.Objects;
-import java.util.ArrayList;
-import javax.swing.JPanel;
 
 public final class TestManager extends JPanel implements Manager {
     private static TestManager instance;

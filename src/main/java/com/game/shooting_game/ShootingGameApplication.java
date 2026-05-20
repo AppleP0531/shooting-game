@@ -1,6 +1,7 @@
 package com.game.shooting_game;
 
 import javax.swing.SwingUtilities;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 

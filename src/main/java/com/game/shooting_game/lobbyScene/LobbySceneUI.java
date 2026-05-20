@@ -1,22 +1,22 @@
 package com.game.shooting_game.lobbyScene;
 
-import com.game.shooting_game.data.DataManager;
-import com.game.shooting_game.utils.Vector2;
-import com.game.shooting_game.utils.Anchor;
-import com.game.shooting_game.utils.Anchor.*;
-import com.game.shooting_game.utils.UIBuilder;
-import com.game.shooting_game.gameScene.GameManager;
-import com.game.shooting_game.gameScene.ship.ShipFactory;
-import com.game.shooting_game.gameScene.ship.ShipManager;
-import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
-import com.game.shooting_game.gameScene.ship.types.Player;
-import com.game.shooting_game.gameScene.bullet.BulletManager;
-
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 
 import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.data.DataManager;
+import com.game.shooting_game.gameScene.GameManager;
+import com.game.shooting_game.gameScene.bullet.BulletManager;
+import com.game.shooting_game.gameScene.ship.ShipFactory;
+import com.game.shooting_game.gameScene.ship.ShipManager;
+import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
+import com.game.shooting_game.gameScene.ship.types.Player;
+import com.game.shooting_game.utils.Anchor;
+import com.game.shooting_game.utils.Anchor.H;
+import com.game.shooting_game.utils.Anchor.V;
+import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.utils.Vector2;
 
 public class LobbySceneUI {
     private final ShootingGameMain MAIN;

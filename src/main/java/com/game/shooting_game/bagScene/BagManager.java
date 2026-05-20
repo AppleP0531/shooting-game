@@ -1,22 +1,21 @@
 package com.game.shooting_game.bagScene;
 
-import com.game.shooting_game.data.DataManager;
-import com.game.shooting_game.utils.UIBuilder;
-import com.game.shooting_game.utils.Vector2;
-import com.game.shooting_game.bagScene.BagSceneUI.BagSceneUIData;
-import com.game.shooting_game.interfaces.Manager;
-
 import java.awt.Graphics;
 import java.util.Map;
 import java.util.Objects;
-import javax.swing.JPanel;
-
-import com.game.shooting_game.SceneManager;
-import com.game.shooting_game.ShootingGameMain;
-import com.game.shooting_game.ResourceManager.ResourceKinds;
-import com.game.shooting_game.SceneManager.SceneType;
 
 import javax.swing.JButton;
+import javax.swing.JPanel;
+
+import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.SceneManager;
+import com.game.shooting_game.SceneManager.SceneType;
+import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.bagScene.BagSceneUI.BagSceneUIData;
+import com.game.shooting_game.data.DataManager;
+import com.game.shooting_game.interfaces.Manager;
+import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.utils.Vector2;
 
 public final class BagManager extends JPanel implements Manager {
     private static final String component = "[BagManager]";
