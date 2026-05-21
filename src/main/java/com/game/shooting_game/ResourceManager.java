@@ -132,6 +132,8 @@ public final class ResourceManager implements Manager {
      * 画像読み込み
      */
     private void loadImages() {
+        final String IMAGE_BASE_PATH = "/static/img/resource/";
+
         resourceImageCache = new HashMap<>();
         // ResourceKindsの階層でループ
         for (Map.Entry<ResourceKinds, ResourceConfig> kindEntry : resourceConfigMap.entrySet()) {
@@ -142,17 +144,8 @@ public final class ResourceManager implements Manager {
             for (Map.Entry<Rarity, ResourceData> rarityEntry : data.entrySet()) {
                 Rarity rarity = rarityEntry.getKey();
                 ResourceData recourcedata = rarityEntry.getValue();
-                String imagePath = recourcedata.getImagePath();
 
-                if (imagePath == null) {
-                    // 画像パス未定義ログ
-                    LogUtils.systemLog(
-                            "[WARN]",
-                            component,
-                            "imagePath for resource " + ANSI.YELLOW + kind + ANSI.RESET + " is not defined.");
-                    continue;
-                }
-
+                String imagePath = IMAGE_BASE_PATH + recourcedata.getImagePath();
                 try {
                     BufferedImage masterSheet = UIBuilder.loadImage(imagePath);
                     Vector2 grids = recourcedata.getGrids();
