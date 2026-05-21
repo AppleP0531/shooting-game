@@ -195,6 +195,8 @@ public final class ShipManager implements Manager {
      * 画像読み込み
      */
     private void loadImages() {
+        final String IMAGE_BASE_PATH = "/static/img/ship/";
+
         shipImageCache = new HashMap<>();
         // ShipKindsの階層でループ
         for (Map.Entry<ShipKinds, Map<String, ShipDefinition>> ownerEntry : shipConfigMap.entrySet()) {
@@ -215,17 +217,7 @@ public final class ShipManager implements Manager {
                     continue;
                 }
 
-                String imagePath = data.getImagePath();
-
-                if (imagePath == null) {
-                    // 画像パス未定義ログ
-                    LogUtils.systemLog(
-                            "[WARN]",
-                            component,
-                            "imagePath for ship " + ANSI.YELLOW + owner + ANSI.RESET + " is not defined.");
-                    continue;
-                }
-
+                String imagePath = IMAGE_BASE_PATH + data.getImagePath();
                 try {
                     BufferedImage masterSheet = UIBuilder.loadImage(imagePath);
                     SheetConfig[] sheets = data.getSheets();

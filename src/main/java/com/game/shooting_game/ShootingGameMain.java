@@ -24,6 +24,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import com.game.shooting_game.SceneManager.SceneType;
+import com.game.shooting_game.command.CommandGlassPane;
 import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.data.LoginPanel;
 import com.game.shooting_game.data.UserService;

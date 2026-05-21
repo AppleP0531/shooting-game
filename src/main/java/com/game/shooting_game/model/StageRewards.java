@@ -1,6 +1,6 @@
 package com.game.shooting_game.model;
 
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -13,7 +13,7 @@ public class StageRewards {
     private static StageRewards instance;
 
     private int score; // ステージクリアスコア
-    private Map<ResourceKinds, Integer> resources = new LinkedHashMap<>(); // ステージクリア報酬
+    private Map<ResourceKinds, Integer> resources = new HashMap<>(); // ステージクリア報酬
 
     /**
      * インスタンスの取得

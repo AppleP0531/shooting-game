@@ -135,6 +135,8 @@ public final class BulletManager implements Manager {
      * 画像読み込み
      */
     public void loadImages() {
+        final String IMAGE_BASE_PATH = "/static/img/bullet/";
+
         bulletImageCache = new HashMap<>();
         // ShipKindsの階層でループ
         for (Map.Entry<ShipKinds, Map<BulletKinds, Map<Integer, BulletConfig>>> ownerEntry : bulletConfigMap
@@ -159,18 +161,7 @@ public final class BulletManager implements Manager {
                         continue;
                     }
 
-                    String imagePath = data.getImagePath();
-
-                    if (imagePath == null) {
-                        // 画像パス未定義ログ
-                        LogUtils.systemLog(
-                                "[WARN]",
-                                component,
-                                "imagePath for " + ANSI.YELLOW + owner + " - " + kind + ANSI.RESET
-                                        + " is not defined.");
-                        continue;
-                    }
-
+                    String imagePath = IMAGE_BASE_PATH + data.getImagePath();
                     try {
                         BufferedImage masterSheet = UIBuilder.loadImage(imagePath);
                         Vector2 grids = data.getGrids();
