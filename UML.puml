@@ -72,8 +72,7 @@ package "shooting_game" {
             - SHIP_M: ShipManager
             - BM: BulletManager
             - STAGE_M: StageManager
-            - rootCommands: Map<String, CommandNode>
-            - commandTrie: Map<String, CommandTrie>
+            - rootCommands:  Map<String, CommandNode>
             - commandField: JTextField
             - commandHistory: List<String>
             - historyIndex: int
@@ -93,7 +92,8 @@ package "shooting_game" {
             - showHistoryList(diff: int): void
             - hideHistoryList(): void
             - processCommand(text: String): void
-            - register(root: Map<String, CommandNode>, name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
+            - register(root: Map<String,CommandNode>, name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
+            - register(root: CommandNode, name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
             - isSceneValid(allowedTypes: SceneType...): boolean
             - registCommands(): void
             - showHelp(): void
@@ -103,16 +103,21 @@ package "shooting_game" {
         }
 
         interface CommandAction <<functional>> {
-            ~ execute(args: String[]): void
+            ~ execute(node: CommandNode, args: String[]): void
         }
 
         class CommandNode <<Lomboc @Data>> {
+            - name: String
             - description: String
             - adminOnly: boolean
             - action: CommandAction
+            - parent: CommandNode
             - subCommands: Map<String, CommandNode>
+            - syntax: String
             --
-            + CommandNode(description: String, adminOnly: boolean, action: CommandAction)
+            + CommandNode(parent: CommandNode, name: String, description: String, adminOnly: boolean, action: CommandAction)
+            + getUseage(): String
+            - getFullPath(): String
         }
 
         class CommandTrie <<Lomboc @Data>> {
