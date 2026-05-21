@@ -2,7 +2,7 @@
   "OBJECT": {
     "collision": {
       "datas": {
-        "imagePath": "/static/img/ship/player/collision.png",
+        "imagePath": "/player/collision.png",
         "sheets": [{ "grids": [1, 1], "useCount": 1 }],
         "frameRate": 0.1,
         "imageSize": 5
@@ -10,7 +10,7 @@
     },
     "shield": {
       "datas": {
-        "imagePath": "/static/img/ship/player/shield.png",
+        "imagePath": "/player/shield.png",
         "sheets": [{ "grids": [1, 1], "useCount": 1 }],
         "frameRate": 0.1,
         "imageSize": 80
@@ -18,7 +18,7 @@
     },
     "explosion": {
       "datas": {
-        "imagePath": "/static/img/ship/player/explosion.png",
+        "imagePath": "/player/explosion.png",
         "sheets": [{ "grids": [1, 1], "useCount": 1 }],
         "frameRate": 0.1,
         "imageSize": 80
@@ -28,7 +28,7 @@
   "PLAYER": {
     "Ship1": {
       "datas": {
-        "imagePath": "/static/img/ship/player/Ship1.png",
+        "imagePath": "/player/Ship1.png",
         "sheets": [
           { "grids": [1, 1], "useCount": 1 },
           { "grids": [0, 0], "useCount": 0 },
@@ -116,7 +116,7 @@
     },
     "Ship2": {
       "datas": {
-        "imagePath": "/static/img/ship/player/Ship2.png",
+        "imagePath": "/player/Ship2.png",
         "cost": 10000,
         "sheets": [
           { "grids": [1, 1], "useCount": 1 },
@@ -205,7 +205,7 @@
     },
     "Ship3": {
       "datas": {
-        "imagePath": "/static/img/ship/player/Ship3.png",
+        "imagePath": "/player/Ship3.png",
         "cost": 50000,
         "sheets": [
           { "grids": [1, 1], "useCount": 1 },
@@ -294,7 +294,7 @@
     },
     "Ship4": {
       "datas": {
-        "imagePath": "/static/img/ship/player/Ship4.png",
+        "imagePath": "/player/Ship4.png",
         "cost": 1000000,
         "sheets": [
           { "grids": [1, 1], "useCount": 1 },
@@ -426,7 +426,7 @@
     },
     "Ship5": {
       "datas": {
-        "imagePath": "/static/img/ship/player/Ship5.png",
+        "imagePath": "/player/Ship5.png",
         "cost": 20000000,
         "sheets": [
           { "grids": [4, 2], "useCount": 6 },
@@ -572,7 +572,7 @@
     },
     "SubShip1_L": {
       "datas": {
-        "imagePath": "/static/img/ship/player/SubShip1_L.png",
+        "imagePath": "/player/SubShip1_L.png",
         "sheets": [{ "grids": [1, 1], "useCount": 1 }],
         "frameRate": 0.1,
         "imageSize": 80,
@@ -590,7 +590,7 @@
     },
     "SubShip1_R": {
       "datas": {
-        "imagePath": "/static/img/ship/player/SubShip1_R.png",
+        "imagePath": "/player/SubShip1_R.png",
         "sheets": [{ "grids": [1, 1], "useCount": 1 }],
         "frameRate": 0.1,
         "imageSize": 80,
@@ -608,7 +608,7 @@
     },
     "SubShip2_L": {
       "datas": {
-        "imagePath": "/static/img/ship/player/SubShip2_L.png",
+        "imagePath": "/player/SubShip2_L.png",
         "sheets": [{ "grids": [1, 1], "useCount": 1 }],
         "frameRate": 0.1,
         "imageSize": 80,
@@ -626,7 +626,7 @@
     },
     "SubShip2_R": {
       "datas": {
-        "imagePath": "/static/img/ship/player/SubShip2_R.png",
+        "imagePath": "/player/SubShip2_R.png",
         "sheets": [{ "grids": [1, 1], "useCount": 1 }],
         "frameRate": 0.1,
         "imageSize": 80,
@@ -644,7 +644,7 @@
     },
     "SubShip3_L": {
       "datas": {
-        "imagePath": "/static/img/ship/player/SubShip3_L.png",
+        "imagePath": "/player/SubShip3_L.png",
         "sheets": [{ "grids": [1, 1], "useCount": 1 }],
         "frameRate": 0.1,
         "imageSize": 80,
@@ -676,7 +676,7 @@
     },
     "SubShip3_R": {
       "datas": {
-        "imagePath": "/static/img/ship/player/SubShip3_R.png",
+        "imagePath": "/player/SubShip3_R.png",
         "sheets": [{ "grids": [1, 1], "useCount": 1 }],
         "frameRate": 0.1,
         "imageSize": 80,
@@ -708,7 +708,7 @@
     },
     "SubShip4_L": {
       "datas": {
-        "imagePath": "/static/img/ship/player/SubShip4_L.png",
+        "imagePath": "/player/SubShip4_L.png",
         "sheets": [{ "grids": [1, 1], "useCount": 1 }],
         "frameRate": 0.1,
         "imageSize": 80,
@@ -747,7 +747,7 @@
     },
     "SubShip4_R": {
       "datas": {
-        "imagePath": "/static/img/ship/player/SubShip4_R.png",
+        "imagePath": "/player/SubShip4_R.png",
         "sheets": [{ "grids": [1, 1], "useCount": 1 }],
         "frameRate": 0.1,
         "imageSize": 80,
@@ -786,7 +786,7 @@
     },
     "SubShip5_L": {
       "datas": {
-        "imagePath": "/static/img/ship/player/SubShip5_L.png",
+        "imagePath": "/player/SubShip5_L.png",
         "sheets": [{ "grids": [1, 1], "useCount": 1 }],
         "frameRate": 0.1,
         "imageSize": 80,
@@ -804,7 +804,7 @@
     },
     "SubShip5_R": {
       "datas": {
-        "imagePath": "/static/img/ship/player/SubShip5_R.png",
+        "imagePath": "/player/SubShip5_R.png",
         "sheets": [{ "grids": [1, 1], "useCount": 1 }],
         "frameRate": 0.1,
         "imageSize": 80,
@@ -824,7 +824,7 @@
   "ENEMY": {
     "Enemy1": {
       "datas": {
-        "imagePath": "/static/img/ship/enemy/Enemy1.png",
+        "imagePath": "/enemy/Enemy1.png",
         "sheets": [{ "grids": [1, 1], "useCount": 1 }],
         "frameRate": 0.1,
         "imageSize": 30,
@@ -847,7 +847,7 @@
     },
     "Enemy2": {
       "datas": {
-        "imagePath": "/static/img/ship/enemy/Enemy2.png",
+        "imagePath": "/enemy/Enemy2.png",
         "sheets": [{ "grids": [1, 1], "useCount": 1 }],
         "frameRate": 0.1,
         "imageSize": 30,
@@ -901,7 +901,7 @@
     },
     "Enemy3": {
       "datas": {
-        "imagePath": "/static/img/ship/enemy/Enemy2.png",
+        "imagePath": "/enemy/Enemy2.png",
         "sheets": [{ "grids": [1, 1], "useCount": 1 }],
         "frameRate": 0.1,
         "imageSize": 30,
@@ -955,7 +955,7 @@
     },
     "Enemy4": {
       "datas": {
-        "imagePath": "/static/img/ship/enemy/Enemy3.png",
+        "imagePath": "/enemy/Enemy3.png",
         "sheets": [{ "grids": [1, 1], "useCount": 1 }],
         "frameRate": 0.1,
         "imageSize": 30,
@@ -1009,7 +1009,7 @@
     },
     "Enemy5": {
       "datas": {
-        "imagePath": "/static/img/ship/enemy/Enemy4.png",
+        "imagePath": "/enemy/Enemy4.png",
         "sheets": [{ "grids": [1, 1], "useCount": 1 }],
         "frameRate": 0.1,
         "imageSize": 30,
@@ -1063,7 +1063,7 @@
     },
     "Enemy6": {
       "datas": {
-        "imagePath": "/static/img/ship/enemy/Enemy5.png",
+        "imagePath": "/enemy/Enemy5.png",
         "sheets": [{ "grids": [1, 1], "useCount": 1 }],
         "frameRate": 0.1,
         "imageSize": 30,
@@ -1124,7 +1124,7 @@
     },
     "Enemy7": {
       "datas": {
-        "imagePath": "/static/img/ship/enemy/Enemy6.png",
+        "imagePath": "/enemy/Enemy6.png",
         "sheets": [{ "grids": [1, 1], "useCount": 1 }],
         "frameRate": 0.1,
         "imageSize": 30,
