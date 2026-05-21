@@ -124,23 +124,15 @@ public final class ItemManager implements Manager {
      * 画像読み込み
      */
     private void loadImages() {
+        final String IMAGE_BASE_PATH = "/static/img/item/";
+
         itemImageCache = new HashMap<>();
         // ItemKindsの階層でループ
         for (Map.Entry<ItemKinds, ItemConfig> kindEntry : itemConfigMap.entrySet()) {
             ItemKinds kind = kindEntry.getKey();
             ItemConfig data = kindEntry.getValue();
 
-            String imagePath = data.getImagePath();
-
-            if (imagePath == null) {
-                // 画像パス未定義ログ
-                LogUtils.systemLog(
-                        "[WARN]",
-                        component,
-                        "imagePath for item " + ANSI.YELLOW + kind + ANSI.RESET + " is not defined.");
-                continue;
-            }
-
+            String imagePath = IMAGE_BASE_PATH + data.getImagePath();
             try {
                 BufferedImage masterSheet = UIBuilder.loadImage(imagePath);
                 Vector2 grids = data.getGrids();
