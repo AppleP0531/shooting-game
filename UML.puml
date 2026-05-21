@@ -119,13 +119,6 @@ package "shooting_game" {
             + getUseage(): String
             - getFullPath(): String
         }
-
-        class CommandTrie <<Lomboc @Data>> {
-            - adminOnly: boolean
-            - subNodes: Map<String, CommandTrie>
-            --
-            + CommandTrie(adminOnly: boolean)
-        }
     }
 
     class ResourceManager <<Singleton>> {

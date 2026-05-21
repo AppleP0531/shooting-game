@@ -503,6 +503,14 @@ public class CommandGlassPane extends JPanel {
             try {
                 Integer id = tryParse(param);
 
+                if (!adminMode) {
+                    int clearedStage = DataManager.getUserData().getProgress().getClearedStage() + 1;
+                    if (id > clearedStage) {
+                        System.out.println("Can't play locked stage");
+                        return;
+                    }
+                }
+
                 STAGE_M.getStage().setStageId(id);
                 SM.changeScene(SceneType.GAME);
             } catch (NumberFormatException ne) {

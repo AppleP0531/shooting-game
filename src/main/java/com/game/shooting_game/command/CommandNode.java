@@ -39,7 +39,7 @@ public class CommandNode {
     }
 
     /**
-     * 親ノードの名前をたどりつなげる
+     * 親ノードの名前をたどり、すべてつなげて返す
      * 
      * @return
      */
