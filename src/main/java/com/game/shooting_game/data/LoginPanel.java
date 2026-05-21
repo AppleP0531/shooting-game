@@ -10,8 +10,8 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
-import com.game.shooting_game.CommandGlassPane;
 import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.command.CommandGlassPane;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.utils.UIBuilder;

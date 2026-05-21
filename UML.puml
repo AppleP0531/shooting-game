@@ -61,56 +61,66 @@ package "shooting_game" {
         TEST
     }
 
-    class CommandGlassPane {
-        - MAIN: ShootingGameMain
-        - SM: SceneManager
-        - RM: ResourceManager
-        - NSM: NormalStageManager
-        - GM: GameManager
-        - IM: ItemManager
-        - SHIP_M: ShipManager
-        - BM: BulletManager
-        - STAGE_M: StageManager
-        - rootCommands: Map<String, CommandNode>
-        - commandField: JTextField
-        - commandHistory: List<String>
-        - historyIndex: int
-        - MAX_HISTORY: int
-        - currentInput: String
-        - historyList: JList<String>
-        - MAX_HISTORY_DISPLAY: int
-        - historyDiff: int
-        - historyModel: DefaultListModel<String>
-        - adminMode: boolean
-        --
-        + CommandGlassPane(onEnter: Runnable)
-        - moveHistory(diff: int): void
-        + executeCommand(): void
-        + showCommandBar(): void
-        + hideCommandBar(): void
-        - showHistoryList(diff: int): void
-        - hideHistoryList(): void
-        - processCommand(text: String): void
-        - register(name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
-        - isSceneValid(allowedTypes: SceneType...): boolean
-        - registCommands(): void
-        - showHelp(): void
-        - tryParse(value: String): Integer
-        - reload(): void
-        - unknownCommand(text: String): void
-    }
+    package "command"{
+        class CommandGlassPane {
+            - MAIN: ShootingGameMain
+            - SM: SceneManager
+            - RM: ResourceManager
+            - NSM: NormalStageManager
+            - GM: GameManager
+            - IM: ItemManager
+            - SHIP_M: ShipManager
+            - BM: BulletManager
+            - STAGE_M: StageManager
+            - rootCommands: Map<String, CommandNode>
+            - commandTrie: Map<String, CommandTrie>
+            - commandField: JTextField
+            - commandHistory: List<String>
+            - historyIndex: int
+            - MAX_HISTORY: int
+            - currentInput: String
+            - historyList: JList<String>
+            - MAX_HISTORY_DISPLAY: int
+            - historyDiff: int
+            - historyModel: DefaultListModel<String>
+            - adminMode: boolean
+            --
+            + CommandGlassPane(onEnter: Runnable)
+            - moveHistory(diff: int): void
+            + executeCommand(): void
+            + showCommandBar(): void
+            + hideCommandBar(): void
+            - showHistoryList(diff: int): void
+            - hideHistoryList(): void
+            - processCommand(text: String): void
+            - register(root: Map<String, CommandNode>, name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
+            - isSceneValid(allowedTypes: SceneType...): boolean
+            - registCommands(): void
+            - showHelp(): void
+            - tryParse(value: String): Integer
+            - reload(): void
+            - unknownCommand(text: String): void
+        }
 
-    class CommandNode <<Lomboc @Data>> {
-        - description: String
-        - adminOnly: boolean
-        - action: CommandAction
-        - subCommands: Map<String, CommandNode>
-        --
-        + CommandNode(description: String, adminOnly: boolean, action: CommandAction)
-    }
+        interface CommandAction <<functional>> {
+            ~ execute(args: String[]): void
+        }
 
-    interface CommandAction <<functional>> {
-        ~ execute(args: String[]): void
+        class CommandNode <<Lomboc @Data>> {
+            - description: String
+            - adminOnly: boolean
+            - action: CommandAction
+            - subCommands: Map<String, CommandNode>
+            --
+            + CommandNode(description: String, adminOnly: boolean, action: CommandAction)
+        }
+
+        class CommandTrie <<Lomboc @Data>> {
+            - adminOnly: boolean
+            - subNodes: Map<String, CommandTrie>
+            --
+            + CommandTrie(adminOnly: boolean)
+        }
     }
 
     class ResourceManager <<Singleton>> {
@@ -1504,8 +1514,7 @@ package "shooting_game" {
 ' 内部構造
 shooting_game.utils.LogUtils +-- LogLevel
 shooting_game.SceneManager +-- SceneType
-shooting_game.CommandGlassPane +-- CommandNode
-shooting_game.CommandGlassPane +-- CommandAction
+shooting_game.command.CommandGlassPane +-- CommandAction
 shooting_game.utils.animation.Animation +-- AnimationLogic
 shooting_game.utils.Anchor +-- H
 shooting_game.utils.Anchor +-- V
@@ -1539,7 +1548,7 @@ shooting_game.gameScene.item.ItemManager +-- ItemConfig
 shooting_game.repository.UserRepository --|> org.springframework.data.jpa.repository.JpaRepository
 shooting_game.data.LoginDialog --|> javax.swing.JDialog
 shooting_game.ShootingGameMain --|> javax.swing.JPanel
-shooting_game.CommandGlassPane --|> javax.swing.JPanel
+shooting_game.command.CommandGlassPane --|> javax.swing.JPanel
 shooting_game.titleScene.TitleManager --|> javax.swing.JPanel
 shooting_game.stageScene.SelectStageManager --|> javax.swing.JPanel
 shooting_game.stageScene.normal.NormalStageManager --|> javax.swing.JPanel

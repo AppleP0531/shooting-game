@@ -1,4 +1,4 @@
-package com.game.shooting_game;
+package com.game.shooting_game.command;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -20,11 +20,13 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import lombok.Data;
 import lombok.Setter;
 
+import com.game.shooting_game.ResourceManager;
 import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
+import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.data.DataManager.UserData;
 import com.game.shooting_game.data.DataManager.UserData.Resources;
@@ -41,7 +43,7 @@ import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.utils.Vector2;
 
 public class CommandGlassPane extends JPanel {
-    private static final String component = "[Command] ";
+    private static final String component = "[Command]";
 
     private final ShootingGameMain MAIN;
     private final SceneManager SM;
@@ -57,23 +59,6 @@ public class CommandGlassPane extends JPanel {
     @FunctionalInterface
     interface CommandAction {
         void execute(String[] args);
-    }
-
-    /**
-     * コマンドノード
-     */
-    @Data // Getter, Setterの自動生成
-    private static class CommandNode {
-        private String description;
-        private boolean adminOnly;
-        private CommandAction action;
-        private Map<String, CommandNode> subCommands = new HashMap<>();
-
-        public CommandNode(String description, boolean adminOnly, CommandAction action) {
-            this.description = description;
-            this.adminOnly = adminOnly;
-            this.action = action;
-        }
     }
 
     private final Map<String, CommandNode> rootCommands = new HashMap<>();
@@ -335,17 +320,17 @@ public class CommandGlassPane extends JPanel {
         // 階層探索
         while (args.length > 0) {
             // 権限チェック
-            if (node.adminOnly && !adminMode) {
+            if (node.isAdminOnly() && !adminMode) {
                 unknownCommand(text);
                 break;
             }
 
             // 与えられえたサブ引数が存在する場合は一つ階層を潜る、なければ処理
             args = Arrays.copyOfRange(args, 1, args.length);
-            if (args.length > 0 && node.subCommands.containsKey(args[0])) {
-                node = node.subCommands.get(args[0]);
-            } else if (node.action != null) {
-                node.action.execute(args);
+            if (args.length > 0 && node.getSubCommands().containsKey(args[0])) {
+                node = node.getSubCommands().get(args[0]);
+            } else if (node.getAction() != null) {
+                node.getAction().execute(args);
                 break;
             } else {
                 unknownCommand(text);
@@ -363,9 +348,10 @@ public class CommandGlassPane extends JPanel {
      * @param action 処理
      * @return コマンドノード
      */
-    private CommandNode register(String name, String desc, boolean admin, CommandAction action) {
+    private CommandNode register(Map<String, CommandNode> root, String name, String desc, boolean admin,
+            CommandAction action) {
         CommandNode node = new CommandNode(desc, admin, action);
-        rootCommands.put(name, node);
+        root.put(name, node);
         return node;
     }
 
@@ -390,7 +376,7 @@ public class CommandGlassPane extends JPanel {
      */
     private void registCommands() {
         // fps変更 /fps <num>
-        register("/fps", "Change fps.", false, args -> {
+        register(rootCommands, "/fps", "Change fps.", false, args -> {
             // 引数が不適切な場合
             if (args.length != 1) {
                 System.out.println("/fps <number>");
@@ -419,7 +405,7 @@ public class CommandGlassPane extends JPanel {
         });
 
         // 管理者権限切替 /admin
-        register("/admin", "Toggle admin mode.", false, args -> {
+        register(rootCommands, "/admin", "Toggle admin mode.", false, args -> {
             if (ShootingGameMain.getOnlineMode()) {
                 // 引数が不適切な場合
                 if (args.length != 1) {
@@ -448,7 +434,7 @@ public class CommandGlassPane extends JPanel {
         });
 
         // ヘルプ /help
-        register("/help", "Show available commands.", false, args -> {
+        register(rootCommands, "/help", "Show available commands.", false, args -> {
             // 引数が不適切な場合
             if (args.length != 0) {
                 System.out.println("/help");
@@ -459,7 +445,7 @@ public class CommandGlassPane extends JPanel {
         });
 
         // シーン読み込み /loadscene <sceneName> /loadscene game <stageId>
-        CommandNode loadscene = register("/loadscene", "Change scene.", false, args -> {
+        CommandNode loadscene = register(rootCommands, "/loadscene", "Change scene.", false, args -> {
             // 引数が不適切な場合
             if (args.length != 1) {
                 System.out.println("/loadscene <sceneName>");
@@ -475,7 +461,7 @@ public class CommandGlassPane extends JPanel {
                 System.out.println("Unknown scene: '" + args[0] + "'" + e);
             }
         });
-        loadscene.subCommands.put("game", new CommandNode("Load game stage.", false, args -> {
+        register(loadscene.getSubCommands(), "game", "Load game stage.", false, args -> {
             // 引数が不適切な場合
             if (args.length != 1) {
                 System.out.println("/loadscene game <stageId>");
@@ -493,8 +479,8 @@ public class CommandGlassPane extends JPanel {
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
-        }));
-        loadscene.subCommands.put("test", new CommandNode("Load test stage.", true, args -> {
+        });
+        register(loadscene.getSubCommands(), "test", "Load test stage.", true, args -> {
             // 引数が不適切な場合
             if (args.length != 0) {
                 System.out.println("/loadscene <sceneName>");
@@ -502,10 +488,10 @@ public class CommandGlassPane extends JPanel {
             }
 
             SM.changeScene(SceneType.TEST);
-        }));
+        });
 
         // リソースの読み込み直し /reload
-        register("/reload", "Reload resource", false, args -> {
+        register(rootCommands, "/reload", "Reload resource", false, args -> {
             // 引数が不適切な場合
             if (args.length != 0) {
                 System.out.println("/reload");
@@ -516,7 +502,7 @@ public class CommandGlassPane extends JPanel {
         });
 
         // 殺害 /kill <target>
-        register("/kill", "Kill targets.", true, args -> {
+        register(rootCommands, "/kill", "Kill targets.", true, args -> {
             // 引数が不適切な場合
             if (args.length != 1) {
                 System.out.println("/kill <target>");
@@ -533,7 +519,7 @@ public class CommandGlassPane extends JPanel {
         });
 
         // 消去 /clear <target>
-        register("/clear", "Kill targets.", true, args -> {
+        register(rootCommands, "/clear", "Kill targets.", true, args -> {
             // 引数が不適切な場合
             if (args.length != 1) {
                 System.out.println("/clear <target>");
@@ -551,7 +537,7 @@ public class CommandGlassPane extends JPanel {
         });
 
         // 船タイプの変更 /setship
-        register("/setship", "Set ship type.", true, args -> {
+        register(rootCommands, "/setship", "Set ship type.", true, args -> {
             // 引数が不適切な場合
             if (args.length != 1) {
                 System.out.println("/setship <shipType>");
@@ -574,7 +560,7 @@ public class CommandGlassPane extends JPanel {
         });
 
         // 船の解法 /unlockship
-        register("/unlockship", "Unlock ship type.", true, args -> {
+        register(rootCommands, "/unlockship", "Unlock ship type.", true, args -> {
             // 引数が不適切な場合
             if (args.length != 1) {
                 System.out.println("/unlockship <shipType>");
@@ -595,9 +581,9 @@ public class CommandGlassPane extends JPanel {
         });
 
         // 効果付与 /effect
-        CommandNode effect = register("/effect", "Apply effect.", true, null);
+        CommandNode effect = register(rootCommands, "/effect", "Apply effect.", true, null);
         // 回復
-        effect.subCommands.put("heal", new CommandNode(null, true, args -> {
+        register(effect.getSubCommands(), "heal", null, true, args -> {
             // 引数が不適切な場合
             if (args.length != 1) {
                 System.out.println("/effect heal <number>");
@@ -620,9 +606,9 @@ public class CommandGlassPane extends JPanel {
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
-        }));
+        });
         // レベルアップ
-        effect.subCommands.put("levelup", new CommandNode(null, true, args -> {
+        register(effect.getSubCommands(), "levelup", null, true, args -> {
             // 引数が不適切な場合
             if (args.length > 2) {
                 System.out.println("/effect levelup <number>");
@@ -659,9 +645,9 @@ public class CommandGlassPane extends JPanel {
                     LogUtils.systemLog("[WARN]", component, "Command Error");
                 }
             }
-        }));
+        });
         // 無敵
-        effect.subCommands.put("shield", new CommandNode(null, true, args -> {
+        register(effect.getSubCommands(), "shield", null, true, args -> {
             // 引数が不適切な場合
             if (args.length > 2) {
                 System.out.println("/effect shield <number>");
@@ -699,9 +685,9 @@ public class CommandGlassPane extends JPanel {
                     LogUtils.systemLog("[WARN]", component, "Command Error");
                 }
             }
-        }));
+        });
         // 暴走
-        effect.subCommands.put("ooc", new CommandNode(null, true, args -> {
+        register(effect.getSubCommands(), "ooc", null, true, args -> {
             // 引数が不適切な場合
             if (args.length > 2) {
                 System.out.println("/effect ooc <number>");
@@ -743,10 +729,10 @@ public class CommandGlassPane extends JPanel {
                     LogUtils.systemLog("[WARN]", component, "Command Error");
                 }
             }
-        }));
+        });
 
         // 資源入手 /give
-        register("/get", "get resource", true, args -> {
+        register(rootCommands, "/get", "get resource", true, args -> {
             // 引数が不適切な場合
             if (args.length != 2) {
                 System.out.println("/get <resource name> <ammount>");
@@ -785,7 +771,7 @@ public class CommandGlassPane extends JPanel {
         });
 
         // ゲームクリア/ゲームオーバー /gameclear /gameover
-        register("/gameclear", "Instantly clear.", true, args -> {
+        register(rootCommands, "/gameclear", "Instantly clear.", true, args -> {
             // 引数が不適切な場合
             if (args.length != 0) {
                 System.out.println("/gameclear");
@@ -798,7 +784,7 @@ public class CommandGlassPane extends JPanel {
             GM.gameover(false);
             GM.result();
         });
-        register("/gameover", "Instantly gameover.", true, args -> {
+        register(rootCommands, "/gameover", "Instantly gameover.", true, args -> {
             // 引数が不適切な場合
             if (args.length != 0) {
                 System.out.println("/gameover");
@@ -811,7 +797,7 @@ public class CommandGlassPane extends JPanel {
             GM.gameover(true);
             GM.result();
         });
-        register("/clearstage", "Force clear a specific stage.", true, args -> {
+        register(rootCommands, "/clearstage", "Force clear a specific stage.", true, args -> {
             if (args.length != 1) {
                 System.out.println("/clearstage <number>");
                 return;
@@ -846,7 +832,7 @@ public class CommandGlassPane extends JPanel {
         });
 
         // データリセット /deleteuser
-        register("/deleteuser", "Reset data.", true, args -> {
+        register(rootCommands, "/deleteuser", "Reset data.", true, args -> {
             // 引数が不適切な場合
             if (args.length != 2) {
                 System.out.println("/deleteuser <username> <password>");
@@ -890,7 +876,7 @@ public class CommandGlassPane extends JPanel {
         });
 
         // パスワード変更 /changepassword
-        register("/changepassword", "Change user password", true, args -> {
+        register(rootCommands, "/changepassword", "Change user password", true, args -> {
             // 引数が不適切な場合
             if (args.length != 3) {
                 System.out.println("/changepassword <username> <oldPassword> <newPassword>");
@@ -934,7 +920,7 @@ public class CommandGlassPane extends JPanel {
 
         System.out.println(ANSI.YELLOW + "----------------- Available Commands -----------------" + ANSI.RESET);
         rootCommands.entrySet().stream()
-                .filter(e -> !e.getValue().adminOnly || adminMode) // 権限があるもの
+                .filter(e -> !e.getValue().isAdminOnly() || adminMode) // 権限があるもの
                 .sorted(Map.Entry.comparingByKey())
                 .forEach(e -> System.out.printf("%-15s : %s%n", e.getKey(), e.getValue().getDescription()));
 
