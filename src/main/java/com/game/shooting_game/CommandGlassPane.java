@@ -317,15 +317,14 @@ public class CommandGlassPane extends JPanel {
      * @param text 入力内容
      */
     private void processCommand(String text) {
-        // "/"から始まっていたらコマンドを処理、そうでなかったらログにそのまま出力
+        // "/"から始まっていなかったらログにそのまま出力して終了
         if (!text.startsWith("/")) {
             System.out.println(text);
             return;
         }
 
-        String[] parts = text.split(" ");
-        String cmdName = parts[0];
-        CommandNode node = rootCommands.get(cmdName);
+        String[] args = text.split(" ");
+        CommandNode node = rootCommands.get(args[0]);
 
         // コマンドリストになかった場合
         if (node == null) {
@@ -333,29 +332,25 @@ public class CommandGlassPane extends JPanel {
             return;
         }
 
-        // 権限不足
-        if (node.adminOnly && !adminMode) {
-            unknownCommand(text);
-            return;
-        }
-
-        // 引数の切り出し
-        String[] args = Arrays.copyOfRange(parts, 1, parts.length);
-        // サブコマンドの探索
-        if (args.length > 0 && node.subCommands.containsKey(args[0])) {
-            CommandNode sub = node.subCommands.get(args[0]);
-
-            // サブコマンドの権限チェック
-            if (sub.adminOnly && !adminMode) {
+        // 階層探索
+        while (args.length > 0) {
+            // 権限チェック
+            if (node.adminOnly && !adminMode) {
                 unknownCommand(text);
-                return;
+                break;
             }
 
-            sub.action.execute(Arrays.copyOfRange(args, 1, args.length));
-        } else if (node.action != null) {
-            node.action.execute(args);
-        } else {
-            unknownCommand(text);
+            // 与えられえたサブ引数が存在する場合は一つ階層を潜る、なければ処理
+            args = Arrays.copyOfRange(args, 1, args.length);
+            if (args.length > 0 && node.subCommands.containsKey(args[0])) {
+                node = node.subCommands.get(args[0]);
+            } else if (node.action != null) {
+                node.action.execute(args);
+                break;
+            } else {
+                unknownCommand(text);
+                break;
+            }
         }
     }
 
@@ -472,10 +467,12 @@ public class CommandGlassPane extends JPanel {
             }
 
             try {
-                SHIP_M.getPlayer().removeHandler();
+                if (SHIP_M.getPlayer() != null)
+                    SHIP_M.getPlayer().removeHandler();
+
                 SM.changeScene(SceneType.valueOf(args[0].toUpperCase()));
             } catch (Exception e) {
-                System.out.println("Unknown scene: " + args[0]);
+                System.out.println("Unknown scene: '" + args[0] + "'" + e);
             }
         });
         loadscene.subCommands.put("game", new CommandNode("Load game stage.", false, args -> {
