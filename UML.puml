@@ -138,13 +138,13 @@ package "shooting_game" {
         }
 
         class ChatBoxData <<lombok @Data>> {
-            - history: List<String>
-            - historyModel: DefaultListModel<String>
-            - historyList: JList<String>
-            - historyLength: int
-            - maxHistoryDisplay: int
-            - historyIndex: int
-            - historyDiff: int
+            - elements: List<String>
+            - model: DefaultListModel<String>
+            - list: JList<String>
+            - maxSavelength: int
+            - maxDisplay: int
+            - index: int
+            - diff: int
             --
             + addElement(text: String): void
         }

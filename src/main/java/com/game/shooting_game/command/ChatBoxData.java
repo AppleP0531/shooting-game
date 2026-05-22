@@ -11,13 +11,13 @@ import lombok.Data;
 @Data
 @AllArgsConstructor // 全引数コンストラクタの生成
 public class ChatBoxData {
-    private List<String> history;
-    private DefaultListModel<String> historyModel;
-    private JList<String> historyList;
-    private int historyLength;
-    private int maxHistoryDisplay;
-    private int historyIndex;
-    private int historyDiff;
+    private List<String> elements;
+    private DefaultListModel<String> model;
+    private JList<String> list;
+    private int maxSavelength;
+    private int maxDisplay;
+    private int index;
+    private int diff;
 
     /**
      * 履歴追加
@@ -25,8 +25,8 @@ public class ChatBoxData {
      * @param text 追加内容
      */
     public void addElement(String text) {
-        history.add(text);
-        if (history.size() > historyLength)
-            history.removeFirst();
+        elements.add(text);
+        if (elements.size() > maxSavelength)
+            elements.removeFirst();
     }
 }

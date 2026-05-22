@@ -252,58 +252,58 @@ public final class CommandGlassPane extends JPanel {
      * @return 次の参照インデックス
      */
     private void moveHistory(ChatBoxData data, MoveOption diff) {
-        if (data.getHistory().isEmpty())
+        if (data.getElements().isEmpty())
             return;
 
-        int displayListSize = Math.min(data.getMaxHistoryDisplay(), data.getHistory().size());
+        int displayListSize = Math.min(data.getMaxDisplay(), data.getElements().size());
 
         // 履歴移動処理
         switch (diff) {
             case MoveOption.ONE_LINE_UP -> {
-                if (data.getHistoryIndex() == -1) {
+                if (data.getIndex() == -1) {
                     // 現在の入力を保存
                     currentInput = commandField.getText();
-                    data.setHistoryIndex(displayListSize - 1);
+                    data.setIndex(displayListSize - 1);
                 } else {
                     // 表示履歴の一番上に到達したら1行上にスクロールする
-                    if (data.getHistoryIndex() == 0 && data.getHistory().size() >= data.getMaxHistoryDisplay())
-                        data.setHistoryDiff(Math.min(data.getHistoryDiff() + 1,
-                                data.getHistory().size() - data.getMaxHistoryDisplay()));
+                    if (data.getIndex() == 0 && data.getElements().size() >= data.getMaxDisplay())
+                        data.setDiff(Math.min(data.getDiff() + 1,
+                                data.getElements().size() - data.getMaxDisplay()));
 
-                    data.setHistoryIndex(Math.max(0, data.getHistoryIndex() - 1));
+                    data.setIndex(Math.max(0, data.getIndex() - 1));
                 }
             }
             case MoveOption.ONE_LINE_DOWN -> {
-                if (data.getHistoryIndex() == -1)
+                if (data.getIndex() == -1)
                     return;
 
-                if (data.getHistoryDiff() != 0 || data.getHistoryIndex() < displayListSize - 1) {
+                if (data.getDiff() != 0 || data.getIndex() < displayListSize - 1) {
                     // 表示履歴の一番下に到達したら一行下にスクロールする
-                    if (data.getHistoryIndex() >= data.getMaxHistoryDisplay() - 1)
-                        data.setHistoryDiff(Math.max(0, data.getHistoryDiff() - 1));
+                    if (data.getIndex() >= data.getMaxDisplay() - 1)
+                        data.setDiff(Math.max(0, data.getDiff() - 1));
 
-                    data.setHistoryIndex(Math.min(data.getMaxHistoryDisplay() - 1, data.getHistoryIndex() + 1));
+                    data.setIndex(Math.min(data.getMaxDisplay() - 1, data.getIndex() + 1));
                 } else
-                    data.setHistoryIndex(-1);
+                    data.setIndex(-1);
             }
             case MoveOption.ONE_PAGE_UP -> {
-                data.setHistoryDiff(
-                        Math.min(data.getHistoryDiff() + 1, data.getHistory().size() - data.getMaxHistoryDisplay()));
+                data.setDiff(
+                        Math.min(data.getDiff() + 1, data.getElements().size() - data.getMaxDisplay()));
             }
             case MoveOption.ONE_PAGE_DOWN -> {
-                data.setHistoryDiff(Math.max(0, data.getHistoryDiff() - 1));
+                data.setDiff(Math.max(0, data.getDiff() - 1));
             }
         }
 
         // UIへの反映
         showHistoryList(data);
-        data.getHistoryList().setSelectedIndex(data.getHistoryIndex());
+        data.getList().setSelectedIndex(data.getIndex());
 
         // コマンド履歴をさかのぼっているときに限り、テキストボックスを上書き
         if (data == inputHistoryData)
-            commandField.setText(data.getHistoryIndex() == -1 ? currentInput
-                    : data.getHistory().get(data.getHistory().size() - 1
-                            - (displayListSize - 1 - data.getHistoryIndex()) - data.getHistoryDiff()));
+            commandField.setText(data.getIndex() == -1 ? currentInput
+                    : data.getElements().get(data.getElements().size() - 1
+                            - (displayListSize - 1 - data.getIndex()) - data.getDiff()));
     }
 
     /**
@@ -335,30 +335,30 @@ public final class CommandGlassPane extends JPanel {
      */
     private void showHistoryList(ChatBoxData data) {
         // データがなければ表示しない
-        if (data.getHistory().size() == 0)
+        if (data.getElements().size() == 0)
             return;
 
-        data.getHistoryModel().clear();
+        data.getModel().clear();
 
-        int start = Math.max(0, data.getHistory().size() - data.getHistoryDiff() - data.getMaxHistoryDisplay());
-        for (int i = start; i < data.getHistory().size() - data.getHistoryDiff(); i++) {
-            data.getHistoryModel().addElement(data.getHistory().get(i));
+        int start = Math.max(0, data.getElements().size() - data.getDiff() - data.getMaxDisplay());
+        for (int i = start; i < data.getElements().size() - data.getDiff(); i++) {
+            data.getModel().addElement(data.getElements().get(i));
         }
 
         // リスト全体の高さを計算
         int rowHeight = 20; // 1行あたりの高さ
-        data.getHistoryList().setFixedCellHeight(rowHeight);
+        data.getList().setFixedCellHeight(rowHeight);
 
         // 配置の計算と設定
         repaint();
-        int listHeight = (data.getHistoryModel().size() * rowHeight);
-        data.getHistoryList().setBounds(
+        int listHeight = (data.getModel().size() * rowHeight);
+        data.getList().setBounds(
                 commandField.getX(),
                 commandField.getY() - listHeight - 1,
                 commandField.getWidth(),
                 listHeight);
 
-        data.getHistoryList().setVisible(true);
+        data.getList().setVisible(true);
     }
 
     /**
@@ -367,7 +367,7 @@ public final class CommandGlassPane extends JPanel {
      * @param data チャットボックス情報
      */
     private void hideHistoryList(ChatBoxData data) {
-        data.getHistoryList().setVisible(false);
+        data.getList().setVisible(false);
     }
 
     /**
@@ -383,8 +383,8 @@ public final class CommandGlassPane extends JPanel {
         }
 
         // リセット
-        inputHistoryData.setHistoryIndex(-1);
-        logHistoryData.setHistoryIndex(-1);
+        inputHistoryData.setIndex(-1);
+        logHistoryData.setIndex(-1);
         currentInput = "";
         hideCommandBar();
         hideHistoryList(inputHistoryData);
