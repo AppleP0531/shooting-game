@@ -7,6 +7,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -61,22 +62,35 @@ public class CommandGlassPane extends JPanel {
         void execute(CommandNode node, String[] args);
     }
 
+    @Setter
+    private boolean adminMode = false;
+
     private Map<String, CommandNode> rootCommands = new HashMap<>();
 
     private final JTextField commandField; // コマンド入力テキストフィールド
 
     // 入力履歴
-    private final List<String> commandInputHistory = new LinkedList<>(); // 入力履歴リスト
-    private final DefaultListModel<String> inputHistoryModel; // 入力履歴表示用モデル
+    private final List<String> COMMAND_INPUT_HISTORY = new LinkedList<>(); // 入力履歴リスト
+    private final DefaultListModel<String> INPUT_HISTORY_MODEL; // 入力履歴表示用モデル
+    private final JList<String> INPUT_HISTORY_LIST; // 入力履歴表示用リスト
     private final int MAX_INPUT_HISTORY = 30; // 入力履歴の最大保持数
     private final int MAX_INPUT_HISTORY_DISPLAY = 10; // 入力履歴の表示最大数
-    private final JList<String> inputHistoryList; // 入力履歴表示用リスト
     private String currentInput = ""; // 現在の入力内容
     private int inputHistoryIndex = -1; // 入力履歴参照用インデックス
     private int inputHistoryDiff = 0; // 入力履歴リストの表示差分(表示最大数以上の回数さかのぼった時用)
+    private ChatBoxData inputHistoryData;
 
-    @Setter
-    private boolean adminMode = false;
+    // ログ
+    private final List<String> COMMAND_LOG_HISTORY = new LinkedList<>(); // コマンドログ履歴リスト
+    private final DefaultListModel<String> LOG_HISTORY_MODEL; // コマンドログ表示用モデル
+    private final JList<String> LOG_HISTORY_LIST; // コマンドログ表示用リスト
+    private final int MAX_LOG_HISTORY = 30; // コマンドログの最大保持数
+    private final int MAX_LOG_HISTORY_DISPLAY = 10; // コマンドログの表示最大数
+    private int logHistoryIndex = -1; // コマンドログ参照用インデックス
+    private int logHistoryDiff = 0; // コマンドログリストの表示差分
+    private ChatBoxData logHistoryData;
+
+    // 予測変換
 
     public CommandGlassPane(Runnable onEnter) {
         MAIN = ShootingGameMain.getInstance();
@@ -112,31 +126,43 @@ public class CommandGlassPane extends JPanel {
                 int keyCode = e.getKeyCode();
 
                 switch (keyCode) {
-                    case KeyEvent.VK_UP -> moveHistory(-1);
-                    case KeyEvent.VK_DOWN -> moveHistory(1);
+                    case KeyEvent.VK_UP -> {
+                        moveHistory(inputHistoryData, -1);
+                    }
+                    case KeyEvent.VK_DOWN -> {
+                        moveHistory(inputHistoryData, 1);
+                    }
                     case KeyEvent.VK_ENTER -> executeCommand();
                     case KeyEvent.VK_ESCAPE -> {
                         hideCommandBar();
                         e.consume();
                     }
-                    default -> hideHistoryList();
+                    default -> hideHistoryList(inputHistoryData);
                 }
             }
         });
-
+        commandField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (e.getPreciseWheelRotation() < 0) {
+                    moveHistory(logHistoryData, -1);
+                } else {
+                    moveHistory(logHistoryData, 1);
+                }
+            }
+        });
         add(commandField);
 
         // 履歴リストの設定
-        inputHistoryModel = new DefaultListModel<>();
-        inputHistoryList = new JList<>(inputHistoryModel);
-        inputHistoryList.setBackground(new Color(0, 0, 0, 180));
-        inputHistoryList.setForeground(Color.LIGHT_GRAY);
-        inputHistoryList.setFont(new Font("Monospaced", Font.PLAIN, (int) (14 * ShootingGameMain.getScreenSizeAdj())));
-        inputHistoryList.setBorder(null);
-        inputHistoryList.setVisible(false);
-        add(inputHistoryList);
-
-        inputHistoryList.setCellRenderer(new DefaultListCellRenderer() {
+        INPUT_HISTORY_MODEL = new DefaultListModel<>();
+        INPUT_HISTORY_LIST = new JList<>(INPUT_HISTORY_MODEL);
+        INPUT_HISTORY_LIST.setBackground(new Color(0, 0, 0, 180));
+        INPUT_HISTORY_LIST.setForeground(Color.LIGHT_GRAY);
+        INPUT_HISTORY_LIST
+                .setFont(new Font("Monospaced", Font.PLAIN, (int) (14 * ShootingGameMain.getScreenSizeAdj())));
+        INPUT_HISTORY_LIST.setBorder(null);
+        INPUT_HISTORY_LIST.setVisible(false);
+        INPUT_HISTORY_LIST.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                     boolean isSelected, boolean cellHasFocus) {
@@ -155,6 +181,52 @@ public class CommandGlassPane extends JPanel {
                 return this;
             }
         });
+        add(INPUT_HISTORY_LIST);
+        inputHistoryData = new ChatBoxData(
+                COMMAND_INPUT_HISTORY,
+                INPUT_HISTORY_MODEL,
+                INPUT_HISTORY_LIST,
+                MAX_INPUT_HISTORY,
+                MAX_INPUT_HISTORY_DISPLAY,
+                inputHistoryIndex,
+                inputHistoryDiff);
+
+        // ログリストの設定
+        LOG_HISTORY_MODEL = new DefaultListModel<>();
+        LOG_HISTORY_LIST = new JList<>(LOG_HISTORY_MODEL);
+        LOG_HISTORY_LIST.setBackground(new Color(0, 0, 0, 100));
+        LOG_HISTORY_LIST.setForeground(Color.LIGHT_GRAY);
+        LOG_HISTORY_LIST.setFont(new Font("Monospaced", Font.PLAIN, (int) (10 * ShootingGameMain.getScreenSizeAdj())));
+        LOG_HISTORY_LIST.setBorder(null);
+        LOG_HISTORY_LIST.setVisible(false);
+        LOG_HISTORY_LIST.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                    boolean isSelected, boolean cellHasFocus) {
+                // 基本的な描画設定（テキストや背景色など）を継承
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                setBackground(list.getBackground());
+                // 選択されているものを太字、そうでなければ標準で表示
+                if (isSelected) {
+                    setFont(list.getFont().deriveFont(Font.BOLD));
+                    setForeground(Color.WHITE);
+                } else {
+                    setFont(list.getFont().deriveFont(Font.PLAIN));
+                    setForeground(Color.LIGHT_GRAY);
+                }
+
+                return this;
+            }
+        });
+        add(LOG_HISTORY_LIST);
+        logHistoryData = new ChatBoxData(
+                COMMAND_LOG_HISTORY,
+                LOG_HISTORY_MODEL,
+                LOG_HISTORY_LIST,
+                MAX_LOG_HISTORY,
+                MAX_LOG_HISTORY_DISPLAY,
+                logHistoryIndex,
+                logHistoryDiff);
 
         // 入力中にマウスイベントをほかにとられないようにする
         addMouseListener(new MouseAdapter() {
@@ -173,70 +245,50 @@ public class CommandGlassPane extends JPanel {
     /**
      * 履歴の移動
      * 
+     * @param data チャットボックス情報
      * @param diff 移動量
+     * @return 次の参照インデックス
      */
-    private void moveHistory(int diff) {
-        if (commandInputHistory.isEmpty())
+    private void moveHistory(ChatBoxData data, int diff) {
+        if (data.getHistory().isEmpty())
             return;
 
-        int displayListSize = Math.min(MAX_INPUT_HISTORY_DISPLAY, commandInputHistory.size());
+        int displayListSize = Math.min(data.getMaxHistoryDisplay(), data.getHistory().size());
 
         // 履歴移動処理
         if (diff == -1) {
-            if (inputHistoryIndex == -1) {
+            if (data.getHistoryIndex() == -1) {
                 // 現在の入力を保存
                 currentInput = commandField.getText();
-                inputHistoryIndex = displayListSize - 1;
+                data.setHistoryIndex(displayListSize - 1);
             } else {
                 // 表示履歴の一番上に到達したら1行上にスクロールする
-                if (inputHistoryIndex == 0 && commandInputHistory.size() >= MAX_INPUT_HISTORY_DISPLAY)
-                    inputHistoryDiff = Math.min(inputHistoryDiff + 1,
-                            commandInputHistory.size() - MAX_INPUT_HISTORY_DISPLAY);
+                if (data.getHistoryIndex() == 0 && data.getHistory().size() >= data.getMaxHistoryDisplay())
+                    data.setHistoryDiff(Math.min(data.getHistoryDiff() + 1,
+                            data.getHistory().size() - data.getMaxHistoryDisplay()));
 
-                inputHistoryIndex = Math.max(0, inputHistoryIndex - 1);
+                data.setHistoryIndex(Math.max(0, data.getHistoryIndex() - 1));
             }
         } else {
-            if (inputHistoryIndex == -1)
+            if (data.getHistoryIndex() == -1)
                 return;
 
-            if (inputHistoryDiff != 0 || inputHistoryIndex < displayListSize - 1) {
+            if (data.getHistoryDiff() != 0 || data.getHistoryIndex() < displayListSize - 1) {
                 // 表示履歴の一番下に到達したら一行下にスクロールする
-                if (inputHistoryIndex >= MAX_INPUT_HISTORY_DISPLAY - 1)
-                    inputHistoryDiff = Math.max(0, inputHistoryDiff - 1);
+                if (data.getHistoryIndex() >= data.getMaxHistoryDisplay() - 1)
+                    data.setHistoryDiff(Math.max(0, data.getHistoryDiff() - 1));
 
-                inputHistoryIndex = Math.min(MAX_INPUT_HISTORY_DISPLAY - 1, inputHistoryIndex + 1);
+                data.setHistoryIndex(Math.min(data.getMaxHistoryDisplay() - 1, data.getHistoryIndex() + 1));
             } else
-                inputHistoryIndex = -1;
-
+                data.setHistoryIndex(-1);
         }
 
         // UIへの反映
-        showHistoryList(inputHistoryDiff);
-        inputHistoryList.setSelectedIndex(inputHistoryIndex);
-        commandField.setText(inputHistoryIndex == -1 ? currentInput
-                : commandInputHistory.get(commandInputHistory.size() - 1
-                        - (displayListSize - 1 - inputHistoryIndex) - inputHistoryDiff));
-    }
-
-    /**
-     * 入力処理
-     */
-    private void executeCommand() {
-        // 入力内容があれば処理、履歴に追加
-        if (!commandField.getText().isEmpty()) {
-            processCommand(commandField.getText());
-
-            // 履歴に追加
-            commandInputHistory.add(commandField.getText());
-            if (commandInputHistory.size() > MAX_INPUT_HISTORY)
-                commandInputHistory.removeFirst();
-        }
-
-        // リセット
-        inputHistoryIndex = -1;
-        currentInput = "";
-        hideCommandBar();
-        hideHistoryList();
+        showHistoryList(data);
+        data.getHistoryList().setSelectedIndex(data.getHistoryIndex());
+        commandField.setText(data.getHistoryIndex() == -1 ? currentInput
+                : data.getHistory().get(data.getHistory().size() - 1
+                        - (displayListSize - 1 - data.getHistoryIndex()) - data.getHistoryDiff()));
     }
 
     /**
@@ -248,52 +300,79 @@ public class CommandGlassPane extends JPanel {
         commandField.setText("/");
         commandField.requestFocusInWindow();
 
-        // logHistoryList.setVisible(true);
+        showHistoryList(logHistoryData);
     }
 
     /**
      * コマンドウィンドウの非表示
      */
     public void hideCommandBar() {
-        commandField.setVisible(false);
-        // logHistoryList.setVisible(false);
         setVisible(false);
+        commandField.setVisible(false);
+
+        hideHistoryList(logHistoryData);
     }
 
     /**
      * 履歴リストの表示
      * 
-     * @param diff 表示履歴のずらす量
+     * @param data チャットボックス情報
      */
-    private void showHistoryList(int diff) {
-        inputHistoryModel.clear();
+    private void showHistoryList(ChatBoxData data) {
+        // データがなければ表示しない
+        if (data.getHistory().size() == 0)
+            return;
 
-        int start = Math.max(0, commandInputHistory.size() - diff - MAX_INPUT_HISTORY_DISPLAY);
-        for (int i = start; i < commandInputHistory.size() - diff; i++) {
-            inputHistoryModel.addElement(commandInputHistory.get(i));
+        data.getHistoryModel().clear();
+
+        int start = Math.max(0, data.getHistory().size() - data.getHistoryDiff() - data.getMaxHistoryDisplay());
+        for (int i = start; i < data.getHistory().size() - data.getHistoryDiff(); i++) {
+            data.getHistoryModel().addElement(data.getHistory().get(i));
         }
 
         // リスト全体の高さを計算
         int rowHeight = 20; // 1行あたりの高さ
-        inputHistoryList.setFixedCellHeight(rowHeight);
+        data.getHistoryList().setFixedCellHeight(rowHeight);
 
         // 配置の計算と設定
         repaint();
-        int listHeight = (inputHistoryModel.size() * rowHeight);
-        inputHistoryList.setBounds(
+        int listHeight = (data.getHistoryModel().size() * rowHeight);
+        data.getHistoryList().setBounds(
                 commandField.getX(),
                 commandField.getY() - listHeight - 1,
                 commandField.getWidth(),
                 listHeight);
 
-        inputHistoryList.setVisible(true);
+        data.getHistoryList().setVisible(true);
     }
 
     /**
      * 履歴リストの非表示
+     * 
+     * @param data チャットボックス情報
      */
-    private void hideHistoryList() {
-        inputHistoryList.setVisible(false);
+    private void hideHistoryList(ChatBoxData data) {
+        data.getHistoryList().setVisible(false);
+    }
+
+    /**
+     * 入力処理
+     */
+    private void executeCommand() {
+        // 入力内容があれば処理、履歴に追加
+        if (!commandField.getText().isEmpty()) {
+            processCommand(commandField.getText());
+
+            // 履歴に追加
+            inputHistoryData.addElement(commandField.getText());
+        }
+
+        // リセット
+        inputHistoryData.setHistoryIndex(-1);
+        logHistoryData.setHistoryIndex(-1);
+        currentInput = "";
+        hideCommandBar();
+        hideHistoryList(inputHistoryData);
     }
 
     /**
@@ -304,7 +383,8 @@ public class CommandGlassPane extends JPanel {
     private void processCommand(String text) {
         // "/"から始まっていなかったらログにそのまま出力して終了
         if (!text.startsWith("/")) {
-            System.out.println(text);
+            logHistoryData.addElement(text);
+            LogUtils.debugLog(text);
             return;
         }
 
@@ -385,7 +465,8 @@ public class CommandGlassPane extends JPanel {
             if (current == type)
                 return true;
         }
-        System.out.println("Command not available in the current scene.");
+        logHistoryData.addElement("Command not available in the current scene.");
+        LogUtils.debugLog("Command not available in the current scene.");
         return false;
     }
 
@@ -400,7 +481,8 @@ public class CommandGlassPane extends JPanel {
 
             // 引数が不適切な場合
             if (args.length != 1) {
-                System.out.println(node.getUseage());
+                logHistoryData.addElement(node.getUseage());
+                LogUtils.debugLog(node.getUseage());
                 return;
             }
 
@@ -409,7 +491,8 @@ public class CommandGlassPane extends JPanel {
 
                 // fpsが0以下の場合はエラー
                 if (fps == 0) {
-                    System.out.println("FPS must be greater than 0.");
+                    logHistoryData.addElement("FPS must be greater than 0.");
+                    LogUtils.debugLog("FPS must be greater than 0.");
                     return;
                 }
 
@@ -419,7 +502,8 @@ public class CommandGlassPane extends JPanel {
                         component,
                         "Current fps set to " + fps);
             } catch (NumberFormatException ne) {
-                System.out.println("unknown param: " + args[0]);
+                logHistoryData.addElement("unknown param: " + args[0]);
+                LogUtils.debugLog("unknown param: " + args[0]);
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
@@ -433,7 +517,8 @@ public class CommandGlassPane extends JPanel {
 
                 // 引数が不適切な場合
                 if (args.length != 1) {
-                    System.out.println(node.getUseage());
+                    logHistoryData.addElement(node.getUseage());
+                    LogUtils.debugLog(node.getUseage());
                     return;
                 }
 
@@ -445,7 +530,8 @@ public class CommandGlassPane extends JPanel {
             } else {
                 // 引数が不適切な場合
                 if (args.length != 0) {
-                    System.out.println(node.getUseage());
+                    logHistoryData.addElement(node.getUseage());
+                    LogUtils.debugLog(node.getUseage());
                     return;
                 }
             }
@@ -462,7 +548,8 @@ public class CommandGlassPane extends JPanel {
 
             // 引数が不適切な場合
             if (args.length != 0) {
-                System.out.println(node.getUseage());
+                logHistoryData.addElement(node.getUseage());
+                LogUtils.debugLog(node.getUseage());
                 return;
             }
 
@@ -476,7 +563,8 @@ public class CommandGlassPane extends JPanel {
 
             // 引数が不適切な場合
             if (args.length != 1) {
-                System.out.println(node.getUseage());
+                logHistoryData.addElement(node.getUseage());
+                LogUtils.debugLog(node.getUseage());
                 return;
             }
 
@@ -486,7 +574,8 @@ public class CommandGlassPane extends JPanel {
 
                 SM.changeScene(SceneType.valueOf(args[0].toUpperCase()));
             } catch (Exception e) {
-                System.out.println("Unknown scene: '" + args[0] + "'" + e);
+                logHistoryData.addElement("Unknown scene: '" + args[0] + "'" + e);
+                LogUtils.debugLog("Unknown scene: '" + args[0] + "'" + e);
             }
         });
         register(loadscene, "game", "Load game stage.", false, (node, args) -> {
@@ -495,7 +584,8 @@ public class CommandGlassPane extends JPanel {
 
             // 引数が不適切な場合
             if (args.length != 1) {
-                System.out.println(node.getUseage());
+                logHistoryData.addElement(node.getUseage());
+                LogUtils.debugLog(node.getUseage());
                 return;
             }
 
@@ -504,9 +594,11 @@ public class CommandGlassPane extends JPanel {
                 Integer id = tryParse(param);
 
                 if (!adminMode) {
+                    // ロックされていた場合は遷移しない
                     int clearedStage = DataManager.getUserData().getProgress().getClearedStage() + 1;
                     if (id > clearedStage) {
-                        System.out.println("Can't play locked stage");
+                        logHistoryData.addElement("Can't play locked stage");
+                        LogUtils.debugLog("Can't play locked stage");
                         return;
                     }
                 }
@@ -514,7 +606,8 @@ public class CommandGlassPane extends JPanel {
                 STAGE_M.getStage().setStageId(id);
                 SM.changeScene(SceneType.GAME);
             } catch (NumberFormatException ne) {
-                System.out.println("Unknnown param: " + param);
+                logHistoryData.addElement("Unknnown param: " + param);
+                LogUtils.debugLog("Unknnown param: " + param);
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
@@ -522,7 +615,8 @@ public class CommandGlassPane extends JPanel {
         register(loadscene, "test", "Load test stage.", true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 0) {
-                System.out.println(node.getUseage());
+                logHistoryData.addElement(node.getUseage());
+                LogUtils.debugLog(node.getUseage());
                 return;
             }
 
@@ -533,7 +627,8 @@ public class CommandGlassPane extends JPanel {
         register(rootCommands, "/reload", "Reload resource", false, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 0) {
-                System.out.println(node.getUseage());
+                logHistoryData.addElement(node.getUseage());
+                LogUtils.debugLog(node.getUseage());
                 return;
             }
 
@@ -547,7 +642,8 @@ public class CommandGlassPane extends JPanel {
 
             // 引数が不適切な場合
             if (args.length != 1) {
-                System.out.println(node.getUseage());
+                logHistoryData.addElement(node.getUseage());
+                LogUtils.debugLog(node.getUseage());
                 return;
             }
             // シーンが不適切な場合
@@ -567,7 +663,8 @@ public class CommandGlassPane extends JPanel {
 
             // 引数が不適切な場合
             if (args.length != 1) {
-                System.out.println(node.getUseage());
+                logHistoryData.addElement(node.getUseage());
+                LogUtils.debugLog(node.getUseage());
                 return;
             }
             // シーンが不適切な場合
@@ -588,7 +685,8 @@ public class CommandGlassPane extends JPanel {
 
             // 引数が不適切な場合
             if (args.length != 1) {
-                System.out.println(node.getUseage());
+                logHistoryData.addElement(node.getUseage());
+                LogUtils.debugLog(node.getUseage());
                 return;
             }
 
@@ -601,7 +699,8 @@ public class CommandGlassPane extends JPanel {
 
                 SHIP_M.getPlayer().setShipId("Ship" + id);
             } catch (NumberFormatException ne) {
-                System.out.println("Unknnown param: " + param);
+                logHistoryData.addElement("Unknnown param: " + param);
+                LogUtils.debugLog("Unknnown param: " + param);
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
@@ -614,7 +713,8 @@ public class CommandGlassPane extends JPanel {
 
             // 引数が不適切な場合
             if (args.length != 1) {
-                System.out.println(node.getUseage());
+                logHistoryData.addElement(node.getUseage());
+                LogUtils.debugLog(node.getUseage());
                 return;
             }
 
@@ -625,7 +725,8 @@ public class CommandGlassPane extends JPanel {
                 DataManager.getUserData().unlockShip("Ship" + id);
                 LobbyManager.getInstance().updateButtonStates();
             } catch (NumberFormatException ne) {
-                System.out.println("Unknnown param: " + param);
+                logHistoryData.addElement("Unknnown param: " + param);
+                LogUtils.debugLog("Unknnown param: " + param);
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
@@ -638,7 +739,8 @@ public class CommandGlassPane extends JPanel {
 
             // 引数が不適切な場合
             if (args.length == 0) {
-                System.out.println(node.getUseage());
+                logHistoryData.addElement(node.getUseage());
+                LogUtils.debugLog(node.getUseage());
                 return;
             }
         });
@@ -649,7 +751,8 @@ public class CommandGlassPane extends JPanel {
 
             // 引数が不適切な場合
             if (args.length != 1) {
-                System.out.println(node.getUseage());
+                logHistoryData.addElement(node.getUseage());
+                LogUtils.debugLog(node.getUseage());
                 return;
             }
             // シーンが不適切な場合
@@ -665,7 +768,8 @@ public class CommandGlassPane extends JPanel {
                         component,
                         "Healed " + num + "HP.");
             } catch (NumberFormatException ne) {
-                System.out.println("Unknnown param: " + args[0]);
+                logHistoryData.addElement("Unknnown param: " + args[0]);
+                LogUtils.debugLog("Unknnown param: " + args[0]);
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
@@ -677,7 +781,8 @@ public class CommandGlassPane extends JPanel {
 
             // 引数が不適切な場合
             if (args.length > 2) {
-                System.out.println(node.getUseage());
+                logHistoryData.addElement(node.getUseage());
+                LogUtils.debugLog(node.getUseage());
                 return;
             }
             // シーンが不適切な場合
@@ -706,7 +811,8 @@ public class CommandGlassPane extends JPanel {
                             component,
                             "Ship level set to " + SHIP_M.getPlayer().getShipLevel());
                 } catch (NumberFormatException ne) {
-                    System.out.println("Unknnown param: " + args[0]);
+                    logHistoryData.addElement("Unknnown param: " + args[0]);
+                    LogUtils.debugLog("Unknnown param: " + args[0]);
                 } catch (Exception e) {
                     LogUtils.systemLog("[WARN]", component, "Command Error");
                 }
@@ -719,7 +825,8 @@ public class CommandGlassPane extends JPanel {
 
             // 引数が不適切な場合
             if (args.length > 2) {
-                System.out.println(node.getUseage());
+                logHistoryData.addElement(node.getUseage());
+                LogUtils.debugLog(node.getUseage());
                 return;
             }
             // シーンが不適切な場合
@@ -749,7 +856,8 @@ public class CommandGlassPane extends JPanel {
                     } else
                         SHIP_M.getPlayer().setShieldTimer(time);
                 } catch (NumberFormatException ne) {
-                    System.out.println("Unknnown param: " + args[0]);
+                    logHistoryData.addElement("Unknnown param: " + args[0]);
+                    LogUtils.debugLog("Unknnown param: " + args[0]);
                 } catch (Exception e) {
                     LogUtils.systemLog("[WARN]", component, "Command Error");
                 }
@@ -762,7 +870,8 @@ public class CommandGlassPane extends JPanel {
 
             // 引数が不適切な場合
             if (args.length > 2) {
-                System.out.println(node.getUseage());
+                logHistoryData.addElement(node.getUseage());
+                LogUtils.debugLog(node.getUseage());
                 return;
             }
             // シーンが不適切な場合
@@ -796,7 +905,8 @@ public class CommandGlassPane extends JPanel {
                         SHIP_M.getPlayer().setOOCTimer(time);
                     }
                 } catch (NumberFormatException ne) {
-                    System.out.println("Unknnown param: " + args[0]);
+                    logHistoryData.addElement("Unknnown param: " + args[0]);
+                    LogUtils.debugLog("Unknnown param: " + args[0]);
                 } catch (Exception e) {
                     LogUtils.systemLog("[WARN]", component, "Command Error");
                 }
@@ -810,7 +920,8 @@ public class CommandGlassPane extends JPanel {
 
             // 引数が不適切な場合
             if (args.length != 2) {
-                System.out.println(node.getUseage());
+                logHistoryData.addElement(node.getUseage());
+                LogUtils.debugLog(node.getUseage());
                 return;
             }
 
@@ -837,9 +948,11 @@ public class CommandGlassPane extends JPanel {
                 }
 
             } catch (NumberFormatException ne) {
-                System.out.println("Unknnown param: " + args[1]);
+                logHistoryData.addElement("Unknnown param: " + args[1]);
+                LogUtils.debugLog("Unknnown param: " + args[1]);
             } catch (IllegalArgumentException iae) {
-                System.out.println("Unknown resName: " + args[0]);
+                logHistoryData.addElement("Unknown resName: " + args[0]);
+                LogUtils.debugLog("Unknown resName: " + args[0]);
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
@@ -849,7 +962,8 @@ public class CommandGlassPane extends JPanel {
         register(rootCommands, "/gameclear", "Instantly clear.", true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 0) {
-                System.out.println(node.getUseage());
+                logHistoryData.addElement(node.getUseage());
+                LogUtils.debugLog(node.getUseage());
                 return;
             }
             // シーンが不適切な場合
@@ -862,7 +976,8 @@ public class CommandGlassPane extends JPanel {
         register(rootCommands, "/gameover", "Instantly gameover.", true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 0) {
-                System.out.println(node.getUseage());
+                logHistoryData.addElement(node.getUseage());
+                LogUtils.debugLog(node.getUseage());
                 return;
             }
             // シーンが不適切な場合
@@ -878,7 +993,8 @@ public class CommandGlassPane extends JPanel {
 
             // 引数が不適切な場合
             if (args.length != 1) {
-                System.out.println(node.getUseage());
+                logHistoryData.addElement(node.getUseage());
+                LogUtils.debugLog(node.getUseage());
                 return;
             }
 
@@ -904,7 +1020,8 @@ public class CommandGlassPane extends JPanel {
                             "Specified stage has already been completed.");
                 }
             } catch (NumberFormatException ne) {
-                System.out.println("Unknnown param: " + args[0]);
+                logHistoryData.addElement("Unknnown param: " + args[0]);
+                LogUtils.debugLog("Unknnown param: " + args[0]);
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
@@ -917,7 +1034,8 @@ public class CommandGlassPane extends JPanel {
 
             // 引数が不適切な場合
             if (args.length != 2) {
-                System.out.println(node.getUseage());
+                logHistoryData.addElement(node.getUseage());
+                LogUtils.debugLog(node.getUseage());
                 return;
             }
 
@@ -963,7 +1081,8 @@ public class CommandGlassPane extends JPanel {
 
             // 引数が不適切な場合
             if (args.length != 3) {
-                System.out.println(node.getUseage());
+                logHistoryData.addElement(node.getUseage());
+                LogUtils.debugLog(node.getUseage());
                 return;
             }
 
@@ -1000,15 +1119,20 @@ public class CommandGlassPane extends JPanel {
      * ヘルプコマンドによる出力
      */
     private void showHelp() {
-        System.out.println("");
+        LogUtils.debugLog("");
 
-        System.out.println(ANSI.YELLOW + "----------------- Available Commands -----------------" + ANSI.RESET);
+        logHistoryData.addElement("----------------- Available Commands -----------------");
         rootCommands.entrySet().stream()
                 .filter(e -> !e.getValue().isAdminOnly() || adminMode) // 権限があるもの
                 .sorted(Map.Entry.comparingByKey())
-                .forEach(e -> System.out.printf("%-15s : %s%n", e.getKey(), e.getValue().getDescription()));
+                .forEach(e -> logHistoryData.addElement(e.getKey() + " : " + e.getValue().getDescription()));
+        LogUtils.debugLog(ANSI.YELLOW + "----------------- Available Commands -----------------" + ANSI.RESET);
+        rootCommands.entrySet().stream()
+                .filter(e -> !e.getValue().isAdminOnly() || adminMode) // 権限があるもの
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(e -> LogUtils.debugLog("%-15s : %s%n", e.getKey(), e.getValue().getDescription()));
 
-        System.out.println("");
+        LogUtils.debugLog("");
     }
 
     /**
@@ -1058,7 +1182,9 @@ public class CommandGlassPane extends JPanel {
      * @param text 未知コマンド内容
      */
     private void unknownCommand(String text) {
-        System.out.println("Unknown command '" + text + "'");
-        System.out.println("Type '/help' for help.");
+        logHistoryData.addElement("Unknown command '" + text + "'");
+        logHistoryData.addElement("Type '/help' for help.");
+        LogUtils.debugLog("Unknown command '" + text + "'");
+        LogUtils.debugLog("Type '/help' for help.");
     }
 }

@@ -6,7 +6,7 @@ skinparam shadowing false
 skinparam linetype ortho
 
 package "shooting_game" {
-    class ShootingGameMain {
+    class ShootingGameMain <<Singleton>> {
         - {static} instance: ShootingGameMain
         - {static} glassPane: CommandGlassPane
         - cardLayout: CardLayout
@@ -20,7 +20,7 @@ package "shooting_game" {
         --
         - ShootingGameMain()
         + {static} getInstance(): ShootingGameMain
-        + {static} main(args: String[]): void
+        + {static} setup(args: String[]): void
         - start(): void
         + run(): void
         - update(dt: double): void
@@ -72,25 +72,34 @@ package "shooting_game" {
             - SHIP_M: ShipManager
             - BM: BulletManager
             - STAGE_M: StageManager
+            - adminMode: boolean
             - rootCommands:  Map<String, CommandNode>
             - commandField: JTextField
-            - commandHistory: List<String>
-            - historyIndex: int
-            - MAX_HISTORY: int
+            - COMMAND_INPUT_HISTORY: List<String>
+            - INPUT_HISTORY_MODEL: DefaultListModel<String>
+            - INPUT_HISTORY_LIST: JList<String>
+            - MAX_INPUT_HISTORY: int
+            - MAX_INPUT_HISTORY_DISPLAY: int
             - currentInput: String
-            - historyList: JList<String>
-            - MAX_HISTORY_DISPLAY: int
-            - historyDiff: int
-            - historyModel: DefaultListModel<String>
-            - adminMode: boolean
+            - inputHistoryIndex: int
+            - inputHistoryDiff: int
+            - inputHistoryData: ChatBoxData
+            - COMMAND_LOG_HISTORY: List<String>
+            - LOG_HISTORY_MODEL: DefaultListModel<String>
+            - LOG_HISTORY_LIST: JList<String>
+            - MAX_LOG_HISTORY: int
+            - MAX_LOG_HISTORY_DISPLAY: int
+            - logHistoryIndex: int
+            - logHistoryDiff: int
+            - logHistoryData: ChatBoxData
             --
             + CommandGlassPane(onEnter: Runnable)
-            - moveHistory(diff: int): void
-            + executeCommand(): void
+            - moveHistory(data: ChatBoxData, diff: int): void
             + showCommandBar(): void
             + hideCommandBar(): void
-            - showHistoryList(diff: int): void
-            - hideHistoryList(): void
+            - showHistoryList(data: ChatBoxData): void
+            - hideHistoryList(data: ChatBoxData): void
+            + executeCommand(): void
             - processCommand(text: String): void
             - register(root: Map<String,CommandNode>, name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
             - register(root: CommandNode, name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
@@ -118,6 +127,18 @@ package "shooting_game" {
             + CommandNode(parent: CommandNode, name: String, description: String, adminOnly: boolean, action: CommandAction)
             + getUseage(): String
             - getFullPath(): String
+        }
+
+        class ChatBoxData <<lombok @Data>> {
+            - history: List<String>
+            - historyModel: DefaultListModel<String>
+            - historyList: JList<String>
+            - historyLength: int
+            - maxHistoryDisplay: int
+            - historyIndex: int
+            - historyDiff: int
+            --
+            + addElement(text: String): void
         }
     }
 
@@ -1286,6 +1307,7 @@ package "shooting_game" {
             + {static} systemLog(tag: String, className: String, msg: String): void
             + {static} systemLog(tag: String, className: String, msg: String, e: Exception): void
             + {static} debugLog(message: Object): void
+            + {static} debugLog(format: String, messages: Object...): void
         }
 
         enum LogLevel {
