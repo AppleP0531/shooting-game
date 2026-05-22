@@ -93,17 +93,26 @@ package "shooting_game" {
             - logHistoryIndex: int
             - logHistoryDiff: int
             - logHistoryData: ChatBoxData
+            - COMMAND_SUGGEST: List<String>
+            - SUGGEST_MODEL: DefaultListModel<String>
+            - SUGGEST_LIST: JList<String>
+            - MAX_SUGGEST: int
+            - MAX_SUGGEST_DISPLAY: int
+            - suggestIndex: int
+            - suggestDiff: int
+            - suggestData: ChatBoxData
             --
             + CommandGlassPane(onEnter: Runnable)
             - moveHistory(data: ChatBoxData, diff: MoveOption): void
             + showCommandBar(): void
             + hideCommandBar(): void
-            - showHistoryList(data: ChatBoxData): void
-            - hideHistoryList(data: ChatBoxData): void
+            - showChatBoxList(data: ChatBoxData): void
+            - hideChatBoxList(data: ChatBoxData): void
             + executeCommand(): void
             - processCommand(text: String): void
             - register(root: Map<String,CommandNode>, name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
             - register(root: CommandNode, name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
+            - registCommandSuggestions(): void
             - isSceneValid(allowedTypes: SceneType...): boolean
             - registCommands(): void
             - showHelp(): void

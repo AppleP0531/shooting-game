@@ -20,6 +20,8 @@ import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import lombok.Setter;
 
@@ -81,7 +83,7 @@ public final class CommandGlassPane extends JPanel {
     private final DefaultListModel<String> INPUT_HISTORY_MODEL; // 入力履歴表示用モデル
     private final JList<String> INPUT_HISTORY_LIST; // 入力履歴表示用リスト
     private final int MAX_INPUT_HISTORY = 30; // 入力履歴の最大保持数
-    private final int MAX_INPUT_HISTORY_DISPLAY = 10; // 入力履歴の表示最大数
+    private final int MAX_INPUT_HISTORY_DISPLAY = 10; // 入力履歴の最大表示数
     private String currentInput = ""; // 現在の入力内容
     private int inputHistoryIndex = -1; // 入力履歴参照用インデックス
     private int inputHistoryDiff = 0; // 入力履歴リストの表示差分(表示最大数以上の回数さかのぼった時用)
@@ -92,12 +94,20 @@ public final class CommandGlassPane extends JPanel {
     private final DefaultListModel<String> LOG_HISTORY_MODEL; // コマンドログ表示用モデル
     private final JList<String> LOG_HISTORY_LIST; // コマンドログ表示用リスト
     private final int MAX_LOG_HISTORY = 30; // コマンドログの最大保持数
-    private final int MAX_LOG_HISTORY_DISPLAY = 10; // コマンドログの表示最大数
+    private final int MAX_LOG_HISTORY_DISPLAY = 10; // コマンドログの最大表示数
     private int logHistoryIndex = -1; // コマンドログ参照用インデックス
     private int logHistoryDiff = 0; // コマンドログリストの表示差分(表示最大数以上の回数さかのぼった時用)
     private ChatBoxData logHistoryData;
 
     // 予測変換
+    private final List<String> COMMAND_SUGGEST = new LinkedList<>();// 予測変換履歴リスト
+    private final DefaultListModel<String> SUGGEST_MODEL;// 予測変換表示用モデル
+    private final JList<String> SUGGEST_LIST;// 予測変換表示用リスト
+    private final int MAX_SUGGEST = 30;// 予測変換の最大保持数
+    private final int MAX_SUGGEST_DISPLAY = 10;// 予測変換の最大表示数
+    private int suggestIndex = -1;// 予測変換参照用インデックス
+    private int suggestDiff = 0;// 予測変換リストの表示差分(表示最大数以上の回数さかのぼった時用)
+    private ChatBoxData suggestData;
 
     public CommandGlassPane(Runnable onEnter) {
         MAIN = ShootingGameMain.getInstance();
@@ -144,8 +154,26 @@ public final class CommandGlassPane extends JPanel {
                         hideCommandBar();
                         e.consume();
                     }
-                    default -> hideHistoryList(inputHistoryData);
+                    default -> hideChatBoxList(inputHistoryData);
                 }
+            }
+        });
+        commandField.getDocument().addDocumentListener(new DocumentListener() {
+            // 文字が入力されたとき
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                registCommandSuggestions();
+            }
+
+            // 文字が削除されたとき
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                registCommandSuggestions();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+
             }
         });
         add(commandField);
@@ -241,6 +269,37 @@ public final class CommandGlassPane extends JPanel {
                 logHistoryIndex,
                 logHistoryDiff);
 
+        // 予測変換リストの設定
+        SUGGEST_MODEL = new DefaultListModel<>();
+        SUGGEST_LIST = new JList<>(SUGGEST_MODEL);
+        SUGGEST_LIST.setBackground(new Color(0, 0, 0, 100));
+        SUGGEST_LIST.setForeground(Color.LIGHT_GRAY);
+        SUGGEST_LIST.setFont(new Font("Monospaced", Font.PLAIN, (int) (12 * ShootingGameMain.getScreenSizeAdj())));
+        SUGGEST_LIST.setBorder(null);
+        SUGGEST_LIST.setVisible(false);
+        SUGGEST_LIST.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                    boolean isSelected, boolean cellHasFocus) {
+                // 基本的な描画設定（テキストや背景色など）を継承
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                setBackground(list.getBackground());
+                setFont(list.getFont().deriveFont(Font.PLAIN));
+                setForeground(Color.LIGHT_GRAY);
+
+                return this;
+            }
+        });
+        add(SUGGEST_LIST);
+        suggestData = new ChatBoxData(
+                COMMAND_SUGGEST,
+                SUGGEST_MODEL,
+                SUGGEST_LIST,
+                MAX_SUGGEST,
+                MAX_SUGGEST_DISPLAY,
+                suggestIndex,
+                suggestDiff);
+
         registCommands();
     }
 
@@ -296,7 +355,7 @@ public final class CommandGlassPane extends JPanel {
         }
 
         // UIへの反映
-        showHistoryList(data);
+        showChatBoxList(data);
         data.getList().setSelectedIndex(data.getIndex());
 
         // コマンド履歴をさかのぼっているときに限り、テキストボックスを上書き
@@ -315,7 +374,7 @@ public final class CommandGlassPane extends JPanel {
         commandField.setText("/");
         commandField.requestFocusInWindow();
 
-        showHistoryList(logHistoryData);
+        showChatBoxList(logHistoryData);
     }
 
     /**
@@ -325,7 +384,8 @@ public final class CommandGlassPane extends JPanel {
         setVisible(false);
         commandField.setVisible(false);
 
-        hideHistoryList(logHistoryData);
+        hideChatBoxList(logHistoryData);
+        hideChatBoxList(suggestData);
     }
 
     /**
@@ -333,7 +393,7 @@ public final class CommandGlassPane extends JPanel {
      * 
      * @param data チャットボックス情報
      */
-    private void showHistoryList(ChatBoxData data) {
+    private void showChatBoxList(ChatBoxData data) {
         // データがなければ表示しない
         if (data.getElements().size() == 0)
             return;
@@ -366,7 +426,7 @@ public final class CommandGlassPane extends JPanel {
      * 
      * @param data チャットボックス情報
      */
-    private void hideHistoryList(ChatBoxData data) {
+    private void hideChatBoxList(ChatBoxData data) {
         data.getList().setVisible(false);
     }
 
@@ -385,9 +445,10 @@ public final class CommandGlassPane extends JPanel {
         // リセット
         inputHistoryData.setIndex(-1);
         logHistoryData.setIndex(-1);
+        suggestData.setIndex(-1);
         currentInput = "";
         hideCommandBar();
-        hideHistoryList(inputHistoryData);
+        hideChatBoxList(inputHistoryData);
     }
 
     /**
@@ -466,6 +527,33 @@ public final class CommandGlassPane extends JPanel {
         CommandNode node = new CommandNode(root, name, desc, admin, action);
         root.getSubCommands().put(name, node);
         return node;
+    }
+
+    /**
+     * 予測変換リストの作成
+     */
+    private void registCommandSuggestions() {
+        // リストのクリア
+        suggestData.getElements().clear();
+
+        // 入力情報の取得
+        String text = commandField.getText();
+
+        if (text.isEmpty()) {
+            hideChatBoxList(suggestData);
+            return;
+        }
+
+        for (String cmdName : rootCommands.keySet()) {
+            if (cmdName.toLowerCase().startsWith(text.toLowerCase())) {
+                suggestData.addElement(cmdName);
+            }
+        }
+
+        if (!suggestData.getElements().isEmpty()) {
+            showChatBoxList(suggestData);
+        }
+
     }
 
     /**
