@@ -63,6 +63,7 @@ package "shooting_game" {
 
     package "command"{
         class CommandGlassPane {
+            - {static} component: String
             - MAIN: ShootingGameMain
             - SM: SceneManager
             - RM: ResourceManager
@@ -94,7 +95,7 @@ package "shooting_game" {
             - logHistoryData: ChatBoxData
             --
             + CommandGlassPane(onEnter: Runnable)
-            - moveHistory(data: ChatBoxData, diff: int): void
+            - moveHistory(data: ChatBoxData, diff: MoveOption): void
             + showCommandBar(): void
             + hideCommandBar(): void
             - showHistoryList(data: ChatBoxData): void
@@ -113,6 +114,13 @@ package "shooting_game" {
 
         interface CommandAction <<functional>> {
             ~ execute(node: CommandNode, args: String[]): void
+        }
+
+        enum MoveOption {
+            ONE_LINE_UP
+            ONE_LINE_DOWN
+            ONE_PAGE_UP
+            ONE_PAGE_DOWN
         }
 
         class CommandNode <<Lomboc @Data>> {
@@ -1535,6 +1543,7 @@ package "shooting_game" {
 shooting_game.utils.LogUtils +-- LogLevel
 shooting_game.SceneManager +-- SceneType
 shooting_game.command.CommandGlassPane +-- CommandAction
+shooting_game.command.CommandGlassPane +-- MoveOption
 shooting_game.utils.animation.Animation +-- AnimationLogic
 shooting_game.utils.Anchor +-- H
 shooting_game.utils.Anchor +-- V

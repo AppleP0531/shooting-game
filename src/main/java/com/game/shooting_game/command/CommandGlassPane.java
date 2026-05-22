@@ -43,7 +43,7 @@ import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.utils.Vector2;
 
-public class CommandGlassPane extends JPanel {
+public final class CommandGlassPane extends JPanel {
     private static final String component = "[Command]";
 
     private final ShootingGameMain MAIN;
@@ -56,6 +56,13 @@ public class CommandGlassPane extends JPanel {
     private final ShipManager SHIP_M;
     private final BulletManager BM;
     private final StageManager STAGE_M;
+
+    private enum MoveOption {
+        ONE_LINE_UP,
+        ONE_LINE_DOWN,
+        ONE_PAGE_UP,
+        ONE_PAGE_DOWN
+    }
 
     @FunctionalInterface
     interface CommandAction {
@@ -87,7 +94,7 @@ public class CommandGlassPane extends JPanel {
     private final int MAX_LOG_HISTORY = 30; // コマンドログの最大保持数
     private final int MAX_LOG_HISTORY_DISPLAY = 10; // コマンドログの表示最大数
     private int logHistoryIndex = -1; // コマンドログ参照用インデックス
-    private int logHistoryDiff = 0; // コマンドログリストの表示差分
+    private int logHistoryDiff = 0; // コマンドログリストの表示差分(表示最大数以上の回数さかのぼった時用)
     private ChatBoxData logHistoryData;
 
     // 予測変換
@@ -127,10 +134,10 @@ public class CommandGlassPane extends JPanel {
 
                 switch (keyCode) {
                     case KeyEvent.VK_UP -> {
-                        moveHistory(inputHistoryData, -1);
+                        moveHistory(inputHistoryData, MoveOption.ONE_LINE_UP);
                     }
                     case KeyEvent.VK_DOWN -> {
-                        moveHistory(inputHistoryData, 1);
+                        moveHistory(inputHistoryData, MoveOption.ONE_LINE_DOWN);
                     }
                     case KeyEvent.VK_ENTER -> executeCommand();
                     case KeyEvent.VK_ESCAPE -> {
@@ -141,17 +148,29 @@ public class CommandGlassPane extends JPanel {
                 }
             }
         });
-        commandField.addMouseListener(new MouseAdapter() {
+        add(commandField);
+
+        // 入力中にマウスイベントをほかにとられないようにする
+        MouseAdapter mouseHandler = new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                // commandField の範囲外をクリックしたか判定
+                if (!commandField.getBounds().contains(e.getPoint())) {
+                    hideCommandBar();
+                }
+            }
+
             @Override
             public void mouseWheelMoved(MouseWheelEvent e) {
                 if (e.getPreciseWheelRotation() < 0) {
-                    moveHistory(logHistoryData, -1);
+                    moveHistory(logHistoryData, MoveOption.ONE_PAGE_UP);
                 } else {
-                    moveHistory(logHistoryData, 1);
+                    moveHistory(logHistoryData, MoveOption.ONE_PAGE_DOWN);
                 }
             }
-        });
-        add(commandField);
+        };
+        addMouseListener(mouseHandler);
+        addMouseWheelListener(mouseHandler);
 
         // 履歴リストの設定
         INPUT_HISTORY_MODEL = new DefaultListModel<>();
@@ -206,14 +225,8 @@ public class CommandGlassPane extends JPanel {
                 // 基本的な描画設定（テキストや背景色など）を継承
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 setBackground(list.getBackground());
-                // 選択されているものを太字、そうでなければ標準で表示
-                if (isSelected) {
-                    setFont(list.getFont().deriveFont(Font.BOLD));
-                    setForeground(Color.WHITE);
-                } else {
-                    setFont(list.getFont().deriveFont(Font.PLAIN));
-                    setForeground(Color.LIGHT_GRAY);
-                }
+                setFont(list.getFont().deriveFont(Font.PLAIN));
+                setForeground(Color.LIGHT_GRAY);
 
                 return this;
             }
@@ -228,17 +241,6 @@ public class CommandGlassPane extends JPanel {
                 logHistoryIndex,
                 logHistoryDiff);
 
-        // 入力中にマウスイベントをほかにとられないようにする
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                // commandField の範囲外をクリックしたか判定
-                if (!commandField.getBounds().contains(e.getPoint())) {
-                    hideCommandBar();
-                }
-            }
-        });
-
         registCommands();
     }
 
@@ -249,46 +251,59 @@ public class CommandGlassPane extends JPanel {
      * @param diff 移動量
      * @return 次の参照インデックス
      */
-    private void moveHistory(ChatBoxData data, int diff) {
+    private void moveHistory(ChatBoxData data, MoveOption diff) {
         if (data.getHistory().isEmpty())
             return;
 
         int displayListSize = Math.min(data.getMaxHistoryDisplay(), data.getHistory().size());
 
         // 履歴移動処理
-        if (diff == -1) {
-            if (data.getHistoryIndex() == -1) {
-                // 現在の入力を保存
-                currentInput = commandField.getText();
-                data.setHistoryIndex(displayListSize - 1);
-            } else {
-                // 表示履歴の一番上に到達したら1行上にスクロールする
-                if (data.getHistoryIndex() == 0 && data.getHistory().size() >= data.getMaxHistoryDisplay())
-                    data.setHistoryDiff(Math.min(data.getHistoryDiff() + 1,
-                            data.getHistory().size() - data.getMaxHistoryDisplay()));
+        switch (diff) {
+            case MoveOption.ONE_LINE_UP -> {
+                if (data.getHistoryIndex() == -1) {
+                    // 現在の入力を保存
+                    currentInput = commandField.getText();
+                    data.setHistoryIndex(displayListSize - 1);
+                } else {
+                    // 表示履歴の一番上に到達したら1行上にスクロールする
+                    if (data.getHistoryIndex() == 0 && data.getHistory().size() >= data.getMaxHistoryDisplay())
+                        data.setHistoryDiff(Math.min(data.getHistoryDiff() + 1,
+                                data.getHistory().size() - data.getMaxHistoryDisplay()));
 
-                data.setHistoryIndex(Math.max(0, data.getHistoryIndex() - 1));
+                    data.setHistoryIndex(Math.max(0, data.getHistoryIndex() - 1));
+                }
             }
-        } else {
-            if (data.getHistoryIndex() == -1)
-                return;
+            case MoveOption.ONE_LINE_DOWN -> {
+                if (data.getHistoryIndex() == -1)
+                    return;
 
-            if (data.getHistoryDiff() != 0 || data.getHistoryIndex() < displayListSize - 1) {
-                // 表示履歴の一番下に到達したら一行下にスクロールする
-                if (data.getHistoryIndex() >= data.getMaxHistoryDisplay() - 1)
-                    data.setHistoryDiff(Math.max(0, data.getHistoryDiff() - 1));
+                if (data.getHistoryDiff() != 0 || data.getHistoryIndex() < displayListSize - 1) {
+                    // 表示履歴の一番下に到達したら一行下にスクロールする
+                    if (data.getHistoryIndex() >= data.getMaxHistoryDisplay() - 1)
+                        data.setHistoryDiff(Math.max(0, data.getHistoryDiff() - 1));
 
-                data.setHistoryIndex(Math.min(data.getMaxHistoryDisplay() - 1, data.getHistoryIndex() + 1));
-            } else
-                data.setHistoryIndex(-1);
+                    data.setHistoryIndex(Math.min(data.getMaxHistoryDisplay() - 1, data.getHistoryIndex() + 1));
+                } else
+                    data.setHistoryIndex(-1);
+            }
+            case MoveOption.ONE_PAGE_UP -> {
+                data.setHistoryDiff(
+                        Math.min(data.getHistoryDiff() + 1, data.getHistory().size() - data.getMaxHistoryDisplay()));
+            }
+            case MoveOption.ONE_PAGE_DOWN -> {
+                data.setHistoryDiff(Math.max(0, data.getHistoryDiff() - 1));
+            }
         }
 
         // UIへの反映
         showHistoryList(data);
         data.getHistoryList().setSelectedIndex(data.getHistoryIndex());
-        commandField.setText(data.getHistoryIndex() == -1 ? currentInput
-                : data.getHistory().get(data.getHistory().size() - 1
-                        - (displayListSize - 1 - data.getHistoryIndex()) - data.getHistoryDiff()));
+
+        // コマンド履歴をさかのぼっているときに限り、テキストボックスを上書き
+        if (data == inputHistoryData)
+            commandField.setText(data.getHistoryIndex() == -1 ? currentInput
+                    : data.getHistory().get(data.getHistory().size() - 1
+                            - (displayListSize - 1 - data.getHistoryIndex()) - data.getHistoryDiff()));
     }
 
     /**
