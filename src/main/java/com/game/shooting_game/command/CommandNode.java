@@ -1,6 +1,8 @@
 package com.game.shooting_game.command;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import lombok.Data;
@@ -48,5 +50,31 @@ public class CommandNode {
             return name;
         }
         return parent.getFullPath() + " " + name;
+    }
+
+    /**
+     * 子ノードをすべて返す
+     * 
+     * @return
+     */
+    public List<String> getAllNodes() {
+        List<String> nodes = new ArrayList<>();
+
+        // サブコマンドがあるかどうか
+        if (subCommands.isEmpty()) {
+            nodes.add(name);
+            return nodes;
+        }
+
+        // 構文ヒントがあるかどうか
+        if (syntax != null) {
+            nodes.add(syntax);
+        }
+
+        for (CommandNode node : subCommands.values()) {
+            nodes.add(name + " " + node.getAllNodes());
+        }
+
+        return nodes;
     }
 }

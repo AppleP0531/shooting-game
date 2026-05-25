@@ -84,7 +84,7 @@ package "shooting_game" {
             - currentInput: String
             - inputHistoryIndex: int
             - inputHistoryDiff: int
-            - inputHistoryData: ChatBoxData
+            - inputHistoryData: ChatBoxContext
             - COMMAND_LOG_HISTORY: List<String>
             - LOG_HISTORY_MODEL: DefaultListModel<String>
             - LOG_HISTORY_LIST: JList<String>
@@ -92,7 +92,7 @@ package "shooting_game" {
             - MAX_LOG_HISTORY_DISPLAY: int
             - logHistoryIndex: int
             - logHistoryDiff: int
-            - logHistoryData: ChatBoxData
+            - logHistoryData: ChatBoxContext
             - COMMAND_SUGGEST: List<String>
             - SUGGEST_MODEL: DefaultListModel<String>
             - SUGGEST_LIST: JList<String>
@@ -100,14 +100,14 @@ package "shooting_game" {
             - MAX_SUGGEST_DISPLAY: int
             - suggestIndex: int
             - suggestDiff: int
-            - suggestData: ChatBoxData
+            - suggestData: ChatBoxContext
             --
             + CommandGlassPane(onEnter: Runnable)
-            - moveHistory(data: ChatBoxData, diff: MoveOption): void
+            - moveHistory(context: ChatBoxContext, diff: MoveOption): void
             + showCommandBar(): void
             + hideCommandBar(): void
-            - showChatBoxList(data: ChatBoxData): void
-            - hideChatBoxList(data: ChatBoxData): void
+            - showChatBoxList(context: ChatBoxContext): void
+            - hideChatBoxList(context: ChatBoxContext): void
             + executeCommand(): void
             - processCommand(text: String): void
             - register(root: Map<String,CommandNode>, name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
@@ -144,9 +144,10 @@ package "shooting_game" {
             + CommandNode(parent: CommandNode, name: String, description: String, adminOnly: boolean, action: CommandAction)
             + getUseage(): String
             - getFullPath(): String
+            + getAllNodes(): List<String>
         }
 
-        class ChatBoxData <<lombok @Data>> {
+        class ChatBoxContext <<lombok @Data>> {
             - elements: List<String>
             - model: DefaultListModel<String>
             - list: JList<String>
@@ -1614,6 +1615,7 @@ shooting_game.gameScene.item.types.Heal --* shooting_game.gameScene.item.Item
 shooting_game.gameResultScene.GameResultManager --|> javax.swing.JPanel
 shooting_game.gameResultScene.subPanels.RewardListPanel --|> javax.swing.JPanel
 shooting_game.testScene.TestManager --|> javax.swing.JPanel
+shooting_game.bagScene.BagManager --|> javax.swing.JPanel
 
 ' implements関係
 shooting_game.ShootingGameMain ..|> Runnable

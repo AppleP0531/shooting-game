@@ -87,7 +87,7 @@ public final class CommandGlassPane extends JPanel {
     private String currentInput = ""; // 現在の入力内容
     private int inputHistoryIndex = -1; // 入力履歴参照用インデックス
     private int inputHistoryDiff = 0; // 入力履歴リストの表示差分(表示最大数以上の回数さかのぼった時用)
-    private ChatBoxData inputHistoryData;
+    private ChatBoxContext inputHistoryData;
 
     // ログ
     private final List<String> COMMAND_LOG_HISTORY = new LinkedList<>(); // コマンドログ履歴リスト
@@ -97,7 +97,7 @@ public final class CommandGlassPane extends JPanel {
     private final int MAX_LOG_HISTORY_DISPLAY = 10; // コマンドログの最大表示数
     private int logHistoryIndex = -1; // コマンドログ参照用インデックス
     private int logHistoryDiff = 0; // コマンドログリストの表示差分(表示最大数以上の回数さかのぼった時用)
-    private ChatBoxData logHistoryData;
+    private ChatBoxContext logHistoryData;
 
     // 予測変換
     private final List<String> COMMAND_SUGGEST = new LinkedList<>();// 予測変換履歴リスト
@@ -107,7 +107,7 @@ public final class CommandGlassPane extends JPanel {
     private final int MAX_SUGGEST_DISPLAY = 10;// 予測変換の最大表示数
     private int suggestIndex = -1;// 予測変換参照用インデックス
     private int suggestDiff = 0;// 予測変換リストの表示差分(表示最大数以上の回数さかのぼった時用)
-    private ChatBoxData suggestData;
+    private ChatBoxContext suggestData;
 
     public CommandGlassPane(Runnable onEnter) {
         MAIN = ShootingGameMain.getInstance();
@@ -229,7 +229,7 @@ public final class CommandGlassPane extends JPanel {
             }
         });
         add(INPUT_HISTORY_LIST);
-        inputHistoryData = new ChatBoxData(
+        inputHistoryData = new ChatBoxContext(
                 COMMAND_INPUT_HISTORY,
                 INPUT_HISTORY_MODEL,
                 INPUT_HISTORY_LIST,
@@ -260,7 +260,7 @@ public final class CommandGlassPane extends JPanel {
             }
         });
         add(LOG_HISTORY_LIST);
-        logHistoryData = new ChatBoxData(
+        logHistoryData = new ChatBoxContext(
                 COMMAND_LOG_HISTORY,
                 LOG_HISTORY_MODEL,
                 LOG_HISTORY_LIST,
@@ -291,7 +291,7 @@ public final class CommandGlassPane extends JPanel {
             }
         });
         add(SUGGEST_LIST);
-        suggestData = new ChatBoxData(
+        suggestData = new ChatBoxContext(
                 COMMAND_SUGGEST,
                 SUGGEST_MODEL,
                 SUGGEST_LIST,
@@ -306,63 +306,63 @@ public final class CommandGlassPane extends JPanel {
     /**
      * 履歴の移動
      * 
-     * @param data チャットボックス情報
-     * @param diff 移動量
+     * @param context チャットボックス情報
+     * @param diff    移動量
      * @return 次の参照インデックス
      */
-    private void moveHistory(ChatBoxData data, MoveOption diff) {
-        if (data.getElements().isEmpty())
+    private void moveHistory(ChatBoxContext context, MoveOption diff) {
+        if (context.getElements().isEmpty())
             return;
 
-        int displayListSize = Math.min(data.getMaxDisplay(), data.getElements().size());
+        int displayListSize = Math.min(context.getMaxDisplay(), context.getElements().size());
 
         // 履歴移動処理
         switch (diff) {
             case MoveOption.ONE_LINE_UP -> {
-                if (data.getIndex() == -1) {
+                if (context.getIndex() == -1) {
                     // 現在の入力を保存
                     currentInput = commandField.getText();
-                    data.setIndex(displayListSize - 1);
+                    context.setIndex(displayListSize - 1);
                 } else {
                     // 表示履歴の一番上に到達したら1行上にスクロールする
-                    if (data.getIndex() == 0 && data.getElements().size() >= data.getMaxDisplay())
-                        data.setDiff(Math.min(data.getDiff() + 1,
-                                data.getElements().size() - data.getMaxDisplay()));
+                    if (context.getIndex() == 0 && context.getElements().size() >= context.getMaxDisplay())
+                        context.setDiff(Math.min(context.getDiff() + 1,
+                                context.getElements().size() - context.getMaxDisplay()));
 
-                    data.setIndex(Math.max(0, data.getIndex() - 1));
+                    context.setIndex(Math.max(0, context.getIndex() - 1));
                 }
             }
             case MoveOption.ONE_LINE_DOWN -> {
-                if (data.getIndex() == -1)
+                if (context.getIndex() == -1)
                     return;
 
-                if (data.getDiff() != 0 || data.getIndex() < displayListSize - 1) {
+                if (context.getDiff() != 0 || context.getIndex() < displayListSize - 1) {
                     // 表示履歴の一番下に到達したら一行下にスクロールする
-                    if (data.getIndex() >= data.getMaxDisplay() - 1)
-                        data.setDiff(Math.max(0, data.getDiff() - 1));
+                    if (context.getIndex() >= context.getMaxDisplay() - 1)
+                        context.setDiff(Math.max(0, context.getDiff() - 1));
 
-                    data.setIndex(Math.min(data.getMaxDisplay() - 1, data.getIndex() + 1));
+                    context.setIndex(Math.min(context.getMaxDisplay() - 1, context.getIndex() + 1));
                 } else
-                    data.setIndex(-1);
+                    context.setIndex(-1);
             }
             case MoveOption.ONE_PAGE_UP -> {
-                data.setDiff(
-                        Math.min(data.getDiff() + 1, data.getElements().size() - data.getMaxDisplay()));
+                context.setDiff(
+                        Math.min(context.getDiff() + 1, context.getElements().size() - context.getMaxDisplay()));
             }
             case MoveOption.ONE_PAGE_DOWN -> {
-                data.setDiff(Math.max(0, data.getDiff() - 1));
+                context.setDiff(Math.max(0, context.getDiff() - 1));
             }
         }
 
         // UIへの反映
-        showChatBoxList(data);
-        data.getList().setSelectedIndex(data.getIndex());
+        showChatBoxList(context);
+        context.getList().setSelectedIndex(context.getIndex());
 
         // コマンド履歴をさかのぼっているときに限り、テキストボックスを上書き
-        if (data == inputHistoryData)
-            commandField.setText(data.getIndex() == -1 ? currentInput
-                    : data.getElements().get(data.getElements().size() - 1
-                            - (displayListSize - 1 - data.getIndex()) - data.getDiff()));
+        if (context == inputHistoryData)
+            commandField.setText(context.getIndex() == -1 ? currentInput
+                    : context.getElements().get(context.getElements().size() - 1
+                            - (displayListSize - 1 - context.getIndex()) - context.getDiff()));
     }
 
     /**
@@ -391,43 +391,43 @@ public final class CommandGlassPane extends JPanel {
     /**
      * 履歴リストの表示
      * 
-     * @param data チャットボックス情報
+     * @param context チャットボックス情報
      */
-    private void showChatBoxList(ChatBoxData data) {
+    private void showChatBoxList(ChatBoxContext context) {
         // データがなければ表示しない
-        if (data.getElements().size() == 0)
+        if (context.getElements().size() == 0)
             return;
 
-        data.getModel().clear();
+        context.getModel().clear();
 
-        int start = Math.max(0, data.getElements().size() - data.getDiff() - data.getMaxDisplay());
-        for (int i = start; i < data.getElements().size() - data.getDiff(); i++) {
-            data.getModel().addElement(data.getElements().get(i));
+        int start = Math.max(0, context.getElements().size() - context.getDiff() - context.getMaxDisplay());
+        for (int i = start; i < context.getElements().size() - context.getDiff(); i++) {
+            context.getModel().addElement(context.getElements().get(i));
         }
 
         // リスト全体の高さを計算
         int rowHeight = 20; // 1行あたりの高さ
-        data.getList().setFixedCellHeight(rowHeight);
+        context.getList().setFixedCellHeight(rowHeight);
 
         // 配置の計算と設定
         repaint();
-        int listHeight = (data.getModel().size() * rowHeight);
-        data.getList().setBounds(
+        int listHeight = (context.getModel().size() * rowHeight);
+        context.getList().setBounds(
                 commandField.getX(),
                 commandField.getY() - listHeight - 1,
                 commandField.getWidth(),
                 listHeight);
 
-        data.getList().setVisible(true);
+        context.getList().setVisible(true);
     }
 
     /**
      * 履歴リストの非表示
      * 
-     * @param data チャットボックス情報
+     * @param context チャットボックス情報
      */
-    private void hideChatBoxList(ChatBoxData data) {
-        data.getList().setVisible(false);
+    private void hideChatBoxList(ChatBoxContext context) {
+        context.getList().setVisible(false);
     }
 
     /**
@@ -537,16 +537,29 @@ public final class CommandGlassPane extends JPanel {
         suggestData.getElements().clear();
 
         // 入力情報の取得
-        String text = commandField.getText();
+        String[] text = commandField.getText().split(" ");
 
-        if (text.isEmpty()) {
+        if (text.length == 0) {
+            showChatBoxList(logHistoryData);
             hideChatBoxList(suggestData);
             return;
         }
 
-        for (String cmdName : rootCommands.keySet()) {
-            if (cmdName.toLowerCase().startsWith(text.toLowerCase())) {
-                suggestData.addElement(cmdName);
+        hideChatBoxList(logHistoryData);
+
+        Map<String, CommandNode> node = rootCommands;
+        for (Map.Entry<String, CommandNode> entry : node.entrySet()) {
+            String cmdName = entry.getKey();
+            CommandNode cmd = entry.getValue();
+
+            if (cmdName.toLowerCase().startsWith(text[0].toLowerCase())) {
+                // 権限不足なら無視
+                if (!adminMode && node.get(cmdName).isAdminOnly())
+                    continue;
+
+                for (String command : cmd.getAllNodes()) {
+                    suggestData.addElement(command);
+                }
             }
         }
 

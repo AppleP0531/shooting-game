@@ -10,7 +10,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor // 全引数コンストラクタの生成
-public class ChatBoxData {
+public class ChatBoxContext {
     private List<String> elements;
     private DefaultListModel<String> model;
     private JList<String> list;
