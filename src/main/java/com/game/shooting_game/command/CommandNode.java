@@ -34,7 +34,7 @@ public class CommandNode {
      * @return コマンド使用方法
      */
     public String getUseage() {
-        if (syntax.isEmpty())
+        if (syntax == null || syntax.isEmpty())
             return getFullPath();
         else
             return getFullPath() + " " + syntax;
@@ -53,26 +53,31 @@ public class CommandNode {
     }
 
     /**
-     * 子ノードをすべて返す
+     * 最下層子ノードのフルパスをすべて返す
      * 
      * @return
      */
     public List<String> getAllNodes() {
         List<String> nodes = new ArrayList<>();
 
-        // サブコマンドがあるかどうか
+        // syntaxがあれば追加
+        if (syntax != null && !syntax.isEmpty()) {
+            nodes.add(getUseage());
+        }
+
+        // サブコマンドがなければ自身のフルパスを返す
         if (subCommands.isEmpty()) {
-            nodes.add(name);
+            if (nodes.isEmpty())
+                nodes.add(getUseage());
+
             return nodes;
         }
 
-        // 構文ヒントがあるかどうか
-        if (syntax != null) {
-            nodes.add(syntax);
-        }
-
+        // サブコマンドがあればたどる
         for (CommandNode node : subCommands.values()) {
-            nodes.add(name + " " + node.getAllNodes());
+            for (String useAge : node.getAllNodes()) {
+                nodes.add(useAge);
+            }
         }
 
         return nodes;
