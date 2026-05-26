@@ -306,7 +306,7 @@ public final class CommandGlassPane extends JPanel {
                     String comparingToken = tokens[args.length - 1];
                     Boolean isSyntax = comparingToken.startsWith("<");
                     if (isSyntax) {
-                        matchText += comparingToken;
+                        matchText = matchText + comparingToken + " ";
                         for (int i = args.length; i < tokens.length; i++) {
                             remainText = remainText + tokens[i] + " ";
                         }
