@@ -146,9 +146,11 @@ public final class CommandGlassPane extends JPanel {
                 switch (keyCode) {
                     case KeyEvent.VK_UP -> {
                         moveHistory(inputHistoryData, MoveOption.ONE_LINE_UP);
+                        showChatBoxList(inputHistoryData);
                     }
                     case KeyEvent.VK_DOWN -> {
                         moveHistory(inputHistoryData, MoveOption.ONE_LINE_DOWN);
+                        showChatBoxList(inputHistoryData);
                     }
                     case KeyEvent.VK_ENTER -> executeCommand();
                     case KeyEvent.VK_ESCAPE -> {
@@ -369,14 +371,16 @@ public final class CommandGlassPane extends JPanel {
 
     /**
      * コマンドウィンドウの表示
+     * 
+     * @param text デフォルト挿入文字
      */
-    public void showCommandBar() {
+    public void showCommandBar(String text) {
         setVisible(true);
         commandField.setVisible(true);
-        commandField.setText("/");
         commandField.requestFocusInWindow();
 
         showChatBoxList(logHistoryData);
+        commandField.setText(text);
     }
 
     /**
@@ -396,6 +400,9 @@ public final class CommandGlassPane extends JPanel {
      * @param context チャットボックス情報
      */
     private void showChatBoxList(ChatBoxContext context) {
+        int savedIndex = context.getIndex();
+        hideAllChatBox();
+
         // データがなければ表示しない
         if (context.getElements().size() == 0)
             return;
@@ -420,6 +427,7 @@ public final class CommandGlassPane extends JPanel {
                 commandField.getWidth(),
                 listHeight);
 
+        context.getList().setSelectedIndex(savedIndex);
         context.getList().setVisible(true);
     }
 
@@ -430,6 +438,15 @@ public final class CommandGlassPane extends JPanel {
      */
     private void hideChatBoxList(ChatBoxContext context) {
         context.getList().setVisible(false);
+    }
+
+    /**
+     * すべてのチャットボックスを隠す
+     */
+    private void hideAllChatBox() {
+        hideChatBoxList(inputHistoryData);
+        hideChatBoxList(logHistoryData);
+        hideChatBoxList(suggestData);
     }
 
     /**
@@ -669,7 +686,7 @@ public final class CommandGlassPane extends JPanel {
                     "[INFO]",
                     component,
                     ANSI.YELLOW + "AdminMode " + (adminMode ? "enabled." : "disabled.") + ANSI.RESET);
-        }).setSyntax(ShootingGameMain.getOnlineMode() ? "<password>" : null);
+        }).setSyntax(ShootingGameMain.getOnlineMode() ? "<password>" : "");
 
         // ヘルプ /help
         register(rootCommands, "/help", "Show available commands.", false, (node, args) -> {

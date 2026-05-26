@@ -104,10 +104,11 @@ package "shooting_game" {
             --
             + CommandGlassPane(onEnter: Runnable)
             - moveHistory(context: ChatBoxContext, diff: MoveOption): void
-            + showCommandBar(): void
+            + showCommandBar(text: String): void
             + hideCommandBar(): void
             - showChatBoxList(context: ChatBoxContext): void
             - hideChatBoxList(context: ChatBoxContext): void
+            - hideAllChatBox(): void
             + executeCommand(): void
             - processCommand(text: String): void
             - register(root: Map<String,CommandNode>, name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
