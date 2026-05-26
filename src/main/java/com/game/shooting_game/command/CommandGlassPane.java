@@ -294,20 +294,30 @@ public final class CommandGlassPane extends JPanel {
                     String inputText = commandField.getText();
 
                     String[] args = inputText.split(" ");
-                    String tokens = fullText.split(" ")[args.length - 1];
+                    String[] tokens = fullText.split(" ");
 
                     String matchText = "";
+                    String remainText = "";
+
                     for (int i = 0; i < args.length - 1; i++) {
                         matchText = matchText + args[i] + " ";
                     }
 
-                    Boolean isSyntax = tokens.startsWith("<");
+                    String comparingToken = tokens[args.length - 1];
+                    Boolean isSyntax = comparingToken.startsWith("<");
                     if (isSyntax) {
-                        matchText += tokens;
+                        matchText += comparingToken;
+                        for (int i = args.length; i < tokens.length; i++) {
+                            remainText += tokens[i];
+                        }
                     } else {
                         matchText += fullText.substring(matchText.length(), inputText.length());
+                        remainText = fullText.substring(inputText.length());
                     }
-                    String remainText = fullText.substring(inputText.length());
+
+                    // エスケープ文字に変換
+                    matchText = matchText.replace("<", "&lt;").replace(">", "&gt;");
+                    remainText = remainText.replace("<", "&lt;").replace(">", "&gt;");
 
                     String htmlText = "<html><font face='Monospaced'>" +
                             "<b><font color='white'>" + matchText + "</font></b>" +
