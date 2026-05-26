@@ -308,7 +308,7 @@ public final class CommandGlassPane extends JPanel {
                     if (isSyntax) {
                         matchText += comparingToken;
                         for (int i = args.length; i < tokens.length; i++) {
-                            remainText += tokens[i];
+                            remainText = remainText + tokens[i] + " ";
                         }
                     } else {
                         matchText += fullText.substring(matchText.length(), inputText.length());
