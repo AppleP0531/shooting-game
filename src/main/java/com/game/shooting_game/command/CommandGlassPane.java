@@ -288,8 +288,33 @@ public final class CommandGlassPane extends JPanel {
                 // 基本的な描画設定（テキストや背景色など）を継承
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 setBackground(list.getBackground());
-                setFont(list.getFont().deriveFont(Font.PLAIN));
-                setForeground(Color.LIGHT_GRAY);
+
+                if (value != null) {
+                    String fullText = value.toString();
+                    String inputText = commandField.getText();
+
+                    String[] args = inputText.split(" ");
+                    String tokens = fullText.split(" ")[args.length - 1];
+
+                    String matchText = "";
+                    for (int i = 0; i < args.length - 1; i++) {
+                        matchText = matchText + args[i] + " ";
+                    }
+
+                    Boolean isSyntax = tokens.startsWith("<");
+                    if (isSyntax) {
+                        matchText += tokens;
+                    } else {
+                        matchText += fullText.substring(matchText.length(), inputText.length());
+                    }
+                    String remainText = fullText.substring(inputText.length());
+
+                    String htmlText = "<html><font face='Monospaced'>" +
+                            "<b><font color='white'>" + matchText + "</font></b>" +
+                            "<font color='#808080'>" + remainText + "</font>" +
+                            "</font></html>";
+                    setText(htmlText);
+                }
 
                 return this;
             }
