@@ -534,6 +534,8 @@ public final class CommandGlassPane extends JPanel {
      * 予測変換リストの作成
      */
     private void registCommandSuggestions() {
+        hideChatBoxList(suggestData);
+
         // リストのクリア
         suggestData.getElements().clear();
 
@@ -543,7 +545,6 @@ public final class CommandGlassPane extends JPanel {
 
         if (command.isEmpty()) {
             showChatBoxList(logHistoryData);
-            hideChatBoxList(suggestData);
             return;
         }
 
@@ -559,7 +560,6 @@ public final class CommandGlassPane extends JPanel {
                 currentNode = node.getSubCommands();
         }
 
-        System.out.println();
         // 入力中文字と比較
         String currentToken = args[args.length - 1];
         for (CommandNode node : currentNode.values()) {
