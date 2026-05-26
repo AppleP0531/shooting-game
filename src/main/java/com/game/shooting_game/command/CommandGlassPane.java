@@ -550,26 +550,26 @@ public final class CommandGlassPane extends JPanel {
         hideChatBoxList(logHistoryData);
 
         // 再外層ノードから探索
-        Map<String, CommandNode> node = rootCommands;
-        // 子ノードを見つけたら階層を移動
-        for (String token : args) {
-            CommandNode commandNode = node.get(token);
+        Map<String, CommandNode> currentNode = rootCommands;
+        // 引数と一致する子ノードを見つけたら階層を移動
+        for (int i = 0; i < args.length - 1; i++) {
+            CommandNode node = currentNode.get(args[i]);
 
-            if (commandNode != null)
-                node = commandNode.getSubCommands();
+            if (node != null)
+                currentNode = node.getSubCommands();
         }
 
+        System.out.println();
         // 入力中文字と比較
         String currentToken = args[args.length - 1];
-        for (CommandNode currentCommand : node.values()) {
-            String cmdName = currentCommand.getName();
-
+        for (CommandNode node : currentNode.values()) {
+            String cmdName = node.getName();
             if (cmdName.startsWith(currentToken)) {
                 // 権限不足なら無視
-                if (!adminMode && node.get(cmdName).isAdminOnly())
+                if (!adminMode && currentNode.get(cmdName).isAdminOnly())
                     continue;
 
-                for (String suggests : currentCommand.getAllNodes()) {
+                for (String suggests : node.getAllNodes()) {
                     suggestData.addElement(suggests);
                 }
             }
