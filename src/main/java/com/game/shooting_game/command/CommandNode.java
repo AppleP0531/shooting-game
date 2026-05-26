@@ -55,10 +55,15 @@ public class CommandNode {
     /**
      * 最下層子ノードのフルパスをすべて返す
      * 
+     * @param adminMode
      * @return
      */
-    public List<String> getAllNodes() {
+    public List<String> getAllNodes(boolean adminMode) {
         List<String> nodes = new ArrayList<>();
+
+        // 権限チェック
+        if (adminOnly && !adminMode)
+            return nodes;
 
         // syntaxがあれば追加
         if (syntax != null && !syntax.isEmpty()) {
@@ -75,7 +80,7 @@ public class CommandNode {
 
         // サブコマンドがあればたどる
         for (CommandNode node : subCommands.values()) {
-            for (String useAge : node.getAllNodes()) {
+            for (String useAge : node.getAllNodes(adminMode)) {
                 nodes.add(useAge);
             }
         }

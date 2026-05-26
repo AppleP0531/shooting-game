@@ -565,11 +565,7 @@ public final class CommandGlassPane extends JPanel {
         for (CommandNode node : currentNode.values()) {
             String cmdName = node.getName();
             if (cmdName.startsWith(currentToken)) {
-                // 権限不足なら無視
-                if (!adminMode && currentNode.get(cmdName).isAdminOnly())
-                    continue;
-
-                for (String suggests : node.getAllNodes()) {
+                for (String suggests : node.getAllNodes(adminMode)) {
                     suggestData.addElement(suggests);
                 }
             }

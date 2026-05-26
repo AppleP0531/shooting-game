@@ -144,7 +144,7 @@ package "shooting_game" {
             + CommandNode(parent: CommandNode, name: String, description: String, adminOnly: boolean, action: CommandAction)
             + getUseage(): String
             - getFullPath(): String
-            + getAllNodes(): List<String>
+            + getAllNodes(adminMode: boolean): List<String>
         }
 
         class ChatBoxContext <<lombok @Data>> {
