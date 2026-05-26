@@ -78,6 +78,7 @@ public final class CommandGlassPane extends JPanel {
     private Map<String, CommandNode> rootCommands = new HashMap<>();
 
     private final JTextField commandField; // コマンド入力テキストフィールド
+    private String logText;
 
     // 入力履歴
     private final List<String> COMMAND_INPUT_HISTORY = new LinkedList<>(); // 入力履歴リスト
@@ -651,8 +652,9 @@ public final class CommandGlassPane extends JPanel {
             if (current == type)
                 return true;
         }
-        logHistoryData.addElement("Command not available in the current scene.");
-        LogUtils.debugLog("Command not available in the current scene.");
+        logText = "Command not available in the current scene.";
+        logHistoryData.addElement(logText);
+        LogUtils.debugLog(logText);
         return false;
     }
 
@@ -664,8 +666,9 @@ public final class CommandGlassPane extends JPanel {
         register(rootCommands, "/fps", "Change fps.", false, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 1) {
-                logHistoryData.addElement(node.getUseage());
-                LogUtils.debugLog(node.getUseage());
+                logText = node.getUseage();
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
                 return;
             }
 
@@ -674,19 +677,21 @@ public final class CommandGlassPane extends JPanel {
 
                 // fpsが0以下の場合はエラー
                 if (fps == 0) {
-                    logHistoryData.addElement("FPS must be greater than 0.");
-                    LogUtils.debugLog("FPS must be greater than 0.");
+                    logText = "FPS must be greater than 0.";
+                    logHistoryData.addElement(logText);
+                    LogUtils.debugLog(logText);
                     return;
                 }
 
                 MAIN.setFps(fps);
-                LogUtils.systemLog(
-                        "[INFO]",
-                        component,
-                        "Current fps set to " + fps);
+
+                logText = "Current fps set to " + fps + ".";
+                logHistoryData.addElement(logText);
+                LogUtils.systemLog("[INFO]", component, logText);
             } catch (NumberFormatException ne) {
-                logHistoryData.addElement("unknown param: " + args[0]);
-                LogUtils.debugLog("unknown param: " + args[0]);
+                logText = "Unknown param: '" + args[0] + "'";
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
@@ -697,38 +702,43 @@ public final class CommandGlassPane extends JPanel {
             if (ShootingGameMain.getOnlineMode()) {
                 // 引数が不適切な場合
                 if (args.length != 1) {
-                    logHistoryData.addElement(node.getUseage());
-                    LogUtils.debugLog(node.getUseage());
+                    logText = node.getUseage();
+                    logHistoryData.addElement(logText);
+                    LogUtils.debugLog(logText);
                     return;
                 }
 
                 String password = args[0];
                 if (!DataManager.authenticate("admin", password)) {
-                    LogUtils.systemLog("[INFO]", component, "password is not true");
+                    logText = "password is not true.";
+                    logHistoryData.addElement(logText);
+                    LogUtils.systemLog("[INFO]", component, logText);
                     return;
                 }
             } else {
                 // 引数が不適切な場合
                 if (args.length != 0) {
-                    logHistoryData.addElement(node.getUseage());
-                    LogUtils.debugLog(node.getUseage());
+                    logText = node.getUseage();
+                    logHistoryData.addElement(logText);
+                    LogUtils.debugLog(logText);
                     return;
                 }
             }
 
             adminMode = !adminMode;
-            LogUtils.systemLog(
-                    "[INFO]",
-                    component,
-                    ANSI.YELLOW + "AdminMode " + (adminMode ? "enabled." : "disabled.") + ANSI.RESET);
+
+            logText = "AdminMode " + (adminMode ? "enabled." : "disabled.");
+            logHistoryData.addElement(logText);
+            LogUtils.systemLog("[INFO]", component, ANSI.YELLOW + logText + ANSI.RESET);
         }).setSyntax(ShootingGameMain.getOnlineMode() ? "<password>" : "");
 
         // ヘルプ /help
         register(rootCommands, "/help", "Show available commands.", false, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 0) {
-                logHistoryData.addElement(node.getUseage());
-                LogUtils.debugLog(node.getUseage());
+                logText = node.getUseage();
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
                 return;
             }
 
@@ -739,8 +749,9 @@ public final class CommandGlassPane extends JPanel {
         CommandNode loadscene = register(rootCommands, "/loadscene", "Change scene.", false, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 1) {
-                logHistoryData.addElement(node.getUseage());
-                LogUtils.debugLog(node.getUseage());
+                logText = node.getUseage();
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
                 return;
             }
 
@@ -750,16 +761,18 @@ public final class CommandGlassPane extends JPanel {
 
                 SM.changeScene(SceneType.valueOf(args[0].toUpperCase()));
             } catch (Exception e) {
-                logHistoryData.addElement("Unknown scene: '" + args[0] + "'");
-                LogUtils.debugLog("Unknown scene: '" + args[0] + "'");
+                logText = "Unknown scene: '" + args[0] + "'";
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
             }
         });
         loadscene.setSyntax("<sceneName>");
         register(loadscene, "game", "Load game stage.", false, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 1) {
-                logHistoryData.addElement(node.getUseage());
-                LogUtils.debugLog(node.getUseage());
+                logText = node.getUseage();
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
                 return;
             }
 
@@ -771,8 +784,9 @@ public final class CommandGlassPane extends JPanel {
                     // ロックされていた場合は遷移しない
                     int clearedStage = DataManager.getUserData().getProgress().getClearedStage() + 1;
                     if (id > clearedStage) {
-                        logHistoryData.addElement("Can't play locked stage");
-                        LogUtils.debugLog("Can't play locked stage");
+                        logText = "Can't play locked stage.";
+                        logHistoryData.addElement(logText);
+                        LogUtils.debugLog(logText);
                         return;
                     }
                 }
@@ -780,8 +794,9 @@ public final class CommandGlassPane extends JPanel {
                 STAGE_M.getStage().setStageId(id);
                 SM.changeScene(SceneType.GAME);
             } catch (NumberFormatException ne) {
-                logHistoryData.addElement("Unknnown param: " + param);
-                LogUtils.debugLog("Unknnown param: " + param);
+                logText = "Unknnown param: " + param;
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
@@ -789,8 +804,9 @@ public final class CommandGlassPane extends JPanel {
         register(loadscene, "test", "Load test stage.", true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 0) {
-                logHistoryData.addElement(node.getUseage());
-                LogUtils.debugLog(node.getUseage());
+                logText = node.getUseage();
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
                 return;
             }
 
@@ -801,8 +817,9 @@ public final class CommandGlassPane extends JPanel {
         register(rootCommands, "/reload", "Reload resource", false, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 0) {
-                logHistoryData.addElement(node.getUseage());
-                LogUtils.debugLog(node.getUseage());
+                logText = node.getUseage();
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
                 return;
             }
 
@@ -813,26 +830,29 @@ public final class CommandGlassPane extends JPanel {
         register(rootCommands, "/kill", "Kill targets.", true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 1) {
-                logHistoryData.addElement(node.getUseage());
-                LogUtils.debugLog(node.getUseage());
+                logText = node.getUseage();
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
                 return;
             }
             // シーンが不適切な場合
             if (!isSceneValid(SceneType.GAME, SceneType.TEST))
                 return;
+
             SHIP_M.kill(args[0]);
-            LogUtils.systemLog(
-                    "[INFO]",
-                    component,
-                    args[0] + " killed.");
+
+            logText = args[0] + " killed.";
+            logHistoryData.addElement(logText);
+            LogUtils.systemLog("[INFO]", component, logText);
         }).setSyntax("<target>");
 
         // 消去 /clear <target>
         register(rootCommands, "/clear", "Kill targets.", true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 1) {
-                logHistoryData.addElement(node.getUseage());
-                LogUtils.debugLog(node.getUseage());
+                logText = node.getUseage();
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
                 return;
             }
             // シーンが不適切な場合
@@ -840,18 +860,19 @@ public final class CommandGlassPane extends JPanel {
                 return;
 
             SHIP_M.clear(args[0]);
-            LogUtils.systemLog(
-                    "[INFO]",
-                    component,
-                    args[0] + " cleared.");
+
+            logText = args[0] + " cleared.";
+            logHistoryData.addElement(logText);
+            LogUtils.systemLog("[INFO]", component, logText);
         }).setSyntax("<target>");
 
         // 船タイプの変更 /setship
         register(rootCommands, "/setship", "Set now ship.", true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 1) {
-                logHistoryData.addElement(node.getUseage());
-                LogUtils.debugLog(node.getUseage());
+                logText = node.getUseage();
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
                 return;
             }
 
@@ -864,8 +885,9 @@ public final class CommandGlassPane extends JPanel {
 
                 SHIP_M.getPlayer().setShipId("Ship" + id);
             } catch (NumberFormatException ne) {
-                logHistoryData.addElement("Unknnown param: " + param);
-                LogUtils.debugLog("Unknnown param: " + param);
+                logText = "Unknnown param: " + param;
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
@@ -875,8 +897,9 @@ public final class CommandGlassPane extends JPanel {
         register(rootCommands, "/unlockship", "Unlock ship.", true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 1) {
-                logHistoryData.addElement(node.getUseage());
-                LogUtils.debugLog(node.getUseage());
+                logText = node.getUseage();
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
                 return;
             }
 
@@ -887,8 +910,9 @@ public final class CommandGlassPane extends JPanel {
                 DataManager.getUserData().unlockShip("Ship" + id);
                 LobbyManager.getInstance().updateButtonStates();
             } catch (NumberFormatException ne) {
-                logHistoryData.addElement("Unknnown param: " + param);
-                LogUtils.debugLog("Unknnown param: " + param);
+                logText = "Unknnown param: " + param;
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
@@ -898,8 +922,9 @@ public final class CommandGlassPane extends JPanel {
         CommandNode effect = register(rootCommands, "/effect", "Apply effect.", true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length == 0) {
-                logHistoryData.addElement(node.getUseage());
-                LogUtils.debugLog(node.getUseage());
+                logText = node.getUseage();
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
                 return;
             }
         });
@@ -908,8 +933,9 @@ public final class CommandGlassPane extends JPanel {
         register(effect, "heal", null, true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 1) {
-                logHistoryData.addElement(node.getUseage());
-                LogUtils.debugLog(node.getUseage());
+                logText = node.getUseage();
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
                 return;
             }
             // シーンが不適切な場合
@@ -920,13 +946,14 @@ public final class CommandGlassPane extends JPanel {
                 Integer num = args.length > 0 ? GameUtils.tryParse(args[0]) : null;
 
                 SHIP_M.getPlayer().heal(num);
-                LogUtils.systemLog(
-                        "[INFO]",
-                        component,
-                        "Healed " + num + "HP.");
+
+                logText = "Healed " + num + "HP.";
+                logHistoryData.addElement(logText);
+                LogUtils.systemLog("[INFO]", component, logText);
             } catch (NumberFormatException ne) {
-                logHistoryData.addElement("Unknnown param: " + args[0]);
-                LogUtils.debugLog("Unknnown param: " + args[0]);
+                logText = "Unknnown param: " + args[0];
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
@@ -935,8 +962,9 @@ public final class CommandGlassPane extends JPanel {
         register(effect, "levelup", null, true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length > 2) {
-                logHistoryData.addElement(node.getUseage());
-                LogUtils.debugLog(node.getUseage());
+                logText = node.getUseage();
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
                 return;
             }
             // シーンが不適切な場合
@@ -946,10 +974,10 @@ public final class CommandGlassPane extends JPanel {
             // 指定がなければ1レベル上げる、指定があればそのレベルを設定
             if (args.length == 0) {
                 SHIP_M.getPlayer().levelUp();
-                LogUtils.systemLog(
-                        "[INFO]",
-                        component,
-                        "Ship leveled up to level " + SHIP_M.getPlayer().getShipLevel() + ".");
+
+                logText = "Ship leveled up to level " + SHIP_M.getPlayer().getShipLevel() + ".";
+                logHistoryData.addElement(logText);
+                LogUtils.systemLog("[INFO]", component, logText);
             } else {
                 try {
                     Integer num = GameUtils.tryParse(args[0]);
@@ -960,13 +988,13 @@ public final class CommandGlassPane extends JPanel {
                     } else
                         SHIP_M.getPlayer().setShipLevel(num);
 
-                    LogUtils.systemLog(
-                            "[INFO]",
-                            component,
-                            "Ship level set to " + SHIP_M.getPlayer().getShipLevel());
+                    logText = "Ship level set to " + SHIP_M.getPlayer().getShipLevel() + ".";
+                    logHistoryData.addElement(logText);
+                    LogUtils.systemLog("[INFO]", component, logText);
                 } catch (NumberFormatException ne) {
-                    logHistoryData.addElement("Unknnown param: " + args[0]);
-                    LogUtils.debugLog("Unknnown param: " + args[0]);
+                    logText = "Unknnown param: " + args[0];
+                    logHistoryData.addElement(logText);
+                    LogUtils.debugLog(logText);
                 } catch (Exception e) {
                     LogUtils.systemLog("[WARN]", component, "Command Error");
                 }
@@ -976,8 +1004,9 @@ public final class CommandGlassPane extends JPanel {
         register(effect, "shield", null, true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length > 2) {
-                logHistoryData.addElement(node.getUseage());
-                LogUtils.debugLog(node.getUseage());
+                logText = node.getUseage();
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
                 return;
             }
             // シーンが不適切な場合
@@ -991,24 +1020,29 @@ public final class CommandGlassPane extends JPanel {
                 isInfinityInvincibility = !isInfinityInvincibility;
 
                 SHIP_M.getPlayer().setShieldTimer(time);
-                LogUtils.systemLog(
-                        "[INFO]",
-                        component,
-                        "Invincibility " + (isInfinityInvincibility ? "enabled." : "disabled."));
+
+                logText = "Invincibility " + (isInfinityInvincibility ? "enabled." : "disabled.");
+                logHistoryData.addElement(logText);
+                LogUtils.systemLog("[INFO]", component, logText);
             } else {
                 try {
                     Integer time = GameUtils.tryParse(args[0]);
 
                     if (isInfinityInvincibility) {
-                        LogUtils.systemLog(
-                                "[INFO]",
-                                component,
-                                "The ship is already invincible.");
-                    } else
+                        logText = "The ship is already invincible.";
+                        logHistoryData.addElement(logText);
+                        LogUtils.systemLog("[INFO]", component, logText);
+                    } else {
                         SHIP_M.getPlayer().setShieldTimer(time);
+
+                        logText = "The ship became invincible.";
+                        logHistoryData.addElement(logText);
+                        LogUtils.systemLog("[INFO]", component, logText);
+                    }
                 } catch (NumberFormatException ne) {
-                    logHistoryData.addElement("Unknnown param: " + args[0]);
-                    LogUtils.debugLog("Unknnown param: " + args[0]);
+                    logText = "Unknnown param: " + args[0];
+                    logHistoryData.addElement(logText);
+                    LogUtils.debugLog(logText);
                 } catch (Exception e) {
                     LogUtils.systemLog("[WARN]", component, "Command Error");
                 }
@@ -1018,8 +1052,9 @@ public final class CommandGlassPane extends JPanel {
         register(effect, "ooc", null, true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length > 2) {
-                logHistoryData.addElement(node.getUseage());
-                LogUtils.debugLog(node.getUseage());
+                logText = node.getUseage();
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
                 return;
             }
             // シーンが不適切な場合
@@ -1035,26 +1070,29 @@ public final class CommandGlassPane extends JPanel {
 
                 SHIP_M.getPlayer().setOOCTimer(time);
                 SHIP_M.getPlayer().setShipLevel(level);
-                LogUtils.systemLog(
-                        "[INFO]",
-                        component,
-                        "OOC " + (isInfinityOOC ? "enabled." : "disabled."));
+
+                logText = "OOC " + (isInfinityOOC ? "enabled." : "disabled.");
+                logHistoryData.addElement(logText);
+                LogUtils.systemLog("[INFO]", component, logText);
             } else {
                 try {
                     Integer time = GameUtils.tryParse(args[0]);
 
                     if (isInfinityOOC) {
-                        LogUtils.systemLog(
-                                "[INFO]",
-                                component,
-                                "The ship is already OOC");
+                        logText = "The ship is already OOC.";
+                        logHistoryData.addElement(logText);
+                        LogUtils.systemLog("[INFO]", component, logText);
                     } else {
-
                         SHIP_M.getPlayer().setOOCTimer(time);
+
+                        logText = "The ship became OOC.";
+                        logHistoryData.addElement(logText);
+                        LogUtils.systemLog("[INFO]", component, logText);
                     }
                 } catch (NumberFormatException ne) {
-                    logHistoryData.addElement("Unknnown param: " + args[0]);
-                    LogUtils.debugLog("Unknnown param: " + args[0]);
+                    logText = "Unknnown param: " + args[0];
+                    logHistoryData.addElement(logText);
+                    LogUtils.debugLog(logText);
                 } catch (Exception e) {
                     LogUtils.systemLog("[WARN]", component, "Command Error");
                 }
@@ -1065,8 +1103,9 @@ public final class CommandGlassPane extends JPanel {
         register(rootCommands, "/get", "get resource", true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 2) {
-                logHistoryData.addElement(node.getUseage());
-                LogUtils.debugLog(node.getUseage());
+                logText = node.getUseage();
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
                 return;
             }
 
@@ -1077,10 +1116,10 @@ public final class CommandGlassPane extends JPanel {
                 if (resName == ResourceKinds.COIN) {
                     int amountOwned = resData.getCoins();
                     resData.setCoins(amountOwned + amount);
-                    LogUtils.systemLog(
-                            "[INFO]",
-                            component,
-                            "Added " + amount + " coins. Current coins: " + resData.getCoins() + ".");
+
+                    logText = "Added " + amount + " coins. Current coins: " + resData.getCoins() + ".";
+                    logHistoryData.addElement(logText);
+                    LogUtils.systemLog("[INFO]", component, logText);
                     return;
                 } else {
                     int amountOwned = resData.getEquipments().getOrDefault(resName, 0);
@@ -1093,11 +1132,13 @@ public final class CommandGlassPane extends JPanel {
                 }
 
             } catch (NumberFormatException ne) {
-                logHistoryData.addElement("Unknnown param: " + args[1]);
-                LogUtils.debugLog("Unknnown param: " + args[1]);
+                logText = "Unknown param: '" + args[1] + "'";
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
             } catch (IllegalArgumentException iae) {
-                logHistoryData.addElement("Unknown resName: " + args[0]);
-                LogUtils.debugLog("Unknown resName: " + args[0]);
+                logText = "Unknown resName: '" + args[0] + "'";
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
@@ -1107,8 +1148,9 @@ public final class CommandGlassPane extends JPanel {
         register(rootCommands, "/gameclear", "Instantly clear.", true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 0) {
-                logHistoryData.addElement(node.getUseage());
-                LogUtils.debugLog(node.getUseage());
+                logText = node.getUseage();
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
                 return;
             }
             // シーンが不適切な場合
@@ -1121,8 +1163,9 @@ public final class CommandGlassPane extends JPanel {
         register(rootCommands, "/gameover", "Instantly gameover.", true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 0) {
-                logHistoryData.addElement(node.getUseage());
-                LogUtils.debugLog(node.getUseage());
+                logText = node.getUseage();
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
                 return;
             }
             // シーンが不適切な場合
@@ -1135,8 +1178,9 @@ public final class CommandGlassPane extends JPanel {
         register(rootCommands, "/clearstage", "Force clear a specific stage.", true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 1) {
-                logHistoryData.addElement(node.getUseage());
-                LogUtils.debugLog(node.getUseage());
+                logText = node.getUseage();
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
                 return;
             }
 
@@ -1151,19 +1195,18 @@ public final class CommandGlassPane extends JPanel {
                     NSM.getStageButtonPanel().setup();
 
                     // クリア進捗更新ログ
-                    LogUtils.systemLog(
-                            "[INFO]",
-                            component,
-                            "Progress reached " + ANSI.YELLOW + "Stage" + stageId + ANSI.RESET + ".");
+                    logText = "Progress reached " + ANSI.YELLOW + "Stage" + stageId + ANSI.RESET + ".";
+                    logHistoryData.addElement(logText);
+                    LogUtils.systemLog("[INFO]", component, logText);
                 } else {
-                    LogUtils.systemLog(
-                            "[INFO]",
-                            component,
-                            "Specified stage has already been completed.");
+                    logText = "Specified stage has already been completed.";
+                    logHistoryData.addElement(logText);
+                    LogUtils.systemLog("[INFO]", component, logText);
                 }
             } catch (NumberFormatException ne) {
-                logHistoryData.addElement("Unknnown param: " + args[0]);
-                LogUtils.debugLog("Unknnown param: " + args[0]);
+                logText = "Unknnown param: " + args[0];
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
@@ -1171,10 +1214,19 @@ public final class CommandGlassPane extends JPanel {
 
         // データリセット /deleteuser
         register(rootCommands, "/deleteuser", "Reset data.", true, (node, args) -> {
+            // オフラインモードの場合
+            if (!ShootingGameMain.getOnlineMode()) {
+                logText = "This command is unavailable in offline mode.";
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
+                return;
+            }
+
             // 引数が不適切な場合
             if (args.length != 2) {
-                logHistoryData.addElement(node.getUseage());
-                LogUtils.debugLog(node.getUseage());
+                logText = node.getUseage();
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
                 return;
             }
 
@@ -1183,43 +1235,49 @@ public final class CommandGlassPane extends JPanel {
 
             // adminアカウントの削除防止
             if (username.equals("admin")) {
-                LogUtils.systemLog(
-                        "[WARN]",
-                        component,
-                        "Can't delete admin account");
+                logText = "Can't delete admin account.";
+                logHistoryData.addElement(logText);
+                LogUtils.systemLog("[WARN]", component, logText);
                 return;
             }
 
             // forceオプションが渡された場合強制削除
             if (password.equals("force")) {
                 if (DataManager.forceDelete(username)) {
-                    LogUtils.systemLog(
-                            "[INFO]",
-                            component,
-                            "Delete successful");
+                    logText = "Delete successful.";
+                    logHistoryData.addElement(logText);
+                    LogUtils.systemLog("[INFO]", component, logText);
                     return;
                 }
             }
 
             // 通常モードでデータ削除
-            if (DataManager.delete(username, password))
-                LogUtils.systemLog(
-                        "[INFO]",
-                        component,
-                        "Delete successfull");
-            else
-                LogUtils.systemLog(
-                        "[WARN]",
-                        component,
-                        "Deletion failed");
+            if (DataManager.delete(username, password)) {
+                logText = "Delete successfull.";
+                logHistoryData.addElement(logText);
+                LogUtils.systemLog("[INFO]", component, logText);
+            } else {
+                logText = "Deletion failed.";
+                logHistoryData.addElement(logText);
+                LogUtils.systemLog("[WARN]", component, logText);
+            }
         }).setSyntax("<username>", "<password>");
 
         // パスワード変更 /changepassword
         register(rootCommands, "/changepassword", "Change user password", true, (node, args) -> {
+            // オフラインモードの場合
+            if (!ShootingGameMain.getOnlineMode()) {
+                logText = "This command is unavailable in offline mode.";
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
+                return;
+            }
+
             // 引数が不適切な場合
             if (args.length != 3) {
-                logHistoryData.addElement(node.getUseage());
-                LogUtils.debugLog(node.getUseage());
+                logText = node.getUseage();
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
                 return;
             }
 
@@ -1230,25 +1288,23 @@ public final class CommandGlassPane extends JPanel {
             // forceオプションが渡された場合パスワード強制変更
             if (oldPassword.equals("force")) {
                 if (DataManager.forceChangePassword(username, newPassword)) {
-                    LogUtils.systemLog(
-                            "[INFO]",
-                            component,
-                            "Change password successful");
+                    logText = "Change password successful.";
+                    logHistoryData.addElement(logText);
+                    LogUtils.systemLog("[INFO]", component, logText);
                     return;
                 }
             }
 
             // 通常モードでパスワード変更
-            if (DataManager.changePassword(username, oldPassword, newPassword))
-                LogUtils.systemLog(
-                        "[INFO]",
-                        component,
-                        "Change password successful");
-            else
-                LogUtils.systemLog(
-                        "[INFO]",
-                        component,
-                        "Change password failed");
+            if (DataManager.changePassword(username, oldPassword, newPassword)) {
+                logText = "Change password successful.";
+                logHistoryData.addElement(logText);
+                LogUtils.systemLog("[INFO]", component, logText);
+            } else {
+                logText = "Change password failed.";
+                logHistoryData.addElement(logText);
+                LogUtils.systemLog("[INFO]", component, logText);
+            }
         }).setSyntax("<username>", "<oldPassword>", "<newPassword>");
     }
 
@@ -1277,10 +1333,10 @@ public final class CommandGlassPane extends JPanel {
      */
     private void reload() {
         // リロード開始ログ
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
-                "Attempting to reload resources...");
+        logText = "Attempting to reload resources...";
+        logHistoryData.addElement(logText);
+        LogUtils.systemLog("[INFO]", component, logText);
+
         RM.reload();
         IM.reload();
         SHIP_M.reload();
@@ -1293,10 +1349,9 @@ public final class CommandGlassPane extends JPanel {
             SHIP_M.clear("all");
 
         // リロード完了ログ
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
-                "Reload complete.");
+        logText = "Reload complete.";
+        logHistoryData.addElement(logText);
+        LogUtils.systemLog("[INFO]", component, logText);
     }
 
     /**
@@ -1305,9 +1360,11 @@ public final class CommandGlassPane extends JPanel {
      * @param text 未知コマンド内容
      */
     private void unknownCommand(String text) {
-        logHistoryData.addElement("Unknown command '" + text + "'");
-        logHistoryData.addElement("Type '/help' for help.");
-        LogUtils.debugLog("Unknown command '" + text + "'");
-        LogUtils.debugLog("Type '/help' for help.");
+        logText = "Unknown command '" + text + "'";
+        logHistoryData.addElement(logText);
+        LogUtils.debugLog(logText);
+        logText = "Type '/help' for help.";
+        logHistoryData.addElement(logText);
+        LogUtils.debugLog(logText);
     }
 }

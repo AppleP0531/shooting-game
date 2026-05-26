@@ -76,6 +76,7 @@ package "shooting_game" {
             - adminMode: boolean
             - rootCommands:  Map<String, CommandNode>
             - commandField: JTextField
+            - logText: String
             - COMMAND_INPUT_HISTORY: List<String>
             - INPUT_HISTORY_MODEL: DefaultListModel<String>
             - INPUT_HISTORY_LIST: JList<String>
