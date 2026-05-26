@@ -300,15 +300,15 @@ public final class CommandGlassPane extends JPanel {
                     String remainText = "";
 
                     for (int i = 0; i < args.length - 1; i++) {
-                        matchText = matchText + args[i] + " ";
+                        matchText += args[i] + " ";
                     }
 
                     String comparingToken = tokens[args.length - 1];
                     Boolean isSyntax = comparingToken.startsWith("<");
                     if (isSyntax) {
-                        matchText = matchText + comparingToken + " ";
+                        matchText += comparingToken + " ";
                         for (int i = args.length; i < tokens.length; i++) {
-                            remainText = remainText + tokens[i] + " ";
+                            remainText += tokens[i] + " ";
                         }
                     } else {
                         matchText += fullText.substring(matchText.length(), inputText.length());
