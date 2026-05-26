@@ -116,7 +116,6 @@ package "shooting_game" {
             - isSceneValid(allowedTypes: SceneType...): boolean
             - registCommands(): void
             - showHelp(): void
-            - tryParse(value: String): Integer
             - reload(): void
             - unknownCommand(text: String): void
         }
@@ -139,12 +138,13 @@ package "shooting_game" {
             - action: CommandAction
             - parent: CommandNode
             - subCommands: Map<String, CommandNode>
-            - syntax: String
+            - syntax: List<String>
             --
             + CommandNode(parent: CommandNode, name: String, description: String, adminOnly: boolean, action: CommandAction)
             + getUseage(): String
             - getFullPath(): String
             + getAllNodes(adminMode: boolean): List<String>
+            + compersionSyntax(token: String): boolean
         }
 
         class ChatBoxContext <<lombok @Data>> {
@@ -1308,6 +1308,7 @@ package "shooting_game" {
             + {static} normalizeAngle(angle: double): double
             + {static} collidesWith(entity1: Entity, entity2: Entity): boolean
             + {static} calcFlashAlpha(time: double, x: double, y: double): float
+            + {static} tryParse(value: String): Integer
             + {static} parseTimeToSeconds(time: String): long
             + {static} formatSecondsToTime(time: long): String
         }

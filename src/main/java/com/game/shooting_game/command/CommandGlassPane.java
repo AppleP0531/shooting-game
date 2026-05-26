@@ -42,6 +42,7 @@ import com.game.shooting_game.lobbyScene.LobbyManager;
 import com.game.shooting_game.stageScene.normal.NormalStageManager;
 import com.game.shooting_game.upgradeScene.UpgradeManager;
 import com.game.shooting_game.utils.ANSI;
+import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.utils.Vector2;
 
@@ -550,24 +551,34 @@ public final class CommandGlassPane extends JPanel {
 
         hideChatBoxList(logHistoryData);
 
-        // 再外層ノードから探索
-        Map<String, CommandNode> currentNode = rootCommands;
+        Map<String, CommandNode> subCommands = rootCommands; // 再外層ノードから探索
+        CommandNode currentNode = null; // 参照中ノード
         // 引数と一致する子ノードを見つけたら階層を移動
         for (int i = 0; i < args.length - 1; i++) {
-            CommandNode node = currentNode.get(args[i]);
+            CommandNode node = subCommands.get(args[i]);
 
-            if (node != null)
-                currentNode = node.getSubCommands();
+            if (node != null) {
+                subCommands = node.getSubCommands(); // 階層移動
+                currentNode = node; // 参照中ノードの更新
+            } else
+                break;
         }
 
         // 入力中文字と比較
         String currentToken = args[args.length - 1];
-        for (CommandNode node : currentNode.values()) {
-            String cmdName = node.getName();
-            if (cmdName.startsWith(currentToken)) {
+        for (CommandNode node : subCommands.values()) {
+            if (node.getName().startsWith(currentToken)) {
                 for (String suggests : node.getAllNodes(adminMode)) {
                     suggestData.addElement(suggests);
                 }
+            }
+        }
+
+        // syntax比較
+        if (currentNode != null) {
+            if (currentNode.getSyntax() != null) {
+                if (currentNode.compersionSyntax(currentToken))
+                    suggestData.addElement(currentNode.getUseage());
             }
         }
 
@@ -607,7 +618,7 @@ public final class CommandGlassPane extends JPanel {
             }
 
             try {
-                Integer fps = tryParse(args[0]);
+                Integer fps = GameUtils.tryParse(args[0]);
 
                 // fpsが0以下の場合はエラー
                 if (fps == 0) {
@@ -702,7 +713,7 @@ public final class CommandGlassPane extends JPanel {
 
             String param = args[0].replace("stage", "");
             try {
-                Integer id = tryParse(param);
+                Integer id = GameUtils.tryParse(param);
 
                 if (!adminMode) {
                     // ロックされていた場合は遷移しない
@@ -794,7 +805,7 @@ public final class CommandGlassPane extends JPanel {
 
             String param = args[0].replace("ship", "");
             try {
-                Integer id = tryParse(param);
+                Integer id = GameUtils.tryParse(param);
 
                 if (!isSceneValid(SceneType.GAME, SceneType.TEST))
                     return;
@@ -819,7 +830,7 @@ public final class CommandGlassPane extends JPanel {
 
             String param = args[0].replace("ship", "");
             try {
-                Integer id = tryParse(args[0].replace("ship", ""));
+                Integer id = GameUtils.tryParse(args[0].replace("ship", ""));
 
                 DataManager.getUserData().unlockShip("Ship" + id);
                 LobbyManager.getInstance().updateButtonStates();
@@ -840,7 +851,7 @@ public final class CommandGlassPane extends JPanel {
                 return;
             }
         });
-        effect.setSyntax("<effectName> <seconds>");
+        effect.setSyntax("<effectName>", "<seconds>");
         // 回復
         register(effect, "heal", null, true, (node, args) -> {
             // 引数が不適切な場合
@@ -854,7 +865,7 @@ public final class CommandGlassPane extends JPanel {
                 return;
 
             try {
-                Integer num = args.length > 0 ? tryParse(args[0]) : null;
+                Integer num = args.length > 0 ? GameUtils.tryParse(args[0]) : null;
 
                 SHIP_M.getPlayer().heal(num);
                 LogUtils.systemLog(
@@ -889,7 +900,7 @@ public final class CommandGlassPane extends JPanel {
                         "Ship leveled up to level " + SHIP_M.getPlayer().getShipLevel() + ".");
             } else {
                 try {
-                    Integer num = tryParse(args[0]);
+                    Integer num = GameUtils.tryParse(args[0]);
 
                     if (num >= 5) {
                         SHIP_M.getPlayer().setShipLevel(4);
@@ -934,7 +945,7 @@ public final class CommandGlassPane extends JPanel {
                         "Invincibility " + (isInfinityInvincibility ? "enabled." : "disabled."));
             } else {
                 try {
-                    Integer time = tryParse(args[0]);
+                    Integer time = GameUtils.tryParse(args[0]);
 
                     if (isInfinityInvincibility) {
                         LogUtils.systemLog(
@@ -978,7 +989,7 @@ public final class CommandGlassPane extends JPanel {
                         "OOC " + (isInfinityOOC ? "enabled." : "disabled."));
             } else {
                 try {
-                    Integer time = tryParse(args[0]);
+                    Integer time = GameUtils.tryParse(args[0]);
 
                     if (isInfinityOOC) {
                         LogUtils.systemLog(
@@ -1009,7 +1020,7 @@ public final class CommandGlassPane extends JPanel {
 
             try {
                 ResourceKinds resName = ResourceKinds.valueOf(args[0].toUpperCase());
-                Integer amount = tryParse(args[1]);
+                Integer amount = GameUtils.tryParse(args[1]);
                 Resources resData = DataManager.getUserData().getResources();
                 if (resName == ResourceKinds.COIN) {
                     int amountOwned = resData.getCoins();
@@ -1038,7 +1049,7 @@ public final class CommandGlassPane extends JPanel {
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
-        }).setSyntax("<resourceName> <amount>");
+        }).setSyntax("<resourceName>", "<amount>");
 
         // ゲームクリア/ゲームオーバー /gameclear /gameover
         register(rootCommands, "/gameclear", "Instantly clear.", true, (node, args) -> {
@@ -1078,7 +1089,7 @@ public final class CommandGlassPane extends JPanel {
             }
 
             try {
-                Integer stageId = tryParse(args[0]);
+                Integer stageId = GameUtils.tryParse(args[0]);
 
                 UserData data = DataManager.getUserData();
                 // 与えられたステージがクリア済みかどうか
@@ -1149,7 +1160,7 @@ public final class CommandGlassPane extends JPanel {
                         "[WARN]",
                         component,
                         "Deletion failed");
-        }).setSyntax("<username> <password>");
+        }).setSyntax("<username>", "<password>");
 
         // パスワード変更 /changepassword
         register(rootCommands, "/changepassword", "Change user password", true, (node, args) -> {
@@ -1186,7 +1197,7 @@ public final class CommandGlassPane extends JPanel {
                         "[INFO]",
                         component,
                         "Change password failed");
-        }).setSyntax("<username> <oldPassword> <newPassword>");
+        }).setSyntax("<username>", "<oldPassword>", "<newPassword>");
     }
 
     /**
@@ -1207,20 +1218,6 @@ public final class CommandGlassPane extends JPanel {
                 .forEach(e -> LogUtils.debugLog("%-15s : %s%n", e.getKey(), e.getValue().getDescription()));
 
         LogUtils.debugLog("");
-    }
-
-    /**
-     * 数字に変換
-     * 
-     * @param value 値
-     * @return 変換できた場合は値、できなかった場合はnull
-     */
-    private Integer tryParse(String value) throws NumberFormatException {
-        try {
-            return Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            throw e;
-        }
     }
 
     /**
