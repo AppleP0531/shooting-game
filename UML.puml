@@ -77,6 +77,7 @@ package "shooting_game" {
             - rootCommands:  Map<String, CommandNode>
             - commandField: JTextField
             - logText: String
+            - spacing: double
             - COMMAND_INPUT_HISTORY: List<String>
             - INPUT_HISTORY_MODEL: DefaultListModel<String>
             - INPUT_HISTORY_LIST: JList<String>
@@ -90,10 +91,14 @@ package "shooting_game" {
             - LOG_HISTORY_MODEL: DefaultListModel<String>
             - LOG_HISTORY_LIST: JList<String>
             - MAX_LOG_HISTORY: int
+            - DEFAULT_LOG_HISTORY_DISPLAY: int
             - MAX_LOG_HISTORY_DISPLAY: int
             - logHistoryIndex: int
             - logHistoryDiff: int
             - logHistoryData: ChatBoxContext
+            - fadeTimer: Timer
+            - defaultOpacity: float
+            - chatOpacity: float
             - COMMAND_SUGGEST: List<String>
             - SUGGEST_MODEL: DefaultListModel<String>
             - SUGGEST_LIST: JList<String>
