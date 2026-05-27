@@ -117,9 +117,27 @@ public class LogUtils {
      * @param message
      */
     public static void debugLog(Object message) {
-        if (ENABLE_DEBUG_INFO_LOG) {
-            StackTraceElement e = Thread.currentThread().getStackTrace()[2];
-            System.out.printf("[%s:%d] %s%n", e.getFileName(), e.getLineNumber(), message);
-        }
+        if (!ENABLE_DEBUG_INFO_LOG)
+            return;
+
+        StackTraceElement e = Thread.currentThread().getStackTrace()[2];
+        System.out.printf("[%s:%d] %-40s", e.getFileName(), e.getLineNumber(), message);
+        System.out.println();
+    }
+
+    /**
+     * デバッグ用ログ出力(フォーマッタ付き)
+     * 
+     * @param format
+     * @param messages
+     */
+    public static void debugLog(String format, Object... messages) {
+        if (!ENABLE_DEBUG_INFO_LOG)
+            return;
+
+        StackTraceElement e = Thread.currentThread().getStackTrace()[2];
+        String prefix = String.format("[%s:%d] ", e.getFileName(), e.getLineNumber());
+        String fullFormat = prefix + format;
+        System.out.printf(fullFormat, messages);
     }
 }

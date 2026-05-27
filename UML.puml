@@ -6,7 +6,7 @@ skinparam shadowing false
 skinparam linetype ortho
 
 package "shooting_game" {
-    class ShootingGameMain {
+    class ShootingGameMain <<Singleton>> {
         - {static} instance: ShootingGameMain
         - {static} glassPane: CommandGlassPane
         - cardLayout: CardLayout
@@ -20,7 +20,7 @@ package "shooting_game" {
         --
         - ShootingGameMain()
         + {static} getInstance(): ShootingGameMain
-        + {static} main(args: String[]): void
+        + {static} setup(args: String[]): void
         - start(): void
         + run(): void
         - update(dt: double): void
@@ -63,6 +63,7 @@ package "shooting_game" {
 
     package "command"{
         class CommandGlassPane {
+            - {static} component: String
             - MAIN: ShootingGameMain
             - SM: SceneManager
             - RM: ResourceManager
@@ -72,38 +73,69 @@ package "shooting_game" {
             - SHIP_M: ShipManager
             - BM: BulletManager
             - STAGE_M: StageManager
+            - adminMode: boolean
             - rootCommands:  Map<String, CommandNode>
             - commandField: JTextField
-            - commandHistory: List<String>
-            - historyIndex: int
-            - MAX_HISTORY: int
+            - logText: String
+            - spacing: double
+            - COMMAND_INPUT_HISTORY: List<String>
+            - INPUT_HISTORY_MODEL: DefaultListModel<String>
+            - INPUT_HISTORY_LIST: JList<String>
+            - MAX_INPUT_HISTORY: int
+            - MAX_INPUT_HISTORY_DISPLAY: int
             - currentInput: String
-            - historyList: JList<String>
-            - MAX_HISTORY_DISPLAY: int
-            - historyDiff: int
-            - historyModel: DefaultListModel<String>
-            - adminMode: boolean
+            - inputHistoryIndex: int
+            - inputHistoryDiff: int
+            - inputHistoryData: ChatBoxContext
+            - COMMAND_LOG_HISTORY: List<String>
+            - LOG_HISTORY_MODEL: DefaultListModel<String>
+            - LOG_HISTORY_LIST: JList<String>
+            - MAX_LOG_HISTORY: int
+            - DEFAULT_LOG_HISTORY_DISPLAY: int
+            - MAX_LOG_HISTORY_DISPLAY: int
+            - logHistoryIndex: int
+            - logHistoryDiff: int
+            - logHistoryData: ChatBoxContext
+            - fadeTimer: Timer
+            - defaultOpacity: float
+            - chatOpacity: float
+            - COMMAND_SUGGEST: List<String>
+            - SUGGEST_MODEL: DefaultListModel<String>
+            - SUGGEST_LIST: JList<String>
+            - MAX_SUGGEST: int
+            - MAX_SUGGEST_DISPLAY: int
+            - suggestIndex: int
+            - suggestDiff: int
+            - suggestData: ChatBoxContext
             --
             + CommandGlassPane(onEnter: Runnable)
-            - moveHistory(diff: int): void
-            + executeCommand(): void
-            + showCommandBar(): void
+            - moveHistory(context: ChatBoxContext, diff: MoveOption): void
+            + showCommandBar(text: String): void
             + hideCommandBar(): void
-            - showHistoryList(diff: int): void
-            - hideHistoryList(): void
+            - showChatBoxList(context: ChatBoxContext): void
+            - hideChatBoxList(context: ChatBoxContext): void
+            - hideAllChatBox(): void
+            + executeCommand(): void
             - processCommand(text: String): void
             - register(root: Map<String,CommandNode>, name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
             - register(root: CommandNode, name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
+            - registCommandSuggestions(): void
             - isSceneValid(allowedTypes: SceneType...): boolean
             - registCommands(): void
             - showHelp(): void
-            - tryParse(value: String): Integer
             - reload(): void
             - unknownCommand(text: String): void
         }
 
         interface CommandAction <<functional>> {
             ~ execute(node: CommandNode, args: String[]): void
+        }
+
+        enum MoveOption {
+            ONE_LINE_UP
+            ONE_LINE_DOWN
+            ONE_PAGE_UP
+            ONE_PAGE_DOWN
         }
 
         class CommandNode <<Lomboc @Data>> {
@@ -113,11 +145,25 @@ package "shooting_game" {
             - action: CommandAction
             - parent: CommandNode
             - subCommands: Map<String, CommandNode>
-            - syntax: String
+            - syntax: List<String>
             --
             + CommandNode(parent: CommandNode, name: String, description: String, adminOnly: boolean, action: CommandAction)
             + getUseage(): String
             - getFullPath(): String
+            + getAllNodes(adminMode: boolean): List<String>
+            + compersionSyntax(token: String): boolean
+        }
+
+        class ChatBoxContext <<lombok @Data>> {
+            - elements: List<String>
+            - model: DefaultListModel<String>
+            - list: JList<String>
+            - maxSavelength: int
+            - maxDisplay: int
+            - index: int
+            - diff: int
+            --
+            + addElement(text: String): void
         }
     }
 
@@ -1269,6 +1315,7 @@ package "shooting_game" {
             + {static} normalizeAngle(angle: double): double
             + {static} collidesWith(entity1: Entity, entity2: Entity): boolean
             + {static} calcFlashAlpha(time: double, x: double, y: double): float
+            + {static} tryParse(value: String): Integer
             + {static} parseTimeToSeconds(time: String): long
             + {static} formatSecondsToTime(time: long): String
         }
@@ -1286,6 +1333,7 @@ package "shooting_game" {
             + {static} systemLog(tag: String, className: String, msg: String): void
             + {static} systemLog(tag: String, className: String, msg: String, e: Exception): void
             + {static} debugLog(message: Object): void
+            + {static} debugLog(format: String, messages: Object...): void
         }
 
         enum LogLevel {
@@ -1513,6 +1561,7 @@ package "shooting_game" {
 shooting_game.utils.LogUtils +-- LogLevel
 shooting_game.SceneManager +-- SceneType
 shooting_game.command.CommandGlassPane +-- CommandAction
+shooting_game.command.CommandGlassPane +-- MoveOption
 shooting_game.utils.animation.Animation +-- AnimationLogic
 shooting_game.utils.Anchor +-- H
 shooting_game.utils.Anchor +-- V
@@ -1574,6 +1623,7 @@ shooting_game.gameScene.item.types.Heal --* shooting_game.gameScene.item.Item
 shooting_game.gameResultScene.GameResultManager --|> javax.swing.JPanel
 shooting_game.gameResultScene.subPanels.RewardListPanel --|> javax.swing.JPanel
 shooting_game.testScene.TestManager --|> javax.swing.JPanel
+shooting_game.bagScene.BagManager --|> javax.swing.JPanel
 
 ' implements関係
 shooting_game.ShootingGameMain ..|> Runnable
