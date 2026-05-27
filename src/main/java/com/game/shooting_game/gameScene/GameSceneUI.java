@@ -172,10 +172,10 @@ public class GameSceneUI {
         BufferedImage originImage = null;
 
         try {
-            double iconSize = 15 * ShootingGameMain.getScreenSizeAdj();
+            double iconSize = 20 * ShootingGameMain.getScreenSizeAdj();
             Vector2 pos = new Vector2(
                     5 * ShootingGameMain.getScreenSizeAdj() + iconSize / 2,
-                    5 * ShootingGameMain.getScreenSizeAdj() + iconSize / 2);
+                    9 * ShootingGameMain.getScreenSizeAdj() + iconSize / 2);
 
             originImage = RM.getResourceImage().get(ResourceKinds.COIN).get(Rarity.COMMON)[0];
             BufferedImage image = UIBuilder.resizeImage(originImage, iconSize); // 画像のリサイズ
