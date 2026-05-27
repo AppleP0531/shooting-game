@@ -9,6 +9,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -81,15 +82,8 @@ public class UIBuilder extends JPanel {
 
             // 画像切り分け
             BufferedImage sub = masterSheet.getSubimage(x, y, sheetWidth, sheetHeiht);
-            // 画像のリサイズ(少しづつ調整して画質を保つ)
-            while (true) {
-                if (imageSize < sub.getWidth() / 2) {
-                    sub = resizeImage(sub, sub.getWidth() / 2);
-                } else {
-                    frames[i] = resizeImage(sub, imageSize);
-                    break;
-                }
-            }
+            // 画像のリサイズ
+            frames[i] = resizeImage(sub, imageSize);
         }
 
         return frames;
@@ -192,6 +186,11 @@ public class UIBuilder extends JPanel {
      * @return リサイズ後の画像
      */
     public static BufferedImage resizeImage(BufferedImage originImage, double imageSize) {
+        // 画像のリサイズ(再帰呼び出しにより少しづつ調整して画質を保つ)
+        while (imageSize < originImage.getWidth() / 2) {
+            originImage = resizeImage(originImage, originImage.getWidth() / 2);
+        }
+
         // 元の画像サイズ
         Vector2 originSize = new Vector2(originImage.getWidth(), originImage.getHeight());
         // 倍率計算
@@ -483,6 +482,8 @@ public class UIBuilder extends JPanel {
      */
     public static void drawEquipmentsIcon(Component c, Graphics g, Vector2 pos, Vector2 size, ResourceKinds name,
             int amount) {
+        Graphics2D g2 = (Graphics2D) g;
+
         // コンポーネント座標をウィンドウ座標に変換
         Point p = new Point((int) pos.getX(), (int) pos.getY());
         Point windowPos = SwingUtilities.convertPoint(c, p, ShootingGameMain.getInstance());
@@ -496,11 +497,18 @@ public class UIBuilder extends JPanel {
                 size.getX() * 3 / 4,
                 size.getY() * 3 / 4);
         if (image != null) {
-
+            AffineTransform oldTransform = g2.getTransform();
+            g2.translate((int) pos.getX(), (int) pos.getY());
+            image = resizeImage(image, imageSize.getX());
+            g2.drawImage(image,
+                    -image.getWidth() / 2, -image.getHeight() / 2,
+                    image.getWidth(), image.getHeight(),
+                    ShootingGameMain.getInstance());
+            g2.setTransform(oldTransform);
         } else {
             // 枠の描画
-            g.setColor(new Color(0.5f, 0.5f, 0.5f, 0.5f));
-            g.drawRect((int) (pos.getX() - imageSize.getX() / 2),
+            g2.setColor(new Color(0.5f, 0.5f, 0.5f, 0.5f));
+            g2.drawRect((int) (pos.getX() - imageSize.getX() / 2),
                     (int) (pos.getY() - imageSize.getY() / 2),
                     (int) imageSize.getX(),
                     (int) imageSize.getY());

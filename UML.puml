@@ -73,6 +73,8 @@ package "shooting_game" {
             - SHIP_M: ShipManager
             - BM: BulletManager
             - STAGE_M: StageManager
+            - mouseHandler: MouseAdapter
+            - keyHandler: KeyAdapter
             - adminMode: boolean
             - rootCommands:  Map<String, CommandNode>
             - commandField: JTextField
@@ -125,6 +127,8 @@ package "shooting_game" {
             - showHelp(): void
             - reload(): void
             - unknownCommand(text: String): void
+            - addHandler(): void
+            - removeHandler(): void
         }
 
         interface CommandAction <<functional>> {

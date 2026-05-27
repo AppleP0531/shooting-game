@@ -66,6 +66,9 @@ public final class CommandGlassPane extends JPanel {
     private final BulletManager BM;
     private final StageManager STAGE_M;
 
+    private MouseAdapter mouseHandler;
+    private KeyAdapter keyHandler;
+
     private enum MoveOption {
         ONE_LINE_UP,
         ONE_LINE_DOWN,
@@ -155,7 +158,7 @@ public final class CommandGlassPane extends JPanel {
         commandField.setVisible(false);
 
         // コマンド入力時の処理
-        commandField.addKeyListener(new KeyAdapter() {
+        keyHandler = new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 int keyCode = e.getKeyCode();
@@ -177,7 +180,7 @@ public final class CommandGlassPane extends JPanel {
                     default -> hideChatBoxList(inputHistoryData);
                 }
             }
-        });
+        };
         commandField.getDocument().addDocumentListener(new DocumentListener() {
             // 文字が入力されたとき
             @Override
@@ -200,7 +203,7 @@ public final class CommandGlassPane extends JPanel {
         add(commandField);
 
         // 入力中にマウスイベントをほかにとられないようにする
-        MouseAdapter mouseHandler = new MouseAdapter() {
+        mouseHandler = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 // commandField の範囲外をクリックしたか判定
@@ -219,8 +222,6 @@ public final class CommandGlassPane extends JPanel {
                 logHistoryData.setMaxDisplay(MAX_LOG_HISTORY_DISPLAY);
             }
         };
-        addMouseListener(mouseHandler);
-        addMouseWheelListener(mouseHandler);
 
         // 履歴リストの設定
         INPUT_HISTORY_MODEL = new DefaultListModel<>();
@@ -329,7 +330,7 @@ public final class CommandGlassPane extends JPanel {
                     String remainText = "";
 
                     for (int i = 0; i < args.length - 1; i++) {
-                        matchText += args[i] + " ";
+                        matchText += tokens[i] + " ";
                     }
 
                     String comparingToken = tokens[args.length - 1];
@@ -442,6 +443,7 @@ public final class CommandGlassPane extends JPanel {
      * @param text デフォルト挿入文字
      */
     public void showCommandBar(String text) {
+        addHandler();
         chatOpacity = defaultOpacity;
 
         setVisible(true);
@@ -456,6 +458,7 @@ public final class CommandGlassPane extends JPanel {
      * コマンドウィンドウの非表示
      */
     public void hideCommandBar() {
+        removeHandler();
         commandField.setVisible(false);
 
         hideAllChatBox();
@@ -1447,5 +1450,23 @@ public final class CommandGlassPane extends JPanel {
         logText = "Type '/help' for help.";
         logHistoryData.addElement(logText);
         LogUtils.debugLog(logText);
+    }
+
+    /**
+     * マウスハンドラの追加
+     */
+    private void addHandler() {
+        addMouseListener(mouseHandler);
+        addMouseWheelListener(mouseHandler);
+        commandField.addKeyListener(keyHandler);
+    }
+
+    /**
+     * マウスハンドラの削除
+     */
+    private void removeHandler() {
+        removeMouseListener(mouseHandler);
+        removeMouseWheelListener(mouseHandler);
+        commandField.removeKeyListener(keyHandler);
     }
 }
