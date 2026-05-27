@@ -229,10 +229,11 @@ public class UIBuilder extends JPanel {
     /**
      * 状態画像の適用
      * 
-     * @param button   ボタン
-     * @param basePath 元画像のパス
-     * @param suffix   状態画像のサフィックス
-     * @param size     画像サイズ
+     * @param component 呼び出し元クラス名
+     * @param button    ボタン
+     * @param basePath  元画像のパス
+     * @param suffix    状態画像のサフィックス
+     * @param size      画像サイズ
      */
     private static void applyStateIcon(String component, JButton button, String basePath, String suffix, Vector2 size) {
         // 状態画像のパス作成

@@ -67,6 +67,20 @@ public class GameUtils {
     }
 
     /**
+     * 数字に変換
+     * 
+     * @param value 値
+     * @return 変換できた場合は値、できなかった場合はnull
+     */
+    public static Integer tryParse(String value) throws NumberFormatException {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            throw e;
+        }
+    }
+
+    /**
      * HH:mm:ssを秒に変換
      * 
      * @param time HH:mm:ss
