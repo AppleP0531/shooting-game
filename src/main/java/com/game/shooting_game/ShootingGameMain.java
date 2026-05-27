@@ -171,12 +171,20 @@ public final class ShootingGameMain extends JPanel implements Runnable {
             });
             frame.setGlassPane((glassPane));
 
-            // スラッシュでコマンドウィンドウを起動できるようにする
+            // 「/」でコマンドウィンドウを起動できるようにする
             panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('/'), "openCmd");
             panel.getActionMap().put("openCmd", new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    glassPane.showCommandBar();
+                    glassPane.showCommandBar("/");
+                }
+            });
+            // 「t」でチャットボックスを開く
+            panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('t'), "openChat");
+            panel.getActionMap().put("openChat", new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    glassPane.showCommandBar("");
                 }
             });
 
