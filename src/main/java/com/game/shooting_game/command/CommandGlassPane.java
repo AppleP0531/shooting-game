@@ -36,6 +36,7 @@ import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.bagScene.BagManager;
 import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.data.DataManager.UserData;
 import com.game.shooting_game.data.DataManager.UserData.Resources;
@@ -1218,6 +1219,7 @@ public final class CommandGlassPane extends JPanel {
                         resData.getEquipments().put(resName, newAmount);
                     }
                 }
+                BagManager.getInstance().setup();
 
             } catch (NumberFormatException ne) {
                 logText = "Unknown param: '" + args[1] + "'";
