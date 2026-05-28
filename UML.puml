@@ -101,6 +101,9 @@ package "shooting_game" {
             - fadeTimer: Timer
             - defaultOpacity: float
             - chatOpacity: float
+            - delay: int
+            - delayCounter: int
+            - initialDelay: int
             - COMMAND_SUGGEST: List<String>
             - SUGGEST_MODEL: DefaultListModel<String>
             - SUGGEST_LIST: JList<String>
@@ -117,6 +120,7 @@ package "shooting_game" {
             - showChatBoxList(context: ChatBoxContext): void
             - hideChatBoxList(context: ChatBoxContext): void
             - hideAllChatBox(): void
+            - initFadeTimer(): void
             + executeCommand(): void
             - processCommand(text: String): void
             - register(root: Map<String,CommandNode>, name: String, desc: String, admin: boolean, action: CommandAction): CommandNode

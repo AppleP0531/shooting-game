@@ -117,6 +117,9 @@ public final class CommandGlassPane extends JPanel {
     private Timer fadeTimer; // フェードアウト用タイマー
     private float defaultOpacity = 0.8f; // デフォルト透明度
     private float chatOpacity = defaultOpacity; // 透明度
+    private int delay = 50; // フェードアウト更新速度(ミリ秒)
+    private int delayCounter = 0;
+    private final int initialDelay = 5000 / delay; // 待機時間(ミリ秒/delay)
 
     // 予測変換
     private final List<String> COMMAND_SUGGEST = new LinkedList<>(); // 予測変換履歴リスト
@@ -281,6 +284,7 @@ public final class CommandGlassPane extends JPanel {
         LOG_HISTORY_LIST.setFont(new Font("Monospaced", Font.PLAIN, (int) (10 * ShootingGameMain.getScreenSizeAdj())));
         LOG_HISTORY_LIST.setBorder(null);
         LOG_HISTORY_LIST.setVisible(false);
+        LOG_HISTORY_LIST.setFocusable(false);
         LOG_HISTORY_LIST.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index,
@@ -370,6 +374,7 @@ public final class CommandGlassPane extends JPanel {
                 suggestIndex,
                 suggestDiff);
 
+        initFadeTimer();
         registCommands();
     }
 
@@ -463,45 +468,15 @@ public final class CommandGlassPane extends JPanel {
         commandField.setVisible(false);
 
         hideAllChatBox();
-
         showChatBoxList(logHistoryData);
 
         if (fadeTimer != null && fadeTimer.isRunning()) {
             fadeTimer.stop();
         }
+        delayCounter = 0;
+        chatOpacity = defaultOpacity;
 
         LOG_HISTORY_LIST.setOpaque(false);
-
-        // 一定時間待機した後、50ミリ秒ごとに不透明度減らす
-        fadeTimer = new Timer(50, new ActionListener() {
-            private int delayCounter = 0;
-            private final int initialDelay = 5000 / 50; // 待機分(5秒)
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // 入力バーが表示されている間はデフォルト値
-                if (commandField.isVisible()) {
-                    chatOpacity = defaultOpacity;
-                }
-
-                // 一定時間待機
-                if (delayCounter < initialDelay) {
-                    delayCounter++;
-                    return;
-                }
-
-                // 0.05ずつ透明にする
-                chatOpacity -= 0.05f;
-                if (chatOpacity <= 0.0f) {
-                    fadeTimer.stop(); // 透明になったらタイマーを止める
-                    chatOpacity = 0.0f;
-                    setVisible(false);
-                    hideChatBoxList(logHistoryData); // 非表示にする
-                }
-
-                LOG_HISTORY_LIST.repaint();
-            }
-        });
 
         fadeTimer.start();
 
@@ -571,6 +546,36 @@ public final class CommandGlassPane extends JPanel {
         hideChatBoxList(inputHistoryData);
         hideChatBoxList(logHistoryData);
         hideChatBoxList(suggestData);
+    }
+
+    private void initFadeTimer() {
+        // 一定時間待機した後、50ミリ秒ごとに不透明度減らす
+        fadeTimer = new Timer(delay, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 入力バーが表示されている間はデフォルト値
+                if (commandField.isVisible()) {
+                    chatOpacity = defaultOpacity;
+                }
+
+                // 一定時間待機
+                if (delayCounter < initialDelay) {
+                    delayCounter++;
+                    return;
+                }
+
+                // 0.05ずつ透明にする
+                chatOpacity -= 0.05f;
+                if (chatOpacity <= 0.0f) {
+                    fadeTimer.stop(); // 透明になったらタイマーを止める
+                    chatOpacity = 0.0f;
+                    setVisible(false);
+                    hideChatBoxList(logHistoryData); // 非表示にする
+                }
+
+                LOG_HISTORY_LIST.repaint();
+            }
+        });
     }
 
     /**
