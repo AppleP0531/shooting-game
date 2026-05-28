@@ -158,9 +158,10 @@ public final class ResourceManager implements Manager {
                 ResourceData resourceImagedata = rarityEntry.getValue().get(ImageType.ITEM);
                 ResourceData resourceViewdata = rarityEntry.getValue().get(ImageType.VIEW);
 
-                String imagePath = IMAGE_BASE_PATH + resourceImagedata.getImagePath();
+                String imagePath = "";
+                // アイテムイメージ
                 try {
-                    // アイテムイメージ
+                    imagePath = IMAGE_BASE_PATH + resourceImagedata.getImagePath();
                     BufferedImage masterSheet = UIBuilder.loadImage(imagePath);
                     Vector2 grids = resourceImagedata.getGrids();
                     int useCount = resourceImagedata.getUseCount();
@@ -177,6 +178,36 @@ public final class ResourceManager implements Manager {
                     useCount = resourceViewdata.getUseCount();
                     imageSize = resourceViewdata.getImageSize() * ShootingGameMain.getScreenSizeAdj();
                     frames = UIBuilder.cutSpriteSheet(masterSheet, grids, useCount, imageSize);
+
+                    // 画像をキャッシュに保存
+                    resourceViewCache.computeIfAbsent(kind, k -> new HashMap<>()).put(rarity, frames);
+                } catch (IOException e) {
+                    switch (e.getMessage()) {
+                        // 画像ファイル未発見ログ
+                        case "FILE_NOT_FOUND" -> LogUtils.systemLog(
+                                "[WARN]",
+                                component,
+                                "File not found: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
+
+                        // 画像読み込みエラーログ
+                        case "BROKEN_FILE" -> LogUtils.systemLog(
+                                "[ERROR]",
+                                component,
+                                "Failed to load image: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
+
+                        // その他エラーログ
+                        default -> System.out.println(e);
+                    }
+                }
+
+                // アイテムビュー
+                try {
+                    imagePath = UIBuilder.createPathWithSuffix(imagePath, "_view");
+                    BufferedImage masterSheet = UIBuilder.loadImage(imagePath);
+                    Vector2 grids = resourceViewdata.getGrids();
+                    int useCount = resourceViewdata.getUseCount();
+                    double imageSize = resourceViewdata.getImageSize() * ShootingGameMain.getScreenSizeAdj();
+                    BufferedImage[] frames = UIBuilder.cutSpriteSheet(masterSheet, grids, useCount, imageSize);
 
                     // 画像をキャッシュに保存
                     resourceViewCache.computeIfAbsent(kind, k -> new HashMap<>()).put(rarity, frames);
