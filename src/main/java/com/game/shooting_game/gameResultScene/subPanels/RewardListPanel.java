@@ -1,18 +1,30 @@
 package com.game.shooting_game.gameResultScene.subPanels;
 
 import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.JPanel;
 
+import com.game.shooting_game.ResourceManager;
+import com.game.shooting_game.ResourceManager.ImageType;
+import com.game.shooting_game.ResourceManager.Rarity;
+import com.game.shooting_game.ResourceManager.ResourceData;
 import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.model.StageRewards;
 import com.game.shooting_game.utils.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
+import com.game.shooting_game.utils.animation.Animation;
+import com.game.shooting_game.utils.animation.AnimationManager;
 
 public class RewardListPanel extends JPanel {
     private final ShootingGameMain MAIN;
+    private final AnimationManager AM;
+    private final ResourceManager RM;
+
+    private Map<ResourceKinds, String> animationId = new HashMap<>();
 
     private Vector2 panelSize; // 報酬リストパネルの大きさ
     private Vector2 originPos; // ドラッグ開始時のパネルの位置
@@ -22,6 +34,8 @@ public class RewardListPanel extends JPanel {
 
     public RewardListPanel() {
         MAIN = ShootingGameMain.getInstance();
+        AM = AnimationManager.getInstance();
+        RM = ResourceManager.getInstance();
     }
 
     public void initComponents() {
@@ -49,6 +63,18 @@ public class RewardListPanel extends JPanel {
         maxScrollOffset = Math.max(0,
                 rows * (100 * ShootingGameMain.getScreenSizeAdj() + 10 * ShootingGameMain.getScreenSizeAdj())
                         - panelSize.getY());
+
+        for (ResourceKinds resName : rewards.getResources().keySet()) {
+            Map<Rarity, BufferedImage[]> resImageData = ResourceManager.getInstance().getResourceView().get(resName);
+            BufferedImage[] imageFrames = resImageData != null ? resImageData.get(Rarity.COMMON) : null;
+            ResourceData resData = RM.getResourceConfig().get(resName).getResData().get(Rarity.COMMON)
+                    .get(ImageType.VIEW);
+
+            if (resData != null) {
+                double frameRate = resData.getFrameRate();
+                animationId.put(resName, AM.addAnimation(new Animation(imageFrames, frameRate)));
+            }
+        }
     }
 
     /**
@@ -79,7 +105,7 @@ public class RewardListPanel extends JPanel {
             Vector2 pos = new Vector2(
                     originPos.getX() + size.getX() / 2 + (size.getX() + spacing) * posInd.getX(),
                     originPos.getY() + size.getY() / 2 + (size.getY() + spacing) * posInd.getY());
-            UIBuilder.drawEquipmentsIcon(this, g, pos, size, name, amount);
+            UIBuilder.drawEquipmentsIcon(this, g, pos, size, animationId.get(name), name, Rarity.COMMON, amount);
 
             index++;
         }
