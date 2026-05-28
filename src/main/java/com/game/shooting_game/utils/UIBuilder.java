@@ -487,7 +487,7 @@ public class UIBuilder extends JPanel {
         if (image != null) {
             AffineTransform oldTransform = g2.getTransform();
             g2.translate((int) pos.getX(), (int) pos.getY());
-            image = resizeImage(image, size.getX());
+            image = resizeImage(image, image.getWidth());
             g2.drawImage(image,
                     -image.getWidth() / 2, -image.getHeight() / 2,
                     image.getWidth(), image.getHeight(),
