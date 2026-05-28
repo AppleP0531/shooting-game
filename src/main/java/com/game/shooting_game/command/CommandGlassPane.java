@@ -681,6 +681,10 @@ public final class CommandGlassPane extends JPanel {
         String command = commandField.getText();
         String[] args = command.split(" ");
 
+        // 空白が二つ並んでいる場合処理をスキップ
+        if (command.contains("  "))
+            return;
+
         if (command.isEmpty()) {
             showChatBoxList(logHistoryData);
             return;
