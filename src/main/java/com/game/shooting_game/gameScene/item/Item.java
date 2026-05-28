@@ -7,7 +7,9 @@ import java.util.Optional;
 import lombok.Getter;
 
 import com.game.shooting_game.ResourceManager;
+import com.game.shooting_game.ResourceManager.ImageType;
 import com.game.shooting_game.ResourceManager.Rarity;
+import com.game.shooting_game.ResourceManager.ResourceConfig;
 import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.gameScene.GameManager;
@@ -67,9 +69,12 @@ public abstract class Item implements Moveable, GameObject, Entity {
                     .orElse(null);
             frameRate = itemConfig.getFrameRate();
         } else if (kind instanceof ResourceKinds) {
+            ResourceConfig resConfig = RM.getResourceConfig().get(kind);
+
             itemImages = Optional.ofNullable(RM.getResourceImage())
                     .map(images -> images.get(kind).get(Rarity.COMMON))
                     .orElse(null);
+            frameRate = resConfig.getResData().get(Rarity.COMMON).get(ImageType.ITEM).getFrameRate();
         }
 
         // アニメーション登録

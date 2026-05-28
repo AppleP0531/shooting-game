@@ -176,6 +176,7 @@ package "shooting_game" {
         - {static} instance: ResourceManager
         - resourceConfigMap: Map<ResourceKinds, ResourceConfig>
         - resourceImageCache: Map<ResourceKinds, Map<Rarity, BufferedImage[]>>
+        - resourceViewCache: Map<ResourceKinds, Map<Rarity, BufferedImage[]>>
         --
         - ResourceManager()
         + {static} getInstance(): ResourceManager
@@ -187,11 +188,12 @@ package "shooting_game" {
         + reload(): void
         + getResourceConfig(): Map<ResourceKinds, ResourceConfig>
         + getResourceImage(): Map<ResourceKinds, Map<Rarity, BufferedImage[]>>
+        + getResourceView(): Map<ResourceKinds, Map<Rarity, BufferedImage[]>>
     }
 
     class ResourceConfig <<Lomboc @Data>> {
         - id: int
-        - rarity: Map<Rarity, ResourceData>
+        - rarity: Map<Rarity, Map<ImageType, ResourceData>>
     }
 
     class ResourceData <<Lomboc @Data>> {
@@ -216,6 +218,11 @@ package "shooting_game" {
         RARE
         EPIC
         LEGENDARY
+    }
+
+    enum ImageType {
+        ITEM
+        VIEW
     }
 
     package "entity" {
@@ -514,6 +521,9 @@ package "shooting_game" {
         package "subPanels" {
             class OwnedResourcesPanel {
                 - MAIN: ShootingGameMain
+                - AM: AnimationManager
+                - RM: ResourceManager
+                - animationId: Map<ResourceKinds, String>
                 - panelSize: Vector2
                 - originPos: Vector2
                 - scrollOffset: double
@@ -1240,7 +1250,9 @@ package "shooting_game" {
         package "subPanels" {
             class RewardListPanel {
                 - MAIN: ShootingGameMain
-                -panelSize: Vector2
+                - AM: AnimationManager
+                - RM: ResourceManager
+                - panelSize: Vector2
                 - originPos: Vector2
                 - scrollOffset: double
                 - maxScrollOffset: double
@@ -1365,13 +1377,13 @@ package "shooting_game" {
             + {static} resizeImage(originImage: BufferedImage, imageSize: double): BufferedImage
             + {static} applyHighQualityRenderSettings(g2: Graphics2D): void
             - {static} applyStateIcon(component: String, button: JButton, basePath: String, suffix: String, size: Vector2): void
-            - {static} createPathWithSuffix(path: String, suffix: String): String
             + {static} drawString(g: Graphics, pos: Vector2, size: double, color: Color, style: int, text: String): void
             + {static} openPanel(p: JPanel, title: String, focus: Boolean): void
             + {static} closePanel(p: JPanel): void
             - {static} findComponentByName(panel: JPanel, name: String): Component
             - {static} mouseFocus(p: JPanel): void
-            + {static} drawEquipmentsIcon(c: Component,g: Graphics, pos: Vector2, size: Vector2, name: ResourceKinds, amount: int): void
+            + {static} drawEquipmentsIcon(c: Component,g: Graphics, pos: Vector2, size: Vector2, name: ResourceKinds, rarity: Rarity, amount: int): void
+            + {static} createPathWithSuffix(path: String, suffix: String): String
         }
 
         class ANSI {
@@ -1571,6 +1583,7 @@ shooting_game.utils.Anchor +-- H
 shooting_game.utils.Anchor +-- V
 shooting_game.ResourceManager +-- ResourceKinds
 shooting_game.ResourceManager +-- Rarity
+shooting_game.ResourceManager +-- ImageType
 shooting_game.ResourceManager +-- ResourceData
 shooting_game.ResourceManager +-- ResourceConfig
 ResourceConfig +-- ResourceData

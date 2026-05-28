@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -45,6 +46,12 @@ public final class ResourceManager implements Manager {
         LEGENDARY
     }
 
+    // 画像種類
+    public static enum ImageType {
+        ITEM,
+        VIEW
+    }
+
     // ----- データクラスの定義 -----
     /**
      * リソースコンフィグ
@@ -54,7 +61,9 @@ public final class ResourceManager implements Manager {
     @JsonIgnoreProperties(ignoreUnknown = true) // 余計な項目の無視
     public static class ResourceConfig {
         private int id;
-        private Map<Rarity, ResourceData> rarity;
+
+        @JsonProperty("rarity")
+        private Map<Rarity, Map<ImageType, ResourceData>> resData;
     }
 
     /**
@@ -73,6 +82,7 @@ public final class ResourceManager implements Manager {
 
     private Map<ResourceKinds, ResourceConfig> resourceConfigMap; // リソースデータが格納されたマップ
     private Map<ResourceKinds, Map<Rarity, BufferedImage[]>> resourceImageCache; // 画像データ
+    private Map<ResourceKinds, Map<Rarity, BufferedImage[]>> resourceViewCache; // 画像データ
     private static final TypeReference<Map<ResourceKinds, ResourceConfig>> TYPE_REF = new TypeReference<>() {
     };
 
@@ -135,26 +145,41 @@ public final class ResourceManager implements Manager {
         final String IMAGE_BASE_PATH = "/static/img/resource/";
 
         resourceImageCache = new HashMap<>();
+        resourceViewCache = new HashMap<>();
         // ResourceKindsの階層でループ
         for (Map.Entry<ResourceKinds, ResourceConfig> kindEntry : resourceConfigMap.entrySet()) {
             ResourceKinds kind = kindEntry.getKey();
-            Map<Rarity, ResourceData> data = kindEntry.getValue().getRarity();
+            ResourceConfig config = kindEntry.getValue();
+            Map<Rarity, Map<ImageType, ResourceData>> data = config.getResData();
 
             // レア度の階層でループ
-            for (Map.Entry<Rarity, ResourceData> rarityEntry : data.entrySet()) {
+            for (Map.Entry<Rarity, Map<ImageType, ResourceData>> rarityEntry : data.entrySet()) {
                 Rarity rarity = rarityEntry.getKey();
-                ResourceData recourcedata = rarityEntry.getValue();
+                ResourceData resourceImagedata = rarityEntry.getValue().get(ImageType.ITEM);
+                ResourceData resourceViewdata = rarityEntry.getValue().get(ImageType.VIEW);
 
-                String imagePath = IMAGE_BASE_PATH + recourcedata.getImagePath();
+                String imagePath = IMAGE_BASE_PATH + resourceImagedata.getImagePath();
                 try {
+                    // アイテムイメージ
                     BufferedImage masterSheet = UIBuilder.loadImage(imagePath);
-                    Vector2 grids = recourcedata.getGrids();
-                    int useCount = recourcedata.getUseCount();
-                    double imageSize = recourcedata.getImageSize() * ShootingGameMain.getScreenSizeAdj();
+                    Vector2 grids = resourceImagedata.getGrids();
+                    int useCount = resourceImagedata.getUseCount();
+                    double imageSize = resourceImagedata.getImageSize() * ShootingGameMain.getScreenSizeAdj();
                     BufferedImage[] frames = UIBuilder.cutSpriteSheet(masterSheet, grids, useCount, imageSize);
 
                     // 画像をキャッシュに保存
                     resourceImageCache.computeIfAbsent(kind, k -> new HashMap<>()).put(rarity, frames);
+
+                    // アイテムビュー
+                    imagePath = UIBuilder.createPathWithSuffix(imagePath, "_view");
+                    masterSheet = UIBuilder.loadImage(imagePath);
+                    grids = resourceViewdata.getGrids();
+                    useCount = resourceViewdata.getUseCount();
+                    imageSize = resourceViewdata.getImageSize() * ShootingGameMain.getScreenSizeAdj();
+                    frames = UIBuilder.cutSpriteSheet(masterSheet, grids, useCount, imageSize);
+
+                    // 画像をキャッシュに保存
+                    resourceViewCache.computeIfAbsent(kind, k -> new HashMap<>()).put(rarity, frames);
                 } catch (IOException e) {
                     switch (e.getMessage()) {
                         // 画像ファイル未発見ログ
@@ -218,5 +243,15 @@ public final class ResourceManager implements Manager {
     public Map<ResourceKinds, Map<Rarity, BufferedImage[]>> getResourceImage() {
         // 外部から変更できないように不変ビューを渡す
         return Collections.unmodifiableMap(resourceImageCache);
+    }
+
+    /**
+     * ビューデータの取得
+     * 
+     * @return ビューデータ
+     */
+    public Map<ResourceKinds, Map<Rarity, BufferedImage[]>> getResourceView() {
+        // 外部から変更できないように不変ビューを渡す
+        return Collections.unmodifiableMap(resourceViewCache);
     }
 }
