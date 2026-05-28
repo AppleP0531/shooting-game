@@ -3,11 +3,19 @@
     "id": 0,
     "rarity": {
       "COMMON": {
-        "imagePath": "/coin.png",
-        "grids": [1, 1],
-        "useCount": 1,
-        "frameRate": 0.1,
-        "imageSize": 15
+        "ITEM": {
+          "imagePath": "/coin.png",
+          "grids": [4, 4],
+          "useCount": 13,
+          "frameRate": 0.02,
+          "imageSize": 15
+        },
+        "VIEW": {
+          "grids": [4, 2],
+          "useCount": 8,
+          "frameRate": 0.1,
+          "imageSize": 100
+        }
       }
     }
   },
@@ -15,11 +23,19 @@
     "id": 1,
     "rarity": {
       "COMMON": {
-        "imagePath": "/resource_1.png",
-        "grids": [1, 1],
-        "useCount": 1,
-        "frameRate": 0.1,
-        "imageSize": 25
+        "ITEM": {
+          "imagePath": "/resource_1.png",
+          "grids": [1, 1],
+          "useCount": 1,
+          "frameRate": 0.1,
+          "imageSize": 25
+        },
+        "VIEW": {
+          "grids": [4, 2],
+          "useCount": 8,
+          "frameRate": 0.1,
+          "imageSize": 25
+        }
       }
     }
   },
@@ -27,11 +43,13 @@
     "id": 2,
     "rarity": {
       "COMMON": {
-        "imagePath": "/resource_2.png",
-        "grids": [1, 1],
-        "useCount": 1,
-        "frameRate": 0.1,
-        "imageSize": 25
+        "ITEM": {
+          "imagePath": "/resource_2.png",
+          "grids": [1, 1],
+          "useCount": 1,
+          "frameRate": 0.1,
+          "imageSize": 25
+        }
       }
     }
   },
@@ -39,11 +57,13 @@
     "id": 3,
     "rarity": {
       "COMMON": {
-        "imagePath": "/resource_3.png",
-        "grids": [1, 1],
-        "useCount": 1,
-        "frameRate": 0.1,
-        "imageSize": 25
+        "ITEM": {
+          "imagePath": "/resource_3.png",
+          "grids": [1, 1],
+          "useCount": 1,
+          "frameRate": 0.1,
+          "imageSize": 25
+        }
       }
     }
   },
@@ -51,11 +71,13 @@
     "id": 4,
     "rarity": {
       "COMMON": {
-        "imagePath": "/resource_4.png",
-        "grids": [1, 1],
-        "useCount": 1,
-        "frameRate": 0.1,
-        "imageSize": 25
+        "ITEM": {
+          "imagePath": "/resource_4.png",
+          "grids": [1, 1],
+          "useCount": 1,
+          "frameRate": 0.1,
+          "imageSize": 25
+        }
       }
     }
   }

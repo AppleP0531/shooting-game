@@ -9,10 +9,10 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -23,12 +23,12 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import com.game.shooting_game.ResourceManager;
 import com.game.shooting_game.ResourceManager.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.utils.Anchor.H;
 import com.game.shooting_game.utils.Anchor.V;
+import com.game.shooting_game.utils.animation.AnimationManager;
 
 public class UIBuilder extends JPanel {
     /**
@@ -81,15 +81,8 @@ public class UIBuilder extends JPanel {
 
             // 画像切り分け
             BufferedImage sub = masterSheet.getSubimage(x, y, sheetWidth, sheetHeiht);
-            // 画像のリサイズ(少しづつ調整して画質を保つ)
-            while (true) {
-                if (imageSize < sub.getWidth() / 2) {
-                    sub = resizeImage(sub, sub.getWidth() / 2);
-                } else {
-                    frames[i] = resizeImage(sub, imageSize);
-                    break;
-                }
-            }
+            // 画像のリサイズ
+            frames[i] = resizeImage(sub, imageSize);
         }
 
         return frames;
@@ -192,6 +185,11 @@ public class UIBuilder extends JPanel {
      * @return リサイズ後の画像
      */
     public static BufferedImage resizeImage(BufferedImage originImage, double imageSize) {
+        // 画像のリサイズ(再帰呼び出しにより少しづつ調整して画質を保つ)
+        while (imageSize < originImage.getWidth() / 2) {
+            originImage = resizeImage(originImage, originImage.getWidth() / 2);
+        }
+
         // 元の画像サイズ
         Vector2 originSize = new Vector2(originImage.getWidth(), originImage.getHeight());
         // 倍率計算
@@ -265,17 +263,6 @@ public class UIBuilder extends JPanel {
                     component,
                     "File not found: " + ANSI.YELLOW + statePath + ANSI.RESET + ".");
         }
-    }
-
-    /**
-     * 各状態のボタン画像パスを作成
-     * 
-     * @param path 元画像のパス
-     * @return 各状態のボタン画像パス
-     */
-    private static String createPathWithSuffix(String path, String suffix) {
-        int dotIndex = path.lastIndexOf('.');
-        return path.substring(0, dotIndex) + suffix + path.substring(dotIndex);
     }
 
     /**
@@ -481,26 +468,35 @@ public class UIBuilder extends JPanel {
      * @param name   名前
      * @param amount 個数
      */
-    public static void drawEquipmentsIcon(Component c, Graphics g, Vector2 pos, Vector2 size, ResourceKinds name,
-            int amount) {
+    public static void drawEquipmentsIcon(Component c, Graphics g, Vector2 pos, Vector2 size, String uuid,
+            ResourceKinds name, Rarity rartiy, int amount) {
+        Graphics2D g2 = (Graphics2D) g;
+
         // コンポーネント座標をウィンドウ座標に変換
         Point p = new Point((int) pos.getX(), (int) pos.getY());
         Point windowPos = SwingUtilities.convertPoint(c, p, ShootingGameMain.getInstance());
         pos = new Vector2(windowPos.x, windowPos.y);
 
-        Map<Rarity, BufferedImage[]> resImageData = ResourceManager.getInstance().getResourceImage().get(name);
-        BufferedImage[] imageFrames = resImageData != null ? resImageData.get(Rarity.COMMON) : null;
-        BufferedImage image = imageFrames != null ? imageFrames[0] : null;
+        BufferedImage image = null;
+        if (uuid != null)
+            image = AnimationManager.getInstance().getCurrentImage(uuid);
 
         Vector2 imageSize = new Vector2(
                 size.getX() * 3 / 4,
                 size.getY() * 3 / 4);
         if (image != null) {
-
+            AffineTransform oldTransform = g2.getTransform();
+            g2.translate((int) pos.getX(), (int) pos.getY());
+            image = resizeImage(image, size.getX());
+            g2.drawImage(image,
+                    -image.getWidth() / 2, -image.getHeight() / 2,
+                    image.getWidth(), image.getHeight(),
+                    ShootingGameMain.getInstance());
+            g2.setTransform(oldTransform);
         } else {
             // 枠の描画
-            g.setColor(new Color(0.5f, 0.5f, 0.5f, 0.5f));
-            g.drawRect((int) (pos.getX() - imageSize.getX() / 2),
+            g2.setColor(new Color(0.5f, 0.5f, 0.5f, 0.5f));
+            g2.drawRect((int) (pos.getX() - imageSize.getX() / 2),
                     (int) (pos.getY() - imageSize.getY() / 2),
                     (int) imageSize.getX(),
                     (int) imageSize.getY());
@@ -528,4 +524,15 @@ public class UIBuilder extends JPanel {
                 Font.PLAIN, String.valueOf(amount));
     }
 
+    /**
+     * パスの間に接尾辞を差し込む
+     * 
+     * @param path   パス
+     * @param suffix 接尾辞
+     * @return
+     */
+    public static String createPathWithSuffix(String path, String suffix) {
+        int dotIndex = path.lastIndexOf('.');
+        return path.substring(0, dotIndex) + suffix + path.substring(dotIndex);
+    }
 }
