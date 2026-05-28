@@ -6,7 +6,7 @@
         "imagePath": "/coin.png",
         "grids": [4, 4],
         "useCount": 13,
-        "frameRate": 0.2,
+        "frameRate": 0.02,
         "imageSize": 15
       }
     }
