@@ -170,6 +170,17 @@ public final class ResourceManager implements Manager {
 
                     // 画像をキャッシュに保存
                     resourceImageCache.computeIfAbsent(kind, k -> new HashMap<>()).put(rarity, frames);
+
+                    // アイテムビュー
+                    imagePath = UIBuilder.createPathWithSuffix(imagePath, "_view");
+                    masterSheet = UIBuilder.loadImage(imagePath);
+                    grids = resourceViewdata.getGrids();
+                    useCount = resourceViewdata.getUseCount();
+                    imageSize = resourceViewdata.getImageSize() * ShootingGameMain.getScreenSizeAdj();
+                    frames = UIBuilder.cutSpriteSheet(masterSheet, grids, useCount, imageSize);
+
+                    // 画像をキャッシュに保存
+                    resourceViewCache.computeIfAbsent(kind, k -> new HashMap<>()).put(rarity, frames);
                 } catch (IOException e) {
                     switch (e.getMessage()) {
                         // 画像ファイル未発見ログ
