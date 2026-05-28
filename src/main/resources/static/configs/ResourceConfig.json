@@ -35,7 +35,7 @@
           "grids": [4, 2],
           "useCount": 8,
           "frameRate": 0.1,
-          "imageSize": 25
+          "imageSize": 100
         }
       }
     }
