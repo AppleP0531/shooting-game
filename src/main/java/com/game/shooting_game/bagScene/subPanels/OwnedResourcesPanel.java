@@ -9,8 +9,10 @@ import javax.swing.JPanel;
 
 import com.game.shooting_game.ResourceManager;
 import com.game.shooting_game.ResourceManager.ImageType;
-import com.game.shooting_game.ResourceManager.Rarity;
+import com.game.shooting_game.ResourceManager.ResourceData;
 import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
+import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.bagScene.BagManager;
 import com.game.shooting_game.utils.UIBuilder;
@@ -63,12 +65,27 @@ public class OwnedResourcesPanel extends JPanel {
                 rows * (100 * ShootingGameMain.getScreenSizeAdj() + 10 * ShootingGameMain.getScreenSizeAdj())
                         - panelSize.getY());
 
-        for (ResourceKinds resName : resources.keySet()) {
-            Map<Rarity, BufferedImage[]> resImageData = ResourceManager.getInstance().getResourceView().get(resName);
-            BufferedImage[] imageFrames = resImageData != null ? resImageData.get(Rarity.COMMON) : null;
-            double frameRate = RM.getResourceConfig().get(resName).getResData().get(Rarity.COMMON).get(ImageType.VIEW)
-                    .getFrameRate();
-            animationId.put(resName, AM.addAnimation(new Animation(imageFrames, frameRate)));
+        for (ResourceKinds resKind : resources.keySet()) {
+            BufferedImage[] imageFrames = null;
+            // 画像情報の取得
+            Map<ResourceName, Map<Rarity, BufferedImage[]>> viewCache = RM.getResourceView();
+            if (viewCache != null) {
+                ResourceName resName = resKind.getResName();
+                Map<Rarity, BufferedImage[]> rarityMap = viewCache.get(resName);
+                if (rarityMap != null)
+                    imageFrames = rarityMap.get(resKind.getRarity());
+            }
+
+            ResourceData resData = RM.getResourceConfig()
+                    .get(resKind.getResName())
+                    .getResData()
+                    .get(resKind.getRarity())
+                    .get(ImageType.VIEW);
+
+            if (resData != null) {
+                double frameRate = resData.getFrameRate();
+                animationId.put(resKind, AM.addAnimation(new Animation(imageFrames, frameRate)));
+            }
         }
     }
 
@@ -85,7 +102,7 @@ public class OwnedResourcesPanel extends JPanel {
 
         int index = 0;
         for (Map.Entry<ResourceKinds, Integer> entry : BagManager.getInstance().getEquipments().entrySet()) {
-            ResourceKinds name = entry.getKey();
+            ResourceKinds resKind = entry.getKey();
             int amount = entry.getValue();
 
             Vector2 posInd = new Vector2(
@@ -98,7 +115,7 @@ public class OwnedResourcesPanel extends JPanel {
             Vector2 pos = new Vector2(
                     originPos.getX() + (size.getX() + spacing) * posInd.getX(),
                     originPos.getY() + (size.getY() + spacing) * posInd.getY());
-            UIBuilder.drawEquipmentsIcon(this, g, pos, size, animationId.get(name), name, Rarity.COMMON, amount);
+            UIBuilder.drawEquipmentsIcon(this, g, pos, size, animationId.get(resKind), resKind, amount);
 
             index++;
         }

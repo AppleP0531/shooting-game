@@ -178,9 +178,9 @@ package "shooting_game" {
     class ResourceManager <<Singleton>> {
         - {static} component: String
         - {static} instance: ResourceManager
-        - resourceConfigMap: Map<ResourceKinds, ResourceConfig>
-        - resourceImageCache: Map<ResourceKinds, Map<Rarity, BufferedImage[]>>
-        - resourceViewCache: Map<ResourceKinds, Map<Rarity, BufferedImage[]>>
+        - resourceConfigMap: Map<ResourceName, ResourceConfig>
+        - resourceImageCache: Map<ResourceName, Map<Rarity, BufferedImage[]>>
+        - resourceViewCache: Map<ResourceName, Map<Rarity, BufferedImage[]>>
         --
         - ResourceManager()
         + {static} getInstance(): ResourceManager
@@ -190,9 +190,9 @@ package "shooting_game" {
         + update(dt: double): void
         + draw(g: Graphics): void 
         + reload(): void
-        + getResourceConfig(): Map<ResourceKinds, ResourceConfig>
-        + getResourceImage(): Map<ResourceKinds, Map<Rarity, BufferedImage[]>>
-        + getResourceView(): Map<ResourceKinds, Map<Rarity, BufferedImage[]>>
+        + getResourceConfig(): Map<ResourceName, ResourceConfig>
+        + getResourceImage(): Map<ResourceName, Map<Rarity, BufferedImage[]>>
+        + getResourceView(): Map<ResourceName, Map<Rarity, BufferedImage[]>>
     }
 
     class ResourceConfig <<Lomboc @Data>> {
@@ -209,6 +209,15 @@ package "shooting_game" {
     }
 
     enum ResourceKinds {
+        + {static} COIN: ResourceKinds
+        - resName: ResourceName
+        - rarity: Rarity
+        --
+        + ResourceKinds(resName: ResourceName, rarity: Rarity)
+        + getResourceKind(): ResourceKinds
+    }
+
+    class ResourceName {
         COIN
         RESOURCE_1
         RESOURCE_2
@@ -388,7 +397,7 @@ package "shooting_game" {
                     + initComponents(): void
                     + showStageDetail(stageId: int): void
                     - drawButton(stageId: int): void
-                    - getRewardList(stageId: int): Map<ResourceKinds, String>
+                    - getRewardList(stageId: int): Map<ResourceName, Map<Rarity, String>>
                     - getEnemyList(stageId: int): List<String>
                 }
             }
@@ -756,10 +765,10 @@ package "shooting_game" {
             }
 
             class StageData <<Lomboc @Data>> {
-                - rewardList: Map<ResourceKinds, String>
+                - rewardList: Map<ResourceName, Map<Rarity, String>>
                 - enemyList: Map<String, EnemyConfig[]>
                 --
-                + getRandomResourceAmount(itemKey: ResourceKinds): int
+                + getRandomResourceAmount(resKind: ResourceKinds): int
             }
 
             class EnemyConfig <<Lomboc @Data>> {
@@ -1386,7 +1395,7 @@ package "shooting_game" {
             + {static} closePanel(p: JPanel): void
             - {static} findComponentByName(panel: JPanel, name: String): Component
             - {static} mouseFocus(p: JPanel): void
-            + {static} drawEquipmentsIcon(c: Component,g: Graphics, pos: Vector2, size: Vector2, name: ResourceKinds, rarity: Rarity, amount: int): void
+            + {static} drawEquipmentsIcon(c: Component,g: Graphics, pos: Vector2, size: Vector2, resKind: ResourceKinds, amount: int): void
             + {static} createPathWithSuffix(path: String, suffix: String): String
         }
 
@@ -1586,7 +1595,8 @@ shooting_game.utils.animation.Animation +-- AnimationLogic
 shooting_game.utils.Anchor +-- H
 shooting_game.utils.Anchor +-- V
 shooting_game.ResourceManager +-- ResourceKinds
-shooting_game.ResourceManager +-- Rarity
+ResourceKinds +-- ResourceName
+ResourceKinds +-- Rarity
 shooting_game.ResourceManager +-- ImageType
 shooting_game.ResourceManager +-- ResourceData
 shooting_game.ResourceManager +-- ResourceConfig

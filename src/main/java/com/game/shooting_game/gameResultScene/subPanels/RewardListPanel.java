@@ -9,9 +9,10 @@ import javax.swing.JPanel;
 
 import com.game.shooting_game.ResourceManager;
 import com.game.shooting_game.ResourceManager.ImageType;
-import com.game.shooting_game.ResourceManager.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceData;
 import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
+import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.model.StageRewards;
 import com.game.shooting_game.utils.UIBuilder;
@@ -64,15 +65,26 @@ public class RewardListPanel extends JPanel {
                 rows * (100 * ShootingGameMain.getScreenSizeAdj() + 10 * ShootingGameMain.getScreenSizeAdj())
                         - panelSize.getY());
 
-        for (ResourceKinds resName : rewards.getResources().keySet()) {
-            Map<Rarity, BufferedImage[]> resImageData = ResourceManager.getInstance().getResourceView().get(resName);
-            BufferedImage[] imageFrames = resImageData != null ? resImageData.get(Rarity.COMMON) : null;
-            ResourceData resData = RM.getResourceConfig().get(resName).getResData().get(Rarity.COMMON)
+        for (ResourceKinds resKind : rewards.getResources().keySet()) {
+            BufferedImage[] imageFrames = null;
+            // 画像情報の取得
+            Map<ResourceName, Map<Rarity, BufferedImage[]>> viewCache = RM.getResourceView();
+            if (viewCache != null) {
+                ResourceName resName = resKind.getResName();
+                Map<Rarity, BufferedImage[]> rarityMap = viewCache.get(resName);
+                if (rarityMap != null)
+                    imageFrames = rarityMap.get(resKind.getRarity());
+            }
+
+            ResourceData resData = RM.getResourceConfig()
+                    .get(resKind.getResName())
+                    .getResData()
+                    .get(resKind.getRarity())
                     .get(ImageType.VIEW);
 
             if (resData != null) {
                 double frameRate = resData.getFrameRate();
-                animationId.put(resName, AM.addAnimation(new Animation(imageFrames, frameRate)));
+                animationId.put(resKind, AM.addAnimation(new Animation(imageFrames, frameRate)));
             }
         }
     }
@@ -105,7 +117,7 @@ public class RewardListPanel extends JPanel {
             Vector2 pos = new Vector2(
                     originPos.getX() + size.getX() / 2 + (size.getX() + spacing) * posInd.getX(),
                     originPos.getY() + size.getY() / 2 + (size.getY() + spacing) * posInd.getY());
-            UIBuilder.drawEquipmentsIcon(this, g, pos, size, animationId.get(name), name, Rarity.COMMON, amount);
+            UIBuilder.drawEquipmentsIcon(this, g, pos, size, animationId.get(name), name, amount);
 
             index++;
         }

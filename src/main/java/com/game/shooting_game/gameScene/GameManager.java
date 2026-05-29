@@ -19,6 +19,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
+import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
@@ -270,17 +272,26 @@ public final class GameManager extends JPanel implements Manager {
             // 報酬内容を取得
             StageData currentStageData = STAGE_M.getStageConfig().get("stage" + STAGE_M.getStageId());
             // バックパックに報酬を追加
-            for (ResourceKinds resName : currentStageData.getRewardList().keySet()) {
-                int amount = currentStageData.getRandomResourceAmount(resName);
-                int amountOwned = data.getResources().getEquipments().getOrDefault(resName, 0);
-                data.getResources().getEquipments().put(resName, amountOwned + amount);
+            for (Map.Entry<ResourceName, Map<Rarity, String>> list : currentStageData.getRewardList().entrySet()) {
+                ResourceName resName = list.getKey();
+                Map<Rarity, String> rarityMap = list.getValue();
 
-                StageRewards.getInstance().getResources().put(resName, amount);
+                for (Map.Entry<Rarity, String> rarityEntry : rarityMap.entrySet()) {
+                    Rarity rarity = rarityEntry.getKey();
+
+                    int amount = currentStageData.getRandomResourceAmount(new ResourceKinds(resName, rarity));
+                    int amountOwned = data.getResources().getEquipments().getOrDefault(resName, 0);
+
+                    ResourceKinds resKind = new ResourceKinds(resName, rarity);
+                    data.getResources().getEquipments().put(resKind, amountOwned + amount);
+                    StageRewards.getInstance().getResources().put(resKind, amount);
+                }
             }
         }
         SHIP_M.getPlayer().removeHandler();
 
         SM.changeScene(SceneType.GAMERESULT);
+
     }
 
     /**

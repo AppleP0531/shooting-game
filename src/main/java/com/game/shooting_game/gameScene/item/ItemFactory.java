@@ -52,13 +52,21 @@ public class ItemFactory {
      * @return アイテム
      */
     public static Item createItem(Vector2 pos, Collectible kind) {
-        return switch (kind) {
-            case ItemKinds.HEAL -> new Heal(pos);
-            case ItemKinds.LEVEL_UP -> new LevelUp(pos);
-            case ItemKinds.SHIELD -> new Shield(pos);
-            case ResourceKinds.COIN -> new Coin(pos);
-            default -> null;
-        };
+        if (kind instanceof ItemKinds itemKind) {
+            return switch (itemKind) {
+                case HEAL -> new Heal(pos);
+                case LEVEL_UP -> new LevelUp(pos);
+                case SHIELD -> new Shield(pos);
+                default -> null;
+            };
+        }
+        if (kind instanceof ResourceKinds resKind) {
+            return switch (resKind.getResName()) {
+                case COIN -> new Coin(pos);
+                default -> null;
+            };
+        }
+        return null;
     }
 
     /**

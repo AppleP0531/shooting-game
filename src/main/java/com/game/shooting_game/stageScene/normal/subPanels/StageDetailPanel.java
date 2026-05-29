@@ -12,7 +12,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
+import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
@@ -131,10 +132,15 @@ public class StageDetailPanel extends JPanel {
         String detailText = "";
         // 報酬内容
         detailText += "Rewards\n";
-        for (Map.Entry<ResourceKinds, String> list : getRewardList(stageId).entrySet()) {
-            ResourceKinds resName = list.getKey();
-            String amount = list.getValue();
-            detailText += resName + ": " + amount + "\n";
+        for (Map.Entry<ResourceName, Map<Rarity, String>> list : getRewardList(stageId).entrySet()) {
+            ResourceName resName = list.getKey();
+            Map<Rarity, String> rarityMap = list.getValue();
+
+            for (Map.Entry<Rarity, String> rarityEntry : rarityMap.entrySet()) {
+                Rarity rarity = rarityEntry.getKey();
+                String amount = rarityEntry.getValue();
+                detailText += resName + " " + rarity + ": " + amount + "\n";
+            }
         }
         detailText += "\n";
         // 出現する敵
@@ -187,7 +193,7 @@ public class StageDetailPanel extends JPanel {
      * @param stageId ステージID
      * @return 報酬内容
      */
-    private Map<ResourceKinds, String> getRewardList(int stageId) {
+    private Map<ResourceName, Map<Rarity, String>> getRewardList(int stageId) {
         StageData stageData = STAGE_M.getStageConfig().get("stage" + stageId);
 
         try {

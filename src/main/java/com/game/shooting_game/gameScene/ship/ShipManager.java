@@ -195,7 +195,7 @@ public final class ShipManager implements Manager {
      * 画像読み込み
      */
     private void loadImages() {
-        final String IMAGE_BASE_PATH = "/static/img/ship/";
+        final String IMAGE_BASE_PATH = "/static/img/ship";
 
         shipImageCache = new HashMap<>();
         // ShipKindsの階層でループ

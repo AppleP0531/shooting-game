@@ -17,6 +17,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
+import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.interfaces.Collectible;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.utils.ANSI;
@@ -28,22 +30,52 @@ public final class ResourceManager implements Manager {
     private static final String component = "[ResourceManager]";
     private static ResourceManager instance;
 
-    // リソースの種類
-    public static enum ResourceKinds implements Collectible {
-        COIN,
-        RESOURCE_1,
-        RESOURCE_2,
-        RESOURCE_3,
-        RESOURCE_4
-    }
+    /**
+     * リソース種
+     */
+    @Data
+    public static class ResourceKinds implements Collectible {
+        public static final ResourceKinds COIN = new ResourceKinds(ResourceName.COIN, Rarity.COMMON);
 
-    // レアリティの種類
-    public static enum Rarity {
-        COMMON,
-        UNCOMMON,
-        RARE,
-        EPIC,
-        LEGENDARY
+        /**
+         * リソース名
+         */
+        public static enum ResourceName {
+            COIN,
+            RESOURCE_1,
+            RESOURCE_2,
+            RESOURCE_3,
+            RESOURCE_4
+        }
+
+        /**
+         * レアリティ
+         */
+        public static enum Rarity {
+            COMMON,
+            UNCOMMON,
+            RARE,
+            EPIC,
+            LEGENDARY
+        }
+
+        private ResourceName resName;
+        private Rarity rarity;
+
+        @com.fasterxml.jackson.annotation.JsonCreator
+        public ResourceKinds(String key) {
+            this.resName = ResourceName.valueOf(key.toUpperCase());
+            this.rarity = Rarity.COMMON;
+        }
+
+        public ResourceKinds(ResourceName resName, Rarity rarity) {
+            this.resName = resName;
+            this.rarity = rarity;
+        }
+
+        public ResourceKinds getResourceKind() {
+            return new ResourceKinds(resName, rarity);
+        }
     }
 
     // 画像種類
@@ -61,6 +93,7 @@ public final class ResourceManager implements Manager {
     @JsonIgnoreProperties(ignoreUnknown = true) // 余計な項目の無視
     public static class ResourceConfig {
         private int id;
+        private String imagePath;
 
         @JsonProperty("rarity")
         private Map<Rarity, Map<ImageType, ResourceData>> resData;
@@ -73,17 +106,16 @@ public final class ResourceManager implements Manager {
     @NoArgsConstructor // 引数なしコンストラクタの生成
     @JsonIgnoreProperties(ignoreUnknown = true) // 余計な項目の無視
     public static class ResourceData {
-        private String imagePath;
         private Vector2 grids;
         private int useCount;
         private double frameRate;
         private int imageSize;
     }
 
-    private Map<ResourceKinds, ResourceConfig> resourceConfigMap; // リソースデータが格納されたマップ
-    private Map<ResourceKinds, Map<Rarity, BufferedImage[]>> resourceImageCache; // 画像データ
-    private Map<ResourceKinds, Map<Rarity, BufferedImage[]>> resourceViewCache; // 画像データ
-    private static final TypeReference<Map<ResourceKinds, ResourceConfig>> TYPE_REF = new TypeReference<>() {
+    private Map<ResourceName, ResourceConfig> resourceConfigMap; // リソースデータが格納されたマップ
+    private Map<ResourceName, Map<Rarity, BufferedImage[]>> resourceImageCache; // 画像データ
+    private Map<ResourceName, Map<Rarity, BufferedImage[]>> resourceViewCache; // 画像データ
+    private static final TypeReference<Map<ResourceName, ResourceConfig>> TYPE_REF = new TypeReference<>() {
     };
 
     private ResourceManager() {
@@ -142,13 +174,13 @@ public final class ResourceManager implements Manager {
      * 画像読み込み
      */
     private void loadImages() {
-        final String IMAGE_BASE_PATH = "/static/img/resource/";
+        final String IMAGE_BASE_PATH = "/static/img/resource";
 
         resourceImageCache = new HashMap<>();
         resourceViewCache = new HashMap<>();
-        // ResourceKindsの階層でループ
-        for (Map.Entry<ResourceKinds, ResourceConfig> kindEntry : resourceConfigMap.entrySet()) {
-            ResourceKinds kind = kindEntry.getKey();
+        // ResourceNameの階層でループ
+        for (Map.Entry<ResourceName, ResourceConfig> kindEntry : resourceConfigMap.entrySet()) {
+            ResourceName name = kindEntry.getKey();
             ResourceConfig config = kindEntry.getValue();
             Map<Rarity, Map<ImageType, ResourceData>> data = config.getResData();
 
@@ -158,10 +190,11 @@ public final class ResourceManager implements Manager {
                 ResourceData resourceImagedata = rarityEntry.getValue().get(ImageType.ITEM);
                 ResourceData resourceViewdata = rarityEntry.getValue().get(ImageType.VIEW);
 
-                String imagePath = "";
+                String imagePath = resourceConfigMap.get(name).getImagePath();
                 // アイテムイメージ
                 try {
-                    imagePath = IMAGE_BASE_PATH + resourceImagedata.getImagePath();
+                    String suffix = "_" + rarity.toString().toLowerCase();
+                    imagePath = UIBuilder.createPathWithSuffix(IMAGE_BASE_PATH + imagePath, suffix);
                     BufferedImage masterSheet = UIBuilder.loadImage(imagePath);
                     Vector2 grids = resourceImagedata.getGrids();
                     int useCount = resourceImagedata.getUseCount();
@@ -169,7 +202,7 @@ public final class ResourceManager implements Manager {
                     BufferedImage[] frames = UIBuilder.cutSpriteSheet(masterSheet, grids, useCount, imageSize);
 
                     // 画像をキャッシュに保存
-                    resourceImageCache.computeIfAbsent(kind, k -> new HashMap<>()).put(rarity, frames);
+                    resourceImageCache.computeIfAbsent(name, k -> new HashMap<>()).put(rarity, frames);
                 } catch (IOException e) {
                     switch (e.getMessage()) {
                         // 画像ファイル未発見ログ
@@ -191,7 +224,8 @@ public final class ResourceManager implements Manager {
 
                 // アイテムビュー
                 try {
-                    imagePath = UIBuilder.createPathWithSuffix(imagePath, "_view");
+                    String suffix = "_view";
+                    imagePath = UIBuilder.createPathWithSuffix(imagePath, suffix);
                     BufferedImage masterSheet = UIBuilder.loadImage(imagePath);
                     Vector2 grids = resourceViewdata.getGrids();
                     int useCount = resourceViewdata.getUseCount();
@@ -199,7 +233,7 @@ public final class ResourceManager implements Manager {
                     BufferedImage[] frames = UIBuilder.cutSpriteSheet(masterSheet, grids, useCount, imageSize);
 
                     // 画像をキャッシュに保存
-                    resourceViewCache.computeIfAbsent(kind, k -> new HashMap<>()).put(rarity, frames);
+                    resourceViewCache.computeIfAbsent(name, k -> new HashMap<>()).put(rarity, frames);
                 } catch (IOException e) {
                     switch (e.getMessage()) {
                         // 画像ファイル未発見ログ
@@ -250,7 +284,7 @@ public final class ResourceManager implements Manager {
      * 
      * @return リソースデータ
      */
-    public Map<ResourceKinds, ResourceConfig> getResourceConfig() {
+    public Map<ResourceName, ResourceConfig> getResourceConfig() {
         // 外部から変更できないように不変ビューを渡す
         return Collections.unmodifiableMap(resourceConfigMap);
     }
@@ -260,7 +294,7 @@ public final class ResourceManager implements Manager {
      * 
      * @return 画像データ
      */
-    public Map<ResourceKinds, Map<Rarity, BufferedImage[]>> getResourceImage() {
+    public Map<ResourceName, Map<Rarity, BufferedImage[]>> getResourceImage() {
         // 外部から変更できないように不変ビューを渡す
         return Collections.unmodifiableMap(resourceImageCache);
     }
@@ -270,7 +304,7 @@ public final class ResourceManager implements Manager {
      * 
      * @return ビューデータ
      */
-    public Map<ResourceKinds, Map<Rarity, BufferedImage[]>> getResourceView() {
+    public Map<ResourceName, Map<Rarity, BufferedImage[]>> getResourceView() {
         // 外部から変更できないように不変ビューを渡す
         return Collections.unmodifiableMap(resourceViewCache);
     }

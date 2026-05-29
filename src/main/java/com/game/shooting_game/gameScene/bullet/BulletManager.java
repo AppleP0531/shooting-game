@@ -135,7 +135,7 @@ public final class BulletManager implements Manager {
      * 画像読み込み
      */
     public void loadImages() {
-        final String IMAGE_BASE_PATH = "/static/img/bullet/";
+        final String IMAGE_BASE_PATH = "/static/img/bullet";
 
         bulletImageCache = new HashMap<>();
         // ShipKindsの階層でループ

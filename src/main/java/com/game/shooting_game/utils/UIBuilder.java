@@ -23,7 +23,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import com.game.shooting_game.ResourceManager.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.utils.Anchor.H;
@@ -463,13 +462,13 @@ public class UIBuilder extends JPanel {
      * 所有資源の各々の項目の描画
      * 
      * @param g
-     * @param pos    位置
-     * @param image  画像
-     * @param name   名前
-     * @param amount 個数
+     * @param pos     位置
+     * @param image   画像
+     * @param resKind 名前
+     * @param amount  個数
      */
     public static void drawEquipmentsIcon(Component c, Graphics g, Vector2 pos, Vector2 size, String uuid,
-            ResourceKinds name, Rarity rartiy, int amount) {
+            ResourceKinds resKind, int amount) {
         Graphics2D g2 = (Graphics2D) g;
 
         // コンポーネント座標をウィンドウ座標に変換
@@ -514,7 +513,7 @@ public class UIBuilder extends JPanel {
                 pos.getX(),
                 pos.getY() + imageSize.getY() / 2 + spacing);
         drawString(g, new Anchor(H.CENTER, V.TOP), resNameTextPos, resNameTextSize, Color.WHITE,
-                Font.PLAIN, name.toString());
+                Font.PLAIN, resKind.getResName().toString());
 
         double amountTextSize = size.getY() / 10;
         Vector2 amountTextPos = new Vector2(

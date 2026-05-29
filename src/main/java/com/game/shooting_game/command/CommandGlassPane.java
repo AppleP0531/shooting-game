@@ -33,6 +33,8 @@ import lombok.Setter;
 
 import com.game.shooting_game.ResourceManager;
 import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
+import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
@@ -705,6 +707,10 @@ public final class CommandGlassPane extends JPanel {
             CommandNode node = subCommands.get(args[i]);
 
             if (node != null) {
+                // 権限不足の場合は潜らない
+                if (node.isAdminOnly() && !adminMode)
+                    break;
+
                 subCommands = node.getSubCommands(); // 階層移動
                 currentNode = node; // 参照中ノードの更新
             } else
@@ -1204,10 +1210,28 @@ public final class CommandGlassPane extends JPanel {
             }
 
             try {
-                ResourceKinds resName = ResourceKinds.valueOf(args[0].toUpperCase());
+                // 指定値の設定
+                int openBraceIdx = args[0].indexOf("{");
+                int closeBraceIdx = args[0].indexOf("}");
+
+                String nameStr = args[0];
+                Rarity rarity = Rarity.COMMON; // デフォルトはコモン
+                if (openBraceIdx != -1 && closeBraceIdx != -1 && openBraceIdx < closeBraceIdx) {
+                    // {の前を切り出す
+                    nameStr = args[0].substring(0, openBraceIdx);
+
+                    // {}の中身を取り出す
+                    String contentInside = args[0].substring(openBraceIdx + 1, closeBraceIdx);
+
+                    if (contentInside.startsWith("rarity=")) {
+                        rarity = Rarity.valueOf(contentInside.substring(7).toUpperCase());
+                    }
+                }
+
+                ResourceKinds resKind = new ResourceKinds(ResourceName.valueOf(nameStr.toUpperCase()), rarity);
                 Integer amount = GameUtils.tryParse(args[1]);
                 Resources resData = DataManager.getUserData().getResources();
-                if (resName == ResourceKinds.COIN) {
+                if (resKind == ResourceKinds.COIN) {
                     int amountOwned = resData.getCoins();
                     resData.setCoins(amountOwned + amount);
 
@@ -1216,12 +1240,12 @@ public final class CommandGlassPane extends JPanel {
                     LogUtils.systemLog("[INFO]", component, logText);
                     return;
                 } else {
-                    int amountOwned = resData.getEquipments().getOrDefault(resName, 0);
+                    int amountOwned = resData.getEquipments().getOrDefault(resKind, 0);
                     int newAmount = amountOwned + amount;
                     if (newAmount <= 0) {
-                        resData.getEquipments().remove(resName);
+                        resData.getEquipments().remove(resKind);
                     } else {
-                        resData.getEquipments().put(resName, newAmount);
+                        resData.getEquipments().put(resKind, newAmount);
                     }
                 }
                 BagManager.getInstance().setup();
