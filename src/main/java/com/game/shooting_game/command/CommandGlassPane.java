@@ -702,7 +702,7 @@ public final class CommandGlassPane extends JPanel {
 
         Map<String, CommandNode> subCommands = rootCommands; // 再外層ノードから探索
         CommandNode currentNode = null; // 参照中ノード
-        // 引数と一致する子ノードを見つけたら階層を移動
+        // 引数と一致する子ノードを見つけて階層を移動
         for (int i = 0; i < args.length - 1; i++) {
             CommandNode node = subCommands.get(args[i]);
 
@@ -716,9 +716,9 @@ public final class CommandGlassPane extends JPanel {
             } else
                 break;
         }
+        String currentToken = args[args.length - 1];
 
         // 入力中文字と比較
-        String currentToken = args[args.length - 1];
         for (CommandNode node : subCommands.values()) {
             if (node.getName().startsWith(currentToken)) {
                 for (String suggests : node.getAllNodes(adminMode)) {
