@@ -45,7 +45,7 @@
   },
   "stage1": {
     "rewardList": {
-      "RESOURCE_1": {
+      "GEAR": {
         "COMMON": "3~8"
       }
     },
@@ -190,7 +190,7 @@
   },
   "stage2": {
     "rewardList": {
-      "RESOURCE_1": {
+      "GEAR": {
         "COMMON": "5~10"
       }
     },
@@ -589,7 +589,7 @@
   },
   "stage3": {
     "rewardList": {
-      "RESOURCE_1": {
+      "GEAR": {
         "COMMON": "8~15"
       }
     },
@@ -988,7 +988,7 @@
   },
   "stage4": {
     "rewardList": {
-      "RESOURCE_1": {
+      "GEAR": {
         "COMMON": "12~20"
       }
     },

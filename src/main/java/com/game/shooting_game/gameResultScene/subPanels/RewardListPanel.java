@@ -3,6 +3,7 @@ package com.game.shooting_game.gameResultScene.subPanels;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.swing.JPanel;
@@ -103,7 +104,8 @@ public class RewardListPanel extends JPanel {
         StageRewards rewards = StageRewards.getInstance();
 
         int index = 0;
-        for (Map.Entry<ResourceKinds, Integer> entry : rewards.getResources().entrySet()) {
+        LinkedHashMap<ResourceKinds, Integer> sortedRewards = UIBuilder.sortItemList(rewards.getResources());
+        for (Map.Entry<ResourceKinds, Integer> entry : sortedRewards.entrySet()) {
             ResourceKinds name = entry.getKey();
             int amount = entry.getValue();
 

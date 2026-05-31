@@ -20,6 +20,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.utils.ANSI;
@@ -64,7 +65,7 @@ public final class BulletManager implements Manager {
     }
 
     private Map<ShipKinds, Map<BulletKinds, Map<Integer, BulletConfig>>> bulletConfigMap; // 弾データが格納されたマップ
-    private Map<ShipKinds, Map<BulletKinds, Map<Integer, BufferedImage[]>>> bulletImageCache; // 画像データ
+    private Map<ShipKinds, Map<BulletKinds, Map<String, BufferedImage[]>>> bulletImageCache; // 画像データ
 
     private List<Bullet> bulletList = new ArrayList<>(); // 弾リスト
     private List<Bullet> bulletListToRemove = new ArrayList<>(); // 削除待ち弾リスト
@@ -161,35 +162,40 @@ public final class BulletManager implements Manager {
                         continue;
                     }
 
-                    String imagePath = IMAGE_BASE_PATH + data.getImagePath();
-                    try {
-                        BufferedImage masterSheet = UIBuilder.loadImage(imagePath);
-                        Vector2 grids = data.getGrids();
-                        int useCount = data.getUseCount();
-                        double imageSize = data.getImageSize() * ShootingGameMain.getScreenSizeAdj();
-                        BufferedImage[] frames = UIBuilder.cutSpriteSheet(masterSheet, grids, useCount, imageSize);
+                    for (ColorMode mode : ColorMode.values()) {
+                        String imagePath = IMAGE_BASE_PATH + data.getImagePath();
+                        try {
+                            String suffix = "_" + mode.toString().toLowerCase();
+                            imagePath = UIBuilder.createPathWithSuffix(imagePath, suffix);
 
-                        // 画像をキャッシュに保存
-                        bulletImageCache
-                                .computeIfAbsent(owner, o -> new HashMap<>())
-                                .computeIfAbsent(kind, k -> new HashMap<>())
-                                .put(type, frames);
-                    } catch (IOException e) {
-                        switch (e.getMessage()) {
-                            // 画像ファイル未発見ログ
-                            case "FILE_NOT_FOUND" -> LogUtils.systemLog(
-                                    "[WARN]",
-                                    component,
-                                    "File not found: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
+                            BufferedImage masterSheet = UIBuilder.loadImage(imagePath);
+                            Vector2 grids = data.getGrids();
+                            int useCount = data.getUseCount();
+                            double imageSize = data.getImageSize() * ShootingGameMain.getScreenSizeAdj();
+                            BufferedImage[] frames = UIBuilder.cutSpriteSheet(masterSheet, grids, useCount, imageSize);
 
-                            // 画像読み込みエラーログ
-                            case "BROKEN_FILE" -> LogUtils.systemLog(
-                                    "[ERROR]",
-                                    component,
-                                    "Failed to load image: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
+                            // 画像をキャッシュに保存
+                            bulletImageCache
+                                    .computeIfAbsent(owner, o -> new HashMap<>())
+                                    .computeIfAbsent(kind, k -> new HashMap<>())
+                                    .put(String.valueOf(type) + suffix, frames);
+                        } catch (IOException e) {
+                            switch (e.getMessage()) {
+                                // 画像ファイル未発見ログ
+                                case "FILE_NOT_FOUND" -> LogUtils.systemLog(
+                                        "[WARN]",
+                                        component,
+                                        "File not found: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
 
-                            // その他エラーログ
-                            default -> System.out.println(e);
+                                // 画像読み込みエラーログ
+                                case "BROKEN_FILE" -> LogUtils.systemLog(
+                                        "[ERROR]",
+                                        component,
+                                        "Failed to load image: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
+
+                                // その他エラーログ
+                                default -> System.out.println(e);
+                            }
                         }
                     }
                 }
@@ -271,7 +277,7 @@ public final class BulletManager implements Manager {
      * 
      * @return 画像データ
      */
-    public Map<ShipKinds, Map<BulletKinds, Map<Integer, BufferedImage[]>>> getBulletImage() {
+    public Map<ShipKinds, Map<BulletKinds, Map<String, BufferedImage[]>>> getBulletImage() {
         // 外部から変更できないように不変ビューを渡す
         return Collections.unmodifiableMap(bulletImageCache);
     }

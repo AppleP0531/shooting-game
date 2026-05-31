@@ -25,6 +25,7 @@ import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.gameScene.GameManager;
+import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
 import com.game.shooting_game.gameScene.item.Item;
 import com.game.shooting_game.gameScene.item.ItemFactory;
@@ -91,6 +92,7 @@ public final class ShipManager implements Manager {
         private SheetConfig[] sheets;
         private double frameRate;
         private int imageSize;
+        private ColorMode mode;
         private double collisionSize;
         private double hp;
         private double speed;
@@ -217,61 +219,70 @@ public final class ShipManager implements Manager {
                     continue;
                 }
 
-                String imagePath = IMAGE_BASE_PATH + data.getImagePath();
-                try {
-                    BufferedImage masterSheet = UIBuilder.loadImage(imagePath);
-                    SheetConfig[] sheets = data.getSheets();
-                    Vector2 grids = new Vector2(1, 0);
-                    int useCount = 0;
-                    grids.setX(sheets[0].getGrids().getX());
-                    for (SheetConfig sheet : sheets) {
-                        grids.setY(grids.getY() + sheet.getGrids().getY());
-                        useCount += sheet.getUseCount();
-                    }
-
-                    // 切り取り
-                    double imageSize = data.getImageSize() * ShootingGameMain.getScreenSizeAdj();
-                    BufferedImage[] cutSheet = UIBuilder.cutSpriteSheet(
-                            masterSheet,
-                            new Vector2(grids.getX(), grids.getY()),
-                            (int) (grids.getX() * grids.getY()),
-                            imageSize);
-
-                    // 必要部分のみを抜き取りフレーム配列に保存
-                    BufferedImage[] frames = new BufferedImage[useCount];
-                    int addedCount = 0;
-                    int adj = 0;
-                    for (int i = 0; i < sheets.length; i++) {
-                        useCount = sheets[i].getUseCount();
-
-                        if (i > 0) {
-                            addedCount += sheets[i - 1].getUseCount();
-                            adj += (int) (sheets[i - 1].getGrids().getY()) * (int) (grids.getX());
+                // ColorModeごとに処理
+                for (ColorMode mode : ColorMode.values()) {
+                    String imagePath = IMAGE_BASE_PATH + data.getImagePath();
+                    try {
+                        String suffix = "";
+                        if (!shipId.equals("explosion") && owner != ShipKinds.PLAYER) {
+                            suffix = "_" + mode.toString().toLowerCase();
+                            imagePath = UIBuilder.createPathWithSuffix(imagePath, suffix);
                         }
 
-                        for (int j = 0; j < useCount; j++) {
-                            frames[addedCount + j] = cutSheet[adj + j];
+                        BufferedImage masterSheet = UIBuilder.loadImage(imagePath);
+                        SheetConfig[] sheets = data.getSheets();
+                        Vector2 grids = new Vector2(1, 0);
+                        int useCount = 0;
+                        grids.setX(sheets[0].getGrids().getX());
+                        for (SheetConfig sheet : sheets) {
+                            grids.setY(grids.getY() + sheet.getGrids().getY());
+                            useCount += sheet.getUseCount();
                         }
-                    }
 
-                    // 画像をキャッシュに保存
-                    shipImageCache.put(shipId, frames);
-                } catch (IOException e) {
-                    switch (e.getMessage()) {
-                        // 画像ファイル未発見ログ
-                        case "FILE_NOT_FOUND" -> LogUtils.systemLog(
-                                "[WARN]",
-                                component,
-                                "File not found: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
+                        // 切り取り
+                        double imageSize = data.getImageSize() * ShootingGameMain.getScreenSizeAdj();
+                        BufferedImage[] cutSheet = UIBuilder.cutSpriteSheet(
+                                masterSheet,
+                                new Vector2(grids.getX(), grids.getY()),
+                                (int) (grids.getX() * grids.getY()),
+                                imageSize);
 
-                        // 画像読み込みエラーログ
-                        case "BROKEN_FILE" -> LogUtils.systemLog(
-                                "[ERROR]",
-                                component,
-                                "Failed to load image: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
+                        // 必要部分のみを抜き取りフレーム配列に保存
+                        BufferedImage[] frames = new BufferedImage[useCount];
+                        int addedCount = 0;
+                        int adj = 0;
+                        for (int i = 0; i < sheets.length; i++) {
+                            useCount = sheets[i].getUseCount();
 
-                        // その他エラーログ
-                        default -> System.out.println(e);
+                            if (i > 0) {
+                                addedCount += sheets[i - 1].getUseCount();
+                                adj += (int) (sheets[i - 1].getGrids().getY()) * (int) (grids.getX());
+                            }
+
+                            for (int j = 0; j < useCount; j++) {
+                                frames[addedCount + j] = cutSheet[adj + j];
+                            }
+                        }
+
+                        // 画像をキャッシュに保存
+                        shipImageCache.put(shipId + suffix, frames);
+                    } catch (IOException e) {
+                        switch (e.getMessage()) {
+                            // 画像ファイル未発見ログ
+                            case "FILE_NOT_FOUND" -> LogUtils.systemLog(
+                                    "[WARN]",
+                                    component,
+                                    "File not found: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
+
+                            // 画像読み込みエラーログ
+                            case "BROKEN_FILE" -> LogUtils.systemLog(
+                                    "[ERROR]",
+                                    component,
+                                    "Failed to load image: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
+
+                            // その他エラーログ
+                            default -> System.out.println(e);
+                        }
                     }
                 }
             }

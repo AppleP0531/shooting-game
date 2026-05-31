@@ -14,8 +14,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
@@ -34,6 +40,10 @@ public final class ResourceManager implements Manager {
      * リソース種
      */
     @Data
+    @Embeddable
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @EqualsAndHashCode
     public static class ResourceKinds implements Collectible {
         public static final ResourceKinds COIN = new ResourceKinds(ResourceName.COIN, Rarity.COMMON);
 
@@ -42,10 +52,10 @@ public final class ResourceManager implements Manager {
          */
         public static enum ResourceName {
             COIN,
-            RESOURCE_1,
-            RESOURCE_2,
-            RESOURCE_3,
-            RESOURCE_4
+            GEAR,
+            SCREW,
+            COPPER_PLATE,
+            IRON_BAR
         }
 
         /**
@@ -59,18 +69,15 @@ public final class ResourceManager implements Manager {
             LEGENDARY
         }
 
+        @Enumerated(EnumType.STRING)
         private ResourceName resName;
+        @Enumerated(EnumType.STRING)
         private Rarity rarity;
 
         @com.fasterxml.jackson.annotation.JsonCreator
         public ResourceKinds(String key) {
             this.resName = ResourceName.valueOf(key.toUpperCase());
             this.rarity = Rarity.COMMON;
-        }
-
-        public ResourceKinds(ResourceName resName, Rarity rarity) {
-            this.resName = resName;
-            this.rarity = rarity;
         }
 
         public ResourceKinds getResourceKind() {
@@ -190,11 +197,12 @@ public final class ResourceManager implements Manager {
                 ResourceData resourceImagedata = rarityEntry.getValue().get(ImageType.ITEM);
                 ResourceData resourceViewdata = rarityEntry.getValue().get(ImageType.VIEW);
 
-                String imagePath = resourceConfigMap.get(name).getImagePath();
                 // アイテムイメージ
+                String imagePath = "";
+                String suffix = "_" + rarity.toString().toLowerCase();
                 try {
-                    String suffix = "_" + rarity.toString().toLowerCase();
-                    imagePath = UIBuilder.createPathWithSuffix(IMAGE_BASE_PATH + imagePath, suffix);
+                    imagePath = resourceConfigMap.get(name).getImagePath();
+                    imagePath = UIBuilder.createPathWithSuffix(IMAGE_BASE_PATH + "/item" + imagePath, suffix);
                     BufferedImage masterSheet = UIBuilder.loadImage(imagePath);
                     Vector2 grids = resourceImagedata.getGrids();
                     int useCount = resourceImagedata.getUseCount();
@@ -224,8 +232,8 @@ public final class ResourceManager implements Manager {
 
                 // アイテムビュー
                 try {
-                    String suffix = "_view";
-                    imagePath = UIBuilder.createPathWithSuffix(imagePath, suffix);
+                    imagePath = resourceConfigMap.get(name).getImagePath();
+                    imagePath = UIBuilder.createPathWithSuffix(IMAGE_BASE_PATH + "/view" + imagePath, suffix);
                     BufferedImage masterSheet = UIBuilder.loadImage(imagePath);
                     Vector2 grids = resourceViewdata.getGrids();
                     int useCount = resourceViewdata.getUseCount();

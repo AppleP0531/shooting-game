@@ -4,14 +4,15 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
+import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.bullet.Bullet;
 import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.utils.Vector2;
 
 public class Ball extends Bullet {
-    public Ball(ShipKinds owner, int id, Vector2 pos, double vec) {
-        super(owner, BulletKinds.BALL, id, pos, vec);
+    public Ball(ShipKinds owner, int id, ColorMode mode, Vector2 pos, double vec) {
+        super(owner, BulletKinds.BALL, id, mode, pos, vec);
     }
 
     @Override

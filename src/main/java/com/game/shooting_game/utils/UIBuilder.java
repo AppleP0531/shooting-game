@@ -13,6 +13,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -456,6 +458,36 @@ public class UIBuilder extends JPanel {
         p.addMouseListener(blocker);
         p.addMouseMotionListener(blocker);
         p.addMouseWheelListener(blocker);
+    }
+
+    /**
+     * 与えられたリソースリストをEnumの定義順に並べ替える
+     * 
+     * @param resources 元のリスト
+     * @return 並べ替え後のリスト
+     */
+    public static LinkedHashMap<ResourceKinds, Integer> sortItemList(Map<ResourceKinds, Integer> resources) {
+        LinkedHashMap<ResourceKinds, Integer> sortedMap = new LinkedHashMap<>();
+        resources.entrySet().stream()
+                .sorted((entry1, entry2) -> {
+                    // 内部のEnumを取り出して比較する
+                    ResourceKinds.ResourceName name1 = entry1.getKey().getResName();
+                    ResourceKinds.ResourceName name2 = entry2.getKey().getResName();
+
+                    // アイテム名で比較
+                    int nameCompare = Integer.compare(name1.ordinal(), name2.ordinal());
+                    if (nameCompare != 0) {
+                        return nameCompare;
+                    }
+
+                    // レアリティで比較
+                    ResourceKinds.Rarity rarity1 = entry1.getKey().getRarity();
+                    ResourceKinds.Rarity rarity2 = entry2.getKey().getRarity();
+                    return Integer.compare(rarity1.ordinal(), rarity2.ordinal());
+                })
+                .forEachOrdered(entry -> sortedMap.put(entry.getKey(), entry.getValue()));
+
+        return sortedMap;
     }
 
     /**

@@ -120,18 +120,6 @@
         "damage": 5,
         "Normal": 0.3,
         "OOC": 0.1
-      },
-      "101": {
-        "imagePath": "/player/Normal_funny_2.png",
-        "grids": [4, 7],
-        "useCount": 28,
-        "frameRate": 0.1,
-        "imageSize": 40,
-        "collisionSize": 5,
-        "speed": 300,
-        "damage": 5,
-        "Normal": 0.3,
-        "OOC": 0.1
       }
     },
     "TRACKING": {
@@ -236,6 +224,17 @@
       },
       "6": {
         "imagePath": "/enemy/Normal_6.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 150,
+        "damage": 10,
+        "Normal": 3
+      },
+      "7": {
+        "imagePath": "/enemy/Normal_7.png",
         "grids": [4, 1],
         "useCount": 4,
         "frameRate": 0.1,

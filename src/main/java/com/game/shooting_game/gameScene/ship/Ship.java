@@ -20,6 +20,7 @@ import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.gameScene.GameManager;
+import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.bullet.BulletFactory;
 import com.game.shooting_game.gameScene.bullet.BulletManager;
 import com.game.shooting_game.gameScene.bullet.BulletManager.BulletConfig;
@@ -50,6 +51,8 @@ public abstract class Ship implements Moveable, GameObject, Entity {
 
     @Getter
     protected ShipKinds owner; // 弾の発射者
+    @Getter
+    protected ColorMode mode = ColorMode.BLUE; // 色のモード
     @Setter
     protected String shipId; // 船ID
     @Setter
@@ -109,6 +112,9 @@ public abstract class Ship implements Moveable, GameObject, Entity {
         if (def != null && def.getDatas() != null) { // 情報があれば上書き
             ShipConfig datas = def.getDatas();
 
+            if (datas.getMode() != null) {
+                mode = datas.getMode();
+            }
             maxHp = hp = 100;
             collisionSize = datas.getCollisionSize() * ShootingGameMain.getScreenSizeAdj();
             imageSize.put("ship", (int) (datas.getImageSize() * ShootingGameMain.getScreenSizeAdj()));
@@ -313,6 +319,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
                             owner,
                             config.getBulletKind(),
                             config.getBulletId(),
+                            mode,
                             bulletPos,
                             Math.toRadians(vecRef + config.getVecAdj())));
                 } else
@@ -328,7 +335,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
 
         // 発射した弾種のクールタイムリセット
         shotBullet.forEach((kind, idList) -> {
-            for (int bulletId : idList) {
+            for (Integer bulletId : idList) {
                 resetTimer(kind, bulletId, shipState);
             }
         });

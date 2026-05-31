@@ -71,8 +71,7 @@ public class SubShip extends Ship {
         switch (player.getAnimationName()) {
             case "none" -> {
                 // 弾
-                if (player.isAutoFire() || player.isSpace())
-                    addNewBullet(shipLevel, shipId, shipState);
+                addNewBullet(shipLevel, shipId, shipState);
 
                 // 船の状態
                 shipState = player.getShipState();

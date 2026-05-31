@@ -1100,54 +1100,6 @@ public final class CommandGlassPane extends JPanel {
                 }
             }
         }).setSyntax("<amount>");
-        // 無敵
-        register(effect, "shield", null, true, (node, args) -> {
-            // 引数が不適切な場合
-            if (args.length > 2) {
-                logText = node.getUseage();
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-            // シーンが不適切な場合
-            if (!isSceneValid(SceneType.GAME, SceneType.TEST))
-                return;
-
-            boolean isInfinityInvincibility = SHIP_M.getPlayer().getShieldTimer() == Double.POSITIVE_INFINITY;
-            // 指定がなければ無敵モードのトグル、指定があれば無敵時間を設定
-            if (args.length == 0) {
-                double time = isInfinityInvincibility ? 0 : Double.POSITIVE_INFINITY;
-                isInfinityInvincibility = !isInfinityInvincibility;
-
-                SHIP_M.getPlayer().setShieldTimer(time);
-
-                logText = "Invincibility " + (isInfinityInvincibility ? "enabled." : "disabled.");
-                logHistoryData.addElement(logText);
-                LogUtils.systemLog("[INFO]", component, logText);
-            } else {
-                try {
-                    Integer time = GameUtils.tryParse(args[0]);
-
-                    if (isInfinityInvincibility) {
-                        logText = "The ship is already invincible.";
-                        logHistoryData.addElement(logText);
-                        LogUtils.systemLog("[INFO]", component, logText);
-                    } else {
-                        SHIP_M.getPlayer().setShieldTimer(time);
-
-                        logText = "The ship became invincible.";
-                        logHistoryData.addElement(logText);
-                        LogUtils.systemLog("[INFO]", component, logText);
-                    }
-                } catch (NumberFormatException ne) {
-                    logText = "Unknnown param: " + args[0];
-                    logHistoryData.addElement(logText);
-                    LogUtils.debugLog(logText);
-                } catch (Exception e) {
-                    LogUtils.systemLog("[WARN]", component, "Command Error");
-                }
-            }
-        }).setSyntax("<seconds>");
         // 暴走
         register(effect, "ooc", null, true, (node, args) -> {
             // 引数が不適切な場合

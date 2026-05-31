@@ -3,6 +3,7 @@ package com.game.shooting_game.bagScene.subPanels;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.swing.JPanel;
@@ -66,6 +67,10 @@ public class OwnedResourcesPanel extends JPanel {
                         - panelSize.getY());
 
         for (ResourceKinds resKind : resources.keySet()) {
+            // コインは描画しない
+            if (resKind.getResName() == ResourceName.COIN)
+                continue;
+
             BufferedImage[] imageFrames = null;
             // 画像情報の取得
             Map<ResourceName, Map<Rarity, BufferedImage[]>> viewCache = RM.getResourceView();
@@ -101,9 +106,16 @@ public class OwnedResourcesPanel extends JPanel {
                 50 * ShootingGameMain.getScreenSizeAdj());
 
         int index = 0;
-        for (Map.Entry<ResourceKinds, Integer> entry : BagManager.getInstance().getEquipments().entrySet()) {
+        // 並べ替えて表示
+        LinkedHashMap<ResourceKinds, Integer> sourtedResources = UIBuilder
+                .sortItemList(BagManager.getInstance().getEquipments());
+        for (Map.Entry<ResourceKinds, Integer> entry : sourtedResources.entrySet()) {
             ResourceKinds resKind = entry.getKey();
             int amount = entry.getValue();
+
+            // コインは描画しない
+            if (resKind.getResName() == ResourceName.COIN)
+                continue;
 
             Vector2 posInd = new Vector2(
                     index % col,

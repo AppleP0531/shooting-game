@@ -9,7 +9,6 @@ import com.game.shooting_game.gameScene.item.ItemManager.ItemKinds;
 import com.game.shooting_game.gameScene.item.types.Coin;
 import com.game.shooting_game.gameScene.item.types.Heal;
 import com.game.shooting_game.gameScene.item.types.LevelUp;
-import com.game.shooting_game.gameScene.item.types.Shield;
 import com.game.shooting_game.interfaces.Collectible;
 import com.game.shooting_game.utils.Vector2;
 
@@ -38,7 +37,6 @@ public class ItemFactory {
         return switch (kind) {
             case ItemKinds.HEAL -> new Heal(pos);
             case ItemKinds.LEVEL_UP -> new LevelUp(pos);
-            case ItemKinds.SHIELD -> new Shield(pos);
             case null -> null;
             default -> null;
         };
@@ -56,7 +54,6 @@ public class ItemFactory {
             return switch (itemKind) {
                 case HEAL -> new Heal(pos);
                 case LEVEL_UP -> new LevelUp(pos);
-                case SHIELD -> new Shield(pos);
                 default -> null;
             };
         }
