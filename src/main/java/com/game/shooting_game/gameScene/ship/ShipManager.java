@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -336,15 +337,20 @@ public final class ShipManager implements Manager {
         ships.forEach(s -> s.update(dt));
 
         // 死亡処理
-        ships.stream().filter(Ship::isDead).forEach(s -> {
-            // キル数カウントアップ
-            GM.setKillCountSinceLastLevelUp(GM.getKillCountSinceLastLevelUp() + 1);
-            if (s.isAllowDropItem())
-                dropItem(s); // アイテムドロップ
-            dropCoin(s); // コインドロップ
-            s.addScore(); // スコア加算
-            s.animation("death"); // 削除
-        });
+        Iterator<Ship> iterator = ships.iterator();
+        while (iterator.hasNext()) {
+            Ship s = iterator.next();
+            if (s.isDead()) {
+                // キル数カウントアップ
+                GM.setKillCountSinceLastLevelUp(GM.getKillCountSinceLastLevelUp() + 1);
+                if (s.isAllowDropItem())
+                    dropItem(s); // アイテムドロップ
+                dropCoin(s); // コインドロップ
+                s.addScore(); // スコア加算
+                s.animation("death"); // 削除
+                iterator.remove(); // リストから削除
+            }
+        }
     }
 
     /**
