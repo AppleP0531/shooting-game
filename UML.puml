@@ -262,7 +262,7 @@ package "shooting_game" {
     }
 
     package repository {
-        interface UserRepository  <<interface>>{
+        interface UserRepository  <<functional>>{
             ~ findByUsername(username: String): Optional<UserEntity>;
         }
     }
@@ -1308,7 +1308,7 @@ package "shooting_game" {
 
     package "utils" {
         package "Animation" {
-            interface AnimationLogic <<interface>> {
+            interface AnimationLogic <<functional>> {
                 ~ calculateFrame(frameCount: int, currentFrame: int, frameTimer: double, frameRate: double): int
             }
 
@@ -1393,13 +1393,17 @@ package "shooting_game" {
             + {static} applyHighQualityRenderSettings(g2: Graphics2D): void
             - {static} applyStateIcon(component: String, button: JButton, basePath: String, suffix: String, size: Vector2): void
             + {static} drawString(g: Graphics, pos: Vector2, size: double, color: Color, style: int, text: String): void
-            + {static} openPanel(p: JPanel, title: String, focus: Boolean): void
+            + {static} openPanel(p: JPanel, title: String, focus: Boolean, CloseButtonAction: closeAction): void
             + {static} closePanel(p: JPanel): void
             - {static} findComponentByName(panel: JPanel, name: String): Component
             - {static} mouseFocus(p: JPanel): void
             + {static} sortItemList(resources: Map<ResourceKinds, Integer>): LinkedHashMap<ResourceKinds, Integer>
             + {static} drawEquipmentsIcon(c: Component,g: Graphics, pos: Vector2, size: Vector2, resKind: ResourceKinds, amount: int): void
             + {static} createPathWithSuffix(path: String, suffix: String): String
+        }
+
+        interface CloseButtonAction <<functional>>{
+            ~ onClick(): void
         }
 
         class ANSI {

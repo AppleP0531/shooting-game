@@ -105,6 +105,9 @@ public class PausePanel extends JPanel {
                 component,
                 ANSI.YELLOW + "Game Paused" + ANSI.RESET);
 
-        UIBuilder.openPanel(this, "Pause", true);
+        UIBuilder.openPanel(this, "Pause", true, () -> {
+            GM.setPause(false);
+            UIBuilder.closePanel(this);
+        });
     }
 }

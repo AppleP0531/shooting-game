@@ -156,7 +156,7 @@ public class StageDetailPanel extends JPanel {
         detailTextArea.setText(detailText);
         detailTextArea.setCaretPosition(0); // テキストエリアのスクロール位置を先頭にする
 
-        UIBuilder.openPanel(this, "Stage" + stageId, true);
+        UIBuilder.openPanel(this, "Stage" + stageId, true, null);
     }
 
     /**

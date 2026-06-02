@@ -292,14 +292,20 @@ public class UIBuilder extends JPanel {
         g.drawString(text, x, y);
     }
 
+    @FunctionalInterface
+    public interface CloseButtonAction {
+        void onClick();
+    }
+
     /**
      * パネル (タイトル表示のために上部分に25px相当のパネルが張り付けられます)
      * 
-     * @param p     パネル
-     * @param title タイトル
-     * @param focus フォーカスの有無
+     * @param p           パネル
+     * @param title       タイトル
+     * @param focus       フォーカスの有無
+     * @param closeAction クローズボタンのアクション
      */
-    public static void openPanel(JPanel p, String title, Boolean focus) {
+    public static void openPanel(JPanel p, String title, Boolean focus, CloseButtonAction closeAction) {
         p.setLayout(null);
         p.setBackground(new Color(0, 0, 0, 220));
         p.setBorder(BorderFactory.createLineBorder(Color.CYAN, 2));
@@ -383,7 +389,11 @@ public class UIBuilder extends JPanel {
             closePanelButton = UIBuilder.createImageButton("[UIBuilder]", closePanelButtonImagePath,
                     closePanelButtonSize, "X");
             closePanelButton.addActionListener(e -> {
-                UIBuilder.closePanel(p);
+                // クローズアクションが指定されていればそれを実行、指定されていなければパネルを閉じる
+                if (closeAction != null)
+                    closeAction.onClick();
+                else
+                    UIBuilder.closePanel(p);
             });
 
             closePanelButton.setName("closeBtn");
