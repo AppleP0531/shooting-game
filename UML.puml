@@ -112,6 +112,7 @@ package "shooting_game" {
             - suggestIndex: int
             - suggestDiff: int
             - suggestData: ChatBoxContext
+            - isAutoComplete: boolean
             --
             + CommandGlassPane(onEnter: Runnable)
             - moveHistory(context: ChatBoxContext, diff: MoveOption): void

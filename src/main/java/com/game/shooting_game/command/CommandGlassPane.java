@@ -133,6 +133,8 @@ public final class CommandGlassPane extends JPanel {
     private int suggestDiff = 0; // 予測変換リストの表示差分(表示最大数以上の回数さかのぼった時用)
     private ChatBoxContext suggestData;
 
+    private boolean isAutoComplete = false;
+
     public CommandGlassPane(Runnable onEnter) {
         MAIN = ShootingGameMain.getInstance();
         SM = SceneManager.getInstance();
@@ -156,12 +158,42 @@ public final class CommandGlassPane extends JPanel {
                 (int) spacing,
                 (int) (MAIN.getHeight() - spacing - textBoxSize.getY()),
                 (int) textBoxSize.getX(), (int) textBoxSize.getY());
-        commandField.setBackground(new Color(0, 0, 0, 200));
-        commandField.setForeground(Color.WHITE);
-        commandField.setCaretColor(Color.WHITE);
-        commandField.setFont(new Font("Monospaced", Font.BOLD, (int) (16 * ShootingGameMain.getScreenSizeAdj())));
-        commandField.setBorder(BorderFactory.createLineBorder(Color.CYAN));
+        commandField.setBackground(new Color(0, 0, 0, 200)); // 背景色
+        commandField.setForeground(Color.WHITE); // 文字色
+        commandField.setCaretColor(Color.WHITE); // カーソル食
+        commandField.setFont(new Font("Monospaced", Font.BOLD, (int) (16 * ShootingGameMain.getScreenSizeAdj()))); // 文字設定
+        commandField.setBorder(BorderFactory.createLineBorder(Color.CYAN)); // 枠線
         commandField.setVisible(false);
+
+        // テキストフィールドが更新された時に予測変換も更新する
+        commandField.getDocument().addDocumentListener(new DocumentListener() {
+            // 文字が入力されたとき
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                process();
+            }
+
+            // 文字が削除されたとき
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                process();
+            }
+
+            // 文字が更新されたとき
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                process();
+            }
+
+            private void process() {
+                if (isAutoComplete) {
+                    return;
+                }
+
+                registCommandSuggestions();
+            }
+        });
+        add(commandField);
 
         // コマンド入力時の処理
         keyHandler = new KeyAdapter() {
@@ -187,26 +219,6 @@ public final class CommandGlassPane extends JPanel {
                 }
             }
         };
-        commandField.getDocument().addDocumentListener(new DocumentListener() {
-            // 文字が入力されたとき
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                registCommandSuggestions();
-            }
-
-            // 文字が削除されたとき
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                registCommandSuggestions();
-            }
-
-            // 文字が更新されたとき
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                registCommandSuggestions();
-            }
-        });
-        add(commandField);
 
         // 入力中にマウスイベントをほかにとられないようにする
         mouseHandler = new MouseAdapter() {
@@ -229,20 +241,30 @@ public final class CommandGlassPane extends JPanel {
             }
         };
 
-        // 履歴リストの設定
+        // コマンド履歴の設定
         INPUT_HISTORY_MODEL = new DefaultListModel<>();
         INPUT_HISTORY_LIST = new JList<>(INPUT_HISTORY_MODEL);
-        INPUT_HISTORY_LIST.setBackground(new Color(0, 0, 0, chatOpacity));
-        INPUT_HISTORY_LIST.setForeground(Color.LIGHT_GRAY);
+        INPUT_HISTORY_LIST.setBackground(new Color(0, 0, 0, chatOpacity)); // 背景色
+        INPUT_HISTORY_LIST.setForeground(Color.LIGHT_GRAY); // 文字色
         INPUT_HISTORY_LIST
-                .setFont(new Font("Monospaced", Font.PLAIN, (int) (14 * ShootingGameMain.getScreenSizeAdj())));
+                .setFont(new Font("Monospaced", Font.PLAIN, (int) (14 * ShootingGameMain.getScreenSizeAdj()))); // 文字設定
         INPUT_HISTORY_LIST.setBorder(null);
         INPUT_HISTORY_LIST.setVisible(false);
+        INPUT_HISTORY_LIST.setFocusable(false); // フォーカスを当てない
+        // 選択時にテキストフィールドへ反映する
+        INPUT_HISTORY_LIST.addListSelectionListener(e -> {
+            isAutoComplete = true;
+            commandField.setText(INPUT_HISTORY_LIST.getSelectedValue());
+            isAutoComplete = false;
+
+            // フォーカスを返す
+            commandField.requestFocusInWindow();
+        });
+        // 選択されているものを太字にする
         INPUT_HISTORY_LIST.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                     boolean isSelected, boolean cellHasFocus) {
-                // 基本的な描画設定（テキストや背景色など）を継承
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 setBackground(list.getBackground());
                 // 選択されているものを太字、そうでなければ標準で表示
@@ -267,31 +289,31 @@ public final class CommandGlassPane extends JPanel {
                 inputHistoryIndex,
                 inputHistoryDiff);
 
-        // ログリストの設定
+        // ログの設定
         LOG_HISTORY_MODEL = new DefaultListModel<>();
         LOG_HISTORY_LIST = new JList<>(LOG_HISTORY_MODEL) {
             @Override
             protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
+                Graphics2D g2 = (Graphics2D) g.create();
 
-                // 💡 クラスで保持している chatOpacity (0.0〜1.0) を適用して描画する
-                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, chatOpacity));
+                // 透明度の適応
+                g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, chatOpacity));
 
-                super.paintComponent(g2d);
-                g2d.dispose();
+                super.paintComponent(g2);
+                g2.dispose();
             }
         };
-        LOG_HISTORY_LIST.setBackground(new Color(0, 0, 0, chatOpacity));
-        LOG_HISTORY_LIST.setForeground(Color.LIGHT_GRAY);
-        LOG_HISTORY_LIST.setFont(new Font("Monospaced", Font.PLAIN, (int) (10 * ShootingGameMain.getScreenSizeAdj())));
+        LOG_HISTORY_LIST.setBackground(new Color(0, 0, 0, chatOpacity)); // 背景色
+        LOG_HISTORY_LIST.setForeground(Color.LIGHT_GRAY); // 文字色
+        LOG_HISTORY_LIST.setFont(new Font("Monospaced", Font.PLAIN, (int) (10 * ShootingGameMain.getScreenSizeAdj()))); // 文字設定
         LOG_HISTORY_LIST.setBorder(null);
         LOG_HISTORY_LIST.setVisible(false);
-        LOG_HISTORY_LIST.setFocusable(false);
+        LOG_HISTORY_LIST.setFocusable(false); // フォーカスを当てない
+        // 文字装飾なしで描画
         LOG_HISTORY_LIST.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                     boolean isSelected, boolean cellHasFocus) {
-                // 基本的な描画設定（テキストや背景色など）を継承
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 setBackground(list.getBackground());
                 setFont(list.getFont().deriveFont(Font.PLAIN));
@@ -310,19 +332,19 @@ public final class CommandGlassPane extends JPanel {
                 logHistoryIndex,
                 logHistoryDiff);
 
-        // 予測変換リストの設定
+        // 予測変換の設定
         SUGGEST_MODEL = new DefaultListModel<>();
         SUGGEST_LIST = new JList<>(SUGGEST_MODEL);
-        SUGGEST_LIST.setBackground(new Color(0, 0, 0, chatOpacity));
-        SUGGEST_LIST.setForeground(Color.LIGHT_GRAY);
-        SUGGEST_LIST.setFont(new Font("Monospaced", Font.PLAIN, (int) (12 * ShootingGameMain.getScreenSizeAdj())));
+        SUGGEST_LIST.setBackground(new Color(0, 0, 0, chatOpacity)); // 背景色
+        SUGGEST_LIST.setForeground(Color.LIGHT_GRAY); // 文字色
+        SUGGEST_LIST.setFont(new Font("Monospaced", Font.PLAIN, (int) (12 * ShootingGameMain.getScreenSizeAdj()))); // 文字設定
         SUGGEST_LIST.setBorder(null);
         SUGGEST_LIST.setVisible(false);
+        // 入力に応じて色を付ける
         SUGGEST_LIST.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                     boolean isSelected, boolean cellHasFocus) {
-                // 基本的な描画設定（テキストや背景色など）を継承
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 setBackground(list.getBackground());
 
@@ -687,11 +709,7 @@ public final class CommandGlassPane extends JPanel {
 
         // 入力情報の取得
         String command = commandField.getText();
-        String[] args = command.split(" ");
-
-        // 空白が二つ並んでいる場合処理をスキップ
-        if (command.contains("  "))
-            return;
+        String[] args = command.split(" ", -1);
 
         if (command.isEmpty()) {
             showChatBoxList(logHistoryData);
@@ -709,12 +727,12 @@ public final class CommandGlassPane extends JPanel {
             if (node != null) {
                 // 権限不足の場合は潜らない
                 if (node.isAdminOnly() && !adminMode)
-                    break;
+                    return;
 
                 subCommands = node.getSubCommands(); // 階層移動
                 currentNode = node; // 参照中ノードの更新
             } else
-                break;
+                return;
         }
         String currentToken = args[args.length - 1];
 
@@ -1071,33 +1089,56 @@ public final class CommandGlassPane extends JPanel {
             if (!isSceneValid(SceneType.GAME, SceneType.TEST))
                 return;
 
-            // 指定がなければ1レベル上げる、指定があればそのレベルを設定
-            if (args.length == 0) {
+            // 指定がなければ1レベル上げる、指定があればその回数レベルアップ
+            int amount = 1;
+            try {
+                Integer num = GameUtils.tryParse(args[0]);
+                amount = num > 0 ? num : 1;
+            } catch (NumberFormatException ne) {
+                logText = "Unknnown param: " + args[0];
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
+            }
+            // レベルアップ処理
+            for (int i = 0; i < amount; i++) {
                 SHIP_M.getPlayer().levelUp();
+            }
 
-                logText = "Ship leveled up to level " + SHIP_M.getPlayer().getShipLevel() + ".";
+            logText = "Ship leveled up to level " + SHIP_M.getPlayer().getShipLevel() + ".";
+            logHistoryData.addElement(logText);
+            LogUtils.systemLog("[INFO]", component, logText);
+        });
+        // レベル設定
+        register(effect, "setLevel", null, true, (node, args) -> {
+            // 引数が不適切な場合
+            if (args.length != 1) {
+                logText = node.getUseage();
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
+                return;
+            }
+            // シーンが不適切な場合
+            if (!isSceneValid(SceneType.GAME, SceneType.TEST))
+                return;
+
+            try {
+                Integer num = GameUtils.tryParse(args[0]);
+
+                if (num >= 5) {
+                    SHIP_M.getPlayer().setShipLevel(4);
+                    SHIP_M.getPlayer().levelUp();
+                } else
+                    SHIP_M.getPlayer().setShipLevel(num);
+
+                logText = "Ship level set to " + SHIP_M.getPlayer().getShipLevel() + ".";
                 logHistoryData.addElement(logText);
                 LogUtils.systemLog("[INFO]", component, logText);
-            } else {
-                try {
-                    Integer num = GameUtils.tryParse(args[0]);
-
-                    if (num >= 5) {
-                        SHIP_M.getPlayer().setShipLevel(4);
-                        SHIP_M.getPlayer().levelUp();
-                    } else
-                        SHIP_M.getPlayer().setShipLevel(num);
-
-                    logText = "Ship level set to " + SHIP_M.getPlayer().getShipLevel() + ".";
-                    logHistoryData.addElement(logText);
-                    LogUtils.systemLog("[INFO]", component, logText);
-                } catch (NumberFormatException ne) {
-                    logText = "Unknnown param: " + args[0];
-                    logHistoryData.addElement(logText);
-                    LogUtils.debugLog(logText);
-                } catch (Exception e) {
-                    LogUtils.systemLog("[WARN]", component, "Command Error");
-                }
+            } catch (NumberFormatException ne) {
+                logText = "Unknnown param: " + args[0];
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
+            } catch (Exception e) {
+                LogUtils.systemLog("[WARN]", component, "Command Error");
             }
         }).setSyntax("<amount>");
         // 暴走
@@ -1135,6 +1176,7 @@ public final class CommandGlassPane extends JPanel {
                         logHistoryData.addElement(logText);
                         LogUtils.systemLog("[INFO]", component, logText);
                     } else {
+                        SHIP_M.getPlayer().setShipLevel(5);
                         SHIP_M.getPlayer().setOOCTimer(time);
 
                         logText = "The ship became OOC.";

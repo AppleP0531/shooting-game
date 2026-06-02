@@ -305,6 +305,9 @@ public final class GameManager extends JPanel implements Manager {
      * 当たり判定処理
      */
     public void checkCollisions() {
+        if (SHIP_M.getPlayer() == null)
+            return;
+
         // 全敵リストの作成
         List<Ship> allEnemies = new ArrayList<>();
         allEnemies.addAll(SHIP_M.getEnemyList());

@@ -62,7 +62,7 @@ public class PausePanel extends JPanel {
                 (int) resumeButton.getWidth(), (int) resumeButton.getHeight());
         resumeButton.addActionListener(e -> {
             GM.setPause(false);
-            setVisible(false);
+            UIBuilder.closePanel(this);
             // 再開ログ
             LogUtils.systemLog(
                     "[INFO]",
@@ -83,7 +83,7 @@ public class PausePanel extends JPanel {
                 (int) quitButton.getWidth(), (int) quitButton.getHeight());
         quitButton.addActionListener(e -> {
             GM.setPause(false);
-            setVisible(false);
+            UIBuilder.closePanel(this);
             SM.changeScene(SceneType.NORMALSTAGE);
         });
         this.add(quitButton);
@@ -99,16 +99,12 @@ public class PausePanel extends JPanel {
      * パネルの表示
      */
     public void showPausePanel() {
-        setVisible(true);
-
         // ポーズログ
         LogUtils.systemLog(
                 "[INFO]",
                 component,
                 ANSI.YELLOW + "Game Paused" + ANSI.RESET);
 
-        // 最前面に持ってくる
-        if (getParent() != null)
-            getParent().setComponentZOrder(this, 0);
+        UIBuilder.openPanel(this, "Pause", true);
     }
 }
