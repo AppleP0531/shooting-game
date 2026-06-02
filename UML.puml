@@ -779,6 +779,7 @@ package "shooting_game" {
             class EnemyConfig <<Lomboc @Data>> {
                 - owner: ShipKinds
                 - enemyId: String
+                - mode: ColorMode
                 - level: int
                 - spawnPos: Vector2
                 - stayPos: Vector2
@@ -890,8 +891,7 @@ package "shooting_game" {
                 # coins: String
                 # dropItem: boolean
                 # shieldTimer: double
-                # coolDownTimers: Map<BulletKinds, Map<    protected Map<BulletKinds, Map<Integer, Double>> coolDownTimers; // クールダウンタイマー
-, Double>>
+                # coolDownTimers: Map<BulletKinds, Map<Integer, Double>>
                 # animationId: Map<String, String>
                 # imageSize: Map<String, Integer>
                 # useCount: Map<String, int[]>
@@ -901,7 +901,7 @@ package "shooting_game" {
                 - shotData: List<ShotConfig>
                 - shotBullet: Map<BulletKinds, List<Integer>>
                 --
-                + Ship(owner: ShipKinds, type: String, level: int, pos: Vector2)
+                + Ship(owner: ShipKinds, type: String, mode: ColorMode, level: int, pos: Vector2)
                 + update(dt: double): void
                 + draw(g: Graphics): void
                 + move(dt: double): move
@@ -932,7 +932,7 @@ package "shooting_game" {
             }
 
             class ShipFactory{
-                + {static} createShip(owner: ShipKinds, shipId: String, level: int, spawnPos: Vector2, stayPos: Vector2): Ship
+                + {static} createShip(owner: ShipKinds, shipId: String, mode: ColorMode, level: int, spawnPos: Vector2, stayPos: Vector2): Ship
             }
 
             package "types" {
@@ -953,7 +953,7 @@ package "shooting_game" {
                     - damagedTimer: double
                     - breakawaySpeed: double
                     --
-                    + Player(id: String, pos: Vector2)
+                    + Player(id: String, mode: ColorMode, pos: Vector2)
                     + update(dt: double): void
                     + draw(g: Graphics): void
                     + move(dt: double): void
@@ -980,7 +980,7 @@ package "shooting_game" {
                     - player: Player
                     - posDiff: Vector2
                     --
-                    + SubShip(id: String, pos: Vector2)
+                    + SubShip(player: Player, id: String, mode: ColorMode, pos: Vector2)
                     + update(dt: double): void
                     + draw(g: Graphics): void
                     + move(dt: double): void
@@ -993,7 +993,7 @@ package "shooting_game" {
                     - elapsedTime: double
                     - breakAwayTime: int
                     --
-                    + Enemy(id: String, level: int, spawnPos: Vector2, stayPos: Vector2)
+                    + Enemy(id: String, mode: ColorMode, level: int, spawnPos: Vector2, stayPos: Vector2)
                     + update(dt: double): void
                     + draw(g: Graphics): void
                     + move(dt: double): void
@@ -1004,7 +1004,7 @@ package "shooting_game" {
                     - {static} component: String
                     - stayPos: Vector2
                     --
-                    + Boss(id: String, level: int, spawnPos: Vector2, stayPos: Vector2)
+                    + Boss(id: String, mode: ColorMode, level: int, spawnPos: Vector2, stayPos: Vector2)
                     + update(dt: double): void
                     + draw(g: Graphics): void
                     + move(dt: double): void

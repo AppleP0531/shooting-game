@@ -48,8 +48,8 @@ public class Player extends Ship implements KeyListener {
     private double damagedTimer; // 被弾時の無敵タイマー
     private double breakawaySpeed; // 離脱速度
 
-    public Player(String id, Vector2 pos) {
-        super(ShipKinds.PLAYER, id, 0, pos);
+    public Player(String id, ColorMode mode, Vector2 pos) {
+        super(ShipKinds.PLAYER, id, mode, 0, pos);
 
         // 画像の読み込みとアニメーション登録
         ShipDefinition def = SHIP_M.getShipConfig().get(owner).get(shipId);
@@ -129,8 +129,10 @@ public class Player extends Ship implements KeyListener {
         double shipDist = 40 * ShootingGameMain.getScreenSizeAdj();
         double yDiff = 5 * ShootingGameMain.getScreenSizeAdj();
         if (subShipId != null) {
-            subShip.add(new SubShip(this, subShipId + "_L", new Vector2(pos.getX() - shipDist, pos.getY() + yDiff)));
-            subShip.add(new SubShip(this, subShipId + "_R", new Vector2(pos.getX() + shipDist, pos.getY() + yDiff)));
+            subShip.add(
+                    new SubShip(this, subShipId + "_L", mode, new Vector2(pos.getX() - shipDist, pos.getY() + yDiff)));
+            subShip.add(
+                    new SubShip(this, subShipId + "_R", mode, new Vector2(pos.getX() + shipDist, pos.getY() + yDiff)));
         }
     }
 
@@ -171,7 +173,7 @@ public class Player extends Ship implements KeyListener {
         // 船
         if (animationId.get("ship") == null) {
             g2.rotate(rotate, pos.getX(), pos.getY());
-            g2.setColor(new Color(0, 1, 1, alpha));
+            g2.setColor(new Color(0, 1, 0, alpha));
             g.fillPolygon(
                     new int[] {
                             (int) pos.getX(),

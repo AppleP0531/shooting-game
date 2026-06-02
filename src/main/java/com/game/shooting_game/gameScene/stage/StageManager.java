@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
+import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.utils.ANSI;
@@ -70,6 +71,7 @@ public final class StageManager implements Manager {
     public static class EnemyConfig {
         private ShipKinds owner;
         private String enemyId;
+        private ColorMode mode;
         private int level;
         private Vector2 spawnPos;
         private Vector2 stayPos;

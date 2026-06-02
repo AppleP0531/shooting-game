@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 
 import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.ship.Ship;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipConfig;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipDefinition;
@@ -19,8 +20,8 @@ public class SubShip extends Ship {
 
     private Vector2 posDiff;
 
-    public SubShip(Player player, String id, Vector2 pos) {
-        super(ShipKinds.PLAYER, id, 0, pos);
+    public SubShip(Player player, String id, ColorMode mode, Vector2 pos) {
+        super(ShipKinds.PLAYER, id, mode, 0, pos);
         this.player = player;
 
         ShipDefinition def = SHIP_M.getShipConfig().get(owner).get(shipId);

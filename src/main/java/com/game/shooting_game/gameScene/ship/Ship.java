@@ -52,7 +52,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
     @Getter
     protected ShipKinds owner; // 弾の発射者
     @Getter
-    protected ColorMode mode = ColorMode.BLUE; // 色のモード
+    protected ColorMode mode; // 色のモード
     @Setter
     protected String shipId; // 船ID
     @Setter
@@ -94,7 +94,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
     private List<ShotConfig> shotData = new ArrayList<>(); // 発射する弾のデータ
     private Map<BulletKinds, List<Integer>> shotBullet = new HashMap<>(); // 発射した弾のデータ
 
-    public Ship(ShipKinds owner, String id, int level, Vector2 pos) {
+    public Ship(ShipKinds owner, String id, ColorMode mode, int level, Vector2 pos) {
         MAIN = ShootingGameMain.getInstance();
         AM = AnimationManager.getInstance();
         SM = SceneManager.getInstance();
@@ -104,6 +104,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
         this.owner = owner;
 
         this.shipId = id;
+        this.mode = mode;
         this.shipLevel = level;
         this.shipState = "Normal";
         this.pos = pos;

@@ -294,7 +294,9 @@ public final class ShipManager implements Manager {
         clear("all");
 
         // プレイヤー生成
-        player = new Player(DataManager.getUserData().getSelectedShip(),
+        player = new Player(
+                DataManager.getUserData().getSelectedShip(),
+                ColorMode.BLUE,
                 new Vector2(MAIN.getWidth() / 2, MAIN.getHeight()));
         MAIN.addKeyListener(player);
     }
