@@ -4,12 +4,13 @@ import java.awt.Color;
 import java.awt.Graphics;
 
 import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.gameScene.item.Item;
 import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.Vector2;
 
-public class Coin extends Item {
+public class Resource extends Item {
     private Vector2 moveDir; // 移動方向
     private double floorY; // 床
     private double minX; // バウンド時のX最小値
@@ -17,8 +18,8 @@ public class Coin extends Item {
     private double elapsedTime; // 出現してからの経過時間
     private Vector2 targetPos;
 
-    public Coin(Vector2 pos) {
-        super(ResourceKinds.COIN, pos);
+    public Resource(ResourceKinds resKind, Vector2 pos) {
+        super(resKind, pos);
         if (0 < vec && vec < Math.PI)
             vec += Math.PI;
 
@@ -101,6 +102,14 @@ public class Coin extends Item {
 
     @Override
     public void effect() {
-        GM.addCoin(100);
+        if (kind instanceof ResourceKinds resKind) {
+            switch (resKind.getResName()) {
+                case ResourceName.COIN -> {
+                    GM.addCoin(100);
+                }
+                default -> {
+                }
+            }
+        }
     }
 }

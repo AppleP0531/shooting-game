@@ -25,8 +25,8 @@
     "rarity": {
       "COMMON": {
         "ITEM": {
-          "grids": [1, 1],
-          "useCount": 1,
+          "grids": [4, 2],
+          "useCount": 8,
           "frameRate": 0.1,
           "imageSize": 25
         },
@@ -39,8 +39,8 @@
       },
       "UNCOMMON": {
         "ITEM": {
-          "grids": [1, 1],
-          "useCount": 1,
+          "grids": [4, 2],
+          "useCount": 8,
           "frameRate": 0.1,
           "imageSize": 25
         },
@@ -53,8 +53,8 @@
       },
       "RARE": {
         "ITEM": {
-          "grids": [1, 1],
-          "useCount": 1,
+          "grids": [4, 2],
+          "useCount": 8,
           "frameRate": 0.1,
           "imageSize": 25
         },
@@ -67,8 +67,8 @@
       },
       "EPIC": {
         "ITEM": {
-          "grids": [1, 1],
-          "useCount": 1,
+          "grids": [4, 2],
+          "useCount": 8,
           "frameRate": 0.1,
           "imageSize": 25
         },
@@ -81,8 +81,8 @@
       },
       "LEGENDARY": {
         "ITEM": {
-          "grids": [1, 1],
-          "useCount": 1,
+          "grids": [4, 2],
+          "useCount": 8,
           "frameRate": 0.1,
           "imageSize": 25
         },
@@ -101,8 +101,8 @@
     "rarity": {
       "COMMON": {
         "ITEM": {
-          "grids": [1, 1],
-          "useCount": 1,
+          "grids": [4, 2],
+          "useCount": 8,
           "frameRate": 0.1,
           "imageSize": 25
         },
@@ -115,8 +115,8 @@
       },
       "UNCOMMON": {
         "ITEM": {
-          "grids": [1, 1],
-          "useCount": 1,
+          "grids": [4, 2],
+          "useCount": 8,
           "frameRate": 0.1,
           "imageSize": 25
         },
@@ -129,8 +129,8 @@
       },
       "RARE": {
         "ITEM": {
-          "grids": [1, 1],
-          "useCount": 1,
+          "grids": [4, 2],
+          "useCount": 8,
           "frameRate": 0.1,
           "imageSize": 25
         },
@@ -143,8 +143,8 @@
       },
       "EPIC": {
         "ITEM": {
-          "grids": [1, 1],
-          "useCount": 1,
+          "grids": [4, 2],
+          "useCount": 8,
           "frameRate": 0.1,
           "imageSize": 25
         },
@@ -157,8 +157,8 @@
       },
       "LEGENDARY": {
         "ITEM": {
-          "grids": [1, 1],
-          "useCount": 1,
+          "grids": [4, 2],
+          "useCount": 8,
           "frameRate": 0.1,
           "imageSize": 25
         },
@@ -177,8 +177,8 @@
     "rarity": {
       "COMMON": {
         "ITEM": {
-          "grids": [1, 1],
-          "useCount": 1,
+          "grids": [4, 2],
+          "useCount": 8,
           "frameRate": 0.1,
           "imageSize": 25
         },
@@ -191,8 +191,8 @@
       },
       "UNCOMMON": {
         "ITEM": {
-          "grids": [1, 1],
-          "useCount": 1,
+          "grids": [4, 2],
+          "useCount": 8,
           "frameRate": 0.1,
           "imageSize": 25
         },
@@ -205,8 +205,8 @@
       },
       "RARE": {
         "ITEM": {
-          "grids": [1, 1],
-          "useCount": 1,
+          "grids": [4, 2],
+          "useCount": 8,
           "frameRate": 0.1,
           "imageSize": 25
         },
@@ -219,8 +219,8 @@
       },
       "EPIC": {
         "ITEM": {
-          "grids": [1, 1],
-          "useCount": 1,
+          "grids": [4, 2],
+          "useCount": 8,
           "frameRate": 0.1,
           "imageSize": 25
         },
@@ -233,8 +233,8 @@
       },
       "LEGENDARY": {
         "ITEM": {
-          "grids": [1, 1],
-          "useCount": 1,
+          "grids": [4, 2],
+          "useCount": 8,
           "frameRate": 0.1,
           "imageSize": 25
         },
@@ -253,8 +253,8 @@
     "rarity": {
       "COMMON": {
         "ITEM": {
-          "grids": [1, 1],
-          "useCount": 1,
+          "grids": [4, 2],
+          "useCount": 8,
           "frameRate": 0.1,
           "imageSize": 25
         },
@@ -267,8 +267,8 @@
       },
       "UNCOMMON": {
         "ITEM": {
-          "grids": [1, 1],
-          "useCount": 1,
+          "grids": [4, 2],
+          "useCount": 8,
           "frameRate": 0.1,
           "imageSize": 25
         },
@@ -281,8 +281,8 @@
       },
       "RARE": {
         "ITEM": {
-          "grids": [1, 1],
-          "useCount": 1,
+          "grids": [4, 2],
+          "useCount": 8,
           "frameRate": 0.1,
           "imageSize": 25
         },
@@ -295,8 +295,8 @@
       },
       "EPIC": {
         "ITEM": {
-          "grids": [1, 1],
-          "useCount": 1,
+          "grids": [4, 2],
+          "useCount": 8,
           "frameRate": 0.1,
           "imageSize": 25
         },
@@ -309,8 +309,8 @@
       },
       "LEGENDARY": {
         "ITEM": {
-          "grids": [1, 1],
-          "useCount": 1,
+          "grids": [4, 2],
+          "useCount": 8,
           "frameRate": 0.1,
           "imageSize": 25
         },

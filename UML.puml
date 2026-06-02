@@ -220,10 +220,10 @@ package "shooting_game" {
 
     class ResourceName {
         COIN
-        RESOURCE_1
-        RESOURCE_2
-        RESOURCE_3
-        RESOURCE_4
+        GEAR
+        SCREW
+        COPPER_PLATE
+        IRON_BAR
     }
 
     enum Rarity {
@@ -813,6 +813,7 @@ package "shooting_game" {
                 + reload(): void
                 + updateAndClean(List<Ship>, double): void
                 - dropItem(ship: Ship): void
+                - dropResource(ship: Ship): void
                 - dropCoin(ship: Ship): void
                 + clear(target: String): void
                 + kill(target: String): void
@@ -1196,28 +1197,26 @@ package "shooting_game" {
             }
 
             class ItemFactory {
-                - {static} random: Random
-                - {static} DROP_TABLE: Map<Collectible, Integer>
+                - {static} ITEM_DROP_TABLE: Map<ItemKinds, Double>
                 --
                 + {static} createItem(pos: Vector2): Item
-                + {static} createItem(pos: Vector2, kind: Collectible): Item
-                - {static} lottery(): Collectible
+                + {static} createItem(pos: Vector2, kind: ItemKinds): Item
+                - {static} lottery(): ItemKinds
+            }
+
+            class ResourceFactory {
+                - {static} RESOURCE_DROP_TABLE: Map<ResourceKinds, Double>
+                --
+                + {static} createResource(model: DropModel, pos: Vector2): Resource
+                + {static} createResource(pos: Vector2, resKind ResourceKinds): Resource
+                - {static} lottery(model: DropModel): Rarity
+            }
+
+            enum DropModel {
+                ENEMY_DEFEAT
             }
 
             package "types" {
-                class Coin {
-                    - moveDir: Vector2
-                    - floorY: double
-                    - elapsedTime: double
-                    - targetPos: Vector2
-                    --
-                    + Coin(pos: Vector2)
-                    + update(dt: double): void
-                    + draw(g: Grraphics): void
-                    + move(dt: double): void
-                    + effect(): void
-                }
-
                 class Heal {
                     + Heal(pos: Vector2)
                     + draw(g: Graphics): void
@@ -1227,6 +1226,19 @@ package "shooting_game" {
                 class LevelUp {
                     + LevelUp(pos: Vector2)
                     + draw(g: Graphics): void
+                    + effect(): void
+                }
+
+                class Resource {
+                    - moveDir: Vector2
+                    - floorY: double
+                    - elapsedTime: double
+                    - targetPos: Vector2
+                    --
+                    + Resource(resKind: ResourceKinds, pos: Vector2)
+                    + update(dt: double): void
+                    + draw(g: Graphics): void
+                    + move(dt: double): void
                     + effect(): void
                 }
             }
@@ -1629,6 +1641,7 @@ shooting_game.gameScene.bullet.BulletManager +-- BulletKinds
 shooting_game.gameScene.bullet.BulletManager +-- BulletConfig
 shooting_game.gameScene.item.ItemManager +-- ItemKinds
 shooting_game.gameScene.item.ItemManager +-- ItemConfig
+shooting_game.gameScene.item.ResourceFactory +-- DropModel
 
 ' extends関係
 shooting_game.repository.UserRepository --|> org.springframework.data.jpa.repository.JpaRepository
@@ -1659,6 +1672,8 @@ shooting_game.gameScene.bullet.types.Tracking --* shooting_game.gameScene.bullet
 shooting_game.gameScene.item.types.Shield --* shooting_game.gameScene.item.Item
 shooting_game.gameScene.item.types.LevelUp --* shooting_game.gameScene.item.Item
 shooting_game.gameScene.item.types.Heal --* shooting_game.gameScene.item.Item
+shooting_game.gameScene.item.types.Coin --* shooting_game.gameScene.item.Item
+shooting_game.gameScene.item.types.Resource --* shooting_game.gameScene.item.Item
 shooting_game.gameResultScene.GameResultManager --|> javax.swing.JPanel
 shooting_game.gameResultScene.subPanels.RewardListPanel --|> javax.swing.JPanel
 shooting_game.testScene.TestManager --|> javax.swing.JPanel

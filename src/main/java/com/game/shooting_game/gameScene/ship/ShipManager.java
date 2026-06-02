@@ -32,6 +32,8 @@ import com.game.shooting_game.gameScene.item.Item;
 import com.game.shooting_game.gameScene.item.ItemFactory;
 import com.game.shooting_game.gameScene.item.ItemManager;
 import com.game.shooting_game.gameScene.item.ItemManager.ItemKinds;
+import com.game.shooting_game.gameScene.item.ResourceFactory;
+import com.game.shooting_game.gameScene.item.ResourceFactory.DropModel;
 import com.game.shooting_game.gameScene.ship.types.Player;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.utils.ANSI;
@@ -343,8 +345,10 @@ public final class ShipManager implements Manager {
             if (s.isDead()) {
                 // キル数カウントアップ
                 GM.setKillCountSinceLastLevelUp(GM.getKillCountSinceLastLevelUp() + 1);
-                if (s.isAllowDropItem())
+                if (s.isAllowDropItem()) {
                     dropItem(s); // アイテムドロップ
+                    dropResource(s); // リソースドロップ
+                }
                 dropCoin(s); // コインドロップ
                 s.addScore(); // スコア加算
                 s.animation("death"); // 削除
@@ -373,6 +377,18 @@ public final class ShipManager implements Manager {
     }
 
     /**
+     * リソースドロップ
+     * 
+     * @param ship 参照する船
+     */
+    private void dropResource(Ship ship) {
+        Item newItem = ResourceFactory.createResource(DropModel.ENEMY_DEFEAT, new Vector2(ship.getPos()));
+
+        if (newItem != null)
+            IM.addItem(newItem);
+    }
+
+    /**
      * コインドロップ
      * 
      * @param ship 参照する船
@@ -382,7 +398,7 @@ public final class ShipManager implements Manager {
         int dropAmount = ship.getDropCoinAmount() * (ship.getShipLevel() + 1);
 
         for (int i = 0; i < dropAmount; i++) {
-            IM.addItem(ItemFactory.createItem(new Vector2(ship.getPos()), ResourceKinds.COIN));
+            IM.addItem(ResourceFactory.createResource(new Vector2(ship.getPos()), ResourceKinds.COIN));
         }
     }
 
