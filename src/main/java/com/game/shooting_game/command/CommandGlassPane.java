@@ -1109,7 +1109,7 @@ public final class CommandGlassPane extends JPanel {
             LogUtils.systemLog("[INFO]", component, logText);
         });
         // レベル設定
-        register(effect, "setLevel", null, true, (node, args) -> {
+        register(effect, "setlevel", null, true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 1) {
                 logText = node.getUseage();
