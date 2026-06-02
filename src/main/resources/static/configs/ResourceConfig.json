@@ -248,7 +248,7 @@
     }
   },
   "IRON_BAR": {
-    "id": 3,
+    "id": 4,
     "imagePath": "/iron_bar.png",
     "rarity": {
       "COMMON": {

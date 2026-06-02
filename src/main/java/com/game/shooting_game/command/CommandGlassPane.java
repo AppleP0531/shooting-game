@@ -633,7 +633,7 @@ public final class CommandGlassPane extends JPanel {
             return;
         }
 
-        String[] args = text.split(" ");
+        String[] args = text.split(" ", -1);
         CommandNode node = rootCommands.get(args[0]);
 
         // コマンドリストになかった場合
@@ -662,40 +662,6 @@ public final class CommandGlassPane extends JPanel {
                 break;
             }
         }
-    }
-
-    /**
-     * 第一コマンド登録
-     * 
-     * @param root   親要素
-     * @param name   コマンド名
-     * @param desc   説明
-     * @param admin  管理者権限が必要かどうか
-     * @param action 処理
-     * @return コマンドノード
-     */
-    private CommandNode register(Map<String, CommandNode> root, String name, String desc, boolean admin,
-            CommandAction action) {
-        CommandNode node = new CommandNode(null, name, desc, admin, action);
-        root.put(name, node);
-        return node;
-    }
-
-    /**
-     * サブコマンド登録
-     * 
-     * @param root   親要素
-     * @param name   コマンド名
-     * @param desc   説明
-     * @param admin  管理者権限が必要かどうか
-     * @param action 処理
-     * @return コマンドノード
-     */
-    private CommandNode register(CommandNode root, String name, String desc, boolean admin,
-            CommandAction action) {
-        CommandNode node = new CommandNode(root, name, desc, admin, action);
-        root.getSubCommands().put(name, node);
-        return node;
     }
 
     /**
@@ -759,6 +725,40 @@ public final class CommandGlassPane extends JPanel {
     }
 
     /**
+     * 第一コマンド登録
+     * 
+     * @param root   親要素
+     * @param name   コマンド名
+     * @param desc   説明
+     * @param admin  管理者権限が必要かどうか
+     * @param action 処理
+     * @return コマンドノード
+     */
+    private CommandNode register(Map<String, CommandNode> root, String name, String desc, boolean admin,
+            CommandAction action) {
+        CommandNode node = new CommandNode(null, name, desc, admin, action);
+        root.put(name, node);
+        return node;
+    }
+
+    /**
+     * サブコマンド登録
+     * 
+     * @param root   親要素
+     * @param name   コマンド名
+     * @param desc   説明
+     * @param admin  管理者権限が必要かどうか
+     * @param action 処理
+     * @return コマンドノード
+     */
+    private CommandNode register(CommandNode root, String name, String desc, boolean admin,
+            CommandAction action) {
+        CommandNode node = new CommandNode(root, name, desc, admin, action);
+        root.getSubCommands().put(name, node);
+        return node;
+    }
+
+    /**
      * 現在のシーンで利用できるかどうかのチェック
      * 
      * @param allowedTypes シーンタイプ
@@ -774,6 +774,31 @@ public final class CommandGlassPane extends JPanel {
         logHistoryData.addElement(logText);
         LogUtils.debugLog(logText);
         return false;
+    }
+
+    /**
+     * {}の中身の要素を切り分けてマップにして返す
+     * <p>
+     * 例: {key1=value1,key2=value2} → (key1,value1),(key2,value2)
+     * 
+     * @param arg 文字列
+     * @return 切り分けたもの
+     */
+    private Map<String, String> parseKeyValuePair(String arg) {
+        Map<String, String> keyValuePair = new HashMap<>();
+
+        // 最初と最後のかっこを外す
+        arg = arg.substring(1, arg.length() - 1);
+        String[] parts = arg.split(",", -1);
+        for (String part : parts) {
+            String[] pair = part.split("=", -1);
+            String key = pair[0];
+            String value = pair[1];
+
+            keyValuePair.put(key, value);
+        }
+
+        return keyValuePair;
     }
 
     /**
@@ -1208,17 +1233,21 @@ public final class CommandGlassPane extends JPanel {
                 int openBraceIdx = args[0].indexOf("{");
                 int closeBraceIdx = args[0].indexOf("}");
 
-                String nameStr = args[0];
+                String nameStr = args[0].substring(0, openBraceIdx);
                 Rarity rarity = Rarity.COMMON; // デフォルトはコモン
-                if (openBraceIdx != -1 && closeBraceIdx != -1 && openBraceIdx < closeBraceIdx) {
-                    // {の前を切り出す
-                    nameStr = args[0].substring(0, openBraceIdx);
-
-                    // {}の中身を取り出す
-                    String contentInside = args[0].substring(openBraceIdx + 1, closeBraceIdx);
-
-                    if (contentInside.startsWith("rarity=")) {
-                        rarity = Rarity.valueOf(contentInside.substring(7).toUpperCase());
+                Map<String, String> parseKVP = parseKeyValuePair(args[0].substring(openBraceIdx, closeBraceIdx + 1));
+                for (Map.Entry<String, String> entry : parseKVP.entrySet()) {
+                    switch (entry.getKey()) {
+                        case "rarity" -> {
+                            rarity = Rarity.valueOf(entry.getValue().toUpperCase());
+                        }
+                        default -> {
+                            // KVPが不適切な場合
+                            logText = node.getUseage();
+                            logHistoryData.addElement(logText);
+                            LogUtils.debugLog(logText);
+                            return;
+                        }
                     }
                 }
 

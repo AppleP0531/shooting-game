@@ -1,6 +1,8 @@
 package com.game.shooting_game.gameScene.item;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -40,10 +42,12 @@ public class ResourceFactory {
         if (rarity == null)
             return null;
 
-        ResourceName[] resNames = ResourceName.values();
+        List<ResourceName> filteredNames = Arrays.stream(ResourceName.values())
+                .filter(name -> name != ResourceName.COIN)
+                .toList();
         Random random = new Random();
-        int randomIndex = random.nextInt(resNames.length);
-        ResourceName resName = resNames[randomIndex];
+        int randomIndex = random.nextInt(filteredNames.size());
+        ResourceName resName = filteredNames.get(randomIndex);
 
         return new Resource(new ResourceKinds(resName, rarity), pos);
     }
