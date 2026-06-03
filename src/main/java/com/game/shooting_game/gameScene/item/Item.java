@@ -22,7 +22,9 @@ import com.game.shooting_game.interfaces.Collectible;
 import com.game.shooting_game.interfaces.Entity;
 import com.game.shooting_game.interfaces.GameObject;
 import com.game.shooting_game.interfaces.Moveable;
+import com.game.shooting_game.utils.Anchor;
 import com.game.shooting_game.utils.GameUtils;
+import com.game.shooting_game.utils.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 import com.game.shooting_game.utils.animation.Animation;
 import com.game.shooting_game.utils.animation.AnimationManager;
@@ -101,12 +103,7 @@ public abstract class Item implements Moveable, GameObject, Entity {
         // 画像が存在するときは読み込む
         if (animationId != null) {
             BufferedImage image = AM.getCurrentImage(animationId);
-            g.drawImage(
-                    image,
-                    (int) pos.getX() - image.getWidth() / 2,
-                    (int) pos.getY() - image.getHeight() / 2,
-                    image.getWidth(), image.getHeight(),
-                    MAIN);
+            UIBuilder.drawImage(g, Anchor.CENTER, pos, image);
         }
     }
 

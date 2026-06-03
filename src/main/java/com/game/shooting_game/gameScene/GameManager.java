@@ -62,7 +62,7 @@ public final class GameManager extends JPanel implements Manager {
         BLUE
     }
 
-    private String animationName = "none"; // アニメーション名
+    private String animationName; // アニメーション名
     private double animateTimer = 0; // アニメーション用タイマー
     private boolean gameover;
     @Setter
@@ -153,7 +153,6 @@ public final class GameManager extends JPanel implements Manager {
         for (Manager m : managers) {
             m.setup();
         }
-        SHIP_M.getPlayer().addHandler();
 
         animation("start");
     }
@@ -161,11 +160,6 @@ public final class GameManager extends JPanel implements Manager {
     @Override
     public void update(double dt) {
         if (!pause) {
-            // 各マネージャーのアップデート
-            for (Manager m : managers) {
-                m.update(dt);
-            }
-
             switch (animationName) {
                 case "start" -> {
                     SHIP_M.getPlayer().animation("admission");
@@ -195,6 +189,11 @@ public final class GameManager extends JPanel implements Manager {
                 case "finish" -> {
 
                 }
+            }
+
+            // 各マネージャーのアップデート
+            for (Manager m : managers) {
+                m.update(dt);
             }
         }
     }
