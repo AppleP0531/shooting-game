@@ -128,7 +128,7 @@ package "shooting_game" {
             - register(root: Map<String,CommandNode>, name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
             - register(root: CommandNode, name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
             - isSceneValid(allowedTypes: SceneType...): boolean
-            - parseKeyValuePair(arg: String): Map<String, String>
+            - parseNamedBinaryTag(arg: String): Map<String, String>
             - registCommands(): void
             - showHelp(): void
             - reload(): void

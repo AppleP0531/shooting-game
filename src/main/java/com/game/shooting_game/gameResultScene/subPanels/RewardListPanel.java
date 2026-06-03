@@ -52,6 +52,7 @@ public class RewardListPanel extends JPanel {
 
         addMouseWheelListener(e -> {
             scrollOffset = Math.clamp(scrollOffset - e.getPreciseWheelRotation() * 20, 0, maxScrollOffset);
+            repaint();
         });
     }
 
@@ -63,7 +64,8 @@ public class RewardListPanel extends JPanel {
         int rows = rewards.getResources().size() / col;
         // スクロール制限
         maxScrollOffset = Math.max(0,
-                rows * (100 * ShootingGameMain.getScreenSizeAdj() + 10 * ShootingGameMain.getScreenSizeAdj())
+                20 * ShootingGameMain.getScreenSizeAdj() +
+                        rows * (100 * ShootingGameMain.getScreenSizeAdj() + 10 * ShootingGameMain.getScreenSizeAdj())
                         - panelSize.getY());
 
         for (ResourceKinds resKind : rewards.getResources().keySet()) {
@@ -96,10 +98,12 @@ public class RewardListPanel extends JPanel {
      * @param g
      */
     public void drawPanel(Graphics g) {
-        // 基準点の設定
+        g.setClip(getX(), getY(), getWidth(), getHeight());
+
+        // 基準点
         originPos = new Vector2(
                 10 * ShootingGameMain.getScreenSizeAdj(),
-                10 * ShootingGameMain.getScreenSizeAdj() - scrollOffset);
+                10 * ShootingGameMain.getScreenSizeAdj() + scrollOffset);
 
         StageRewards rewards = StageRewards.getInstance();
 
@@ -123,5 +127,7 @@ public class RewardListPanel extends JPanel {
 
             index++;
         }
+
+        g.setClip(null);
     }
 }

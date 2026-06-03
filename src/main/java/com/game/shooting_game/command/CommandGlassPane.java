@@ -610,8 +610,11 @@ public final class CommandGlassPane extends JPanel {
         if (!commandField.getText().isEmpty()) {
             processCommand(commandField.getText());
 
-            // 履歴に追加
-            inputHistoryData.addElement(commandField.getText());
+            // ひとつ前のコマンドと内容が違ければ履歴に追加
+            if (inputHistoryData.getElements().isEmpty()
+                    || !inputHistoryData.getElements().getLast().equals(commandField.getText()))
+
+                inputHistoryData.addElement(commandField.getText());
         }
 
         // リセット
@@ -779,26 +782,24 @@ public final class CommandGlassPane extends JPanel {
     /**
      * {}の中身の要素を切り分けてマップにして返す
      * <p>
-     * 例: {key1=value1,key2=value2} → (key1,value1),(key2,value2)
+     * 例: key1=value1,key2=value2 → (key1,value1),(key2,value2)
      * 
-     * @param arg 文字列
+     * @param arg {}の中身
      * @return 切り分けたもの
      */
-    private Map<String, String> parseKeyValuePair(String arg) {
-        Map<String, String> keyValuePair = new HashMap<>();
+    private Map<String, String> parseNamedBinaryTag(String arg) {
+        Map<String, String> NBT = new HashMap<>();
 
-        // 最初と最後のかっこを外す
-        arg = arg.substring(1, arg.length() - 1);
         String[] parts = arg.split(",", -1);
         for (String part : parts) {
             String[] pair = part.split("=", -1);
             String key = pair[0];
             String value = pair[1];
 
-            keyValuePair.put(key, value);
+            NBT.put(key, value);
         }
 
-        return keyValuePair;
+        return NBT;
     }
 
     /**
@@ -1229,24 +1230,28 @@ public final class CommandGlassPane extends JPanel {
             }
 
             try {
+                String nameStr = args[0];
+                Rarity rarity = Rarity.COMMON; // デフォルトはコモン
+
                 // 指定値の設定
                 int openBraceIdx = args[0].indexOf("{");
                 int closeBraceIdx = args[0].indexOf("}");
+                if (openBraceIdx != -1 && closeBraceIdx != -1 && openBraceIdx < closeBraceIdx) {
+                    nameStr = args[0].substring(0, openBraceIdx);
 
-                String nameStr = args[0].substring(0, openBraceIdx);
-                Rarity rarity = Rarity.COMMON; // デフォルトはコモン
-                Map<String, String> parseKVP = parseKeyValuePair(args[0].substring(openBraceIdx, closeBraceIdx + 1));
-                for (Map.Entry<String, String> entry : parseKVP.entrySet()) {
-                    switch (entry.getKey()) {
-                        case "rarity" -> {
-                            rarity = Rarity.valueOf(entry.getValue().toUpperCase());
-                        }
-                        default -> {
-                            // KVPが不適切な場合
-                            logText = node.getUseage();
-                            logHistoryData.addElement(logText);
-                            LogUtils.debugLog(logText);
-                            return;
+                    Map<String, String> NBT = parseNamedBinaryTag(args[0].substring(openBraceIdx + 1, closeBraceIdx));
+                    for (Map.Entry<String, String> entry : NBT.entrySet()) {
+                        switch (entry.getKey()) {
+                            case "rarity" -> {
+                                rarity = Rarity.valueOf(entry.getValue().toUpperCase());
+                            }
+                            default -> {
+                                // NBTが不適切な場合
+                                logText = node.getUseage();
+                                logHistoryData.addElement(logText);
+                                LogUtils.debugLog(logText);
+                                return;
+                            }
                         }
                     }
                 }

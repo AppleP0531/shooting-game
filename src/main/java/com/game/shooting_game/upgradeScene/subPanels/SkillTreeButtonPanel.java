@@ -119,7 +119,7 @@ public class SkillTreeButtonPanel extends JPanel {
         Graphics2D g2 = (Graphics2D) g;
         Vector2 panelPos = new Vector2(this.getX(), this.getY());
 
-        g2.setClip((int) panelPos.getX(), (int) panelPos.getY(), getWidth(), getHeight());
+        g2.setClip(getX(), getY(), getWidth(), getHeight());
         g2.setColor(Color.CYAN);
         g2.setStroke(new BasicStroke(2));
 

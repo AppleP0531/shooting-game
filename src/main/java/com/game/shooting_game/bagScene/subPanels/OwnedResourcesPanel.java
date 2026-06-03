@@ -51,7 +51,8 @@ public class OwnedResourcesPanel extends JPanel {
                 (int) panelSize.getX(), (int) panelSize.getY());
 
         addMouseWheelListener(e -> {
-            scrollOffset = Math.clamp(scrollOffset - e.getPreciseWheelRotation() * 20, 0, maxScrollOffset);
+            scrollOffset = Math.clamp(scrollOffset - e.getPreciseWheelRotation() * 20, -maxScrollOffset, 0);
+            repaint();
         });
     }
 
@@ -60,11 +61,13 @@ public class OwnedResourcesPanel extends JPanel {
      */
     public void setup() {
         Map<ResourceKinds, Integer> resources = BagManager.getInstance().getEquipments();
-        int rows = resources.size() / col;
+        int rows = (resources.size() + col - 1) / col;
         // スクロール制限
         maxScrollOffset = Math.max(0,
-                rows * (100 * ShootingGameMain.getScreenSizeAdj() + 10 * ShootingGameMain.getScreenSizeAdj())
+                20 * ShootingGameMain.getScreenSizeAdj() +
+                        rows * (100 * ShootingGameMain.getScreenSizeAdj() + 10 * ShootingGameMain.getScreenSizeAdj())
                         - panelSize.getY());
+        System.out.println(rows + " " + maxScrollOffset);
 
         for (ResourceKinds resKind : resources.keySet()) {
             // コインは描画しない
@@ -100,10 +103,12 @@ public class OwnedResourcesPanel extends JPanel {
      * @param g
      */
     public void drawPanel(Graphics g) {
+        g.setClip(getX(), getY(), getWidth(), getHeight());
+
         // 基準点
         originPos = new Vector2(
                 50 * ShootingGameMain.getScreenSizeAdj(),
-                50 * ShootingGameMain.getScreenSizeAdj());
+                50 * ShootingGameMain.getScreenSizeAdj() + scrollOffset);
 
         int index = 0;
         // 並べ替えて表示
@@ -131,5 +136,7 @@ public class OwnedResourcesPanel extends JPanel {
 
             index++;
         }
+
+        g.setClip(null);
     }
 }

@@ -36,6 +36,7 @@ import com.game.shooting_game.gameScene.item.ResourceFactory;
 import com.game.shooting_game.gameScene.item.ResourceFactory.DropModel;
 import com.game.shooting_game.gameScene.ship.types.Player;
 import com.game.shooting_game.interfaces.Manager;
+import com.game.shooting_game.model.StageRewards;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.LogUtils;
@@ -384,8 +385,14 @@ public final class ShipManager implements Manager {
     private void dropResource(Ship ship) {
         Item newItem = ResourceFactory.createResource(DropModel.ENEMY_DEFEAT, new Vector2(ship.getPos()));
 
-        if (newItem != null)
+        if (newItem != null && newItem.getKind() instanceof ResourceKinds resKind) {
             IM.addItem(newItem);
+
+            StageRewards SR = StageRewards.getInstance();
+
+            int ownedAmount = SR.getResources().getOrDefault(resKind, 0);
+            SR.getResources().put(resKind, ownedAmount + 1);
+        }
     }
 
     /**
