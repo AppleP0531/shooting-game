@@ -67,8 +67,6 @@ public class SubShip extends Ship {
 
     @Override
     public void update(double dt) {
-        super.update(dt);
-
         switch (player.getAnimationName()) {
             case "none" -> {
                 // 弾
