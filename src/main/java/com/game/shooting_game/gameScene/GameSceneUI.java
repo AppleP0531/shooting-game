@@ -25,6 +25,8 @@ public class GameSceneUI {
     private final ResourceManager RM;
     private final ItemManager IM;
 
+    private BufferedImage cachedCoinImage = null;
+
     public record GameSceneUIData(
             String animationName,
             double animateTimer,
@@ -37,6 +39,13 @@ public class GameSceneUI {
         MAIN = ShootingGameMain.getInstance();
         RM = ResourceManager.getInstance();
         IM = ItemManager.getInstance();
+
+        double iconSize = 20 * ShootingGameMain.getScreenSizeAdj();
+        ResourceKinds resKind = ResourceKinds.COIN;
+        BufferedImage originImage = RM.getResourceImage()
+                .get(resKind.getResName())
+                .get(resKind.getRarity())[0];
+        cachedCoinImage = UIBuilder.resizeImage(originImage, iconSize); // 画像のリサイズ
     }
 
     /**
@@ -133,12 +142,10 @@ public class GameSceneUI {
             // 透明度の変更
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
             // 画像の描画
-            g.drawImage(
-                    image,
-                    (int) pos.getX() - (int) iconSize / 2,
-                    (int) pos.getY() + ind * (int) distance - (int) iconSize / 2,
-                    image.getWidth(), (int) image.getHeight(),
-                    null);
+            Vector2 imagePos = new Vector2(
+                    pos.getX(),
+                    pos.getY() + ind * (int) distance);
+            UIBuilder.drawImage(g2, Anchor.CENTER, imagePos, image);
         } catch (Exception e) {
             switch (effectName) {
                 case "OOC" -> g.setColor(new Color(1, 1, 0, alpha));
@@ -168,52 +175,36 @@ public class GameSceneUI {
      * @param coin コイン
      */
     private void drawCoin(Graphics g, int coin) {
-        BufferedImage originImage = null;
+        Vector2 pos = new Vector2(
+                30 * ShootingGameMain.getScreenSizeAdj(),
+                15 * ShootingGameMain.getScreenSizeAdj());
 
-        try {
-            double iconSize = 20 * ShootingGameMain.getScreenSizeAdj();
-            Vector2 pos = new Vector2(
-                    5 * ShootingGameMain.getScreenSizeAdj() + iconSize / 2,
-                    9 * ShootingGameMain.getScreenSizeAdj() + iconSize / 2);
-
-            ResourceKinds resKind = ResourceKinds.COIN;
-            originImage = RM.getResourceImage()
-                    .get(resKind.getResName())
-                    .get(resKind.getRarity())[0];
-            BufferedImage image = UIBuilder.resizeImage(originImage, iconSize); // 画像のリサイズ
-
-            g.drawImage( // 画像の描画
-                    image,
-                    (int) pos.getX() - (int) iconSize / 2,
-                    (int) pos.getY() - (int) iconSize / 2,
-                    image.getWidth(), (int) image.getHeight(),
-                    MAIN);
-        } catch (Exception e) { // 画像の読み込みに失敗した場合の処理
+        // 画像があれば描画
+        if (cachedCoinImage != null) {
+            UIBuilder.drawImage(g, new Anchor(H.RIGHT, V.CENTER), pos, cachedCoinImage);
+        } else {
             double iconSize = 8 * ShootingGameMain.getScreenSizeAdj();
-            Vector2 pos = new Vector2(
+            Vector2 iconPos = new Vector2(
                     10 * ShootingGameMain.getScreenSizeAdj() + iconSize / 2,
                     10 * ShootingGameMain.getScreenSizeAdj() + iconSize / 2);
 
             g.setColor(Color.YELLOW);
             g.fillPolygon(new int[] {
-                    (int) pos.getX() + (int) iconSize / 2,
-                    (int) pos.getX(),
-                    (int) pos.getX() - (int) iconSize / 2,
-                    (int) pos.getX()
+                    (int) iconPos.getX() + (int) iconSize / 2,
+                    (int) iconPos.getX(),
+                    (int) iconPos.getX() - (int) iconSize / 2,
+                    (int) iconPos.getX()
             }, new int[] {
-                    (int) pos.getY(),
-                    (int) pos.getY() + (int) iconSize,
-                    (int) pos.getY(),
-                    (int) pos.getY() - (int) iconSize
+                    (int) iconPos.getY(),
+                    (int) iconPos.getY() + (int) iconSize,
+                    (int) iconPos.getY(),
+                    (int) iconPos.getY() - (int) iconSize
             }, 4);
         }
 
         String text = String.valueOf(coin);
-        Vector2 pos = new Vector2(
-                (int) (30 * ShootingGameMain.getScreenSizeAdj()),
-                0);
         int size = (int) (20 * ShootingGameMain.getScreenSizeAdj());
-        UIBuilder.drawString(g, new Anchor(H.LEFT, V.TOP), pos, size, Color.WHITE, Font.BOLD, text);
+        UIBuilder.drawString(g, new Anchor(H.LEFT, V.CENTER), pos, size, Color.WHITE, Font.BOLD, text);
     }
 
     /**
@@ -226,9 +217,9 @@ public class GameSceneUI {
         String text = "Score: " + score;
         Vector2 pos = new Vector2(
                 MAIN.getWidth() - (int) (100 * ShootingGameMain.getScreenSizeAdj()),
-                0);
+                15 * ShootingGameMain.getScreenSizeAdj());
         int size = (int) (20 * ShootingGameMain.getScreenSizeAdj());
-        UIBuilder.drawString(g, new Anchor(H.RIGHT, V.TOP), pos, size, Color.WHITE, Font.BOLD, text);
+        UIBuilder.drawString(g, new Anchor(H.RIGHT, V.CENTER), pos, size, Color.WHITE, Font.BOLD, text);
     }
 
 }

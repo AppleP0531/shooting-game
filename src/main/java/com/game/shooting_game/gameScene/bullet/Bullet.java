@@ -19,6 +19,7 @@ import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.interfaces.Entity;
 import com.game.shooting_game.interfaces.GameObject;
 import com.game.shooting_game.interfaces.Moveable;
+import com.game.shooting_game.utils.Anchor;
 import com.game.shooting_game.utils.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 import com.game.shooting_game.utils.animation.Animation;
@@ -108,10 +109,7 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
             g2.translate((int) drawPos.getX(), (int) drawPos.getY());
             g2.rotate(vec + Math.PI / 2);
             // 描画処理
-            g.drawImage(image,
-                    -image.getWidth() / 2, -image.getHeight() / 2,
-                    image.getWidth(), image.getHeight(),
-                    MAIN);
+            UIBuilder.drawImage(g2, Anchor.CENTER, new Vector2(0, 0), image);
         }
         g2.setTransform(oldTransform);
         // 透明度を1に戻す
