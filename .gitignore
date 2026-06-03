@@ -4,6 +4,9 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# Spring Boot configuration
+src/main/resources/application.properties
+
 ### STS ###
 .apt_generated
 .classpath
@@ -36,7 +39,6 @@ build/
 mysql_data/
 
 ### Others ###
-to_do_list.txt
 sampleImages/
 .VSCodeCounter/
 out/
