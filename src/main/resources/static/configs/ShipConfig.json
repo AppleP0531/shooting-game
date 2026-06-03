@@ -1,13 +1,5 @@
 {
   "OBJECT": {
-    "collision": {
-      "datas": {
-        "imagePath": "/player/collision.png",
-        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
-        "frameRate": 0.1,
-        "imageSize": 5
-      }
-    },
     "shield": {
       "datas": {
         "imagePath": "/player/shield.png",
@@ -36,7 +28,7 @@
         ],
         "frameRate": 0.1,
         "imageSize": 30,
-        "collisionSize": 3,
+        "collisionSize": 40,
         "speed": 250
       },
       "Lv0": [
@@ -125,7 +117,7 @@
         ],
         "frameRate": 0.1,
         "imageSize": 30,
-        "collisionSize": 3,
+        "collisionSize": 40,
         "speed": 250
       },
       "Lv0": [
@@ -214,7 +206,7 @@
         ],
         "frameRate": 0.1,
         "imageSize": 30,
-        "collisionSize": 3,
+        "collisionSize": 40,
         "speed": 250
       },
       "Lv0": [
@@ -303,7 +295,7 @@
         ],
         "frameRate": 0.1,
         "imageSize": 30,
-        "collisionSize": 3,
+        "collisionSize": 40,
         "speed": 250
       },
       "Lv0": [
@@ -435,7 +427,7 @@
         ],
         "frameRate": 0.1,
         "imageSize": 80,
-        "collisionSize": 3,
+        "collisionSize": 40,
         "speed": 250
       },
       "Lv0": [

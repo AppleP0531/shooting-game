@@ -14,8 +14,10 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
+import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
+import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.ship.Ship;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipDefinition;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
@@ -34,12 +36,9 @@ public class Player extends Ship implements KeyListener {
     private Vector2 dragStartPlayerPos; // ドラッグ開始時のプレイヤー位置
     private Vector2 dragMousePos; // ドラッグ中のマウス位置
     @Getter
-    private boolean autoFire = true; // 自動射撃モード
-    @Getter
-    private boolean up = false, down = false, left = false, right = false, space = false; // キー入力
+    private boolean up = false, down = false, left = false, right = false; // キー入力
     private String lastHorizontal = ""; // 最後に押された左右
     private String lastVertical = ""; // 最後に押された上下
-
     private List<SubShip> subShip = new ArrayList<>();
     private double OOCTime = 10; // 暴走状態持続時間
     @Setter
@@ -47,25 +46,22 @@ public class Player extends Ship implements KeyListener {
     private double OOCTimer; // 暴走状態タイマー
     @Getter
     private double damagedTimer; // 被弾時の無敵タイマー
-    private double defaultCollisionSize; // デフォルトの当たり判定の大きさ
     private double breakawaySpeed; // 離脱速度
 
-    public Player(String id, Vector2 pos) {
-        super(ShipKinds.PLAYER, id, 0, pos);
+    public Player(String id, ColorMode mode, Vector2 pos) {
+        super(ShipKinds.PLAYER, id, mode, 0, pos);
 
         // 画像の読み込みとアニメーション登録
         ShipDefinition def = SHIP_M.getShipConfig().get(owner).get(shipId);
-        BufferedImage[] collisionImages = SHIP_M.getShipImage().get("collision");
-        if (collisionImages != null) {
+        BufferedImage[] shieldImages_blue = SHIP_M.getShipImage().get("shield_blue");
+        if (shieldImages_blue != null) {
             double frameRate = def.getDatas().getFrameRate();
-            animationId.put("collision", AM.addAnimation(new Animation(collisionImages, frameRate)));
-
-            AM.addAnimation(new Animation(collisionImages, frameRate));
+            animationId.put("shield_blue", AM.addAnimation(new Animation(shieldImages_blue, frameRate)));
         }
-        BufferedImage[] shieldImages = SHIP_M.getShipImage().get("shield");
-        if (shieldImages != null) {
+        BufferedImage[] shieldImages_red = SHIP_M.getShipImage().get("shield_red");
+        if (shieldImages_red != null) {
             double frameRate = def.getDatas().getFrameRate();
-            animationId.put("shield", AM.addAnimation(new Animation(shieldImages, frameRate)));
+            animationId.put("shield_red", AM.addAnimation(new Animation(shieldImages_red, frameRate)));
         }
         BufferedImage[] explosionImages = SHIP_M.getShipImage().get("explosion");
         if (explosionImages != null) {
@@ -96,11 +92,10 @@ public class Player extends Ship implements KeyListener {
             }
         } else {
             // データがなかった時用のデフォルト値
-            collisionSize = 3 * ShootingGameMain.getScreenSizeAdj();
+            collisionSize = 80 * ShootingGameMain.getScreenSizeAdj();
             speed = 250 * ShootingGameMain.getScreenSizeAdj();
         }
 
-        defaultCollisionSize = collisionSize;
         rotate = 0;
 
         mouseHandler = new MouseAdapter() {
@@ -121,6 +116,7 @@ public class Player extends Ship implements KeyListener {
                 dragMousePos = new Vector2(e.getX(), e.getY());
             }
         };
+        mode = ColorMode.BLUE;
 
         // 船タイプログ
         LogUtils.systemLog(
@@ -133,8 +129,10 @@ public class Player extends Ship implements KeyListener {
         double shipDist = 40 * ShootingGameMain.getScreenSizeAdj();
         double yDiff = 5 * ShootingGameMain.getScreenSizeAdj();
         if (subShipId != null) {
-            subShip.add(new SubShip(this, subShipId + "_L", new Vector2(pos.getX() - shipDist, pos.getY() + yDiff)));
-            subShip.add(new SubShip(this, subShipId + "_R", new Vector2(pos.getX() + shipDist, pos.getY() + yDiff)));
+            subShip.add(
+                    new SubShip(this, subShipId + "_L", mode, new Vector2(pos.getX() - shipDist, pos.getY() + yDiff)));
+            subShip.add(
+                    new SubShip(this, subShipId + "_R", mode, new Vector2(pos.getX() + shipDist, pos.getY() + yDiff)));
         }
     }
 
@@ -145,8 +143,7 @@ public class Player extends Ship implements KeyListener {
         switch (animationName) {
             case "none" -> {
                 // 弾
-                if (autoFire || space)
-                    addNewBullet(shipLevel, shipId, shipState);
+                addNewBullet(shipLevel, shipId, shipState);
 
                 // 船がレベル5の時は暴走モードにする
                 if (shipLevel >= 5) {
@@ -160,9 +157,6 @@ public class Player extends Ship implements KeyListener {
 
                 // 被弾無敵時間処理(タイマーが0になるまで減らす)
                 damagedTimer = Math.max(0, damagedTimer - dt);
-                BufferedImage shieldImage = AM.getCurrentImage(animationId.get("shield"));
-                collisionSize = (shieldTimer > 0 && damagedTimer == 0) ? shieldImage.getWidth() / 2
-                        : defaultCollisionSize;
             }
         }
 
@@ -179,7 +173,7 @@ public class Player extends Ship implements KeyListener {
         // 船
         if (animationId.get("ship") == null) {
             g2.rotate(rotate, pos.getX(), pos.getY());
-            g2.setColor(new Color(0, 1, 1, alpha));
+            g2.setColor(new Color(0, 1, 0, alpha));
             g.fillPolygon(
                     new int[] {
                             (int) pos.getX(),
@@ -196,28 +190,29 @@ public class Player extends Ship implements KeyListener {
             g2.rotate(-rotate, pos.getX(), pos.getY());
         }
 
-        // 当たり判定画像の描画(存在するとき)
-        if (animationId.get("collision") != null) {
-            BufferedImage image = AM.getCurrentImage(animationId.get("collision"));
+        // ロビー以外では描画
+        if (SM.getSceneName() != SceneType.LOBBY) {
+            // シールド画像の描画(存在するとき)
+            if (animationId.get("shield_blue") != null && mode == ColorMode.BLUE) {
+                BufferedImage image = AM.getCurrentImage(animationId.get("shield_blue"));
 
-            // 描画処理
-            g2.drawImage(image,
-                    (int) (pos.getX() - image.getWidth() / 2),
-                    (int) (pos.getY() - image.getHeight() / 2),
-                    image.getWidth(), image.getHeight(),
-                    MAIN);
-        }
+                g2.drawImage(
+                        image,
+                        (int) (pos.getX() - image.getWidth() / 2),
+                        (int) (pos.getY() - image.getHeight() / 2),
+                        (int) image.getWidth(), (int) image.getHeight(),
+                        MAIN);
+            }
+            if (animationId.get("shield_red") != null && mode == ColorMode.RED) {
+                BufferedImage image = AM.getCurrentImage(animationId.get("shield_red"));
 
-        // シールド画像の描画(存在するとき)
-        if (animationId.get("shield") != null && shieldTimer > 0 && damagedTimer == 0) {
-            BufferedImage image = AM.getCurrentImage(animationId.get("shield"));
-
-            g2.drawImage(
-                    image,
-                    (int) (pos.getX() - image.getWidth() / 2),
-                    (int) (pos.getY() - image.getHeight() / 2),
-                    (int) image.getWidth(), (int) image.getHeight(),
-                    MAIN);
+                g2.drawImage(
+                        image,
+                        (int) (pos.getX() - image.getWidth() / 2),
+                        (int) (pos.getY() - image.getHeight() / 2),
+                        (int) image.getWidth(), (int) image.getHeight(),
+                        MAIN);
+            }
         }
 
         switch (animationName) {
@@ -368,12 +363,20 @@ public class Player extends Ship implements KeyListener {
                 right = true;
                 lastHorizontal = "right";
             }
-            case KeyEvent.VK_SPACE -> space = true;
+            case KeyEvent.VK_SPACE -> {
+                // モード切替
+                if (mode == ColorMode.BLUE) {
+                    mode = ColorMode.RED;
+                } else {
+                    mode = ColorMode.BLUE;
+                }
+            }
         }
     }
 
     @Override
     public void keyTyped(KeyEvent e) {
+
     }
 
     @Override
@@ -401,7 +404,6 @@ public class Player extends Ship implements KeyListener {
                 if (left)
                     lastHorizontal = "left";
             }
-            case KeyEvent.VK_SPACE -> space = false;
         }
     }
 

@@ -13,6 +13,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -23,7 +25,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import com.game.shooting_game.ResourceManager.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.utils.Anchor.H;
@@ -291,14 +292,20 @@ public class UIBuilder extends JPanel {
         g.drawString(text, x, y);
     }
 
+    @FunctionalInterface
+    public interface CloseButtonAction {
+        void onClick();
+    }
+
     /**
      * パネル (タイトル表示のために上部分に25px相当のパネルが張り付けられます)
      * 
-     * @param p     パネル
-     * @param title タイトル
-     * @param focus フォーカスの有無
+     * @param p           パネル
+     * @param title       タイトル
+     * @param focus       フォーカスの有無
+     * @param closeAction クローズボタンのアクション
      */
-    public static void openPanel(JPanel p, String title, Boolean focus) {
+    public static void openPanel(JPanel p, String title, Boolean focus, CloseButtonAction closeAction) {
         p.setLayout(null);
         p.setBackground(new Color(0, 0, 0, 220));
         p.setBorder(BorderFactory.createLineBorder(Color.CYAN, 2));
@@ -382,7 +389,11 @@ public class UIBuilder extends JPanel {
             closePanelButton = UIBuilder.createImageButton("[UIBuilder]", closePanelButtonImagePath,
                     closePanelButtonSize, "X");
             closePanelButton.addActionListener(e -> {
-                UIBuilder.closePanel(p);
+                // クローズアクションが指定されていればそれを実行、指定されていなければパネルを閉じる
+                if (closeAction != null)
+                    closeAction.onClick();
+                else
+                    UIBuilder.closePanel(p);
             });
 
             closePanelButton.setName("closeBtn");
@@ -460,16 +471,46 @@ public class UIBuilder extends JPanel {
     }
 
     /**
+     * 与えられたリソースリストをEnumの定義順に並べ替える
+     * 
+     * @param resources 元のリスト
+     * @return 並べ替え後のリスト
+     */
+    public static LinkedHashMap<ResourceKinds, Integer> sortItemList(Map<ResourceKinds, Integer> resources) {
+        LinkedHashMap<ResourceKinds, Integer> sortedMap = new LinkedHashMap<>();
+        resources.entrySet().stream()
+                .sorted((entry1, entry2) -> {
+                    // 内部のEnumを取り出して比較する
+                    ResourceKinds.ResourceName name1 = entry1.getKey().getResName();
+                    ResourceKinds.ResourceName name2 = entry2.getKey().getResName();
+
+                    // アイテム名で比較
+                    int nameCompare = Integer.compare(name1.ordinal(), name2.ordinal());
+                    if (nameCompare != 0) {
+                        return nameCompare;
+                    }
+
+                    // レアリティで比較
+                    ResourceKinds.Rarity rarity1 = entry1.getKey().getRarity();
+                    ResourceKinds.Rarity rarity2 = entry2.getKey().getRarity();
+                    return Integer.compare(rarity1.ordinal(), rarity2.ordinal());
+                })
+                .forEachOrdered(entry -> sortedMap.put(entry.getKey(), entry.getValue()));
+
+        return sortedMap;
+    }
+
+    /**
      * 所有資源の各々の項目の描画
      * 
      * @param g
-     * @param pos    位置
-     * @param image  画像
-     * @param name   名前
-     * @param amount 個数
+     * @param pos     位置
+     * @param image   画像
+     * @param resKind 名前
+     * @param amount  個数
      */
     public static void drawEquipmentsIcon(Component c, Graphics g, Vector2 pos, Vector2 size, String uuid,
-            ResourceKinds name, Rarity rartiy, int amount) {
+            ResourceKinds resKind, int amount) {
         Graphics2D g2 = (Graphics2D) g;
 
         // コンポーネント座標をウィンドウ座標に変換
@@ -487,7 +528,7 @@ public class UIBuilder extends JPanel {
         if (image != null) {
             AffineTransform oldTransform = g2.getTransform();
             g2.translate((int) pos.getX(), (int) pos.getY());
-            image = resizeImage(image, size.getX());
+            image = resizeImage(image, image.getWidth());
             g2.drawImage(image,
                     -image.getWidth() / 2, -image.getHeight() / 2,
                     image.getWidth(), image.getHeight(),
@@ -514,7 +555,7 @@ public class UIBuilder extends JPanel {
                 pos.getX(),
                 pos.getY() + imageSize.getY() / 2 + spacing);
         drawString(g, new Anchor(H.CENTER, V.TOP), resNameTextPos, resNameTextSize, Color.WHITE,
-                Font.PLAIN, name.toString());
+                Font.PLAIN, resKind.getResName().toString());
 
         double amountTextSize = size.getY() / 10;
         Vector2 amountTextPos = new Vector2(

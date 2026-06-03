@@ -11,6 +11,7 @@ import lombok.Getter;
 
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.gameScene.GameManager;
+import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.bullet.BulletManager.BulletConfig;
 import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
 import com.game.shooting_game.gameScene.ship.ShipManager;
@@ -31,6 +32,8 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
     protected final ShipManager SHIP_M;
 
     @Getter
+    protected ColorMode mode; // 色のモード
+    @Getter
     protected Vector2 pos; // 位置
     protected double speed = 0; // 速度
     @Getter
@@ -46,7 +49,7 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
     protected BulletKinds kind; // 弾の種類
     protected String animationId; // アニメーションId
 
-    public Bullet(ShipKinds owner, BulletKinds kind, int id, Vector2 pos, double vec) {
+    public Bullet(ShipKinds owner, BulletKinds kind, int id, ColorMode mode, Vector2 pos, double vec) {
         MAIN = ShootingGameMain.getInstance();
         AM = AnimationManager.getInstance();
         GM = GameManager.getInstance();
@@ -57,14 +60,18 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
         this.pos = pos;
         this.vec = vec;
         this.kind = kind;
+        this.mode = mode;
         BulletConfig bulletConfig = this.BM.getBulletConfig().get(owner).get(kind).get(id);
         this.collisionSize = bulletConfig.getCollisionSize() * ShootingGameMain.getScreenSizeAdj();
         this.speed = bulletConfig.getSpeed() * ShootingGameMain.getScreenSizeAdj();
         this.damage = bulletConfig.getDamage();
 
         // 画像の取得とアニメーション登録
+        String bulletId = id + "_" + mode.toString().toLowerCase();
         BufferedImage[] bulletImages = Optional.ofNullable(BM.getBulletImage())
-                .map(images -> images.get(owner).get(kind).get(id))
+                .map(images -> images.get(owner))
+                .map(o -> o.get(kind))
+                .map(k -> k.get(bulletId))
                 .orElse(null);
         if (bulletImages != null) {
             double frameRate = BM.getBulletConfig().get(owner).get(kind).get(id).getFrameRate();
