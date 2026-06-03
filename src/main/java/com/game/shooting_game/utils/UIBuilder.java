@@ -9,7 +9,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -267,7 +266,7 @@ public class UIBuilder extends JPanel {
     }
 
     /**
-     * 中央ぞろえテキストの描画
+     * テキストの描画
      * 
      * @param g
      * @param anchor 描画の基準点
@@ -287,9 +286,24 @@ public class UIBuilder extends JPanel {
         // 基準点に基づいて配置
         FontMetrics fm = g.getFontMetrics();
         int x = (int) (pos.getX() - fm.stringWidth(text) * anchor.getValue().getX());
-        int y = (int) (pos.getY() + fm.getHeight() * (1 - anchor.getValue().getY()));
+        int y = (int) (pos.getY() + (fm.getAscent() - fm.getHeight() * anchor.getValue().getY()));
 
         g.drawString(text, x, y);
+    }
+
+    /**
+     * 画像の描画
+     * 
+     * @param g
+     * @param anchor 描画の基準点
+     * @param pos    位置
+     * @param image  画像
+     */
+    public static void drawImage(Graphics g, Anchor anchor, Vector2 pos, BufferedImage image) {
+        int x = (int) (pos.getX() - image.getWidth() * anchor.getValue().getX());
+        int y = (int) (pos.getY() - image.getHeight() * anchor.getValue().getY());
+        g.drawImage(image, x, y, image.getWidth(), image.getHeight(),
+                null);
     }
 
     @FunctionalInterface
@@ -526,14 +540,8 @@ public class UIBuilder extends JPanel {
                 size.getX() * 3 / 4,
                 size.getY() * 3 / 4);
         if (image != null) {
-            AffineTransform oldTransform = g2.getTransform();
-            g2.translate((int) pos.getX(), (int) pos.getY());
             image = resizeImage(image, image.getWidth());
-            g2.drawImage(image,
-                    -image.getWidth() / 2, -image.getHeight() / 2,
-                    image.getWidth(), image.getHeight(),
-                    ShootingGameMain.getInstance());
-            g2.setTransform(oldTransform);
+            drawImage(g2, Anchor.CENTER, pos, image);
         } else {
             // 枠の描画
             g2.setColor(new Color(0.5f, 0.5f, 0.5f, 0.5f));
