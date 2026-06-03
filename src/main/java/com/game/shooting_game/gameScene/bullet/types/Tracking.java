@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
+import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.bullet.Bullet;
 import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
 import com.game.shooting_game.gameScene.ship.Ship;
@@ -17,8 +18,8 @@ public class Tracking extends Bullet {
     private Ship target;
     private final double TURNING_SMOOTHNESS = 5.0;
 
-    public Tracking(ShipKinds owner, int id, Vector2 pos, double vec) {
-        super(owner, BulletKinds.TRACKING, id, pos, vec);
+    public Tracking(ShipKinds owner, int id, ColorMode mode, Vector2 pos, double vec) {
+        super(owner, BulletKinds.TRACKING, id, mode, pos, vec);
         target = setTarget();
         lifeTime = 5; // 存在時間5秒
 

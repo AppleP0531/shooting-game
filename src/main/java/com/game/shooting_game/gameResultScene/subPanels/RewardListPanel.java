@@ -3,15 +3,17 @@ package com.game.shooting_game.gameResultScene.subPanels;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.swing.JPanel;
 
 import com.game.shooting_game.ResourceManager;
 import com.game.shooting_game.ResourceManager.ImageType;
-import com.game.shooting_game.ResourceManager.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceData;
 import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
+import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.model.StageRewards;
 import com.game.shooting_game.utils.UIBuilder;
@@ -50,6 +52,7 @@ public class RewardListPanel extends JPanel {
 
         addMouseWheelListener(e -> {
             scrollOffset = Math.clamp(scrollOffset - e.getPreciseWheelRotation() * 20, 0, maxScrollOffset);
+            repaint();
         });
     }
 
@@ -61,18 +64,30 @@ public class RewardListPanel extends JPanel {
         int rows = rewards.getResources().size() / col;
         // スクロール制限
         maxScrollOffset = Math.max(0,
-                rows * (100 * ShootingGameMain.getScreenSizeAdj() + 10 * ShootingGameMain.getScreenSizeAdj())
+                20 * ShootingGameMain.getScreenSizeAdj() +
+                        rows * (100 * ShootingGameMain.getScreenSizeAdj() + 10 * ShootingGameMain.getScreenSizeAdj())
                         - panelSize.getY());
 
-        for (ResourceKinds resName : rewards.getResources().keySet()) {
-            Map<Rarity, BufferedImage[]> resImageData = ResourceManager.getInstance().getResourceView().get(resName);
-            BufferedImage[] imageFrames = resImageData != null ? resImageData.get(Rarity.COMMON) : null;
-            ResourceData resData = RM.getResourceConfig().get(resName).getResData().get(Rarity.COMMON)
+        for (ResourceKinds resKind : rewards.getResources().keySet()) {
+            BufferedImage[] imageFrames = null;
+            // 画像情報の取得
+            Map<ResourceName, Map<Rarity, BufferedImage[]>> viewCache = RM.getResourceView();
+            if (viewCache != null) {
+                ResourceName resName = resKind.getResName();
+                Map<Rarity, BufferedImage[]> rarityMap = viewCache.get(resName);
+                if (rarityMap != null)
+                    imageFrames = rarityMap.get(resKind.getRarity());
+            }
+
+            ResourceData resData = RM.getResourceConfig()
+                    .get(resKind.getResName())
+                    .getResData()
+                    .get(resKind.getRarity())
                     .get(ImageType.VIEW);
 
             if (resData != null) {
                 double frameRate = resData.getFrameRate();
-                animationId.put(resName, AM.addAnimation(new Animation(imageFrames, frameRate)));
+                animationId.put(resKind, AM.addAnimation(new Animation(imageFrames, frameRate)));
             }
         }
     }
@@ -83,15 +98,18 @@ public class RewardListPanel extends JPanel {
      * @param g
      */
     public void drawPanel(Graphics g) {
-        // 基準点の設定
+        g.setClip(getX(), getY(), getWidth(), getHeight());
+
+        // 基準点
         originPos = new Vector2(
                 10 * ShootingGameMain.getScreenSizeAdj(),
-                10 * ShootingGameMain.getScreenSizeAdj() - scrollOffset);
+                10 * ShootingGameMain.getScreenSizeAdj() + scrollOffset);
 
         StageRewards rewards = StageRewards.getInstance();
 
         int index = 0;
-        for (Map.Entry<ResourceKinds, Integer> entry : rewards.getResources().entrySet()) {
+        LinkedHashMap<ResourceKinds, Integer> sortedRewards = UIBuilder.sortItemList(rewards.getResources());
+        for (Map.Entry<ResourceKinds, Integer> entry : sortedRewards.entrySet()) {
             ResourceKinds name = entry.getKey();
             int amount = entry.getValue();
 
@@ -105,9 +123,11 @@ public class RewardListPanel extends JPanel {
             Vector2 pos = new Vector2(
                     originPos.getX() + size.getX() / 2 + (size.getX() + spacing) * posInd.getX(),
                     originPos.getY() + size.getY() / 2 + (size.getY() + spacing) * posInd.getY());
-            UIBuilder.drawEquipmentsIcon(this, g, pos, size, animationId.get(name), name, Rarity.COMMON, amount);
+            UIBuilder.drawEquipmentsIcon(this, g, pos, size, animationId.get(name), name, amount);
 
             index++;
         }
+
+        g.setClip(null);
     }
 }

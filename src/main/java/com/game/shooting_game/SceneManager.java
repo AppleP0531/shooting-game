@@ -150,7 +150,7 @@ public final class SceneManager implements Manager {
      * 
      * @return マネージャー
      */
-    private Manager getCurrentManager() {
+    public Manager getCurrentManager() {
         return (sceneName == null) ? null : scenes.get(sceneName);
     }
 

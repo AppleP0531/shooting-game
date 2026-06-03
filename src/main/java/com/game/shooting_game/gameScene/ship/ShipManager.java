@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -25,13 +26,17 @@ import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.gameScene.GameManager;
+import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
 import com.game.shooting_game.gameScene.item.Item;
 import com.game.shooting_game.gameScene.item.ItemFactory;
 import com.game.shooting_game.gameScene.item.ItemManager;
 import com.game.shooting_game.gameScene.item.ItemManager.ItemKinds;
+import com.game.shooting_game.gameScene.item.ResourceFactory;
+import com.game.shooting_game.gameScene.item.ResourceFactory.DropModel;
 import com.game.shooting_game.gameScene.ship.types.Player;
 import com.game.shooting_game.interfaces.Manager;
+import com.game.shooting_game.model.StageRewards;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.LogUtils;
@@ -91,6 +96,7 @@ public final class ShipManager implements Manager {
         private SheetConfig[] sheets;
         private double frameRate;
         private int imageSize;
+        private ColorMode mode;
         private double collisionSize;
         private double hp;
         private double speed;
@@ -195,7 +201,7 @@ public final class ShipManager implements Manager {
      * 画像読み込み
      */
     private void loadImages() {
-        final String IMAGE_BASE_PATH = "/static/img/ship/";
+        final String IMAGE_BASE_PATH = "/static/img/ship";
 
         shipImageCache = new HashMap<>();
         // ShipKindsの階層でループ
@@ -217,61 +223,70 @@ public final class ShipManager implements Manager {
                     continue;
                 }
 
-                String imagePath = IMAGE_BASE_PATH + data.getImagePath();
-                try {
-                    BufferedImage masterSheet = UIBuilder.loadImage(imagePath);
-                    SheetConfig[] sheets = data.getSheets();
-                    Vector2 grids = new Vector2(1, 0);
-                    int useCount = 0;
-                    grids.setX(sheets[0].getGrids().getX());
-                    for (SheetConfig sheet : sheets) {
-                        grids.setY(grids.getY() + sheet.getGrids().getY());
-                        useCount += sheet.getUseCount();
-                    }
-
-                    // 切り取り
-                    double imageSize = data.getImageSize() * ShootingGameMain.getScreenSizeAdj();
-                    BufferedImage[] cutSheet = UIBuilder.cutSpriteSheet(
-                            masterSheet,
-                            new Vector2(grids.getX(), grids.getY()),
-                            (int) (grids.getX() * grids.getY()),
-                            imageSize);
-
-                    // 必要部分のみを抜き取りフレーム配列に保存
-                    BufferedImage[] frames = new BufferedImage[useCount];
-                    int addedCount = 0;
-                    int adj = 0;
-                    for (int i = 0; i < sheets.length; i++) {
-                        useCount = sheets[i].getUseCount();
-
-                        if (i > 0) {
-                            addedCount += sheets[i - 1].getUseCount();
-                            adj += (int) (sheets[i - 1].getGrids().getY()) * (int) (grids.getX());
+                // ColorModeごとに処理
+                for (ColorMode mode : ColorMode.values()) {
+                    String imagePath = IMAGE_BASE_PATH + data.getImagePath();
+                    try {
+                        String suffix = "";
+                        if (!shipId.equals("explosion") && owner != ShipKinds.PLAYER) {
+                            suffix = "_" + mode.toString().toLowerCase();
+                            imagePath = UIBuilder.createPathWithSuffix(imagePath, suffix);
                         }
 
-                        for (int j = 0; j < useCount; j++) {
-                            frames[addedCount + j] = cutSheet[adj + j];
+                        BufferedImage masterSheet = UIBuilder.loadImage(imagePath);
+                        SheetConfig[] sheets = data.getSheets();
+                        Vector2 grids = new Vector2(1, 0);
+                        int useCount = 0;
+                        grids.setX(sheets[0].getGrids().getX());
+                        for (SheetConfig sheet : sheets) {
+                            grids.setY(grids.getY() + sheet.getGrids().getY());
+                            useCount += sheet.getUseCount();
                         }
-                    }
 
-                    // 画像をキャッシュに保存
-                    shipImageCache.put(shipId, frames);
-                } catch (IOException e) {
-                    switch (e.getMessage()) {
-                        // 画像ファイル未発見ログ
-                        case "FILE_NOT_FOUND" -> LogUtils.systemLog(
-                                "[WARN]",
-                                component,
-                                "File not found: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
+                        // 切り取り
+                        double imageSize = data.getImageSize() * ShootingGameMain.getScreenSizeAdj();
+                        BufferedImage[] cutSheet = UIBuilder.cutSpriteSheet(
+                                masterSheet,
+                                new Vector2(grids.getX(), grids.getY()),
+                                (int) (grids.getX() * grids.getY()),
+                                imageSize);
 
-                        // 画像読み込みエラーログ
-                        case "BROKEN_FILE" -> LogUtils.systemLog(
-                                "[ERROR]",
-                                component,
-                                "Failed to load image: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
+                        // 必要部分のみを抜き取りフレーム配列に保存
+                        BufferedImage[] frames = new BufferedImage[useCount];
+                        int addedCount = 0;
+                        int adj = 0;
+                        for (int i = 0; i < sheets.length; i++) {
+                            useCount = sheets[i].getUseCount();
 
-                        // その他エラーログ
-                        default -> System.out.println(e);
+                            if (i > 0) {
+                                addedCount += sheets[i - 1].getUseCount();
+                                adj += (int) (sheets[i - 1].getGrids().getY()) * (int) (grids.getX());
+                            }
+
+                            for (int j = 0; j < useCount; j++) {
+                                frames[addedCount + j] = cutSheet[adj + j];
+                            }
+                        }
+
+                        // 画像をキャッシュに保存
+                        shipImageCache.put(shipId + suffix, frames);
+                    } catch (IOException e) {
+                        switch (e.getMessage()) {
+                            // 画像ファイル未発見ログ
+                            case "FILE_NOT_FOUND" -> LogUtils.systemLog(
+                                    "[WARN]",
+                                    component,
+                                    "File not found: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
+
+                            // 画像読み込みエラーログ
+                            case "BROKEN_FILE" -> LogUtils.systemLog(
+                                    "[ERROR]",
+                                    component,
+                                    "Failed to load image: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
+
+                            // その他エラーログ
+                            default -> System.out.println(e);
+                        }
                     }
                 }
             }
@@ -283,7 +298,9 @@ public final class ShipManager implements Manager {
         clear("all");
 
         // プレイヤー生成
-        player = new Player(DataManager.getUserData().getSelectedShip(),
+        player = new Player(
+                DataManager.getUserData().getSelectedShip(),
+                ColorMode.BLUE,
                 new Vector2(MAIN.getWidth() / 2, MAIN.getHeight()));
         MAIN.addKeyListener(player);
     }
@@ -323,15 +340,22 @@ public final class ShipManager implements Manager {
         ships.forEach(s -> s.update(dt));
 
         // 死亡処理
-        ships.stream().filter(Ship::isDead).forEach(s -> {
-            // キル数カウントアップ
-            GM.setKillCountSinceLastLevelUp(GM.getKillCountSinceLastLevelUp() + 1);
-            if (s.isAllowDropItem())
-                dropItem(s); // アイテムドロップ
-            dropCoin(s); // コインドロップ
-            s.addScore(); // スコア加算
-            s.animation("death"); // 削除
-        });
+        Iterator<Ship> iterator = ships.iterator();
+        while (iterator.hasNext()) {
+            Ship s = iterator.next();
+            if (s.isDead()) {
+                // キル数カウントアップ
+                GM.setKillCountSinceLastLevelUp(GM.getKillCountSinceLastLevelUp() + 1);
+                if (s.isAllowDropItem()) {
+                    dropItem(s); // アイテムドロップ
+                    dropResource(s); // リソースドロップ
+                }
+                dropCoin(s); // コインドロップ
+                s.addScore(); // スコア加算
+                s.animation("death"); // 削除
+                iterator.remove(); // リストから削除
+            }
+        }
     }
 
     /**
@@ -354,6 +378,24 @@ public final class ShipManager implements Manager {
     }
 
     /**
+     * リソースドロップ
+     * 
+     * @param ship 参照する船
+     */
+    private void dropResource(Ship ship) {
+        Item newItem = ResourceFactory.createResource(DropModel.ENEMY_DEFEAT, new Vector2(ship.getPos()));
+
+        if (newItem != null && newItem.getKind() instanceof ResourceKinds resKind) {
+            IM.addItem(newItem);
+
+            StageRewards SR = StageRewards.getInstance();
+
+            int ownedAmount = SR.getResources().getOrDefault(resKind, 0);
+            SR.getResources().put(resKind, ownedAmount + 1);
+        }
+    }
+
+    /**
      * コインドロップ
      * 
      * @param ship 参照する船
@@ -363,7 +405,7 @@ public final class ShipManager implements Manager {
         int dropAmount = ship.getDropCoinAmount() * (ship.getShipLevel() + 1);
 
         for (int i = 0; i < dropAmount; i++) {
-            IM.addItem(ItemFactory.createItem(new Vector2(ship.getPos()), ResourceKinds.COIN));
+            IM.addItem(ResourceFactory.createResource(new Vector2(ship.getPos()), ResourceKinds.COIN));
         }
     }
 

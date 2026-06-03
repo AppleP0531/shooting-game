@@ -162,6 +162,6 @@ public class LoginPanel extends JPanel {
                 MAIN.getHeight() / 2 - (int) panelSize.getY() / 2,
                 (int) panelSize.getX(), (int) panelSize.getY());
 
-        UIBuilder.openPanel(this, state, true);
+        UIBuilder.openPanel(this, state, true, null);
     }
 }
