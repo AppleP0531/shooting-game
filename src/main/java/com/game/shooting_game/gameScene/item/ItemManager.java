@@ -124,7 +124,7 @@ public final class ItemManager implements Manager {
      * 画像読み込み
      */
     private void loadImages() {
-        final String IMAGE_BASE_PATH = "/static/img/item/";
+        final String IMAGE_BASE_PATH = "/static/img/item";
 
         itemImageCache = new HashMap<>();
         // ItemKindsの階層でループ

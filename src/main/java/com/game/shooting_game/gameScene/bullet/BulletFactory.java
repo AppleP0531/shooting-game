@@ -1,5 +1,6 @@
 package com.game.shooting_game.gameScene.bullet;
 
+import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
 import com.game.shooting_game.gameScene.bullet.types.Ball;
 import com.game.shooting_game.gameScene.bullet.types.Laser;
@@ -19,13 +20,13 @@ public class BulletFactory {
      * @param vec   発射角
      * @return 弾
      */
-    public static Bullet createBullet(ShipKinds owner, BulletKinds kind, int id, Vector2 pos,
+    public static Bullet createBullet(ShipKinds owner, BulletKinds kind, int id, ColorMode mode, Vector2 pos,
             double vec) {
         return switch (kind) {
-            case STRAIGHT -> new Straight(owner, id, pos, vec);
-            case TRACKING -> new Tracking(owner, id, pos, vec);
-            case LASER -> new Laser(owner, id, pos, vec);
-            case BALL -> new Ball(owner, id, pos, vec);
+            case STRAIGHT -> new Straight(owner, id, mode, pos, vec);
+            case TRACKING -> new Tracking(owner, id, mode, pos, vec);
+            case LASER -> new Laser(owner, id, mode, pos, vec);
+            case BALL -> new Ball(owner, id, mode, pos, vec);
             default -> throw new IllegalArgumentException("不明な弾の種類です: " + kind);
         };
     }

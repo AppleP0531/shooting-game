@@ -120,18 +120,6 @@
         "damage": 5,
         "Normal": 0.3,
         "OOC": 0.1
-      },
-      "101": {
-        "imagePath": "/player/Normal_funny_2.png",
-        "grids": [4, 7],
-        "useCount": 28,
-        "frameRate": 0.1,
-        "imageSize": 40,
-        "collisionSize": 5,
-        "speed": 300,
-        "damage": 5,
-        "Normal": 0.3,
-        "OOC": 0.1
       }
     },
     "TRACKING": {
@@ -181,8 +169,74 @@
     "STRAIGHT": {
       "1": {
         "imagePath": "/enemy/Normal_1.png",
-        "grids": [1, 1],
-        "useCount": 1,
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 150,
+        "damage": 10,
+        "Normal": 3
+      },
+      "2": {
+        "imagePath": "/enemy/Normal_2.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 150,
+        "damage": 10,
+        "Normal": 3
+      },
+      "3": {
+        "imagePath": "/enemy/Normal_3.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 150,
+        "damage": 10,
+        "Normal": 3
+      },
+      "4": {
+        "imagePath": "/enemy/Normal_4.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 150,
+        "damage": 10,
+        "Normal": 3
+      },
+      "5": {
+        "imagePath": "/enemy/Normal_5.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 150,
+        "damage": 10,
+        "Normal": 3
+      },
+      "6": {
+        "imagePath": "/enemy/Normal_6.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 150,
+        "damage": 10,
+        "Normal": 3
+      },
+      "7": {
+        "imagePath": "/enemy/Normal_7.png",
+        "grids": [4, 1],
+        "useCount": 4,
         "frameRate": 0.1,
         "imageSize": 25,
         "collisionSize": 5,

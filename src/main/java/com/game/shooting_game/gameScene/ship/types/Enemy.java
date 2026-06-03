@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 
 import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.ship.Ship;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipDefinition;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
@@ -20,8 +21,8 @@ public class Enemy extends Ship {
     private double elapsedTime; // 出現してからの経過時間
     private int breakAwayTime = 20; // 離脱する時間(20秒後に離脱)
 
-    public Enemy(String id, int level, Vector2 spawnPos, Vector2 stayPos) {
-        super(ShipKinds.ENEMY, id, level, spawnPos);
+    public Enemy(String id, ColorMode mode, int level, Vector2 spawnPos, Vector2 stayPos) {
+        super(ShipKinds.ENEMY, id, mode, level, spawnPos);
 
         // データがなかった時用のデフォルト値
         ShipDefinition def = SHIP_M.getShipConfig().get(owner).get(shipId);
@@ -70,7 +71,12 @@ public class Enemy extends Ship {
         // 画像が存在しなければ仮描画
         if (animationId.get("ship") == null) {
             g2.rotate(rotate, pos.getX(), pos.getY());
-            g2.setColor(Color.RED);
+
+            if (mode == ColorMode.RED)
+                g2.setColor(Color.RED);
+            else
+                g2.setColor(Color.BLUE);
+
             g.fillPolygon(
                     new int[] {
                             (int) pos.getX(),

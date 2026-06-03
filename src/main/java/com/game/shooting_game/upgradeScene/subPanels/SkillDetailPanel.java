@@ -111,6 +111,6 @@ public class SkillDetailPanel extends JPanel {
         detailTextArea.setText(detailText);
         detailTextArea.setCaretPosition(0); // テキストエリアのスクロール位置を先頭にする
 
-        UIBuilder.openPanel(this, title, true);
+        UIBuilder.openPanel(this, title, true, null);
     }
 }

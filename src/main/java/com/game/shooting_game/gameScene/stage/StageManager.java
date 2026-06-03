@@ -17,6 +17,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
+import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
+import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.utils.ANSI;
@@ -35,17 +38,17 @@ public final class StageManager implements Manager {
     @NoArgsConstructor // 引数なしコンストラクタの生成
     @JsonIgnoreProperties(ignoreUnknown = true) // 余計な項目の無視
     public static class StageData {
-        private Map<ResourceKinds, String> rewardList;
+        private Map<ResourceName, Map<Rarity, String>> rewardList;
         private Map<String, EnemyConfig[]> enemyList;
 
         /**
          * 獲得リソース量の決定
          * 
-         * @param resNameKey 獲得リソース名
+         * @param resKind 獲得リソース名
          * @return 獲得量
          */
-        public int getRandomResourceAmount(ResourceKinds resNameKey) {
-            String range = rewardList.get(resNameKey);
+        public int getRandomResourceAmount(ResourceKinds resKind) {
+            String range = rewardList.get(resKind.getResName()).get(resKind.getRarity());
 
             try {
                 String[] num = range.split("~");
@@ -68,6 +71,7 @@ public final class StageManager implements Manager {
     public static class EnemyConfig {
         private ShipKinds owner;
         private String enemyId;
+        private ColorMode mode;
         private int level;
         private Vector2 spawnPos;
         private Vector2 stayPos;

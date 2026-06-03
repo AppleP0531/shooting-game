@@ -6,8 +6,6 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -25,7 +23,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -33,6 +30,8 @@ import lombok.Setter;
 
 import com.game.shooting_game.ResourceManager;
 import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
+import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
@@ -114,9 +113,7 @@ public final class CommandGlassPane extends JPanel {
     private int logHistoryDiff = 0; // コマンドログリストの表示差分(表示最大数以上の回数さかのぼった時用)
     private ChatBoxContext logHistoryData;
 
-    private Timer fadeTimer; // フェードアウト用タイマー
-    private float defaultOpacity = 0.8f; // デフォルト透明度
-    private float chatOpacity = defaultOpacity; // 透明度
+    private float chatOpacity = 0.8f; // デフォルト透明度
 
     // 予測変換
     private final List<String> COMMAND_SUGGEST = new LinkedList<>(); // 予測変換履歴リスト
@@ -127,6 +124,8 @@ public final class CommandGlassPane extends JPanel {
     private int suggestIndex = -1; // 予測変換参照用インデックス
     private int suggestDiff = 0; // 予測変換リストの表示差分(表示最大数以上の回数さかのぼった時用)
     private ChatBoxContext suggestData;
+
+    private boolean isAutoComplete = false;
 
     public CommandGlassPane(Runnable onEnter) {
         MAIN = ShootingGameMain.getInstance();
@@ -151,12 +150,42 @@ public final class CommandGlassPane extends JPanel {
                 (int) spacing,
                 (int) (MAIN.getHeight() - spacing - textBoxSize.getY()),
                 (int) textBoxSize.getX(), (int) textBoxSize.getY());
-        commandField.setBackground(new Color(0, 0, 0, 200));
-        commandField.setForeground(Color.WHITE);
-        commandField.setCaretColor(Color.WHITE);
-        commandField.setFont(new Font("Monospaced", Font.BOLD, (int) (16 * ShootingGameMain.getScreenSizeAdj())));
-        commandField.setBorder(BorderFactory.createLineBorder(Color.CYAN));
+        commandField.setBackground(new Color(0, 0, 0, 200)); // 背景色
+        commandField.setForeground(Color.WHITE); // 文字色
+        commandField.setCaretColor(Color.WHITE); // カーソル食
+        commandField.setFont(new Font("Monospaced", Font.BOLD, (int) (16 * ShootingGameMain.getScreenSizeAdj()))); // 文字設定
+        commandField.setBorder(BorderFactory.createLineBorder(Color.CYAN)); // 枠線
         commandField.setVisible(false);
+
+        // テキストフィールドが更新された時に予測変換も更新する
+        commandField.getDocument().addDocumentListener(new DocumentListener() {
+            // 文字が入力されたとき
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                process();
+            }
+
+            // 文字が削除されたとき
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                process();
+            }
+
+            // 文字が更新されたとき
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                process();
+            }
+
+            private void process() {
+                if (isAutoComplete) {
+                    return;
+                }
+
+                registCommandSuggestions();
+            }
+        });
+        add(commandField);
 
         // コマンド入力時の処理
         keyHandler = new KeyAdapter() {
@@ -182,26 +211,6 @@ public final class CommandGlassPane extends JPanel {
                 }
             }
         };
-        commandField.getDocument().addDocumentListener(new DocumentListener() {
-            // 文字が入力されたとき
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                registCommandSuggestions();
-            }
-
-            // 文字が削除されたとき
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                registCommandSuggestions();
-            }
-
-            // 文字が更新されたとき
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                registCommandSuggestions();
-            }
-        });
-        add(commandField);
 
         // 入力中にマウスイベントをほかにとられないようにする
         mouseHandler = new MouseAdapter() {
@@ -224,20 +233,30 @@ public final class CommandGlassPane extends JPanel {
             }
         };
 
-        // 履歴リストの設定
+        // コマンド履歴の設定
         INPUT_HISTORY_MODEL = new DefaultListModel<>();
         INPUT_HISTORY_LIST = new JList<>(INPUT_HISTORY_MODEL);
-        INPUT_HISTORY_LIST.setBackground(new Color(0, 0, 0, chatOpacity));
-        INPUT_HISTORY_LIST.setForeground(Color.LIGHT_GRAY);
+        INPUT_HISTORY_LIST.setBackground(new Color(0, 0, 0, chatOpacity)); // 背景色
+        INPUT_HISTORY_LIST.setForeground(Color.LIGHT_GRAY); // 文字色
         INPUT_HISTORY_LIST
-                .setFont(new Font("Monospaced", Font.PLAIN, (int) (14 * ShootingGameMain.getScreenSizeAdj())));
+                .setFont(new Font("Monospaced", Font.PLAIN, (int) (14 * ShootingGameMain.getScreenSizeAdj()))); // 文字設定
         INPUT_HISTORY_LIST.setBorder(null);
         INPUT_HISTORY_LIST.setVisible(false);
+        INPUT_HISTORY_LIST.setFocusable(false); // フォーカスを当てない
+        // 選択時にテキストフィールドへ反映する
+        INPUT_HISTORY_LIST.addListSelectionListener(e -> {
+            isAutoComplete = true;
+            commandField.setText(INPUT_HISTORY_LIST.getSelectedValue());
+            isAutoComplete = false;
+
+            // フォーカスを返す
+            commandField.requestFocusInWindow();
+        });
+        // 選択されているものを太字にする
         INPUT_HISTORY_LIST.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                     boolean isSelected, boolean cellHasFocus) {
-                // 基本的な描画設定（テキストや背景色など）を継承
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 setBackground(list.getBackground());
                 // 選択されているものを太字、そうでなければ標準で表示
@@ -262,30 +281,31 @@ public final class CommandGlassPane extends JPanel {
                 inputHistoryIndex,
                 inputHistoryDiff);
 
-        // ログリストの設定
+        // ログの設定
         LOG_HISTORY_MODEL = new DefaultListModel<>();
         LOG_HISTORY_LIST = new JList<>(LOG_HISTORY_MODEL) {
             @Override
             protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
+                Graphics2D g2 = (Graphics2D) g.create();
 
-                // 💡 クラスで保持している chatOpacity (0.0〜1.0) を適用して描画する
-                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, chatOpacity));
+                // 透明度の適応
+                g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, chatOpacity));
 
-                super.paintComponent(g2d);
-                g2d.dispose();
+                super.paintComponent(g2);
+                g2.dispose();
             }
         };
-        LOG_HISTORY_LIST.setBackground(new Color(0, 0, 0, chatOpacity));
-        LOG_HISTORY_LIST.setForeground(Color.LIGHT_GRAY);
-        LOG_HISTORY_LIST.setFont(new Font("Monospaced", Font.PLAIN, (int) (10 * ShootingGameMain.getScreenSizeAdj())));
+        LOG_HISTORY_LIST.setBackground(new Color(0, 0, 0, chatOpacity)); // 背景色
+        LOG_HISTORY_LIST.setForeground(Color.LIGHT_GRAY); // 文字色
+        LOG_HISTORY_LIST.setFont(new Font("Monospaced", Font.PLAIN, (int) (10 * ShootingGameMain.getScreenSizeAdj()))); // 文字設定
         LOG_HISTORY_LIST.setBorder(null);
         LOG_HISTORY_LIST.setVisible(false);
+        LOG_HISTORY_LIST.setFocusable(false); // フォーカスを当てない
+        // 文字装飾なしで描画
         LOG_HISTORY_LIST.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                     boolean isSelected, boolean cellHasFocus) {
-                // 基本的な描画設定（テキストや背景色など）を継承
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 setBackground(list.getBackground());
                 setFont(list.getFont().deriveFont(Font.PLAIN));
@@ -304,19 +324,19 @@ public final class CommandGlassPane extends JPanel {
                 logHistoryIndex,
                 logHistoryDiff);
 
-        // 予測変換リストの設定
+        // 予測変換の設定
         SUGGEST_MODEL = new DefaultListModel<>();
         SUGGEST_LIST = new JList<>(SUGGEST_MODEL);
-        SUGGEST_LIST.setBackground(new Color(0, 0, 0, chatOpacity));
-        SUGGEST_LIST.setForeground(Color.LIGHT_GRAY);
-        SUGGEST_LIST.setFont(new Font("Monospaced", Font.PLAIN, (int) (12 * ShootingGameMain.getScreenSizeAdj())));
+        SUGGEST_LIST.setBackground(new Color(0, 0, 0, chatOpacity)); // 背景色
+        SUGGEST_LIST.setForeground(Color.LIGHT_GRAY); // 文字色
+        SUGGEST_LIST.setFont(new Font("Monospaced", Font.PLAIN, (int) (12 * ShootingGameMain.getScreenSizeAdj()))); // 文字設定
         SUGGEST_LIST.setBorder(null);
         SUGGEST_LIST.setVisible(false);
+        // 入力に応じて色を付ける
         SUGGEST_LIST.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                     boolean isSelected, boolean cellHasFocus) {
-                // 基本的な描画設定（テキストや背景色など）を継承
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 setBackground(list.getBackground());
 
@@ -445,7 +465,6 @@ public final class CommandGlassPane extends JPanel {
      */
     public void showCommandBar(String text) {
         addHandler();
-        chatOpacity = defaultOpacity;
 
         setVisible(true);
         commandField.setVisible(true);
@@ -463,51 +482,14 @@ public final class CommandGlassPane extends JPanel {
         commandField.setVisible(false);
 
         hideAllChatBox();
-
         showChatBoxList(logHistoryData);
 
-        if (fadeTimer != null && fadeTimer.isRunning()) {
-            fadeTimer.stop();
-        }
-
         LOG_HISTORY_LIST.setOpaque(false);
-
-        // 一定時間待機した後、50ミリ秒ごとに不透明度減らす
-        fadeTimer = new Timer(50, new ActionListener() {
-            private int delayCounter = 0;
-            private final int initialDelay = 5000 / 50; // 待機分(5秒)
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // 入力バーが表示されている間はデフォルト値
-                if (commandField.isVisible()) {
-                    chatOpacity = defaultOpacity;
-                }
-
-                // 一定時間待機
-                if (delayCounter < initialDelay) {
-                    delayCounter++;
-                    return;
-                }
-
-                // 0.05ずつ透明にする
-                chatOpacity -= 0.05f;
-                if (chatOpacity <= 0.0f) {
-                    fadeTimer.stop(); // 透明になったらタイマーを止める
-                    chatOpacity = 0.0f;
-                    setVisible(false);
-                    hideChatBoxList(logHistoryData); // 非表示にする
-                }
-
-                LOG_HISTORY_LIST.repaint();
-            }
-        });
-
-        fadeTimer.start();
 
         logHistoryData.setIndex(-1);
         logHistoryData.setMaxDisplay(DEFAULT_LOG_HISTORY_DISPLAY);
         suggestData.setIndex(-1);
+        setVisible(false);
     }
 
     /**
@@ -581,8 +563,11 @@ public final class CommandGlassPane extends JPanel {
         if (!commandField.getText().isEmpty()) {
             processCommand(commandField.getText());
 
-            // 履歴に追加
-            inputHistoryData.addElement(commandField.getText());
+            // ひとつ前のコマンドと内容が違ければ履歴に追加
+            if (inputHistoryData.getElements().isEmpty()
+                    || !inputHistoryData.getElements().getLast().equals(commandField.getText()))
+
+                inputHistoryData.addElement(commandField.getText());
         }
 
         // リセット
@@ -604,7 +589,7 @@ public final class CommandGlassPane extends JPanel {
             return;
         }
 
-        String[] args = text.split(" ");
+        String[] args = text.split(" ", -1);
         CommandNode node = rootCommands.get(args[0]);
 
         // コマンドリストになかった場合
@@ -632,6 +617,66 @@ public final class CommandGlassPane extends JPanel {
                 unknownCommand(text);
                 break;
             }
+        }
+    }
+
+    /**
+     * 予測変換リストの作成
+     */
+    private void registCommandSuggestions() {
+        hideChatBoxList(suggestData);
+
+        // リストのクリア
+        suggestData.getElements().clear();
+
+        // 入力情報の取得
+        String command = commandField.getText();
+        String[] args = command.split(" ", -1);
+
+        if (command.isEmpty()) {
+            showChatBoxList(logHistoryData);
+            return;
+        }
+
+        hideChatBoxList(logHistoryData);
+
+        Map<String, CommandNode> subCommands = rootCommands; // 再外層ノードから探索
+        CommandNode currentNode = null; // 参照中ノード
+        // 引数と一致する子ノードを見つけて階層を移動
+        for (int i = 0; i < args.length - 1; i++) {
+            CommandNode node = subCommands.get(args[i]);
+
+            if (node != null) {
+                // 権限不足の場合は潜らない
+                if (node.isAdminOnly() && !adminMode)
+                    return;
+
+                subCommands = node.getSubCommands(); // 階層移動
+                currentNode = node; // 参照中ノードの更新
+            } else
+                return;
+        }
+        String currentToken = args[args.length - 1];
+
+        // 入力中文字と比較
+        for (CommandNode node : subCommands.values()) {
+            if (node.getName().startsWith(currentToken)) {
+                for (String suggests : node.getAllNodes(adminMode)) {
+                    suggestData.addElement(suggests);
+                }
+            }
+        }
+
+        // syntax比較
+        if (currentNode != null) {
+            if (currentNode.getSyntax() != null) {
+                if (currentNode.compersionSyntax(currentToken))
+                    suggestData.addElement(currentNode.getUseage());
+            }
+        }
+
+        if (!suggestData.getElements().isEmpty()) {
+            showChatBoxList(suggestData);
         }
     }
 
@@ -670,66 +715,6 @@ public final class CommandGlassPane extends JPanel {
     }
 
     /**
-     * 予測変換リストの作成
-     */
-    private void registCommandSuggestions() {
-        hideChatBoxList(suggestData);
-
-        // リストのクリア
-        suggestData.getElements().clear();
-
-        // 入力情報の取得
-        String command = commandField.getText();
-        String[] args = command.split(" ");
-
-        // 空白が二つ並んでいる場合処理をスキップ
-        if (command.contains("  "))
-            return;
-
-        if (command.isEmpty()) {
-            showChatBoxList(logHistoryData);
-            return;
-        }
-
-        hideChatBoxList(logHistoryData);
-
-        Map<String, CommandNode> subCommands = rootCommands; // 再外層ノードから探索
-        CommandNode currentNode = null; // 参照中ノード
-        // 引数と一致する子ノードを見つけたら階層を移動
-        for (int i = 0; i < args.length - 1; i++) {
-            CommandNode node = subCommands.get(args[i]);
-
-            if (node != null) {
-                subCommands = node.getSubCommands(); // 階層移動
-                currentNode = node; // 参照中ノードの更新
-            } else
-                break;
-        }
-
-        // 入力中文字と比較
-        String currentToken = args[args.length - 1];
-        for (CommandNode node : subCommands.values()) {
-            if (node.getName().startsWith(currentToken)) {
-                for (String suggests : node.getAllNodes(adminMode)) {
-                    suggestData.addElement(suggests);
-                }
-            }
-        }
-
-        // syntax比較
-        if (currentNode != null) {
-            if (currentNode.getSyntax() != null) {
-                if (currentNode.compersionSyntax(currentToken))
-                    suggestData.addElement(currentNode.getUseage());
-            }
-        }
-
-        if (!suggestData.getElements().isEmpty()) {
-            showChatBoxList(suggestData);
-        }
-    }
-
-    /**
      * 現在のシーンで利用できるかどうかのチェック
      * 
      * @param allowedTypes シーンタイプ
@@ -745,6 +730,29 @@ public final class CommandGlassPane extends JPanel {
         logHistoryData.addElement(logText);
         LogUtils.debugLog(logText);
         return false;
+    }
+
+    /**
+     * {}の中身の要素を切り分けてマップにして返す
+     * <p>
+     * 例: key1=value1,key2=value2 → (key1,value1),(key2,value2)
+     * 
+     * @param arg {}の中身
+     * @return 切り分けたもの
+     */
+    private Map<String, String> parseNamedBinaryTag(String arg) {
+        Map<String, String> NBT = new HashMap<>();
+
+        String[] parts = arg.split(",", -1);
+        for (String part : parts) {
+            String[] pair = part.split("=", -1);
+            String key = pair[0];
+            String value = pair[1];
+
+            NBT.put(key, value);
+        }
+
+        return NBT;
     }
 
     /**
@@ -1060,39 +1068,29 @@ public final class CommandGlassPane extends JPanel {
             if (!isSceneValid(SceneType.GAME, SceneType.TEST))
                 return;
 
-            // 指定がなければ1レベル上げる、指定があればそのレベルを設定
-            if (args.length == 0) {
-                SHIP_M.getPlayer().levelUp();
-
-                logText = "Ship leveled up to level " + SHIP_M.getPlayer().getShipLevel() + ".";
+            // 指定がなければ1レベル上げる、指定があればその回数レベルアップ
+            int amount = 1;
+            try {
+                Integer num = GameUtils.tryParse(args[0]);
+                amount = num > 0 ? num : 1;
+            } catch (NumberFormatException ne) {
+                logText = "Unknnown param: " + args[0];
                 logHistoryData.addElement(logText);
-                LogUtils.systemLog("[INFO]", component, logText);
-            } else {
-                try {
-                    Integer num = GameUtils.tryParse(args[0]);
-
-                    if (num >= 5) {
-                        SHIP_M.getPlayer().setShipLevel(4);
-                        SHIP_M.getPlayer().levelUp();
-                    } else
-                        SHIP_M.getPlayer().setShipLevel(num);
-
-                    logText = "Ship level set to " + SHIP_M.getPlayer().getShipLevel() + ".";
-                    logHistoryData.addElement(logText);
-                    LogUtils.systemLog("[INFO]", component, logText);
-                } catch (NumberFormatException ne) {
-                    logText = "Unknnown param: " + args[0];
-                    logHistoryData.addElement(logText);
-                    LogUtils.debugLog(logText);
-                } catch (Exception e) {
-                    LogUtils.systemLog("[WARN]", component, "Command Error");
-                }
+                LogUtils.debugLog(logText);
             }
-        }).setSyntax("<amount>");
-        // 無敵
-        register(effect, "shield", null, true, (node, args) -> {
+            // レベルアップ処理
+            for (int i = 0; i < amount; i++) {
+                SHIP_M.getPlayer().levelUp();
+            }
+
+            logText = "Ship leveled up to level " + SHIP_M.getPlayer().getShipLevel() + ".";
+            logHistoryData.addElement(logText);
+            LogUtils.systemLog("[INFO]", component, logText);
+        });
+        // レベル設定
+        register(effect, "setlevel", null, true, (node, args) -> {
             // 引数が不適切な場合
-            if (args.length > 2) {
+            if (args.length != 1) {
                 logText = node.getUseage();
                 logHistoryData.addElement(logText);
                 LogUtils.debugLog(logText);
@@ -1102,41 +1100,26 @@ public final class CommandGlassPane extends JPanel {
             if (!isSceneValid(SceneType.GAME, SceneType.TEST))
                 return;
 
-            boolean isInfinityInvincibility = SHIP_M.getPlayer().getShieldTimer() == Double.POSITIVE_INFINITY;
-            // 指定がなければ無敵モードのトグル、指定があれば無敵時間を設定
-            if (args.length == 0) {
-                double time = isInfinityInvincibility ? 0 : Double.POSITIVE_INFINITY;
-                isInfinityInvincibility = !isInfinityInvincibility;
+            try {
+                Integer num = GameUtils.tryParse(args[0]);
 
-                SHIP_M.getPlayer().setShieldTimer(time);
+                if (num >= 5) {
+                    SHIP_M.getPlayer().setShipLevel(4);
+                    SHIP_M.getPlayer().levelUp();
+                } else
+                    SHIP_M.getPlayer().setShipLevel(num);
 
-                logText = "Invincibility " + (isInfinityInvincibility ? "enabled." : "disabled.");
+                logText = "Ship level set to " + SHIP_M.getPlayer().getShipLevel() + ".";
                 logHistoryData.addElement(logText);
                 LogUtils.systemLog("[INFO]", component, logText);
-            } else {
-                try {
-                    Integer time = GameUtils.tryParse(args[0]);
-
-                    if (isInfinityInvincibility) {
-                        logText = "The ship is already invincible.";
-                        logHistoryData.addElement(logText);
-                        LogUtils.systemLog("[INFO]", component, logText);
-                    } else {
-                        SHIP_M.getPlayer().setShieldTimer(time);
-
-                        logText = "The ship became invincible.";
-                        logHistoryData.addElement(logText);
-                        LogUtils.systemLog("[INFO]", component, logText);
-                    }
-                } catch (NumberFormatException ne) {
-                    logText = "Unknnown param: " + args[0];
-                    logHistoryData.addElement(logText);
-                    LogUtils.debugLog(logText);
-                } catch (Exception e) {
-                    LogUtils.systemLog("[WARN]", component, "Command Error");
-                }
+            } catch (NumberFormatException ne) {
+                logText = "Unknnown param: " + args[0];
+                logHistoryData.addElement(logText);
+                LogUtils.debugLog(logText);
+            } catch (Exception e) {
+                LogUtils.systemLog("[WARN]", component, "Command Error");
             }
-        }).setSyntax("<seconds>");
+        }).setSyntax("<amount>");
         // 暴走
         register(effect, "ooc", null, true, (node, args) -> {
             // 引数が不適切な場合
@@ -1172,6 +1155,7 @@ public final class CommandGlassPane extends JPanel {
                         logHistoryData.addElement(logText);
                         LogUtils.systemLog("[INFO]", component, logText);
                     } else {
+                        SHIP_M.getPlayer().setShipLevel(5);
                         SHIP_M.getPlayer().setOOCTimer(time);
 
                         logText = "The ship became OOC.";
@@ -1199,10 +1183,36 @@ public final class CommandGlassPane extends JPanel {
             }
 
             try {
-                ResourceKinds resName = ResourceKinds.valueOf(args[0].toUpperCase());
+                String nameStr = args[0];
+                Rarity rarity = Rarity.COMMON; // デフォルトはコモン
+
+                // 指定値の設定
+                int openBraceIdx = args[0].indexOf("{");
+                int closeBraceIdx = args[0].indexOf("}");
+                if (openBraceIdx != -1 && closeBraceIdx != -1 && openBraceIdx < closeBraceIdx) {
+                    nameStr = args[0].substring(0, openBraceIdx);
+
+                    Map<String, String> NBT = parseNamedBinaryTag(args[0].substring(openBraceIdx + 1, closeBraceIdx));
+                    for (Map.Entry<String, String> entry : NBT.entrySet()) {
+                        switch (entry.getKey()) {
+                            case "rarity" -> {
+                                rarity = Rarity.valueOf(entry.getValue().toUpperCase());
+                            }
+                            default -> {
+                                // NBTが不適切な場合
+                                logText = node.getUseage();
+                                logHistoryData.addElement(logText);
+                                LogUtils.debugLog(logText);
+                                return;
+                            }
+                        }
+                    }
+                }
+
+                ResourceKinds resKind = new ResourceKinds(ResourceName.valueOf(nameStr.toUpperCase()), rarity);
                 Integer amount = GameUtils.tryParse(args[1]);
                 Resources resData = DataManager.getUserData().getResources();
-                if (resName == ResourceKinds.COIN) {
+                if (resKind == ResourceKinds.COIN) {
                     int amountOwned = resData.getCoins();
                     resData.setCoins(amountOwned + amount);
 
@@ -1211,12 +1221,12 @@ public final class CommandGlassPane extends JPanel {
                     LogUtils.systemLog("[INFO]", component, logText);
                     return;
                 } else {
-                    int amountOwned = resData.getEquipments().getOrDefault(resName, 0);
+                    int amountOwned = resData.getEquipments().getOrDefault(resKind, 0);
                     int newAmount = amountOwned + amount;
                     if (newAmount <= 0) {
-                        resData.getEquipments().remove(resName);
+                        resData.getEquipments().remove(resKind);
                     } else {
-                        resData.getEquipments().put(resName, newAmount);
+                        resData.getEquipments().put(resKind, newAmount);
                     }
                 }
                 BagManager.getInstance().setup();

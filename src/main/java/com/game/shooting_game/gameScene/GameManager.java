@@ -19,6 +19,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
+import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
@@ -32,6 +34,7 @@ import com.game.shooting_game.gameScene.item.ItemManager;
 import com.game.shooting_game.gameScene.ship.Ship;
 import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
+import com.game.shooting_game.gameScene.ship.types.Player;
 import com.game.shooting_game.gameScene.stage.StageManager;
 import com.game.shooting_game.gameScene.stage.StageManager.StageData;
 import com.game.shooting_game.gameScene.subPanels.PausePanel;
@@ -52,6 +55,12 @@ public final class GameManager extends JPanel implements Manager {
     private final StageManager STAGE_M;
     private final BulletManager BM;
     private final ItemManager IM;
+
+    // 船のモード
+    public static enum ColorMode {
+        RED,
+        BLUE
+    }
 
     private String animationName = "none"; // アニメーション名
     private double animateTimer = 0; // アニメーション用タイマー
@@ -270,23 +279,35 @@ public final class GameManager extends JPanel implements Manager {
             // 報酬内容を取得
             StageData currentStageData = STAGE_M.getStageConfig().get("stage" + STAGE_M.getStageId());
             // バックパックに報酬を追加
-            for (ResourceKinds resName : currentStageData.getRewardList().keySet()) {
-                int amount = currentStageData.getRandomResourceAmount(resName);
-                int amountOwned = data.getResources().getEquipments().getOrDefault(resName, 0);
-                data.getResources().getEquipments().put(resName, amountOwned + amount);
+            for (Map.Entry<ResourceName, Map<Rarity, String>> list : currentStageData.getRewardList().entrySet()) {
+                ResourceName resName = list.getKey();
+                Map<Rarity, String> rarityMap = list.getValue();
 
-                StageRewards.getInstance().getResources().put(resName, amount);
+                for (Map.Entry<Rarity, String> rarityEntry : rarityMap.entrySet()) {
+                    Rarity rarity = rarityEntry.getKey();
+
+                    int amount = currentStageData.getRandomResourceAmount(new ResourceKinds(resName, rarity));
+                    int amountOwned = data.getResources().getEquipments().getOrDefault(resName, 0);
+
+                    ResourceKinds resKind = new ResourceKinds(resName, rarity);
+                    data.getResources().getEquipments().put(resKind, amountOwned + amount);
+                    StageRewards.getInstance().getResources().put(resKind, amount);
+                }
             }
         }
         SHIP_M.getPlayer().removeHandler();
 
         SM.changeScene(SceneType.GAMERESULT);
+
     }
 
     /**
      * 当たり判定処理
      */
     public void checkCollisions() {
+        if (SHIP_M.getPlayer() == null)
+            return;
+
         // 全敵リストの作成
         List<Ship> allEnemies = new ArrayList<>();
         allEnemies.addAll(SHIP_M.getEnemyList());
@@ -294,7 +315,12 @@ public final class GameManager extends JPanel implements Manager {
 
         // 船体衝突
         for (Ship enemy : allEnemies) {
-            if (SHIP_M.getPlayer() != null && GameUtils.collidesWith(SHIP_M.getPlayer(), enemy)) {
+            // モードが同じなら無視
+            if (SHIP_M.getPlayer().getMode() == enemy.getMode())
+                continue;
+
+            if (GameUtils.collidesWith(SHIP_M.getPlayer(), enemy)) {
+
                 switch (enemy.getOwner()) {
                     // アイテムをドロップせずに倒す(coinやスコアは入る)
                     case ShipKinds.ENEMY -> enemy.kill(false);
@@ -312,16 +338,28 @@ public final class GameManager extends JPanel implements Manager {
         for (Bullet bullet : BM.getBulletList()) {
             if (bullet.getOwner() == ShipKinds.PLAYER) {
                 for (Ship enemy : allEnemies) {
+
                     if (GameUtils.collidesWith(enemy, bullet) && enemy.inScreen()) {
+                        bullet.destroySelf(); // 弾を削除
+
+                        // モードが同じなら無視
+                        if (bullet.getMode() == enemy.getMode())
+                            continue;
+
                         enemy.addDamage(bullet.getDamage());
-                        bullet.destroySelf();
                         break;
                     }
                 }
             } else {
-                if (GameUtils.collidesWith(SHIP_M.getPlayer(), bullet)) {
+                Player player = SHIP_M.getPlayer();
+                if (GameUtils.collidesWith(player, bullet)) {
+                    bullet.destroySelf(); // 弾を削除
+
+                    // モードが同じなら無視
+                    if (bullet.getMode() == player.getMode())
+                        continue;
+
                     SHIP_M.getPlayer().addDamage(bullet.getDamage());
-                    bullet.destroySelf();
                     break;
                 }
             }

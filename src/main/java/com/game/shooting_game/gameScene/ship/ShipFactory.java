@@ -1,5 +1,6 @@
 package com.game.shooting_game.gameScene.ship;
 
+import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.gameScene.ship.types.Boss;
 import com.game.shooting_game.gameScene.ship.types.Enemy;
@@ -16,11 +17,12 @@ public class ShipFactory {
      * @param spawnPos スポーン位置
      * @param stayPos  待機位置
      */
-    public static Ship createShip(ShipKinds owner, String shipId, int level, Vector2 spawnPos, Vector2 stayPos) {
+    public static Ship createShip(ShipKinds owner, String shipId, ColorMode mode, int level, Vector2 spawnPos,
+            Vector2 stayPos) {
         return switch (owner) {
-            case PLAYER -> new Player(shipId, spawnPos);
-            case ENEMY -> new Enemy(shipId, level, spawnPos, stayPos);
-            case BOSS -> new Boss(shipId, level, spawnPos, stayPos);
+            case PLAYER -> new Player(shipId, mode, spawnPos);
+            case ENEMY -> new Enemy(shipId, mode, level, spawnPos, stayPos);
+            case BOSS -> new Boss(shipId, mode, level, spawnPos, stayPos);
             default -> throw new IllegalArgumentException("不明な機体の種類です: " + owner);
         };
     }
