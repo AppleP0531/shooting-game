@@ -7,6 +7,7 @@ import java.awt.Graphics;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.gameScene.GameManager;
+import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.bullet.BulletManager;
 import com.game.shooting_game.gameScene.ship.ShipFactory;
 import com.game.shooting_game.gameScene.ship.ShipManager;
@@ -52,6 +53,7 @@ public class LobbySceneUI {
         SHIP_M.addShip(ShipFactory.createShip(
                 ShipKinds.ENEMY,
                 "Enemy1",
+                ColorMode.BLUE,
                 0,
                 new Vector2(MAIN.getWidth() / 2, MAIN.getHeight() / 4),
                 new Vector2(MAIN.getWidth() / 2, MAIN.getHeight() / 4)));
@@ -103,6 +105,7 @@ public class LobbySceneUI {
         if (shipName != latestViewingShipName)
             SHIP_M.setPlayer(new Player(
                     shipName,
+                    ColorMode.BLUE,
                     new Vector2(MAIN.getWidth() / 2, MAIN.getHeight() - 160 * ShootingGameMain.getScreenSizeAdj())));
 
         BM.draw(g);

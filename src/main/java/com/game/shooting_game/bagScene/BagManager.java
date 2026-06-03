@@ -108,7 +108,7 @@ public final class BagManager extends JPanel implements Manager {
 
     @Override
     public void draw(Graphics g) {
-        BagSceneUIData uiData = new BagSceneUIData(equipments);
+        BagSceneUIData uiData = new BagSceneUIData();
         bagUI.draw(g, uiData);
         ownedResourcesPanel.drawPanel(g);
     }

@@ -2,15 +2,17 @@ package com.game.shooting_game.gameScene.item;
 
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.util.Map;
 import java.util.Optional;
 
 import lombok.Getter;
 
 import com.game.shooting_game.ResourceManager;
 import com.game.shooting_game.ResourceManager.ImageType;
-import com.game.shooting_game.ResourceManager.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceConfig;
 import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
+import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.gameScene.GameManager;
 import com.game.shooting_game.gameScene.item.ItemManager.ItemConfig;
@@ -58,23 +60,29 @@ public abstract class Item implements Moveable, GameObject, Entity {
         this.vec = Math.random() * 2 * Math.PI; // ランダムな方向に飛ぶ
         BufferedImage[] itemImages = null;
         double frameRate = 0;
-        if (kind instanceof ItemKinds) {
-            ItemConfig itemConfig = IM.getItemConfig().get(kind);
+        if (kind instanceof ItemKinds itemKind) {
+            ItemConfig itemConfig = IM.getItemConfig().get(itemKind);
             this.speed = itemConfig.getSpeed() * ShootingGameMain.getScreenSizeAdj();
             this.collisionSize = itemConfig.getCollisionSize() * ShootingGameMain.getScreenSizeAdj();
 
             // 画像の取得
             itemImages = Optional.ofNullable(IM.getItemImage())
-                    .map(images -> images.get(kind))
+                    .map(images -> images.get(itemKind))
                     .orElse(null);
             frameRate = itemConfig.getFrameRate();
-        } else if (kind instanceof ResourceKinds) {
-            ResourceConfig resConfig = RM.getResourceConfig().get(kind);
+        } else if (kind instanceof ResourceKinds resKind) {
+            ResourceConfig resConfig = RM.getResourceConfig().get(resKind.getResName());
 
-            itemImages = Optional.ofNullable(RM.getResourceImage())
-                    .map(images -> images.get(kind).get(Rarity.COMMON))
-                    .orElse(null);
-            frameRate = resConfig.getResData().get(Rarity.COMMON).get(ImageType.ITEM).getFrameRate();
+            // 画像情報の取得
+            Map<ResourceName, Map<Rarity, BufferedImage[]>> viewCache = RM.getResourceImage();
+            if (viewCache != null) {
+                ResourceName resName = resKind.getResName();
+                Map<Rarity, BufferedImage[]> rarityMap = viewCache.get(resName);
+                if (rarityMap != null)
+                    itemImages = rarityMap.get(resKind.getRarity());
+            }
+
+            frameRate = resConfig.getResData().get(resKind.getRarity()).get(ImageType.ITEM).getFrameRate();
         }
 
         // アニメーション登録

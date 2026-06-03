@@ -83,6 +83,7 @@ public class Stage implements GameObject {
                     SHIP_M.addShip(ShipFactory.createShip(
                             enemy.getOwner(),
                             enemy.getEnemyId(),
+                            enemy.getMode(),
                             enemy.getLevel(),
                             new Vector2(
                                     MAIN.getWidth() / 2

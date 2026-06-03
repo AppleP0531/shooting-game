@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 
 import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.ship.Ship;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipDefinition;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
@@ -18,8 +19,8 @@ public class Boss extends Ship {
 
     private Vector2 stayPos; // 待機位置
 
-    public Boss(String id, int level, Vector2 spawnPos, Vector2 stayPos) {
-        super(ShipKinds.BOSS, id, level, spawnPos);
+    public Boss(String id, ColorMode mode, int level, Vector2 spawnPos, Vector2 stayPos) {
+        super(ShipKinds.BOSS, id, mode, level, spawnPos);
 
         // データがなかった時用のデフォルト値
         ShipDefinition def = SHIP_M.getShipConfig().get(owner).get(shipId);
@@ -69,7 +70,12 @@ public class Boss extends Ship {
         // 船
         if (animationId.get("ship") == null) {
             g2.rotate(rotate, pos.getX(), pos.getY());
-            g2.setColor(Color.RED);
+
+            if (mode == ColorMode.RED)
+                g2.setColor(Color.RED);
+            else
+                g2.setColor(Color.BLUE);
+
             g.fillPolygon(
                     new int[] {
                             (int) pos.getX(),

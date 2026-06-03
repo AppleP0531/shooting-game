@@ -5,14 +5,15 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
+import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.bullet.Bullet;
 import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.utils.Vector2;
 
 public class Straight extends Bullet {
-    public Straight(ShipKinds owner, int id, Vector2 pos, double vec) {
-        super(owner, BulletKinds.STRAIGHT, id, pos, vec);
+    public Straight(ShipKinds owner, int id, ColorMode mode, Vector2 pos, double vec) {
+        super(owner, BulletKinds.STRAIGHT, id, mode, pos, vec);
     }
 
     @Override
