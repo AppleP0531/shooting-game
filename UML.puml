@@ -42,7 +42,7 @@ package "shooting_game" {
         + draw(g: Graphics): void
         + changeScene(target: SceneType): void
         + changeToPreviousScene(): void
-        - getCurrentManager(): Manager
+        + getCurrentManager(): Manager
         + getSceneName(): SceneType
     }
 
@@ -98,12 +98,7 @@ package "shooting_game" {
             - logHistoryIndex: int
             - logHistoryDiff: int
             - logHistoryData: ChatBoxContext
-            - fadeTimer: Timer
-            - defaultOpacity: float
             - chatOpacity: float
-            - delay: int
-            - delayCounter: int
-            - initialDelay: int
             - COMMAND_SUGGEST: List<String>
             - SUGGEST_MODEL: DefaultListModel<String>
             - SUGGEST_LIST: JList<String>
@@ -524,6 +519,7 @@ package "shooting_game" {
         }
 
         class BagSceneUI {
+            - MAIN: ShootingGameMain
             --
             + BagSceneUI ()
             + draw(g: Graphics): void

@@ -6,8 +6,6 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -25,7 +23,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -116,12 +113,7 @@ public final class CommandGlassPane extends JPanel {
     private int logHistoryDiff = 0; // コマンドログリストの表示差分(表示最大数以上の回数さかのぼった時用)
     private ChatBoxContext logHistoryData;
 
-    private Timer fadeTimer; // フェードアウト用タイマー
-    private float defaultOpacity = 0.8f; // デフォルト透明度
-    private float chatOpacity = defaultOpacity; // 透明度
-    private int delay = 50; // フェードアウト更新速度(ミリ秒)
-    private int delayCounter = 0;
-    private final int initialDelay = 5000 / delay; // 待機時間(ミリ秒/delay)
+    private float chatOpacity = 0.8f; // デフォルト透明度
 
     // 予測変換
     private final List<String> COMMAND_SUGGEST = new LinkedList<>(); // 予測変換履歴リスト
@@ -398,7 +390,6 @@ public final class CommandGlassPane extends JPanel {
                 suggestIndex,
                 suggestDiff);
 
-        initFadeTimer();
         registCommands();
     }
 
@@ -474,7 +465,6 @@ public final class CommandGlassPane extends JPanel {
      */
     public void showCommandBar(String text) {
         addHandler();
-        chatOpacity = defaultOpacity;
 
         setVisible(true);
         commandField.setVisible(true);
@@ -494,19 +484,12 @@ public final class CommandGlassPane extends JPanel {
         hideAllChatBox();
         showChatBoxList(logHistoryData);
 
-        if (fadeTimer != null && fadeTimer.isRunning()) {
-            fadeTimer.stop();
-        }
-        delayCounter = 0;
-        chatOpacity = defaultOpacity;
-
         LOG_HISTORY_LIST.setOpaque(false);
-
-        fadeTimer.start();
 
         logHistoryData.setIndex(-1);
         logHistoryData.setMaxDisplay(DEFAULT_LOG_HISTORY_DISPLAY);
         suggestData.setIndex(-1);
+        setVisible(false);
     }
 
     /**
@@ -570,36 +553,6 @@ public final class CommandGlassPane extends JPanel {
         hideChatBoxList(inputHistoryData);
         hideChatBoxList(logHistoryData);
         hideChatBoxList(suggestData);
-    }
-
-    private void initFadeTimer() {
-        // 一定時間待機した後、50ミリ秒ごとに不透明度減らす
-        fadeTimer = new Timer(delay, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // 入力バーが表示されている間はデフォルト値
-                if (commandField.isVisible()) {
-                    chatOpacity = defaultOpacity;
-                }
-
-                // 一定時間待機
-                if (delayCounter < initialDelay) {
-                    delayCounter++;
-                    return;
-                }
-
-                // 0.05ずつ透明にする
-                chatOpacity -= 0.05f;
-                if (chatOpacity <= 0.0f) {
-                    fadeTimer.stop(); // 透明になったらタイマーを止める
-                    chatOpacity = 0.0f;
-                    setVisible(false);
-                    hideChatBoxList(logHistoryData); // 非表示にする
-                }
-
-                LOG_HISTORY_LIST.repaint();
-            }
-        });
     }
 
     /**

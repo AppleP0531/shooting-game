@@ -67,7 +67,6 @@ public class OwnedResourcesPanel extends JPanel {
                 20 * ShootingGameMain.getScreenSizeAdj() +
                         rows * (100 * ShootingGameMain.getScreenSizeAdj() + 10 * ShootingGameMain.getScreenSizeAdj())
                         - panelSize.getY());
-        System.out.println(rows + " " + maxScrollOffset);
 
         for (ResourceKinds resKind : resources.keySet()) {
             // コインは描画しない
