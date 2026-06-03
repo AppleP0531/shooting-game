@@ -980,7 +980,7 @@ public final class CommandGlassPane extends JPanel {
                 if (!isSceneValid(SceneType.GAME, SceneType.TEST))
                     return;
 
-                SHIP_M.getPlayer().setShipId("Ship" + id);
+                SHIP_M.reloadPlayer(id);
             } catch (NumberFormatException ne) {
                 logText = "Unknnown param: " + param;
                 logHistoryData.addElement(logText);

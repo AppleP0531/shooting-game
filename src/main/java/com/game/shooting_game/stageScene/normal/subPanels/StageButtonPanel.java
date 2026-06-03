@@ -18,6 +18,9 @@ import com.game.shooting_game.gameScene.stage.StageManager;
 import com.game.shooting_game.stageScene.normal.NormalStageManager;
 import com.game.shooting_game.stageScene.normal.NormalStageManager.StageButtonData;
 import com.game.shooting_game.utils.ANSI;
+import com.game.shooting_game.utils.Anchor;
+import com.game.shooting_game.utils.Anchor.H;
+import com.game.shooting_game.utils.Anchor.V;
 import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.utils.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
@@ -202,11 +205,9 @@ public class StageButtonPanel extends JPanel {
                         BufferedImage combined = new BufferedImage(button.getWidth(), button.getHeight(),
                                 BufferedImage.TYPE_INT_ARGB);
                         Graphics2D g2 = combined.createGraphics();
-                        g2.drawImage(image, 0, 0, null);
-                        g2.drawImage(lockImage,
-                                (button.getWidth() - lockImage.getWidth()) / 2,
-                                (button.getHeight() - lockImage.getHeight()) / 2,
-                                null);
+                        UIBuilder.drawImage(g2, new Anchor(H.LEFT, V.TOP), new Vector2(0, 0), image);
+                        UIBuilder.drawImage(g2, Anchor.CENTER, new Vector2(button.getWidth(), button.getHeight()),
+                                lockImage);
                         g2.dispose();
                         button.setIcon(new ImageIcon(combined));
                         button.setDisabledIcon(new ImageIcon(combined));
