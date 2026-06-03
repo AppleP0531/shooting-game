@@ -302,7 +302,6 @@ public final class ShipManager implements Manager {
                 DataManager.getUserData().getSelectedShip(),
                 ColorMode.BLUE,
                 new Vector2(MAIN.getWidth() / 2, MAIN.getHeight()));
-        MAIN.addKeyListener(player);
     }
 
     @Override
@@ -471,6 +470,19 @@ public final class ShipManager implements Manager {
             case BOSS -> bossList.add(ship);
             default -> throw new IllegalArgumentException("不明な機体の種類です: " + ship.getOwner());
         }
+    }
+
+    /**
+     * プレイヤーのリロード
+     * 
+     * @param id
+     */
+    public void reloadPlayer(int id) {
+        Vector2 pos = player.getPos();
+        ColorMode mode = player.getMode();
+
+        clear("player");
+        player = new Player("Ship" + id, mode, pos);
     }
 
     /**

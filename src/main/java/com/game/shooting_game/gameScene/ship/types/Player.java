@@ -22,8 +22,10 @@ import com.game.shooting_game.gameScene.ship.Ship;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipDefinition;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.utils.ANSI;
+import com.game.shooting_game.utils.Anchor;
 import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.LogUtils;
+import com.game.shooting_game.utils.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 import com.game.shooting_game.utils.animation.Animation;
 
@@ -134,6 +136,9 @@ public class Player extends Ship implements KeyListener {
             subShip.add(
                     new SubShip(this, subShipId + "_R", mode, new Vector2(pos.getX() + shipDist, pos.getY() + yDiff)));
         }
+
+        MAIN.addKeyListener(this);
+        addHandler();
     }
 
     @Override
@@ -196,22 +201,12 @@ public class Player extends Ship implements KeyListener {
             if (animationId.get("shield_blue") != null && mode == ColorMode.BLUE) {
                 BufferedImage image = AM.getCurrentImage(animationId.get("shield_blue"));
 
-                g2.drawImage(
-                        image,
-                        (int) (pos.getX() - image.getWidth() / 2),
-                        (int) (pos.getY() - image.getHeight() / 2),
-                        (int) image.getWidth(), (int) image.getHeight(),
-                        MAIN);
+                UIBuilder.drawImage(g2, Anchor.CENTER, pos, image);
             }
             if (animationId.get("shield_red") != null && mode == ColorMode.RED) {
                 BufferedImage image = AM.getCurrentImage(animationId.get("shield_red"));
 
-                g2.drawImage(
-                        image,
-                        (int) (pos.getX() - image.getWidth() / 2),
-                        (int) (pos.getY() - image.getHeight() / 2),
-                        (int) image.getWidth(), (int) image.getHeight(),
-                        MAIN);
+                UIBuilder.drawImage(g2, Anchor.CENTER, pos, image);
             }
         }
 

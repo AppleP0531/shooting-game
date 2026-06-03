@@ -694,6 +694,7 @@ package "shooting_game" {
             - MAIN: ShootingGameMain
             - RM: ResourceManager
             - IM: ItemManager
+            - cachedCoinImage: BufferedImage
             --
             + GameSceneUI()
             + draw(g: Graphics, uiData: GameSceneUIData): void
@@ -815,6 +816,7 @@ package "shooting_game" {
                 + clear(target: String): void
                 + kill(target: String): void
                 + addShip(ship: Ship): void
+                + reloadPlayer(id: int): void
                 + getNearestTargetForPlayer(pos: Vector2): Ship
                 + findEnemy(target: Ship): boolean
                 + getShipConfig(): Map<ShipKinds, Map<String, ShipDefinition>>
@@ -1401,7 +1403,8 @@ package "shooting_game" {
             + {static} resizeImage(originImage: BufferedImage, imageSize: double): BufferedImage
             + {static} applyHighQualityRenderSettings(g2: Graphics2D): void
             - {static} applyStateIcon(component: String, button: JButton, basePath: String, suffix: String, size: Vector2): void
-            + {static} drawString(g: Graphics, pos: Vector2, size: double, color: Color, style: int, text: String): void
+            + {static} drawString(g: Graphics, anchor: Anchor, pos: Vector2, size: double, color: Color, style: int, text: String): void
+            + {static} drawImage(g: Graphics, anchor: Anchor, pos: Vector2, image: BufferedImage): void
             + {static} openPanel(p: JPanel, title: String, focus: Boolean, CloseButtonAction: closeAction): void
             + {static} closePanel(p: JPanel): void
             - {static} findComponentByName(panel: JPanel, name: String): Component
