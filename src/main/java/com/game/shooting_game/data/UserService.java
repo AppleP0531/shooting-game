@@ -1,6 +1,5 @@
 package com.game.shooting_game.data;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -12,10 +11,13 @@ import com.game.shooting_game.utils.LogUtils;
 @Service
 public class UserService {
     private static final String component = "[UserService]";
-    @Autowired
     private PasswordEncoder passwordEncoder;
-    @Autowired
     private UserRepository userRepository;
+
+    public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository) {
+        this.passwordEncoder = passwordEncoder;
+        this.userRepository = userRepository;
+    }
 
     /**
      * ユーザーの登録
