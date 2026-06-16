@@ -20,8 +20,8 @@ public final class InfinityStageManager extends JPanel implements Manager {
     private final ShootingGameMain MAIN;
     private final SceneManager SM;
 
-    private JButton lobbyButton;
-    private JButton settingButton;
+    private JButton lobbyBtn;
+    private JButton settingBtn;
 
     private InfinityStageManager() {
         InfinityStageManager.instance = this;
@@ -45,30 +45,30 @@ public final class InfinityStageManager extends JPanel implements Manager {
         setOpaque(false);
 
         // ロビーボタン(ロビー画面に遷移)
-        Vector2 lobbyButtonSize = new Vector2(
+        Vector2 lobbyBtnSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
         String lobbyImagePath = "/static/img/UI/stageScene/infinity/lobbyImage.pnt";
-        lobbyButton = UIBuilder.createImageButton(component, lobbyImagePath, lobbyButtonSize, "LOBBY");
-        lobbyButton.setBounds(
-                MAIN.getWidth() / 2 - (int) lobbyButton.getWidth() / 2,
-                MAIN.getHeight() - (int) lobbyButton.getHeight() - (int) (10 * ShootingGameMain.getScreenSizeAdj()),
-                (int) lobbyButton.getWidth(), (int) lobbyButton.getHeight());
-        lobbyButton.addActionListener(e -> SM.changeScene(SceneType.LOBBY));
-        this.add(lobbyButton);
+        lobbyBtn = UIBuilder.createImageBtn(component, lobbyImagePath, lobbyBtnSize, "LOBBY");
+        lobbyBtn.setBounds(
+                MAIN.getWidth() / 2 - (int) lobbyBtn.getWidth() / 2,
+                MAIN.getHeight() - (int) lobbyBtn.getHeight() - (int) (10 * ShootingGameMain.getScreenSizeAdj()),
+                (int) lobbyBtn.getWidth(), (int) lobbyBtn.getHeight());
+        lobbyBtn.addActionListener(e -> SM.changeScene(SceneType.LOBBY));
+        this.add(lobbyBtn);
 
         // 設定ボタン(設定画面に遷移)
-        Vector2 settingButtonSize = new Vector2(
+        Vector2 settingBtnSize = new Vector2(
                 30 * ShootingGameMain.getScreenSizeAdj(),
                 30 * ShootingGameMain.getScreenSizeAdj());
         String settingImagePath = "/static/img/UI/lobbyScene/SettingImage.png";
-        settingButton = UIBuilder.createImageButton(component, settingImagePath, settingButtonSize, "SETTING");
-        settingButton.setBounds(
-                MAIN.getWidth() - 10 - (int) settingButton.getWidth(),
+        settingBtn = UIBuilder.createImageBtn(component, settingImagePath, settingBtnSize, "SETTING");
+        settingBtn.setBounds(
+                MAIN.getWidth() - 10 - (int) settingBtn.getWidth(),
                 10,
-                (int) settingButton.getWidth(), (int) settingButton.getHeight());
-        settingButton.addActionListener(e -> SM.changeScene(SceneType.SETTING));
-        this.add(settingButton);
+                (int) settingBtn.getWidth(), (int) settingBtn.getHeight());
+        settingBtn.addActionListener(e -> SM.changeScene(SceneType.SETTING));
+        this.add(settingBtn);
     }
 
     @Override

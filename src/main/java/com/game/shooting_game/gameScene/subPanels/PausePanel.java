@@ -26,8 +26,8 @@ public class PausePanel extends JPanel {
     private Vector2 panelSize; // ステージ詳細パネルの大きさ
     private int spacing; // 外周のスペース
 
-    private JButton quitButton;
-    private JButton resumeButton;
+    private JButton quitBtn;
+    private JButton resumeBtn;
 
     public PausePanel() {
         MAIN = ShootingGameMain.getInstance();
@@ -51,16 +51,16 @@ public class PausePanel extends JPanel {
         spacing = 5;
 
         // 再開ボタン(ゲーム画面を再開)
-        Vector2 resumeButtonSize = new Vector2(
+        Vector2 resumeBtnSize = new Vector2(
                 100 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
         String resumeImagePath = "/static/img/UI/gameScene/resume.png";
-        resumeButton = UIBuilder.createImageButton(component, resumeImagePath, resumeButtonSize, "RESUME");
-        resumeButton.setBounds(
-                (int) panelSize.getX() - (int) resumeButton.getWidth() - spacing,
-                (int) panelSize.getY() - (int) resumeButton.getHeight() - spacing,
-                (int) resumeButton.getWidth(), (int) resumeButton.getHeight());
-        resumeButton.addActionListener(e -> {
+        resumeBtn = UIBuilder.createImageBtn(component, resumeImagePath, resumeBtnSize, "RESUME");
+        resumeBtn.setBounds(
+                (int) panelSize.getX() - (int) resumeBtn.getWidth() - spacing,
+                (int) panelSize.getY() - (int) resumeBtn.getHeight() - spacing,
+                (int) resumeBtn.getWidth(), (int) resumeBtn.getHeight());
+        resumeBtn.addActionListener(e -> {
             GM.setPause(false);
             UIBuilder.closePanel(this);
             // 再開ログ
@@ -69,24 +69,24 @@ public class PausePanel extends JPanel {
                     component,
                     ANSI.YELLOW + "Game Resumed" + ANSI.RESET);
         });
-        this.add(resumeButton);
+        this.add(resumeBtn);
 
         // 戻るボタン(ロビーに戻る)
-        Vector2 quitButtonSize = new Vector2(
+        Vector2 quitBtnSize = new Vector2(
                 100 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
         String skipStageImagePath = "/static/img/UI/gameScene/quit.png";
-        quitButton = UIBuilder.createImageButton(component, skipStageImagePath, quitButtonSize, "QUIT");
-        quitButton.setBounds(
+        quitBtn = UIBuilder.createImageBtn(component, skipStageImagePath, quitBtnSize, "QUIT");
+        quitBtn.setBounds(
                 spacing,
-                (int) panelSize.getY() - (int) quitButton.getHeight() - spacing,
-                (int) quitButton.getWidth(), (int) quitButton.getHeight());
-        quitButton.addActionListener(e -> {
+                (int) panelSize.getY() - (int) quitBtn.getHeight() - spacing,
+                (int) quitBtn.getWidth(), (int) quitBtn.getHeight());
+        quitBtn.addActionListener(e -> {
             GM.setPause(false);
             UIBuilder.closePanel(this);
             SM.changeScene(SceneType.NORMALSTAGE);
         });
-        this.add(quitButton);
+        this.add(quitBtn);
 
         // 背後へのクリックを阻止
         MouseAdapter blocker = new MouseAdapter() {

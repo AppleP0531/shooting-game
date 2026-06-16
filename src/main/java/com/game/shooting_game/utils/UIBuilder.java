@@ -97,12 +97,12 @@ public class UIBuilder extends JPanel {
      * @param fallbackText 画像が読み込めなかった場合のボタンのテキスト
      * @return パスから生成されたリサイズ済みボタン
      */
-    public static JButton createImageButton(String component, String path, Vector2 size, String fallbackText) {
+    public static JButton createImageBtn(String component, String path, Vector2 size, String fallbackText) {
         JButton button;
         try {
             // 通常アイコンの登録
             BufferedImage img = loadImage(path);
-            button = createImageButton(component, img, size, fallbackText);
+            button = createImageBtn(component, img, size, fallbackText);
 
             // 特殊状態の画像の登録
             applyStateIcon(component, button, path, "_rollover", size);
@@ -139,7 +139,7 @@ public class UIBuilder extends JPanel {
      * @param fallbackText 画像が読み込めなかった場合のボタンのテキスト
      * @return 画像から生成されたリサイズ済みボタン
      */
-    public static JButton createImageButton(String component, BufferedImage image, Vector2 size, String fallbackText) {
+    public static JButton createImageBtn(String component, BufferedImage image, Vector2 size, String fallbackText) {
         JButton button;
         // 画像が与えられた場合は画像を挿入、与えられなかった場合はテキストを挿入
         if (image != null) {
@@ -307,7 +307,7 @@ public class UIBuilder extends JPanel {
     }
 
     @FunctionalInterface
-    public interface CloseButtonAction {
+    public interface CloseBtnAction {
         void onClick();
     }
 
@@ -319,7 +319,7 @@ public class UIBuilder extends JPanel {
      * @param focus       フォーカスの有無
      * @param closeAction クローズボタンのアクション
      */
-    public static void openPanel(JPanel p, String title, Boolean focus, CloseButtonAction closeAction) {
+    public static void openPanel(JPanel p, String title, Boolean focus, CloseBtnAction closeAction) {
         p.setLayout(null);
         p.setBackground(new Color(0, 0, 0, 220));
         p.setBorder(BorderFactory.createLineBorder(Color.CYAN, 2));
@@ -394,15 +394,15 @@ public class UIBuilder extends JPanel {
         titleLabel.setBounds(0, 0, titlePanel.getWidth(), (int) titlePanelSize);
 
         // closeボタン
-        JButton closePanelButton = (JButton) findComponentByName(titlePanel, "closeBtn");
-        if (closePanelButton == null) {
-            Vector2 closePanelButtonSize = new Vector2(
+        JButton closePanelBtn = (JButton) findComponentByName(titlePanel, "closeBtn");
+        if (closePanelBtn == null) {
+            Vector2 closePanelBtnSize = new Vector2(
                     20 * ShootingGameMain.getScreenSizeAdj(),
                     20 * ShootingGameMain.getScreenSizeAdj());
-            String closePanelButtonImagePath = "/static/img/UI/closeImage.png";
-            closePanelButton = UIBuilder.createImageButton("[UIBuilder]", closePanelButtonImagePath,
-                    closePanelButtonSize, "X");
-            closePanelButton.addActionListener(e -> {
+            String closePanelBtnImagePath = "/static/img/UI/closeImage.png";
+            closePanelBtn = UIBuilder.createImageBtn("[UIBuilder]", closePanelBtnImagePath,
+                    closePanelBtnSize, "X");
+            closePanelBtn.addActionListener(e -> {
                 // クローズアクションが指定されていればそれを実行、指定されていなければパネルを閉じる
                 if (closeAction != null)
                     closeAction.onClick();
@@ -410,14 +410,14 @@ public class UIBuilder extends JPanel {
                     UIBuilder.closePanel(p);
             });
 
-            closePanelButton.setName("closeBtn");
-            titlePanel.add(closePanelButton);
+            closePanelBtn.setName("closeBtn");
+            titlePanel.add(closePanelBtn);
         }
-        closePanelButton.setBounds(
-                (int) titlePanel.getWidth() - (int) closePanelButton.getWidth(),
-                (int) titlePanelSize / 2 - (int) closePanelButton.getHeight() / 2,
-                (int) closePanelButton.getWidth(),
-                (int) closePanelButton.getHeight());
+        closePanelBtn.setBounds(
+                (int) titlePanel.getWidth() - (int) closePanelBtn.getWidth(),
+                (int) titlePanelSize / 2 - (int) closePanelBtn.getHeight() / 2,
+                (int) closePanelBtn.getWidth(),
+                (int) closePanelBtn.getHeight());
 
         // 最前面に配置
         parent.setComponentZOrder(p, 0);
