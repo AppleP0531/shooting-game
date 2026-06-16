@@ -24,7 +24,7 @@ import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.interfaces.Manager;
-import com.game.shooting_game.upgradeScene.subPanels.SkillTreeButtonPanel;
+import com.game.shooting_game.upgradeScene.subPanels.SkillTreeBtnPanel;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.utils.UIBuilder;
@@ -35,7 +35,7 @@ public final class UpgradeManager extends JPanel implements Manager {
     private static UpgradeManager instance;
     private final UpgradeSceneUI upgradeUI;
     @Getter
-    private final SkillTreeButtonPanel skillTreeButtonPanel;
+    private final SkillTreeBtnPanel skillTreeBtnPanel;
 
     private final ShootingGameMain MAIN;
 
@@ -54,7 +54,7 @@ public final class UpgradeManager extends JPanel implements Manager {
         private String detail;
     }
 
-    private JButton lobbyButton;
+    private JButton lobbyBtn;
 
     @Getter
     private List<SkillTreeData> skillTreeConfigMap; // ボタンデータ
@@ -66,7 +66,7 @@ public final class UpgradeManager extends JPanel implements Manager {
     private UpgradeManager() {
         UpgradeManager.instance = this;
         upgradeUI = new UpgradeSceneUI();
-        skillTreeButtonPanel = new SkillTreeButtonPanel();
+        skillTreeBtnPanel = new SkillTreeBtnPanel();
 
         MAIN = ShootingGameMain.getInstance();
 
@@ -77,25 +77,25 @@ public final class UpgradeManager extends JPanel implements Manager {
         setLayout(null);
         setOpaque(false);
 
-        this.add(skillTreeButtonPanel);
+        this.add(skillTreeBtnPanel);
 
         // ロビーボタン(ロビー画面に戻るボタン)
-        Vector2 lobbyButtonSize = new Vector2(
+        Vector2 lobbyBtnSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
         String lobbyImagePath = "/static/img/UI/upgradeScene/lobbyImage.png";
-        lobbyButton = UIBuilder.createImageButton(component, lobbyImagePath, lobbyButtonSize, "HANGER");
-        lobbyButton.setBounds(
-                MAIN.getWidth() / 2 - (int) lobbyButton.getWidth() / 2,
-                MAIN.getHeight() - (int) lobbyButton.getHeight() - (int) (10 * ShootingGameMain.getScreenSizeAdj()),
-                (int) lobbyButton.getWidth(), (int) lobbyButton.getHeight());
-        lobbyButton.addActionListener(e -> {
-            skillTreeButtonPanel.removeHandler();
+        lobbyBtn = UIBuilder.createImageBtn(component, lobbyImagePath, lobbyBtnSize, "HANGER");
+        lobbyBtn.setBounds(
+                MAIN.getWidth() / 2 - (int) lobbyBtn.getWidth() / 2,
+                MAIN.getHeight() - (int) lobbyBtn.getHeight() - (int) (10 * ShootingGameMain.getScreenSizeAdj()),
+                (int) lobbyBtn.getWidth(), (int) lobbyBtn.getHeight());
+        lobbyBtn.addActionListener(e -> {
+            skillTreeBtnPanel.removeHandler();
             SceneManager.getInstance().changeScene(SceneType.LOBBY);
         });
-        this.add(lobbyButton);
+        this.add(lobbyBtn);
 
-        skillTreeButtonPanel.initComponents();
+        skillTreeBtnPanel.initComponents();
     }
 
     /**
@@ -151,7 +151,7 @@ public final class UpgradeManager extends JPanel implements Manager {
     /**
      * 画像読み込み
      */
-    private void loadSkillTreeButtonImages() {
+    private void loadSkillTreeBtnImages() {
         skillTreeImageCache = new HashMap<>();
 
         for (SkillTreeData data : skillTreeConfigMap) {
@@ -183,8 +183,8 @@ public final class UpgradeManager extends JPanel implements Manager {
 
     @Override
     public void setup() {
-        skillTreeButtonPanel.setup();
-        skillTreeButtonPanel.addHandler();
+        skillTreeBtnPanel.setup();
+        skillTreeBtnPanel.addHandler();
     }
 
     @Override
@@ -195,7 +195,7 @@ public final class UpgradeManager extends JPanel implements Manager {
     @Override
     public void draw(Graphics g) {
         upgradeUI.draw(g);
-        skillTreeButtonPanel.draw(g);
+        skillTreeBtnPanel.draw(g);
     }
 
     /**
@@ -211,13 +211,13 @@ public final class UpgradeManager extends JPanel implements Manager {
      */
     private void reloadConfigs() {
         loadConfig();
-        loadSkillTreeButtonImages();
+        loadSkillTreeBtnImages();
     }
 
     /**
      * 画面状態の再読み込み
      */
     public void reloadScreen() {
-        skillTreeButtonPanel.reload();
+        skillTreeBtnPanel.reload();
     }
 }
