@@ -19,7 +19,7 @@ public final class TitleManager extends JPanel implements Manager {
     private final TitleSceneUI titleUI;
 
     private final ShootingGameMain MAIN;
-    private JButton startButton;
+    private JButton startBtn;
 
     private TitleManager() {
         TitleManager.instance = this;
@@ -33,18 +33,18 @@ public final class TitleManager extends JPanel implements Manager {
         setOpaque(false);
 
         // ゲームスタートボタン(ロビー画面に遷移)
-        Vector2 startButtonSize = new Vector2(
+        Vector2 startBtnSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
         String startImagePath = "/static/img/UI/titleScene/startGameImage.png";
-        startButton = UIBuilder.createImageButton(component, startImagePath, startButtonSize, "GAME START");
-        startButton.setBounds(
-                MAIN.getWidth() / 2 - startButton.getWidth() / 2,
-                MAIN.getHeight() / 2 - startButton.getHeight() / 2,
-                (int) startButton.getWidth(),
-                (int) startButton.getHeight());
-        startButton.addActionListener(e -> SceneManager.getInstance().changeScene(SceneType.LOBBY));
-        this.add(startButton);
+        startBtn = UIBuilder.createImageBtn(component, startImagePath, startBtnSize, "GAME START");
+        startBtn.setBounds(
+                MAIN.getWidth() / 2 - startBtn.getWidth() / 2,
+                MAIN.getHeight() / 2 - startBtn.getHeight() / 2,
+                (int) startBtn.getWidth(),
+                (int) startBtn.getHeight());
+        startBtn.addActionListener(e -> SceneManager.getInstance().changeScene(SceneType.LOBBY));
+        this.add(startBtn);
     }
 
     /**
