@@ -28,14 +28,14 @@ public final class LobbyManager extends JPanel implements Manager {
     private final ShipManager SHIP_M;
     private final BulletManager BM;
 
-    private JButton upgradeButton;
-    private JButton settingButton;
-    private JButton backpackButton;
-    private JButton nextShipButton;
-    private JButton previousShipButton;
-    private JButton sellectShipButton;
-    private JButton unlockShipButton;
-    private JButton selectStageButton;
+    private JButton upgradeBtn;
+    private JButton settingBtn;
+    private JButton backpackBtn;
+    private JButton nextShipBtn;
+    private JButton prevShipBtn;
+    private JButton selectShipBtn;
+    private JButton unlockShipBtn;
+    private JButton selectStageBtn;
 
     private int viewingShipInd = -1;
     private final String[] ships = {
@@ -61,102 +61,107 @@ public final class LobbyManager extends JPanel implements Manager {
         setOpaque(false);
 
         // 強化ボタン(強化画面に遷移)
-        Vector2 upgradeButtonSize = new Vector2(
+        Vector2 upgradeBtnSize = new Vector2(
                 150 * ShootingGameMain.getScreenSizeAdj(),
                 30 * ShootingGameMain.getScreenSizeAdj());
         String upgradeImagePath = "/static/img/UI/lobbyScene/upgrade.png";
-        upgradeButton = UIBuilder.createImageButton(component, upgradeImagePath, upgradeButtonSize, "UPGRADE");
-        upgradeButton.setBounds(
-                MAIN.getWidth() / 2 - (int) upgradeButton.getWidth() / 2,
-                MAIN.getHeight() - (int) upgradeButton.getHeight()
+        upgradeBtn = UIBuilder.createImageBtn(component, upgradeImagePath, upgradeBtnSize, "UPGRADE");
+        upgradeBtn.setBounds(
+                MAIN.getWidth() / 2 - (int) upgradeBtn.getWidth() / 2,
+                MAIN.getHeight() - (int) upgradeBtn.getHeight()
                         - (int) (50 * ShootingGameMain.getScreenSizeAdj()),
-                (int) upgradeButton.getWidth(), (int) upgradeButton.getHeight());
-        upgradeButton.addActionListener(e -> SM.changeScene(SceneType.UPGRADE));
-        this.add(upgradeButton);
+                (int) upgradeBtn.getWidth(), (int) upgradeBtn.getHeight());
+        upgradeBtn.addActionListener(e -> SM.changeScene(SceneType.UPGRADE));
+        upgradeBtn.setVisible(false); // 非表示
+        this.add(upgradeBtn);
 
         // 設定ボタン(設定画面に遷移)
-        Vector2 settingButtonSize = new Vector2(
+        Vector2 settingBtnSize = new Vector2(
                 30 * ShootingGameMain.getScreenSizeAdj(),
                 30 * ShootingGameMain.getScreenSizeAdj());
         String settingImagePath = "/static/img/UI/lobbyScene/settingImage.png";
-        settingButton = UIBuilder.createImageButton(component, settingImagePath, settingButtonSize, "SETTING");
-        settingButton.setBounds(
-                MAIN.getWidth() - 10 - (int) settingButton.getWidth(),
+        settingBtn = UIBuilder.createImageBtn(component, settingImagePath, settingBtnSize, "SETTING");
+        settingBtn.setBounds(
+                MAIN.getWidth() - 10 - (int) settingBtn.getWidth(),
                 (int) (10 * ShootingGameMain.getScreenSizeAdj()),
-                (int) settingButton.getWidth(), (int) settingButton.getHeight());
-        settingButton.addActionListener(e -> SM.changeScene(SceneType.SETTING));
-        this.add(settingButton);
+                (int) settingBtn.getWidth(), (int) settingBtn.getHeight());
+        settingBtn.addActionListener(e -> SM.changeScene(SceneType.SETTING));
+        settingBtn.setVisible(false); // 非表示
+        this.add(settingBtn);
 
         // ネクストシップボタン(次の船にシフト)
-        Vector2 nextShipButtonSize = new Vector2(
+        Vector2 nextShipBtnSize = new Vector2(
                 30 * ShootingGameMain.getScreenSizeAdj(),
                 30 * ShootingGameMain.getScreenSizeAdj());
         String nextShipImagePath = "/static/img/UI/lobbyScene/nextShip.png";
-        nextShipButton = UIBuilder.createImageButton(component, nextShipImagePath, nextShipButtonSize, ">");
-        nextShipButton.setBounds(
+        nextShipBtn = UIBuilder.createImageBtn(component, nextShipImagePath, nextShipBtnSize, ">");
+        nextShipBtn.setBounds(
                 MAIN.getWidth() / 2
                         + (int) (150 * ShootingGameMain.getScreenSizeAdj())
-                        - (int) nextShipButtonSize.getX() / 2,
-                MAIN.getHeight() / 2 - (int) nextShipButtonSize.getY() / 2,
-                (int) nextShipButton.getWidth(), (int) nextShipButton.getHeight());
-        nextShipButton.addActionListener(e -> {
+                        - (int) nextShipBtnSize.getX() / 2,
+                MAIN.getHeight() / 2 - (int) nextShipBtnSize.getY() / 2,
+                (int) nextShipBtn.getWidth(), (int) nextShipBtn.getHeight());
+        nextShipBtn.addActionListener(e -> {
             viewingShipInd = (viewingShipInd + 1) % ships.length;
             BM.clearBullets();
-            updateButtonStates();
+            updateBtnStates();
         });
-        this.add(nextShipButton);
+        nextShipBtn.setVisible(false); // 非表示
+        this.add(nextShipBtn);
 
         // プレビオスボタン(前の船にシフト)
-        Vector2 previousShipButtonSize = new Vector2(
+        Vector2 prevShipBtnSize = new Vector2(
                 30 * ShootingGameMain.getScreenSizeAdj(),
                 30 * ShootingGameMain.getScreenSizeAdj());
-        String previousShipImagePath = "/static/img/UI/lobbyScene/previousShip.png";
-        previousShipButton = UIBuilder.createImageButton(component, previousShipImagePath,
-                previousShipButtonSize, "<");
-        previousShipButton.setBounds(
+        String prevShipImagePath = "/static/img/UI/lobbyScene/prevShip.png";
+        prevShipBtn = UIBuilder.createImageBtn(component, prevShipImagePath,
+                prevShipBtnSize, "<");
+        prevShipBtn.setBounds(
                 MAIN.getWidth() / 2
                         - (int) (150 * ShootingGameMain.getScreenSizeAdj())
-                        - (int) nextShipButtonSize.getX() / 2,
-                MAIN.getHeight() / 2 - (int) previousShipButtonSize.getY() / 2,
-                (int) previousShipButton.getWidth(), (int) previousShipButton.getHeight());
-        previousShipButton.addActionListener(e -> {
+                        - (int) nextShipBtnSize.getX() / 2,
+                MAIN.getHeight() / 2 - (int) prevShipBtnSize.getY() / 2,
+                (int) prevShipBtn.getWidth(), (int) prevShipBtn.getHeight());
+        prevShipBtn.addActionListener(e -> {
             viewingShipInd = (viewingShipInd - 1 + ships.length) % ships.length;
             BM.clearBullets();
-            updateButtonStates();
+            updateBtnStates();
         });
-        this.add(previousShipButton);
+        prevShipBtn.setVisible(false); // 非表示
+        this.add(prevShipBtn);
 
         // セレクトボタン(船を選択)
-        Vector2 sellectShipButtonSize = new Vector2(
+        Vector2 selectShipBtnSize = new Vector2(
                 150 * ShootingGameMain.getScreenSizeAdj(),
                 30 * ShootingGameMain.getScreenSizeAdj());
-        String sellectShipImagePath = "/static/img/UI/lobbyScene/sellectShip.png";
-        sellectShipButton = UIBuilder.createImageButton(component, sellectShipImagePath, sellectShipButtonSize,
+        String selectShipImagePath = "/static/img/UI/lobbyScene/selectShip.png";
+        selectShipBtn = UIBuilder.createImageBtn(component, selectShipImagePath, selectShipBtnSize,
                 "SELLECT");
-        sellectShipButton.setBounds(
-                MAIN.getWidth() / 2 - (int) sellectShipButton.getWidth() / 2,
-                MAIN.getHeight() - (int) sellectShipButton.getHeight() / 2
+        selectShipBtn.setBounds(
+                MAIN.getWidth() / 2 - (int) selectShipBtn.getWidth() / 2,
+                MAIN.getHeight() - (int) selectShipBtn.getHeight() / 2
                         - (int) (100 * ShootingGameMain.getScreenSizeAdj()),
-                (int) sellectShipButton.getWidth(), (int) sellectShipButton.getHeight());
-        sellectShipButton.addActionListener(e -> {
+                (int) selectShipBtn.getWidth(), (int) selectShipBtn.getHeight());
+        selectShipBtn.addActionListener(e -> {
             DataManager.getUserData().setSelectedShip(ships[viewingShipInd]);
-            updateButtonStates();
+            updateBtnStates();
         });
-        this.add(sellectShipButton);
+        selectShipBtn.setVisible(false); // 非表示
+        this.add(selectShipBtn);
 
         // アンロックボタン(船を開放)
-        Vector2 unlockShipButtonSize = new Vector2(
+        Vector2 unlockShipBtnSize = new Vector2(
                 150 * ShootingGameMain.getScreenSizeAdj(),
                 30 * ShootingGameMain.getScreenSizeAdj());
         String unlockShipImagePath = "/static/img/UI/lobbyScene/unlockShip.png";
-        unlockShipButton = UIBuilder.createImageButton(component, unlockShipImagePath, unlockShipButtonSize,
+        unlockShipBtn = UIBuilder.createImageBtn(component, unlockShipImagePath, unlockShipBtnSize,
                 "UNLOCK");
-        unlockShipButton.setBounds(
-                MAIN.getWidth() / 2 - (int) unlockShipButton.getWidth() / 2,
-                MAIN.getHeight() - (int) unlockShipButton.getHeight() / 2
+        unlockShipBtn.setBounds(
+                MAIN.getWidth() / 2 - (int) unlockShipBtn.getWidth() / 2,
+                MAIN.getHeight() - (int) unlockShipBtn.getHeight() / 2
                         - (int) (100 * ShootingGameMain.getScreenSizeAdj()),
-                (int) unlockShipButton.getWidth(), (int) unlockShipButton.getHeight());
-        unlockShipButton.addActionListener(e -> {
+                (int) unlockShipBtn.getWidth(), (int) unlockShipBtn.getHeight());
+        unlockShipBtn.addActionListener(e -> {
             int targetShipCost = SHIP_M.getShipConfig().get(ShipKinds.PLAYER).get(ships[viewingShipInd])
                     .getDatas()
                     .getCost();
@@ -165,40 +170,43 @@ public final class LobbyManager extends JPanel implements Manager {
                 DataManager.getUserData().unlockShip(ships[viewingShipInd]);
                 ownedCoins -= targetShipCost;
                 DataManager.getUserData().getResources().setCoins(ownedCoins);
-                updateButtonStates();
+                updateBtnStates();
             }
         });
-        this.add(unlockShipButton);
+        unlockShipBtn.setVisible(false); // 非表示
+        this.add(unlockShipBtn);
 
         // 鞄ボタン(バックパック画面に遷移)
-        Vector2 backpackButtonSize = new Vector2(
+        Vector2 backpackBtnSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 40 * ShootingGameMain.getScreenSizeAdj());
         String backpackImagePath = "/static/img/UI/lobbyScene/backpackImage.png";
-        backpackButton = UIBuilder.createImageButton(component, backpackImagePath, backpackButtonSize, "Bag");
-        backpackButton.setBounds(
-                MAIN.getWidth() / 2 - (int) backpackButton.getWidth(),
-                MAIN.getHeight() - (int) backpackButton.getHeight()
+        backpackBtn = UIBuilder.createImageBtn(component, backpackImagePath, backpackBtnSize, "Bag");
+        backpackBtn.setBounds(
+                MAIN.getWidth() / 2 - (int) backpackBtn.getWidth(),
+                MAIN.getHeight() - (int) backpackBtn.getHeight()
                         - (int) (5 * ShootingGameMain.getScreenSizeAdj()),
-                (int) backpackButton.getWidth(), (int) backpackButton.getHeight());
-        backpackButton.addActionListener(e -> SM.changeScene(SceneType.BAG));
-        this.add(backpackButton);
+                (int) backpackBtn.getWidth(), (int) backpackBtn.getHeight());
+        backpackBtn.addActionListener(e -> SM.changeScene(SceneType.BAG));
+        backpackBtn.setVisible(false); // 非表示
+        this.add(backpackBtn);
 
         // ステージ選択ボタン(ステージ選択画面に遷移)
-        Vector2 selectStageButtonSize = new Vector2(
+        Vector2 selectStageBtnSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 40 * ShootingGameMain.getScreenSizeAdj());
         String selectStageImagePath = "/static/img/UI/lobbyScene/selectStage.png";
-        selectStageButton = UIBuilder.createImageButton(component, selectStageImagePath,
-                selectStageButtonSize, "SELECT STAGE");
-        selectStageButton.setBounds(
+        selectStageBtn = UIBuilder.createImageBtn(component, selectStageImagePath,
+                selectStageBtnSize, "SELECT STAGE");
+        selectStageBtn.setBounds(
                 MAIN.getWidth() / 2,
-                MAIN.getHeight() - (int) selectStageButton.getHeight()
+                MAIN.getHeight() - (int) selectStageBtn.getHeight()
                         - (int) (5 * ShootingGameMain.getScreenSizeAdj()),
-                (int) selectStageButton.getWidth(), (int) selectStageButton.getHeight());
-        selectStageButton
+                (int) selectStageBtn.getWidth(), (int) selectStageBtn.getHeight());
+        selectStageBtn
                 .addActionListener(e -> SM.changeScene(SceneType.SELECTSTAGE));
-        this.add(selectStageButton);
+        selectStageBtn.setVisible(false); // 非表示
+        this.add(selectStageBtn);
     }
 
     /**
@@ -219,7 +227,7 @@ public final class LobbyManager extends JPanel implements Manager {
         }
 
         BM.clearBullets();
-        updateButtonStates();
+        updateBtnStates();
         lobbyUI.setup();
     }
 
@@ -250,16 +258,28 @@ public final class LobbyManager extends JPanel implements Manager {
     }
 
     /**
-     * 選択ボタン、アンロックボタンの表示非表示
+     * ボタンの表示非表示
      */
-    public void updateButtonStates() {
+    public void updateBtnStates() {
         // プレビュー中の船を所有しているかどうか
         boolean isOwned = DataManager.getUserData().getShips().containsKey(ships[viewingShipInd]);
         // プレビュー中の船が選択されているかどうか
         boolean isSelected = DataManager.getUserData().getSelectedShip().equals(ships[viewingShipInd]);
-        // 所有しているかつ未選択の場合セレクトボタンを表示
-        sellectShipButton.setVisible(isOwned && !isSelected);
-        // 未所持ならアンロックボタン表示
-        unlockShipButton.setVisible(!isOwned);
+
+        settingBtn.setVisible(true);
+        nextShipBtn.setVisible(true);
+        prevShipBtn.setVisible(true);
+        backpackBtn.setVisible(true);
+        selectStageBtn.setVisible(true);
+        // 開放しているかどうか
+        if (isOwned) {
+            // 未選択なら選択ボタンを表示
+            if (!isSelected)
+                selectShipBtn.setVisible(true);
+
+            upgradeBtn.setVisible(true); // 強化ボタンを表示
+        } else {
+            unlockShipBtn.setVisible(true); // アンロックボタンを表示
+        }
     }
 }

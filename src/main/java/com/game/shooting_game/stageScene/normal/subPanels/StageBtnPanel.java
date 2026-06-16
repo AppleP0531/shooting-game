@@ -16,7 +16,7 @@ import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.gameScene.stage.StageManager;
 import com.game.shooting_game.stageScene.normal.NormalStageManager;
-import com.game.shooting_game.stageScene.normal.NormalStageManager.StageButtonData;
+import com.game.shooting_game.stageScene.normal.NormalStageManager.StageBtnData;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.Anchor;
 import com.game.shooting_game.utils.Anchor.H;
@@ -25,8 +25,8 @@ import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.utils.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
-public class StageButtonPanel extends JPanel {
-    private static final String component = "[StageButtonPanel]";
+public class StageBtnPanel extends JPanel {
+    private static final String component = "[StageBtnPanel]";
     @Getter
     private final StageDetailPanel stageDetailPanel;
 
@@ -42,7 +42,7 @@ public class StageButtonPanel extends JPanel {
 
     private Map<Integer, JButton> buttonMap;
 
-    public StageButtonPanel() {
+    public StageBtnPanel() {
         MAIN = ShootingGameMain.getInstance();
         NSM = NormalStageManager.getInstance();
         STAGE_M = StageManager.getInstance();
@@ -74,14 +74,14 @@ public class StageButtonPanel extends JPanel {
      * セットアップ
      */
     public void setup() {
-        drawButton();
+        drawBtn();
         drawPanel();
 
         if (getParent() != null) // 最前面に持ってくる
             getParent().setComponentZOrder(this, 0);
 
         // スクロール制限
-        maxScrollOffset = NSM.getStageButtonConfigMap().get(NSM.getStageButtonConfigMap().size())
+        maxScrollOffset = NSM.getStageBtnConfigMap().get(NSM.getStageBtnConfigMap().size())
                 .getPos().getY() * ShootingGameMain.getScreenSizeAdj() - panelSize.getY()
                 + buttonMap.get(1).getHeight() * 2;
     }
@@ -90,7 +90,7 @@ public class StageButtonPanel extends JPanel {
      * リソースの再読み込み
      */
     public void reload() {
-        drawButton();
+        drawBtn();
         drawPanel();
     }
 
@@ -137,7 +137,7 @@ public class StageButtonPanel extends JPanel {
         double bottom = this.getHeight() - 50 * ShootingGameMain.getScreenSizeAdj();
         originPos = new Vector2(this.getWidth() / 2, Math.max(bottom + scrollOffset, bottom));
         // ステージボタンの追加
-        for (StageButtonData data : NSM.getStageButtonConfigMap().values()) {
+        for (StageBtnData data : NSM.getStageBtnConfigMap().values()) {
             int stageId = data.getId();
             Vector2 buttonPos = data.getPos();
 
@@ -167,21 +167,21 @@ public class StageButtonPanel extends JPanel {
     /**
      * ボタンの描画
      */
-    private void drawButton() {
+    private void drawBtn() {
         this.removeAll();
 
         buttonMap = new HashMap<>();
 
-        for (Map.Entry<Integer, BufferedImage> entry : NSM.getStageButtonImageCache().entrySet()) {
+        for (Map.Entry<Integer, BufferedImage> entry : NSM.getStageBtnImageCache().entrySet()) {
             int stageId = entry.getKey();
             BufferedImage image = entry.getValue();
 
             // ステージボタン
-            Vector2 stageButtonSize = new Vector2(
+            Vector2 stageBtnSize = new Vector2(
                     50 * ShootingGameMain.getScreenSizeAdj(),
                     50 * ShootingGameMain.getScreenSizeAdj());
-            JButton button = UIBuilder.createImageButton(
-                    component, image, stageButtonSize, String.valueOf(stageId));
+            JButton button = UIBuilder.createImageBtn(
+                    component, image, stageBtnSize, String.valueOf(stageId));
             button.addActionListener(e -> {
                 STAGE_M.getStage().setStageId(stageId);
                 stageDetailPanel.showStageDaetail(stageId);

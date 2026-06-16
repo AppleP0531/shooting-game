@@ -28,8 +28,8 @@ public final class BagManager extends JPanel implements Manager {
     private final BagSceneUI bagUI;
     private final OwnedResourcesPanel ownedResourcesPanel;
 
-    private JButton goBackButton;
-    private JButton shopButton;
+    private JButton goBackBtn;
+    private JButton shopBtn;
 
     @Getter
     private Map<ResourceKinds, Integer> equipments;
@@ -48,38 +48,37 @@ public final class BagManager extends JPanel implements Manager {
         this.add(ownedResourcesPanel);
 
         // 戻るボタン(一つ前の画面に遷移)
-        Vector2 goBackButtonSize = new Vector2(
+        Vector2 goBackBtnSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
         String goBackImagePath = "/static/img/UI/bagScene/goBackImage.png";
-        goBackButton = UIBuilder.createImageButton(component, goBackImagePath, goBackButtonSize,
+        goBackBtn = UIBuilder.createImageBtn(component, goBackImagePath, goBackBtnSize,
                 "GO BACK");
-        goBackButton.setBounds(
-                MAIN.getWidth() / 2 - (int) goBackButton.getWidth(),
-                MAIN.getHeight() - (int) goBackButton.getHeight()
+        goBackBtn.setBounds(
+                MAIN.getWidth() / 2 - (int) goBackBtn.getWidth(),
+                MAIN.getHeight() - (int) goBackBtn.getHeight()
                         - (int) (5 * ShootingGameMain.getScreenSizeAdj()),
-                (int) goBackButton.getWidth(), (int) goBackButton.getHeight());
-        goBackButton.addActionListener(e -> {
-            // 一つ前の画面に遷移
-            SceneManager.getInstance().changeToPreviousScene();
+                (int) goBackBtn.getWidth(), (int) goBackBtn.getHeight());
+        goBackBtn.addActionListener(e -> {
+            SceneManager.getInstance().changeToPrevScene();
         });
-        this.add(goBackButton);
+        this.add(goBackBtn);
 
         // ショップボタン
-        Vector2 shopButtonSize = new Vector2(
+        Vector2 shopBtnSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
         String shopImagePath = "/static/img/UI/bagScene/shopImage.png";
-        shopButton = UIBuilder.createImageButton(component, shopImagePath, shopButtonSize, "Shop");
-        shopButton.setBounds(
+        shopBtn = UIBuilder.createImageBtn(component, shopImagePath, shopBtnSize, "Shop");
+        shopBtn.setBounds(
                 MAIN.getWidth() / 2,
-                MAIN.getHeight() - (int) shopButton.getHeight()
+                MAIN.getHeight() - (int) shopBtn.getHeight()
                         - (int) (5 * ShootingGameMain.getScreenSizeAdj()),
-                (int) shopButton.getWidth(), (int) shopButton.getHeight());
-        shopButton.addActionListener(e -> {
+                (int) shopBtn.getWidth(), (int) shopBtn.getHeight());
+        shopBtn.addActionListener(e -> {
             SceneManager.getInstance().changeScene(SceneType.SHOP);
         });
-        this.add(shopButton);
+        this.add(shopBtn);
 
         ownedResourcesPanel.initComponents();
     }

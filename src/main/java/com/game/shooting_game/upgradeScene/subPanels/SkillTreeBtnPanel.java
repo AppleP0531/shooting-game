@@ -24,8 +24,8 @@ import com.game.shooting_game.upgradeScene.UpgradeManager.SkillTreeData;
 import com.game.shooting_game.utils.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
-public class SkillTreeButtonPanel extends JPanel {
-    private static final String component = "[SkillTreeButtonPanel]";
+public class SkillTreeBtnPanel extends JPanel {
+    private static final String component = "[SkillTreeBtnPanel]";
     private final ShootingGameMain MAIN;
     private final UpgradeManager UM;
     @Getter
@@ -37,11 +37,11 @@ public class SkillTreeButtonPanel extends JPanel {
     private Vector2 dragMousePos; // ドラッグ中のマウス位置
     private double scale = 1; // ズーム量
     private Vector2 panelSize; // パネルサイズ
-    private Vector2 skillTreeButtonOrigin; // 基準点の位置
+    private Vector2 skillTreeBtnOrigin; // 基準点の位置
 
     private Map<String, JButton> buttonMap;
 
-    public SkillTreeButtonPanel() {
+    public SkillTreeBtnPanel() {
         MAIN = ShootingGameMain.getInstance();
         UM = UpgradeManager.getInstance();
         skillDetailPanel = new SkillDetailPanel();
@@ -50,7 +50,7 @@ public class SkillTreeButtonPanel extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
                 dragStartPos = new Vector2(e.getX(), e.getY());
-                originPos = new Vector2(skillTreeButtonOrigin.getX(), skillTreeButtonOrigin.getY());
+                originPos = new Vector2(skillTreeBtnOrigin.getX(), skillTreeBtnOrigin.getY());
             }
 
             @Override
@@ -62,8 +62,8 @@ public class SkillTreeButtonPanel extends JPanel {
             @Override
             public void mouseDragged(MouseEvent e) {
                 dragMousePos = new Vector2(e.getX(), e.getY());
-                skillTreeButtonOrigin.setX(originPos.getX() + dragMousePos.getX() - dragStartPos.getX());
-                skillTreeButtonOrigin.setY(originPos.getY() + dragMousePos.getY() - dragStartPos.getY());
+                skillTreeBtnOrigin.setX(originPos.getX() + dragMousePos.getX() - dragStartPos.getX());
+                skillTreeBtnOrigin.setY(originPos.getY() + dragMousePos.getY() - dragStartPos.getY());
                 drawPanel();
             }
 
@@ -100,9 +100,9 @@ public class SkillTreeButtonPanel extends JPanel {
      * セットアップ
      */
     public void setup() {
-        skillTreeButtonOrigin = new Vector2(panelSize.getX() / 2, panelSize.getY() / 2);
+        skillTreeBtnOrigin = new Vector2(panelSize.getX() / 2, panelSize.getY() / 2);
 
-        drawButton();
+        drawBtn();
         drawPanel();
 
         // 最前面に持ってくる
@@ -165,7 +165,7 @@ public class SkillTreeButtonPanel extends JPanel {
      * リソースの再読み込み
      */
     public void reload() {
-        drawButton();
+        drawBtn();
         drawPanel();
     }
 
@@ -180,8 +180,8 @@ public class SkillTreeButtonPanel extends JPanel {
         setVisible(true);
 
         // スキルツリーボタンの基準点の設定(画面中央)
-        if (skillTreeButtonOrigin == null)
-            skillTreeButtonOrigin = new Vector2(this.getWidth() / 2, this.getHeight() / 2);
+        if (skillTreeBtnOrigin == null)
+            skillTreeBtnOrigin = new Vector2(this.getWidth() / 2, this.getHeight() / 2);
 
         // スキルツリーボタンの追加
         for (SkillTreeData data : UM.getSkillTreeConfigMap()) {
@@ -195,15 +195,15 @@ public class SkillTreeButtonPanel extends JPanel {
             // 各ボタンの位置設定
             if (data.getName().equals("Origin")) {
                 buttonPos = new Vector2(
-                        skillTreeButtonOrigin.getX() - button.getWidth() / 2,
-                        skillTreeButtonOrigin.getY() - button.getHeight() / 2);
+                        skillTreeBtnOrigin.getX() - button.getWidth() / 2,
+                        skillTreeBtnOrigin.getY() - button.getHeight() / 2);
             } else {
                 // 子要素の円形配置用(5個)
                 double ang = Math.PI * 2 / 5;
-                JButton parentButton = buttonMap.get(data.getRootNode());
+                JButton parentBtn = buttonMap.get(data.getRootNode());
                 buttonPos = new Vector2(
-                        parentButton.getX() + Math.cos(ang * data.getPos() - Math.PI / 2) * radius,
-                        parentButton.getY() + Math.sin(ang * data.getPos() - Math.PI / 2) * radius);
+                        parentBtn.getX() + Math.cos(ang * data.getPos() - Math.PI / 2) * radius,
+                        parentBtn.getY() + Math.sin(ang * data.getPos() - Math.PI / 2) * radius);
             }
             // 位置
             int x = (int) buttonPos.getX();
@@ -214,9 +214,9 @@ public class SkillTreeButtonPanel extends JPanel {
 
             boolean isSelfInPanel = (0 < y + button.getHeight() && y < this.getHeight());
             boolean isParentInPanel = false;
-            JButton parentButton = buttonMap.get(data.getRootNode());
-            if (parentButton != null) // 親が存在する場合
-                isParentInPanel = (0 < y + parentButton.getHeight() && y < this.getHeight());
+            JButton parentBtn = buttonMap.get(data.getRootNode());
+            if (parentBtn != null) // 親が存在する場合
+                isParentInPanel = (0 < y + parentBtn.getHeight() && y < this.getHeight());
             // どちらかがパネル内にある場合
             if (isSelfInPanel || isParentInPanel) {
                 // 基準ボタンではない時
@@ -238,7 +238,7 @@ public class SkillTreeButtonPanel extends JPanel {
     /**
      * ボタンの描画
      */
-    private void drawButton() {
+    private void drawBtn() {
         this.removeAll();
 
         buttonMap = new HashMap<>();
@@ -247,11 +247,11 @@ public class SkillTreeButtonPanel extends JPanel {
             String skillName = entry.getKey();
             BufferedImage image = entry.getValue();
 
-            Vector2 skillTreeButtonSize = new Vector2(
+            Vector2 skillTreeBtnSize = new Vector2(
                     30 * scale * ShootingGameMain.getScreenSizeAdj(),
                     30 * scale * ShootingGameMain.getScreenSizeAdj());
-            JButton button = UIBuilder.createImageButton(
-                    component, image, skillTreeButtonSize, skillName);
+            JButton button = UIBuilder.createImageBtn(
+                    component, image, skillTreeBtnSize, skillName);
 
             button.addActionListener(e -> {
                 skillDetailPanel.showSkillDetail(skillName);
