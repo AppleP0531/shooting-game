@@ -21,8 +21,8 @@ public final class GameResultManager extends JPanel implements Manager {
     private final GameResultSceneUI gameResultUI;
     private final RewardListPanel rewardListPanel;
 
-    private JButton lobbyButton;
-    private JButton replayButton;
+    private JButton goBackBtn;
+    private JButton replayBtn;
 
     private GameResultManager() {
         GameResultManager.instance = this;
@@ -37,36 +37,36 @@ public final class GameResultManager extends JPanel implements Manager {
 
         this.add(rewardListPanel);
 
-        // ロビー戻るボタン(ステージ選択画面に戻る)
-        Vector2 lobbyButtonSize = new Vector2(
+        // 戻るボタン(ステージ選択画面に戻る)
+        Vector2 goBackBtnSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
-        String lobbyImagePath = "/static/img/UI/gameResultScene/lobbyImage.png";
-        lobbyButton = UIBuilder.createImageButton(component, lobbyImagePath, lobbyButtonSize, "LOBBY");
-        lobbyButton.setBounds(MAIN.getWidth() / 2 - (int) lobbyButton.getWidth(),
-                MAIN.getHeight() - (int) lobbyButton.getHeight()
+        String goBackImagePath = "/static/img/UI/gameResultScene/goBackImage.png";
+        goBackBtn = UIBuilder.createImageBtn(component, goBackImagePath, goBackBtnSize, "SELECT STAGE");
+        goBackBtn.setBounds(MAIN.getWidth() / 2 - (int) goBackBtn.getWidth(),
+                MAIN.getHeight() - (int) goBackBtn.getHeight()
                         - (int) (5 * ShootingGameMain.getScreenSizeAdj()),
-                (int) lobbyButton.getWidth(), (int) lobbyButton.getHeight());
-        lobbyButton.addActionListener(e -> {
-            SceneManager.getInstance().changeScene(SceneType.LOBBY);
+                (int) goBackBtn.getWidth(), (int) goBackBtn.getHeight());
+        goBackBtn.addActionListener(e -> {
+            SceneManager.getInstance().changeToPrevScene();
         });
-        this.add(lobbyButton);
+        this.add(goBackBtn);
 
         // 再プレイボタン(ゲーム画面に遷移)
-        Vector2 replayButtonSize = new Vector2(
+        Vector2 replayBtnSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
         String replayImagePath = "/static/img/UI/gameResultScene/replayImage.png";
-        replayButton = UIBuilder.createImageButton(component, replayImagePath, replayButtonSize, "REPLAY");
-        replayButton.setBounds(
+        replayBtn = UIBuilder.createImageBtn(component, replayImagePath, replayBtnSize, "REPLAY");
+        replayBtn.setBounds(
                 MAIN.getWidth() / 2,
-                MAIN.getHeight() - (int) replayButton.getHeight()
+                MAIN.getHeight() - (int) replayBtn.getHeight()
                         - (int) (5 * ShootingGameMain.getScreenSizeAdj()),
-                (int) replayButton.getWidth(), (int) replayButton.getHeight());
-        replayButton.addActionListener(e -> {
+                (int) replayBtn.getWidth(), (int) replayBtn.getHeight());
+        replayBtn.addActionListener(e -> {
             SceneManager.getInstance().changeScene(SceneType.GAME);
         });
-        this.add(replayButton);
+        this.add(replayBtn);
 
         rewardListPanel.initComponents();
     }

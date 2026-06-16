@@ -24,7 +24,7 @@ public class SkillDetailPanel extends JPanel {
     private String skillName; // 詳細参照中のボタンの名前
 
     private JTextArea detailTextArea;
-    private JButton upgradeButton;
+    private JButton upgradeBtn;
 
     public SkillDetailPanel() {
         UM = UpgradeManager.getInstance();
@@ -40,8 +40,8 @@ public class SkillDetailPanel extends JPanel {
         panelSize = new Vector2(250 * ShootingGameMain.getScreenSizeAdj(),
                 300 * ShootingGameMain.getScreenSizeAdj());
         setBounds(
-                UM.getSkillTreeButtonPanel().getWidth() / 2 - (int) panelSize.getX() / 2,
-                UM.getSkillTreeButtonPanel().getHeight() / 2 - (int) panelSize.getY() / 2,
+                UM.getSkillTreeBtnPanel().getWidth() / 2 - (int) panelSize.getX() / 2,
+                UM.getSkillTreeBtnPanel().getHeight() / 2 - (int) panelSize.getY() / 2,
                 (int) panelSize.getX(), (int) panelSize.getY());
         spacing = (int) (5 * ShootingGameMain.getScreenSizeAdj());
 
@@ -68,16 +68,16 @@ public class SkillDetailPanel extends JPanel {
         this.add(scrollPane);
 
         // 強化ボタン(スキルのレベルアップ)
-        Vector2 upgradeButtonSize = new Vector2(
+        Vector2 upgradeBtnSize = new Vector2(
                 100 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
-        String upgradeImagePath = "/static/img/UI/upgradeScene/upgradeButton.png";
-        upgradeButton = UIBuilder.createImageButton(component, upgradeImagePath, upgradeButtonSize, "UPGRADE");
-        upgradeButton.setBounds(
-                (int) panelSize.getX() / 2 - (int) upgradeButton.getWidth() / 2,
-                (int) panelSize.getY() - (int) upgradeButton.getHeight() - spacing,
-                (int) upgradeButton.getWidth(), (int) upgradeButton.getHeight());
-        upgradeButton.addActionListener(e -> {
+        String upgradeImagePath = "/static/img/UI/upgradeScene/upgradeBtn.png";
+        upgradeBtn = UIBuilder.createImageBtn(component, upgradeImagePath, upgradeBtnSize, "UPGRADE");
+        upgradeBtn.setBounds(
+                (int) panelSize.getX() / 2 - (int) upgradeBtn.getWidth() / 2,
+                (int) panelSize.getY() - (int) upgradeBtn.getHeight() - spacing,
+                (int) upgradeBtn.getWidth(), (int) upgradeBtn.getHeight());
+        upgradeBtn.addActionListener(e -> {
             String nowShip = DataManager.getUserData().getSelectedShip();
             int upgradeLevel = DataManager.getUserData().getShips().get(nowShip).getUpgrades()
                     .getOrDefault(skillName, 0);
@@ -87,7 +87,7 @@ public class SkillDetailPanel extends JPanel {
 
             UIBuilder.closePanel(this);
         });
-        this.add(upgradeButton);
+        this.add(upgradeBtn);
     }
 
     /**

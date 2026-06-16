@@ -18,7 +18,7 @@ public final class ShopManager extends JPanel implements Manager {
     private static final String component = "[ShopManager]";
     private static ShopManager instance;
 
-    private JButton goBackButton;
+    private JButton goBackBtn;
 
     private ShopManager() {
 
@@ -29,19 +29,18 @@ public final class ShopManager extends JPanel implements Manager {
         setOpaque(false);
 
         // 戻るボタン(一つ前の画面に遷移)
-        Vector2 goBackButtonSize = new Vector2(
+        Vector2 goBackBtnSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
         String goBackImagePath = "/static/img/UI/shopScene/goBackImage.png";
-        goBackButton = UIBuilder.createImageButton(component, goBackImagePath, goBackButtonSize,
+        goBackBtn = UIBuilder.createImageBtn(component, goBackImagePath, goBackBtnSize,
                 "GO BACK");
-        goBackButton.setPreferredSize(
-                new Dimension((int) goBackButton.getWidth(), (int) goBackButton.getHeight()));
-        goBackButton.addActionListener(e -> {
-            // 一つ前の画面に遷移
-            SceneManager.getInstance().changeToPreviousScene();
+        goBackBtn.setPreferredSize(
+                new Dimension((int) goBackBtn.getWidth(), (int) goBackBtn.getHeight()));
+        goBackBtn.addActionListener(e -> {
+            SceneManager.getInstance().changeToPrevScene();
         });
-        this.add(goBackButton);
+        this.add(goBackBtn);
     }
 
     /**

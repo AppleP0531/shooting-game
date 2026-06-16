@@ -740,7 +740,7 @@ public final class CommandGlassPane extends JPanel {
      * @param arg {}の中身
      * @return 切り分けたもの
      */
-    private Map<String, String> parseNamedBinaryTag(String arg) {
+    private Map<String, String> parseNBT(String arg) {
         Map<String, String> NBT = new HashMap<>();
 
         String[] parts = arg.split(",", -1);
@@ -1005,7 +1005,7 @@ public final class CommandGlassPane extends JPanel {
                 Integer id = GameUtils.tryParse(args[0].replace("ship", ""));
 
                 DataManager.getUserData().unlockShip("Ship" + id);
-                LobbyManager.getInstance().updateButtonStates();
+                LobbyManager.getInstance().updateBtnStates();
             } catch (NumberFormatException ne) {
                 logText = "Unknnown param: " + param;
                 logHistoryData.addElement(logText);
@@ -1192,7 +1192,7 @@ public final class CommandGlassPane extends JPanel {
                 if (openBraceIdx != -1 && closeBraceIdx != -1 && openBraceIdx < closeBraceIdx) {
                     nameStr = args[0].substring(0, openBraceIdx);
 
-                    Map<String, String> NBT = parseNamedBinaryTag(args[0].substring(openBraceIdx + 1, closeBraceIdx));
+                    Map<String, String> NBT = parseNBT(args[0].substring(openBraceIdx + 1, closeBraceIdx));
                     for (Map.Entry<String, String> entry : NBT.entrySet()) {
                         switch (entry.getKey()) {
                             case "rarity" -> {
@@ -1292,7 +1292,7 @@ public final class CommandGlassPane extends JPanel {
                 boolean isCleared = stageId <= data.getProgress().getClearedStage();
                 if (!isCleared) {
                     data.getProgress().setClearedStage(stageId);
-                    NSM.getStageButtonPanel().setup();
+                    NSM.getStageBtnPanel().setup();
 
                     // クリア進捗更新ログ
                     logText = "Progress reached " + ANSI.YELLOW + "Stage" + stageId + ANSI.RESET + ".";

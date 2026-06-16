@@ -19,7 +19,7 @@ public final class SettingManager extends JPanel implements Manager {
     private static SettingManager instance;
     private final SettingSceneUI settingUI;
 
-    private JButton goBackButton;
+    private JButton goBackBtn;
 
     private SettingManager() {
         SettingManager.instance = this;
@@ -31,19 +31,18 @@ public final class SettingManager extends JPanel implements Manager {
         setLayout(new GridBagLayout());
 
         // 戻るボタン(一つ前の画面に遷移)
-        Vector2 goBackButtonSize = new Vector2(
+        Vector2 goBackBtnSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
         String goBackImagePath = "/static/img/UI/settingScene/goBackImage.png";
-        goBackButton = UIBuilder.createImageButton(component, goBackImagePath, goBackButtonSize,
+        goBackBtn = UIBuilder.createImageBtn(component, goBackImagePath, goBackBtnSize,
                 "GO BACK");
-        goBackButton.setPreferredSize(
-                new Dimension((int) goBackButton.getWidth(), (int) goBackButton.getHeight()));
-        goBackButton.addActionListener(e -> {
-            // 一つ前の画面に遷移
-            SceneManager.getInstance().changeToPreviousScene();
+        goBackBtn.setPreferredSize(
+                new Dimension((int) goBackBtn.getWidth(), (int) goBackBtn.getHeight()));
+        goBackBtn.addActionListener(e -> {
+            SceneManager.getInstance().changeToPrevScene();
         });
-        this.add(goBackButton);
+        this.add(goBackBtn);
     }
 
     /**

@@ -32,7 +32,7 @@ package "shooting_game" {
     class SceneManager <<Singleton>> {
         - {static} instance: SceneManager
         - scenes: Map<SceneType, Manager>
-        - previousScenes: List<SceneType>
+        - prevScenes: List<SceneType>
         - sceneName: SceneType
         --
         - SceneManager()
@@ -41,7 +41,7 @@ package "shooting_game" {
         + update(dt: double): void
         + draw(g: Graphics): void
         + changeScene(target: SceneType): void
-        + changeToPreviousScene(): void
+        + changeToPrevScene(): void
         + getCurrentManager(): Manager
         + getSceneName(): SceneType
     }
@@ -269,7 +269,7 @@ package "shooting_game" {
             - {static} instance: TitleManager
             - titleUI: TitleSceneUI
             - MAIN: ShootingGameMain
-            - startButton: JButton
+            - startBtn: JButton
             --
             - TitleManager()
             + initComponents(): void
@@ -293,9 +293,9 @@ package "shooting_game" {
             - {static} component: String
             - {static} instance: SelectStageManager
             - MAIN: ShootingGameMain
-            - goBackButton: JButton
-            - normalModeButton: JButton
-            - infinityModeButton: JButton
+            - goBackBtn: JButton
+            - normalModeBtn: JButton
+            - infinityModeBtn: JButton
             --
             - SelectStageManager()
             + initComponents(): void
@@ -316,14 +316,14 @@ package "shooting_game" {
                 - {static} component: String
                 - {static} instance: NormalStageManager
                 - normalStageUI: NormalStageSceneUI
-                - stageButtonPanel: StageButtonPanel
+                - stageBtnPanel: StageBtnPanel
                 - MAIN: ShootingGameMain
                 - SM: SceneManager
-                - lobbyButton: JButton
-                - settingButton: JButton
-                - stageButtonConfigList: List<StageButtonData>
-                - stageButtonConfigMap: Map<Integer, StageButtonData>
-                - stageButtonImageCache: Map<Integer, BufferedImage>
+                - lobbyBtn: JButton
+                - settingBtn: JButton
+                - stageBtnConfigList: List<StageBtnData>
+                - stageBtnConfigMap: Map<Integer, StageBtnData>
+                - stageBtnImageCache: Map<Integer, BufferedImage>
                 --
                 - NormalStageManager()
                 + initComponents(): void
@@ -336,10 +336,10 @@ package "shooting_game" {
                 + reload(): void
                 - reloadConfigs(): void
                 - reloadScreen(): void
-                + getStageButtonPanel(): StageButtonPanel
+                + getStageBtnPanel(): StageBtnPanel
             }
 
-            class StageButtonData <<lomboc @Data>> {
+            class StageBtnData <<lomboc @Data>> {
                 - id: int
                 - pos: Vector2
             }
@@ -355,7 +355,7 @@ package "shooting_game" {
             }
 
             package "subPanels" {
-                class StageButtonPanel {
+                class StageBtnPanel {
                     - {static} component: String
                     - stageDetailPanel: StageDetailPanel
                     - MAIN: ShootingGameMain
@@ -368,13 +368,13 @@ package "shooting_game" {
                     - maxScrollOffset: double
                     - buttonMap: Map<Integer, JButton>
                     --
-                    + StageButtonPanel()
+                    + StageBtnPanel()
                     + initComponents(): void
                     + setup(): void
                     + reload(): void
                     - loadImages(): void
                     - drawPanel(): void
-                    - drawButton(): void
+                    - drawBtn(): void
                 }
 
                 class StageDetailPanel {
@@ -387,13 +387,13 @@ package "shooting_game" {
                     - spacing: int
                     - stageId: int
                     - detailTextArea: JTextArea
-                    - startStageButton: JButton
-                    - skipStageButton: JButton
+                    - startStageBtn: JButton
+                    - skipStageBtn: JButton
                     --
                     + StageDetailPanel()
                     + initComponents(): void
                     + showStageDetail(stageId: int): void
-                    - drawButton(stageId: int): void
+                    - drawBtn(stageId: int): void
                     - getRewardList(stageId: int): Map<ResourceName, Map<Rarity, String>>
                     - getEnemyList(stageId: int): List<String>
                 }
@@ -406,8 +406,8 @@ package "shooting_game" {
                 - {static} instance: InfinityStageManager
                 - MAIN: ShootingGameMain
                 - SM: SceneManager
-                - lobbyButton: JButton
-                - settingButton: JButton
+                - lobbyBtn: JButton
+                - settingBtn: JButton
                 --
                 - InfinityStageManager()
                 - {static} getInstance(): InfinityStageManager()
@@ -430,7 +430,7 @@ package "shooting_game" {
             - {static} component: String
             - {static} instance: SettingManager
             - settingUI: SettingSceneUI
-            - goBackButton: JButton
+            - goBackBtn: JButton
             --
             - SettingManager()
             + initComponents(): void
@@ -455,14 +455,14 @@ package "shooting_game" {
             - SM: SceneManager
             - SHIP_M: ShipManager
             - BM: BulletManager
-            - upgradeButton: JButton
-            - settingButton: JButton
-            - backpackButton: JButton
-            - nextShipButton: JButton
-            - previousShipButton: JButton
-            - sellectShipButton: JButton
-            - unlockShipButton: JButton
-            - selectStageButton: JButton
+            - upgradeBtn: JButton
+            - settingBtn: JButton
+            - backpackBtn: JButton
+            - nextShipBtn: JButton
+            - prevShipBtn: JButton
+            - selectShipBtn: JButton
+            - unlockShipBtn: JButton
+            - selectStageBtn: JButton
             - viewingShipInd: int
             - ships: String[]
             --
@@ -473,7 +473,7 @@ package "shooting_game" {
             + update(dt: double): void
             + draw(g: Graphics): void
             + setDefaultViewingShip(shipName: String): void
-            - updateButtonStates(): void
+            - updateBtnStates(): void
         }
 
         class LobbySceneUI {
@@ -507,8 +507,8 @@ package "shooting_game" {
             - MAIN: ShootingGameMain
             - bagUI: BagSceneUI
             - ownedResourcesPanel: OwnedResourcesPanel
-            - goBackButton: JButton
-            - shopButton: JButton
+            - goBackBtn: JButton
+            - shopBtn: JButton
             --
             - BagManager()
             + initComponents(): void
@@ -552,7 +552,7 @@ package "shooting_game" {
         class ShopManager <<Singleton>> {
             - {static} component: String
             - {static} instance: BagManager
-            - goBackButton: JButton
+            - goBackBtn: JButton
             --
             - ShopManager()
             + initComponents(): void
@@ -574,17 +574,17 @@ package "shooting_game" {
             - {static} instance: UpgradeManager
             - upgradeUI: UpgradeSceneUI
             - MAIN: ShootingGameMain
-            - skillTreeButtonPanel: SkillTreeButtonPanel
+            - skillTreeBtnPanel: SkillTreeBtnPanel
             - skillTreeConfigMap: List<SkillTreeData>
             - skillTreeImageCache: Map<String,BufferedImage>
-            - lobbyButton: JButton
-            - saveButton: JButton
+            - lobbyBtn: JButton
+            - saveBtn: JButton
             --
             - UpgradeManager()
             + initComponents(): void
             + {static} getInstance(): UpgradeManager
             - loadConfig(): void
-            - loadSkilltreeButtonImage(): void
+            - loadSkilltreeBtnImage(): void
             + setup(): void
             + update(dt: double): void
             + draw(g: Graphics): void
@@ -607,7 +607,7 @@ package "shooting_game" {
         }
 
         package "subPanels" {
-            class SkillTreeButtonPanel {
+            class SkillTreeBtnPanel {
                 - {static} component: String
                 - MAIN: ShootingGameMain
                 - UM: UpgradeManager
@@ -618,16 +618,16 @@ package "shooting_game" {
                 - dragMousePos: Vector2
                 - scale: double
                 - panelSize: Vector2
-                - skillTreeButtonOrigin: Vector2
+                - skillTreeBtnOrigin: Vector2
                 - buttonMap: Map<String, JButton>
                 --
-                + SkillTreeButtonPanel()
+                + SkillTreeBtnPanel()
                 + initComponents(): void
                 + setup(): void
                 + draw(g: Graphics): void
                 + reload(): void
                 - drawPanel(): void
-                - drawButton(): void
+                - drawBtn(): void
                 + addHandler(): void
                 + removeHandler(): void
             }
@@ -639,7 +639,7 @@ package "shooting_game" {
                 - spacing: int
                 - skillName: String
                 - detailTextArea: JTextArea
-                - upgradeButton: JButton
+                - upgradeBtn: JButton
                 --
                 + SkillDetailPanel()
                 + imitComponents(): void
@@ -722,8 +722,8 @@ package "shooting_game" {
                 - GM: GameManager
                 - panelSize: Vector2
                 - spacing: int
-                - quitButton: JButton
-                - resumeButton: JButton
+                - quitBtn: JButton
+                - resumeBtn: JButton
                 --
                 + PausePanel()
                 + initComponents(): void
@@ -1251,8 +1251,8 @@ package "shooting_game" {
             - MAIN: ShootingGameMain
             - gameResultUI: GameResultSceneUI
             - rewardListPanel: RewardListPanel
-            - lobbyButton: JButton
-            - replayButton: JButton
+            - goBackBtn: JButton
+            - replayBtn: JButton
             --
             - GameResultManager()
             + initComponents(): void
@@ -1398,14 +1398,14 @@ package "shooting_game" {
         class UIBuilder {
             + {static} loadImage(path: String): BufferedImage
             + {static} cutSpriteSheet(masterSheet: BufferedImage, grids: Vector2, useCount: int, imageSize: double)
-            + {static} createImageButton(component: String, path: String, size: Vector2, fallBackText: String): JButton
-            + {static} createImageButton(component: String, image: BufferedImage, size: Vector2, fallBackText: String): JButton
+            + {static} createImageBtn(component: String, path: String, size: Vector2, fallBackText: String): JButton
+            + {static} createImageBtn(component: String, image: BufferedImage, size: Vector2, fallBackText: String): JButton
             + {static} resizeImage(originImage: BufferedImage, imageSize: double): BufferedImage
             + {static} applyHighQualityRenderSettings(g2: Graphics2D): void
             - {static} applyStateIcon(component: String, button: JButton, basePath: String, suffix: String, size: Vector2): void
             + {static} drawString(g: Graphics, anchor: Anchor, pos: Vector2, size: double, color: Color, style: int, text: String): void
             + {static} drawImage(g: Graphics, anchor: Anchor, pos: Vector2, image: BufferedImage): void
-            + {static} openPanel(p: JPanel, title: String, focus: Boolean, CloseButtonAction: closeAction): void
+            + {static} openPanel(p: JPanel, title: String, focus: Boolean, CloseBtnAction: closeAction): void
             + {static} closePanel(p: JPanel): void
             - {static} findComponentByName(panel: JPanel, name: String): Component
             - {static} mouseFocus(p: JPanel): void
@@ -1414,7 +1414,7 @@ package "shooting_game" {
             + {static} createPathWithSuffix(path: String, suffix: String): String
         }
 
-        interface CloseButtonAction <<functional>>{
+        interface CloseBtnAction <<functional>>{
             ~ onClick(): void
         }
 
@@ -1624,7 +1624,7 @@ shooting_game.data.DataManager +-- UserData
 shooting_game.data.UserData +-- Progress
 shooting_game.data.UserData +-- Resources
 shooting_game.data.UserData +-- ShipStats
-shooting_game.stageScene.normal.NormalStageManager +-- StageButtonData
+shooting_game.stageScene.normal.NormalStageManager +-- StageBtnData
 shooting_game.stageScene.normal.NormalStageManager +-- StageDetailData
 shooting_game.lobbyScene.LobbySceneUI +-- LobbySceneUIData
 shooting_game.gameScene.GameManager +-- GameSceneUIData
@@ -1651,13 +1651,13 @@ shooting_game.command.CommandGlassPane --|> javax.swing.JPanel
 shooting_game.titleScene.TitleManager --|> javax.swing.JPanel
 shooting_game.stageScene.SelectStageManager --|> javax.swing.JPanel
 shooting_game.stageScene.normal.NormalStageManager --|> javax.swing.JPanel
-shooting_game.stageScene.normal.subPanels.StageButtonPanel --|> javax.swing.JPanel
+shooting_game.stageScene.normal.subPanels.StageBtnPanel --|> javax.swing.JPanel
 shooting_game.stageScene.normal.subPanels.StageDetailPanel --|> javax.swing.JPanel
 shooting_game.stageScene.infinity.InfinityStageManager --|> javax.swing.JPanel
 shooting_game.settingScene.SettingManager --|> javax.swing.JPanel
 shooting_game.lobbyScene.LobbyManager --|> javax.swing.JPanel
 shooting_game.upgradeScene.UpgradeManager --|> javax.swing.JPanel
-shooting_game.upgradeScene.subPanels.SkillTreeButtonPanel --|> javax.swing.JPanel
+shooting_game.upgradeScene.subPanels.SkillTreeBtnPanel --|> javax.swing.JPanel
 shooting_game.upgradeScene.subPanels.SkillDetailPanel --|> javax.swing.JPanel
 shooting_game.gameScene.GameManager --|> javax.swing.JPanel
 shooting_game.gameScene.subPanels.PausePanel --|> javax.swing.JPanel
