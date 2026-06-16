@@ -25,7 +25,7 @@ import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.interfaces.Manager;
-import com.game.shooting_game.stageScene.normal.subPanels.StageButtonPanel;
+import com.game.shooting_game.stageScene.normal.subPanels.StageBtnPanel;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.utils.UIBuilder;
@@ -36,7 +36,7 @@ public final class NormalStageManager extends JPanel implements Manager {
     private static NormalStageManager instance;
     private final NormalStageSceneUI lobbyUI;
     @Getter
-    private final StageButtonPanel stageButtonPanel;
+    private final StageBtnPanel stageBtnPanel;
 
     private final ShootingGameMain MAIN;
     private final SceneManager SM;
@@ -48,26 +48,26 @@ public final class NormalStageManager extends JPanel implements Manager {
     @Data // Getter, Setterの自動生成
     @NoArgsConstructor // 引数なしコンストラクタの生成
     @JsonIgnoreProperties(ignoreUnknown = true) // 余計な項目の無視
-    public static class StageButtonData {
+    public static class StageBtnData {
         private int id;
         private Vector2 pos;
     }
 
-    private JButton lobbyButton;
-    private JButton settingButton;
+    private JButton lobbyBtn;
+    private JButton settingBtn;
 
-    private List<StageButtonData> stageButtonConfigList; // ボタンデータ
+    private List<StageBtnData> stageBtnConfigList; // ボタンデータ
     @Getter
-    private Map<Integer, StageButtonData> stageButtonConfigMap; // ボタンデータマップ
+    private Map<Integer, StageBtnData> stageBtnConfigMap; // ボタンデータマップ
     @Getter
-    private Map<Integer, BufferedImage> stageButtonImageCache; // ボタン画像データ
-    private static final TypeReference<List<StageButtonData>> TYPE_REF = new TypeReference<>() {
+    private Map<Integer, BufferedImage> stageBtnImageCache; // ボタン画像データ
+    private static final TypeReference<List<StageBtnData>> TYPE_REF = new TypeReference<>() {
     };
 
     private NormalStageManager() {
         NormalStageManager.instance = this;
         lobbyUI = new NormalStageSceneUI();
-        stageButtonPanel = new StageButtonPanel();
+        stageBtnPanel = new StageBtnPanel();
 
         MAIN = ShootingGameMain.getInstance();
         SM = SceneManager.getInstance();
@@ -79,35 +79,35 @@ public final class NormalStageManager extends JPanel implements Manager {
         setLayout(null);
         setOpaque(false);
 
-        this.add(stageButtonPanel);
+        this.add(stageBtnPanel);
 
         // ロビーにボタン(ロビー画面に遷移)
-        Vector2 lobbyButtonSize = new Vector2(
+        Vector2 lobbyBtnSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
         String lobbyImagePath = "/static/img/UI/stageScene/normal/lobbyImage.png";
-        lobbyButton = UIBuilder.createImageButton(component, lobbyImagePath, lobbyButtonSize, "LOBBY");
-        lobbyButton.setBounds(
-                MAIN.getWidth() / 2 - (int) lobbyButton.getWidth() / 2,
-                MAIN.getHeight() - (int) lobbyButton.getHeight() - (int) (10 * ShootingGameMain.getScreenSizeAdj()),
-                (int) lobbyButton.getWidth(), (int) lobbyButton.getHeight());
-        lobbyButton.addActionListener(e -> SM.changeScene(SceneType.LOBBY));
-        this.add(lobbyButton);
+        lobbyBtn = UIBuilder.createImageBtn(component, lobbyImagePath, lobbyBtnSize, "LOBBY");
+        lobbyBtn.setBounds(
+                MAIN.getWidth() / 2 - (int) lobbyBtn.getWidth() / 2,
+                MAIN.getHeight() - (int) lobbyBtn.getHeight() - (int) (10 * ShootingGameMain.getScreenSizeAdj()),
+                (int) lobbyBtn.getWidth(), (int) lobbyBtn.getHeight());
+        lobbyBtn.addActionListener(e -> SM.changeScene(SceneType.LOBBY));
+        this.add(lobbyBtn);
 
         // 設定ボタン(設定画面に遷移)
-        Vector2 settingButtonSize = new Vector2(
+        Vector2 settingBtnSize = new Vector2(
                 30 * ShootingGameMain.getScreenSizeAdj(),
                 30 * ShootingGameMain.getScreenSizeAdj());
         String settingImagePath = "/static/img/UI/lobbyScene/SettingImage.png";
-        settingButton = UIBuilder.createImageButton(component, settingImagePath, settingButtonSize, "SETTING");
-        settingButton.setBounds(
-                MAIN.getWidth() - 10 - (int) settingButton.getWidth(),
+        settingBtn = UIBuilder.createImageBtn(component, settingImagePath, settingBtnSize, "SETTING");
+        settingBtn.setBounds(
+                MAIN.getWidth() - 10 - (int) settingBtn.getWidth(),
                 10,
-                (int) settingButton.getWidth(), (int) settingButton.getHeight());
-        settingButton.addActionListener(e -> SM.changeScene(SceneType.SETTING));
-        this.add(settingButton);
+                (int) settingBtn.getWidth(), (int) settingBtn.getHeight());
+        settingBtn.addActionListener(e -> SM.changeScene(SceneType.SETTING));
+        this.add(settingBtn);
 
-        stageButtonPanel.initComponents();
+        stageBtnPanel.initComponents();
     }
 
     /**
@@ -124,7 +124,7 @@ public final class NormalStageManager extends JPanel implements Manager {
      * config読み込み
      */
     private void loadConfig() {
-        final String CONFIG_PATH = "/static/configs/StageButtonConfig.json";
+        final String CONFIG_PATH = "/static/configs/StageBtnConfig.json";
         ObjectMapper mapper = new ObjectMapper();
 
         try (InputStream is = getClass().getResourceAsStream(CONFIG_PATH)) {
@@ -139,11 +139,11 @@ public final class NormalStageManager extends JPanel implements Manager {
                 throw new IOException("Resource not found: " + CONFIG_PATH);
 
             // データを読み込む
-            stageButtonConfigList = mapper.readValue(is, TYPE_REF);
+            stageBtnConfigList = mapper.readValue(is, TYPE_REF);
 
             // Mapに変換
-            stageButtonConfigMap = stageButtonConfigList.stream()
-                    .collect(Collectors.toMap(StageButtonData::getId, data -> data));
+            stageBtnConfigMap = stageBtnConfigList.stream()
+                    .collect(Collectors.toMap(StageBtnData::getId, data -> data));
 
             // ロード成功ログ
             LogUtils.systemLog(
@@ -168,9 +168,9 @@ public final class NormalStageManager extends JPanel implements Manager {
      * 画像読み込み
      */
     private void loadImages() {
-        stageButtonImageCache = new HashMap<>();
+        stageBtnImageCache = new HashMap<>();
 
-        for (StageButtonData data : stageButtonConfigMap.values()) {
+        for (StageBtnData data : stageBtnConfigMap.values()) {
             String imagePath = "/static/img/UI/lobbyScene/stage" + data.getId() + ".png";
             BufferedImage image = null;
             try {
@@ -193,14 +193,14 @@ public final class NormalStageManager extends JPanel implements Manager {
                     default -> System.out.println(e);
                 }
             }
-            stageButtonImageCache.put(data.getId(), image);
+            stageBtnImageCache.put(data.getId(), image);
         }
 
     }
 
     @Override
     public void setup() {
-        stageButtonPanel.setup();
+        stageBtnPanel.setup();
     }
 
     @Override
@@ -233,6 +233,6 @@ public final class NormalStageManager extends JPanel implements Manager {
      * 画面状態の再読み込み
      */
     private void reloadScreen() {
-        stageButtonPanel.reload();
+        stageBtnPanel.reload();
     }
 }

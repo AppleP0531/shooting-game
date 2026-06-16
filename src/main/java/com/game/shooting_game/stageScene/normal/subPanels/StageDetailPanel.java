@@ -40,8 +40,8 @@ public class StageDetailPanel extends JPanel {
     private int spacing; // 外周のスペース
 
     private JTextArea detailTextArea;
-    private JButton startStageButton;
-    private JButton skipStageButton;
+    private JButton startStageBtn;
+    private JButton skipStageBtn;
 
     public StageDetailPanel() {
         SM = SceneManager.getInstance();
@@ -60,8 +60,8 @@ public class StageDetailPanel extends JPanel {
         panelSize = new Vector2(350 * ShootingGameMain.getScreenSizeAdj(),
                 480 * ShootingGameMain.getScreenSizeAdj());
         setBounds(
-                NSM.getStageButtonPanel().getWidth() / 2 - (int) panelSize.getX() / 2,
-                NSM.getStageButtonPanel().getHeight() / 2 - (int) panelSize.getY() / 2,
+                NSM.getStageBtnPanel().getWidth() / 2 - (int) panelSize.getX() / 2,
+                NSM.getStageBtnPanel().getHeight() / 2 - (int) panelSize.getY() / 2,
                 (int) panelSize.getX(), (int) panelSize.getY());
         spacing = (int) (5 * ShootingGameMain.getScreenSizeAdj());
 
@@ -88,36 +88,36 @@ public class StageDetailPanel extends JPanel {
         this.add(scrollPane);
 
         // スタートボタン(ゲーム画面に遷移)
-        Vector2 startStageButtonSize = new Vector2(
+        Vector2 startStageBtnSize = new Vector2(
                 100 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
         String startStageImagePath = "/static/img/UI/lobbyScene/startStage.png";
-        startStageButton = UIBuilder.createImageButton(component, startStageImagePath, startStageButtonSize,
+        startStageBtn = UIBuilder.createImageBtn(component, startStageImagePath, startStageBtnSize,
                 "START");
-        startStageButton.addActionListener(e -> {
+        startStageBtn.addActionListener(e -> {
             UIBuilder.closePanel(this);
 
             SM.changeScene(SceneType.GAME);
         });
-        this.add(startStageButton);
+        this.add(startStageBtn);
 
         // スキップボタン(ステージスキップして報酬を入手)
-        Vector2 skipStageButtonSize = new Vector2(
+        Vector2 skipStageBtnSize = new Vector2(
                 100 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
         String skipStageImagePath = "/static/img/UI/lobbyScene/skipStageImage.png";
-        skipStageButton = UIBuilder.createImageButton(component, skipStageImagePath, skipStageButtonSize,
+        skipStageBtn = UIBuilder.createImageBtn(component, skipStageImagePath, skipStageBtnSize,
                 "SKIP");
-        skipStageButton.setBounds(
+        skipStageBtn.setBounds(
                 spacing,
-                (int) panelSize.getY() - (int) skipStageButton.getHeight() - spacing,
-                (int) skipStageButton.getWidth(), (int) skipStageButton.getHeight());
-        skipStageButton.addActionListener(e -> {
+                (int) panelSize.getY() - (int) skipStageBtn.getHeight() - spacing,
+                (int) skipStageBtn.getWidth(), (int) skipStageBtn.getHeight());
+        skipStageBtn.addActionListener(e -> {
             SM.changeScene(SceneType.GAME);
             GM.result();
             UIBuilder.closePanel(this);
         });
-        this.add(skipStageButton);
+        this.add(skipStageBtn);
     }
 
     /**
@@ -126,7 +126,7 @@ public class StageDetailPanel extends JPanel {
      * @param isCleared クリア済みステージかどうか
      */
     public void showStageDaetail(int stageId) {
-        drawButton(stageId);
+        drawBtn(stageId);
 
         // 詳細情報の設定
         String detailText = "";
@@ -164,7 +164,7 @@ public class StageDetailPanel extends JPanel {
      * 
      * @param stageId ステージID
      */
-    private void drawButton(int stageId) {
+    private void drawBtn(int stageId) {
         // 現在のクリア状況の取得
         int clearedStage = DataManager.getUserData().getProgress().getClearedStage();
         // 選択ステージがクリア済みかどうか
@@ -172,18 +172,18 @@ public class StageDetailPanel extends JPanel {
         // ステージをクリアしている場合はSTARTとSKIPを並べる、そうでなければSTARTを中央下に置く
         if (isCleared) {
             // スタートボタン
-            startStageButton.setBounds(
-                    (int) panelSize.getX() - (int) startStageButton.getWidth() - spacing,
-                    (int) panelSize.getY() - (int) startStageButton.getHeight() - spacing,
-                    (int) startStageButton.getWidth(), (int) startStageButton.getHeight());
-            skipStageButton.setVisible(true);
+            startStageBtn.setBounds(
+                    (int) panelSize.getX() - (int) startStageBtn.getWidth() - spacing,
+                    (int) panelSize.getY() - (int) startStageBtn.getHeight() - spacing,
+                    (int) startStageBtn.getWidth(), (int) startStageBtn.getHeight());
+            skipStageBtn.setVisible(true);
         } else {
             // スタートボタン
-            startStageButton.setBounds(
-                    (int) panelSize.getX() / 2 - (int) startStageButton.getWidth() / 2,
-                    (int) panelSize.getY() - (int) startStageButton.getHeight() - spacing,
-                    (int) startStageButton.getWidth(), (int) startStageButton.getHeight());
-            skipStageButton.setVisible(false);
+            startStageBtn.setBounds(
+                    (int) panelSize.getX() / 2 - (int) startStageBtn.getWidth() / 2,
+                    (int) panelSize.getY() - (int) startStageBtn.getHeight() - spacing,
+                    (int) startStageBtn.getWidth(), (int) startStageBtn.getHeight());
+            skipStageBtn.setVisible(false);
         }
     }
 

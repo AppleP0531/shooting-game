@@ -51,7 +51,7 @@ public final class SceneManager implements Manager {
 
     private final Map<SceneType, Manager> scenes = new EnumMap<>(SceneType.class);
     @Getter
-    private List<SceneType> previousScenes = new ArrayList<>();
+    private List<SceneType> prevScenes = new ArrayList<>();
     @Getter
     private SceneType sceneName;
 
@@ -129,19 +129,23 @@ public final class SceneManager implements Manager {
      */
     public void changeScene(SceneType target) {
         // 遷移履歴に追加
-        previousScenes.add(sceneName);
+        prevScenes.add(sceneName);
         sceneName = target;
         setup();
     }
 
     /**
-     * ひとつ前のシーンに戻る
+     * 前のシーンに戻る
      */
-    public void changeToPreviousScene() {
-        SceneType previousScene = previousScenes.get(previousScenes.size() - 1);
-        previousScenes.remove(previousScenes.size() - 1);
+    public void changeToPrevScene() {
+        // ゲームシーンの場合はもう一つ戻る
+        SceneType prevScene = prevScenes.get(prevScenes.size() - 1);
+        while (prevScene == SceneType.GAME) {
+            prevScene = prevScenes.get(prevScenes.size() - 1);
+            prevScenes.remove(prevScenes.size() - 1);
+        }
 
-        sceneName = previousScene;
+        sceneName = prevScene;
         setup();
     }
 
