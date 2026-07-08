@@ -79,4 +79,14 @@ public final class AnimationManager implements Manager {
     public BufferedImage getCurrentImage(String id) {
         return animationCache.get(id).getCurrentImage();
     }
+
+    /**
+     * 現在の表示フレーム番号の取得
+     * 
+     * @param id
+     * @return
+     */
+    public int getCurrentFrameNum(String id) {
+        return animationCache.get(id).getCurrentFrameNum();
+    }
 }
