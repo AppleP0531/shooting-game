@@ -68,4 +68,17 @@ public class Animation {
 
         return images[currentFrame];
     }
+
+    /**
+     * 現在のフレーム画像の取得
+     * 
+     * @return
+     */
+    public int getCurrentFrameNum() {
+        if (images == null || images.length == 0) {
+            return -1; // 画像がない場合は-1を返す
+        }
+
+        return currentFrame;
+    }
 }
