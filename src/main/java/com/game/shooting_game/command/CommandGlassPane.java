@@ -1196,7 +1196,7 @@ public final class CommandGlassPane extends JPanel {
                     for (Map.Entry<String, String> entry : NBT.entrySet()) {
                         switch (entry.getKey()) {
                             case "rarity" -> {
-                                rarity = Rarity.fromString(entry.getValue().toUpperCase());
+                                rarity = Rarity.fromString(entry.getValue());
                             }
                             default -> {
                                 // NBTが不適切な場合
@@ -1209,7 +1209,7 @@ public final class CommandGlassPane extends JPanel {
                     }
                 }
 
-                ResourceKinds resKind = new ResourceKinds(ResourceName.valueOf(nameStr.toUpperCase()), rarity);
+                ResourceKinds resKind = new ResourceKinds(ResourceName.fromString(nameStr), rarity);
                 Integer amount = GameUtils.tryParse(args[1]);
                 Resources resData = DataManager.getUserData().getResources();
                 if (resKind == ResourceKinds.COIN) {

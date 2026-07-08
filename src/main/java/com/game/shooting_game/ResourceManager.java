@@ -51,12 +51,25 @@ public final class ResourceManager implements Manager {
          * リソース名
          */
         public static enum ResourceName {
-            FRAME,
             COIN,
             GEAR,
             SCREW,
             COPPER_PLATE,
-            IRON_BAR
+            IRON_BAR,
+            FRAME;
+
+            public static ResourceName fromString(String value) {
+                try {
+                    int code = Integer.parseInt(value);
+                    ResourceName[] values = ResourceName.values();
+                    if (code < 0 || code >= values.length) {
+                        throw new IllegalArgumentException("Invalid resource code: " + code);
+                    }
+                    return values[code];
+                } catch (NumberFormatException e) {
+                    return ResourceName.valueOf(value.toUpperCase());
+                }
+            }
         }
 
         /**
@@ -107,7 +120,6 @@ public final class ResourceManager implements Manager {
     @NoArgsConstructor // 引数なしコンストラクタの生成
     @JsonIgnoreProperties(ignoreUnknown = true) // 余計な項目の無視
     public static class ResourceConfig {
-        private int id;
         private String imagePath;
 
         @JsonProperty("rarity")

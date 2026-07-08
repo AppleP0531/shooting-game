@@ -219,6 +219,8 @@ package "shooting_game" {
         SCREW
         COPPER_PLATE
         IRON_BAR
+        --
+        + fromString(value: String): ResourceName
     }
 
     enum Rarity {
