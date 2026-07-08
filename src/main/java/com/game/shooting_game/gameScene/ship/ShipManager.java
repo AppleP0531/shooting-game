@@ -244,12 +244,10 @@ public final class ShipManager implements Manager {
                         }
 
                         // 切り取り
-                        double imageSize = data.getImageSize() * ShootingGameMain.getScreenSizeAdj();
                         BufferedImage[] cutSheet = UIBuilder.cutSpriteSheet(
                                 masterSheet,
                                 new Vector2(grids.getX(), grids.getY()),
-                                (int) (grids.getX() * grids.getY()),
-                                imageSize);
+                                (int) (grids.getX() * grids.getY()));
 
                         // 必要部分のみを抜き取りフレーム配列に保存
                         BufferedImage[] frames = new BufferedImage[useCount];
