@@ -1,6 +1,5 @@
 {
   "FRAME": {
-    "id": 1,
     "imagePath": "/frame.png",
     "rarity": {
       "COMMON": {
@@ -36,7 +35,6 @@
     }
   },
   "COIN": {
-    "id": 0,
     "imagePath": "/coin.png",
     "rarity": {
       "COMMON": {
@@ -48,7 +46,6 @@
     }
   },
   "GEAR": {
-    "id": 1,
     "imagePath": "/gear.png",
     "rarity": {
       "COMMON": {
@@ -84,7 +81,6 @@
     }
   },
   "SCREW": {
-    "id": 2,
     "imagePath": "/screw.png",
     "rarity": {
       "COMMON": {
@@ -120,7 +116,6 @@
     }
   },
   "COPPER_PLATE": {
-    "id": 3,
     "imagePath": "/copper_plate.png",
     "rarity": {
       "COMMON": {
@@ -156,7 +151,6 @@
     }
   },
   "IRON_BAR": {
-    "id": 4,
     "imagePath": "/iron_bar.png",
     "rarity": {
       "COMMON": {
