@@ -54,9 +54,9 @@ public class Player extends Ship implements KeyListener {
         super(ShipKinds.PLAYER, id, mode, 0, pos);
 
         // 画像の読み込みとアニメーション登録
-        ShipDefinition def = SHIP_M.getShipConfig().get(owner).get(shipId);
         BufferedImage[] shieldImages_blue = SHIP_M.getShipImage().get("shield_blue");
         if (shieldImages_blue != null) {
+            ShipDefinition def = SHIP_M.getShipConfig().get(ShipKinds.OBJECT).get("shield");
             double frameRate = def.getDatas().getFrameRate();
             animationId.put("shield_blue", AM.addAnimation(new Animation(
                     shieldImages_blue,
@@ -65,6 +65,7 @@ public class Player extends Ship implements KeyListener {
         }
         BufferedImage[] shieldImages_red = SHIP_M.getShipImage().get("shield_red");
         if (shieldImages_red != null) {
+            ShipDefinition def = SHIP_M.getShipConfig().get(ShipKinds.OBJECT).get("shield");
             double frameRate = def.getDatas().getFrameRate();
             animationId.put("shield_red", AM.addAnimation(new Animation(
                     shieldImages_red,
@@ -73,6 +74,7 @@ public class Player extends Ship implements KeyListener {
         }
         BufferedImage[] explosionImages = SHIP_M.getShipImage().get("explosion");
         if (explosionImages != null) {
+            ShipDefinition def = SHIP_M.getShipConfig().get(ShipKinds.OBJECT).get("explosion");
             double frameRate = def.getDatas().getFrameRate();
             animationId.put("explosion", AM.addAnimation(new Animation(
                     explosionImages,
@@ -80,6 +82,7 @@ public class Player extends Ship implements KeyListener {
                     frameRate)));
         }
 
+        ShipDefinition def = SHIP_M.getShipConfig().get(owner).get(shipId);
         if (def != null && def.getDatas() != null) {
             // 画像が存在すれば読み込む
             for (String object : animationId.keySet()) {

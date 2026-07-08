@@ -42,9 +42,11 @@ public class ResourceFactory {
         if (rarity == null)
             return null;
 
+        // コインとフレーム以外のリソース名をランダムに選択
         List<ResourceName> filteredNames = Arrays.stream(ResourceName.values())
-                .filter(name -> name != ResourceName.COIN)
+                .filter(name -> name != ResourceName.COIN && name != ResourceName.FRAME)
                 .toList();
+
         Random random = new Random();
         int randomIndex = random.nextInt(filteredNames.size());
         ResourceName resName = filteredNames.get(randomIndex);
@@ -81,6 +83,6 @@ public class ResourceFactory {
                 return entry.getKey();
             }
         }
-        return null; // 万が一のため
+        return null;
     }
 }
