@@ -289,12 +289,12 @@
         "imagePath": "/player/Ship4.png",
         "cost": 1000000,
         "sheets": [
-          { "grids": [1, 1], "useCount": 1 },
-          { "grids": [0, 0], "useCount": 0 },
-          { "grids": [0, 0], "useCount": 0 }
+          { "grids": [4, 2], "useCount": 6 },
+          { "grids": [4, 3], "useCount": 10 },
+          { "grids": [4, 2], "useCount": 6 }
         ],
         "frameRate": 0.1,
-        "imageSize": 30,
+        "imageSize": 80,
         "collisionSize": 40,
         "speed": 250
       },

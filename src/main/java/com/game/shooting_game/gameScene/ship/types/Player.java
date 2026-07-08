@@ -58,17 +58,26 @@ public class Player extends Ship implements KeyListener {
         BufferedImage[] shieldImages_blue = SHIP_M.getShipImage().get("shield_blue");
         if (shieldImages_blue != null) {
             double frameRate = def.getDatas().getFrameRate();
-            animationId.put("shield_blue", AM.addAnimation(new Animation(shieldImages_blue, frameRate)));
+            animationId.put("shield_blue", AM.addAnimation(new Animation(
+                    shieldImages_blue,
+                    def.getDatas().getImageSize() * ShootingGameMain.getScreenSizeAdj(),
+                    frameRate)));
         }
         BufferedImage[] shieldImages_red = SHIP_M.getShipImage().get("shield_red");
         if (shieldImages_red != null) {
             double frameRate = def.getDatas().getFrameRate();
-            animationId.put("shield_red", AM.addAnimation(new Animation(shieldImages_red, frameRate)));
+            animationId.put("shield_red", AM.addAnimation(new Animation(
+                    shieldImages_red,
+                    def.getDatas().getImageSize() * ShootingGameMain.getScreenSizeAdj(),
+                    frameRate)));
         }
         BufferedImage[] explosionImages = SHIP_M.getShipImage().get("explosion");
         if (explosionImages != null) {
             double frameRate = def.getDatas().getFrameRate();
-            animationId.put("explosion", AM.addAnimation(new Animation(explosionImages, frameRate)));
+            animationId.put("explosion", AM.addAnimation(new Animation(
+                    explosionImages,
+                    def.getDatas().getImageSize() * ShootingGameMain.getScreenSizeAdj(),
+                    frameRate)));
         }
 
         if (def != null && def.getDatas() != null) {

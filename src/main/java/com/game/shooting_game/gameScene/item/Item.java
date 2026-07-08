@@ -38,6 +38,7 @@ public abstract class Item implements Moveable, GameObject, Entity {
 
     private final double ATTRACT_RANGE = 200; // 引き寄せが始まる距離
     private final double ATTRACT_SPEED = 500; // 引き寄せスピード
+    protected double imageSize; // 画像の大きさ
     @Getter
     protected double collisionSize = 0; // 当たり判定の大きさ
     @Getter
@@ -64,6 +65,7 @@ public abstract class Item implements Moveable, GameObject, Entity {
         if (kind instanceof ItemKinds itemKind) {
             ItemConfig itemConfig = IM.getItemConfig().get(itemKind);
             this.speed = itemConfig.getSpeed() * ShootingGameMain.getScreenSizeAdj();
+            this.imageSize = itemConfig.getImageSize() * ShootingGameMain.getScreenSizeAdj();
             this.collisionSize = itemConfig.getCollisionSize() * ShootingGameMain.getScreenSizeAdj();
 
             // 画像の取得
@@ -88,7 +90,7 @@ public abstract class Item implements Moveable, GameObject, Entity {
 
         // アニメーション登録
         if (itemImages != null) {
-            animationId = AM.addAnimation(new Animation(itemImages, frameRate));
+            animationId = AM.addAnimation(new Animation(itemImages, imageSize, frameRate));
         }
     }
 

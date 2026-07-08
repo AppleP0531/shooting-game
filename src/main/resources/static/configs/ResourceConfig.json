@@ -7,31 +7,31 @@
         "grids": [4, 2],
         "useCount": 8,
         "frameRate": 0.1,
-        "imageSize": 25
+        "imageSize": 100
       },
       "UNCOMMON": {
         "grids": [4, 2],
         "useCount": 8,
         "frameRate": 0.1,
-        "imageSize": 25
+        "imageSize": 100
       },
       "RARE": {
         "grids": [4, 2],
         "useCount": 8,
         "frameRate": 0.1,
-        "imageSize": 25
+        "imageSize": 100
       },
       "EPIC": {
         "grids": [4, 2],
         "useCount": 8,
         "frameRate": 0.1,
-        "imageSize": 25
+        "imageSize": 100
       },
       "LEGENDARY": {
         "grids": [4, 2],
         "useCount": 8,
         "frameRate": 0.1,
-        "imageSize": 25
+        "imageSize": 100
       }
     }
   },

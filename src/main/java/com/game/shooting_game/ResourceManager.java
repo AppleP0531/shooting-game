@@ -67,7 +67,20 @@ public final class ResourceManager implements Manager {
             UNCOMMON,
             RARE,
             EPIC,
-            LEGENDARY
+            LEGENDARY;
+
+            public static Rarity fromString(String value) {
+                try {
+                    int code = Integer.parseInt(value);
+                    Rarity[] values = Rarity.values();
+                    if (code < 0 || code >= values.length) {
+                        throw new IllegalArgumentException("Invalid rarity code: " + code);
+                    }
+                    return values[code];
+                } catch (NumberFormatException e) {
+                    return Rarity.valueOf(value.toUpperCase());
+                }
+            }
         }
 
         @Enumerated(EnumType.STRING)
@@ -198,8 +211,7 @@ public final class ResourceManager implements Manager {
                     BufferedImage masterSheet = UIBuilder.loadImage(imagePath);
                     Vector2 grids = resourceImagedata.getGrids();
                     int useCount = resourceImagedata.getUseCount();
-                    double imageSize = resourceImagedata.getImageSize() * ShootingGameMain.getScreenSizeAdj();
-                    BufferedImage[] frames = UIBuilder.cutSpriteSheet(masterSheet, grids, useCount, imageSize);
+                    BufferedImage[] frames = UIBuilder.cutSpriteSheet(masterSheet, grids, useCount);
 
                     // 画像をキャッシュに保存
                     resourceImageCache.computeIfAbsent(name, k -> new HashMap<>()).put(rarity, frames);

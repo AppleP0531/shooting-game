@@ -85,7 +85,8 @@ public class RewardListPanel extends JPanel {
 
             if (resData != null) {
                 double frameRate = resData.getFrameRate();
-                animationId.put(resKind, AM.addAnimation(new Animation(imageFrames, frameRate)));
+                double imageSize = 100 * ShootingGameMain.getScreenSizeAdj(); // 描画時に再調整入るためそれより大きめに設定
+                animationId.put(resKind, AM.addAnimation(new Animation(imageFrames, imageSize, frameRate)));
             }
         }
     }
