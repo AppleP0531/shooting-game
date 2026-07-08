@@ -189,7 +189,6 @@ package "shooting_game" {
         + reload(): void
         + getResourceConfig(): Map<ResourceName, ResourceConfig>
         + getResourceImage(): Map<ResourceName, Map<Rarity, BufferedImage[]>>
-        + getResourceView(): Map<ResourceName, Map<Rarity, BufferedImage[]>>
     }
 
     class ResourceConfig <<Lomboc @Data>> {
@@ -220,6 +219,8 @@ package "shooting_game" {
         SCREW
         COPPER_PLATE
         IRON_BAR
+        --
+        + fromString(value: String): ResourceName
     }
 
     enum Rarity {
@@ -228,6 +229,8 @@ package "shooting_game" {
         RARE
         EPIC
         LEGENDARY
+        --
+        + fromString(value: String): Rarity
     }
 
     enum ImageType {
@@ -1067,6 +1070,7 @@ package "shooting_game" {
                 # mode: ColorMode
                 # pos: Vector2
                 # speed: double
+                # imageSize: double
                 # collisionSize: double
                 # vec: double
                 # damage: double
@@ -1178,6 +1182,7 @@ package "shooting_game" {
                 # IM: ItemManager
                 - ATTRACT_RANGE: double
                 - ATTRACT_SPEED: double
+                # imageSize: double
                 # collisionSize: double
                 # kind: Collectible
                 # pos: Vector2

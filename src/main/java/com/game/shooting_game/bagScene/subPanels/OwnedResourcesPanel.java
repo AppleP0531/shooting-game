@@ -9,7 +9,6 @@ import java.util.Map;
 import javax.swing.JPanel;
 
 import com.game.shooting_game.ResourceManager;
-import com.game.shooting_game.ResourceManager.ImageType;
 import com.game.shooting_game.ResourceManager.ResourceData;
 import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
@@ -75,7 +74,7 @@ public class OwnedResourcesPanel extends JPanel {
 
             BufferedImage[] imageFrames = null;
             // 画像情報の取得
-            Map<ResourceName, Map<Rarity, BufferedImage[]>> viewCache = RM.getResourceView();
+            Map<ResourceName, Map<Rarity, BufferedImage[]>> viewCache = RM.getResourceImage();
             if (viewCache != null) {
                 ResourceName resName = resKind.getResName();
                 Map<Rarity, BufferedImage[]> rarityMap = viewCache.get(resName);
@@ -86,12 +85,12 @@ public class OwnedResourcesPanel extends JPanel {
             ResourceData resData = RM.getResourceConfig()
                     .get(resKind.getResName())
                     .getResData()
-                    .get(resKind.getRarity())
-                    .get(ImageType.VIEW);
+                    .get(resKind.getRarity());
 
             if (resData != null) {
                 double frameRate = resData.getFrameRate();
-                animationId.put(resKind, AM.addAnimation(new Animation(imageFrames, frameRate)));
+                double imageSize = 100 * ShootingGameMain.getScreenSizeAdj(); // 描画時に再調整入るためそれより大きめに設定
+                animationId.put(resKind, AM.addAnimation(new Animation(imageFrames, imageSize, frameRate)));
             }
         }
     }

@@ -24,7 +24,10 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+import com.game.shooting_game.ResourceManager;
 import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
+import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.utils.Anchor.H;
 import com.game.shooting_game.utils.Anchor.V;
@@ -63,11 +66,9 @@ public class UIBuilder extends JPanel {
      * @param masterSheet マスターシート
      * @param grids       一辺当たりのコマ数
      * @param useCount    使用コマ数
-     * @param imageSize   最終画像サイズ
      * @return 各フレーム用に切り分けられた画像
      */
-    public static BufferedImage[] cutSpriteSheet(BufferedImage masterSheet, Vector2 grids, int useCount,
-            double imageSize) {
+    public static BufferedImage[] cutSpriteSheet(BufferedImage masterSheet, Vector2 grids, int useCount) {
         // 1コマ当たりのサイズ
         int sheetWidth = masterSheet.getWidth() / (int) grids.getX();
         int sheetHeiht = masterSheet.getHeight() / (int) grids.getY();
@@ -80,9 +81,7 @@ public class UIBuilder extends JPanel {
             int y = (i / (int) grids.getX()) * sheetHeiht;
 
             // 画像切り分け
-            BufferedImage sub = masterSheet.getSubimage(x, y, sheetWidth, sheetHeiht);
-            // 画像のリサイズ
-            frames[i] = resizeImage(sub, imageSize);
+            frames[i] = masterSheet.getSubimage(x, y, sheetWidth, sheetHeiht);
         }
 
         return frames;
@@ -532,25 +531,41 @@ public class UIBuilder extends JPanel {
         Point windowPos = SwingUtilities.convertPoint(c, p, ShootingGameMain.getInstance());
         pos = new Vector2(windowPos.x, windowPos.y);
 
-        BufferedImage image = null;
-        if (uuid != null)
-            image = AnimationManager.getInstance().getCurrentImage(uuid);
-
         Vector2 imageSize = new Vector2(
                 size.getX() * 3 / 4,
                 size.getY() * 3 / 4);
-        if (image != null) {
-            image = resizeImage(image, image.getWidth());
-            drawImage(g2, Anchor.CENTER, pos, image);
+
+        // 枠の描画
+        BufferedImage[] frameImageFrames = null;
+        // 画像情報の取得
+        Map<ResourceName, Map<Rarity, BufferedImage[]>> viewCache = ResourceManager.getInstance().getResourceImage();
+        if (viewCache != null) {
+            Map<Rarity, BufferedImage[]> rarityMap = viewCache.get(ResourceName.FRAME);
+            if (rarityMap != null)
+                frameImageFrames = rarityMap.get(resKind.getRarity());
+        }
+        if (frameImageFrames != null && frameImageFrames.length > 0) {
+            BufferedImage frameImage = frameImageFrames[AnimationManager.getInstance().getCurrentFrameNum(uuid)];
+            frameImage = resizeImage(frameImage, size.getX());
+            drawImage(g2, Anchor.CENTER, pos, frameImage);
         } else {
-            // 枠の描画
             g2.setColor(new Color(0.5f, 0.5f, 0.5f, 0.5f));
             g2.drawRect((int) (pos.getX() - imageSize.getX() / 2),
                     (int) (pos.getY() - imageSize.getY() / 2),
                     (int) imageSize.getX(),
                     (int) imageSize.getY());
+        }
 
-            // noImageテキストの表示
+        // 画像の描画
+        BufferedImage image = null;
+        if (uuid != null)
+            image = AnimationManager.getInstance().getCurrentImage(uuid);
+
+        if (image != null) {
+            image = resizeImage(image, size.getX() * 2 / 3);
+            drawImage(g2, Anchor.CENTER, pos, image);
+        } else {
+            // noImageテキスト
             double textSize = size.getY() / 10;
             drawString(g, new Anchor(Anchor.CENTER), pos, textSize, Color.WHITE, Font.PLAIN,
                     "No Image");
