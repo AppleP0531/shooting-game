@@ -261,16 +261,20 @@ public final class LobbyManager extends JPanel implements Manager {
      * ボタンの表示非表示
      */
     public void updateBtnStates() {
-        // プレビュー中の船を所有しているかどうか
-        boolean isOwned = DataManager.getUserData().getShips().containsKey(ships[viewingShipInd]);
-        // プレビュー中の船が選択されているかどうか
-        boolean isSelected = DataManager.getUserData().getSelectedShip().equals(ships[viewingShipInd]);
-
         settingBtn.setVisible(true);
         nextShipBtn.setVisible(true);
         prevShipBtn.setVisible(true);
         backpackBtn.setVisible(true);
         selectStageBtn.setVisible(true);
+
+        selectShipBtn.setVisible(false);
+        upgradeBtn.setVisible(false);
+        unlockShipBtn.setVisible(false);
+
+        // プレビュー中の船を所有しているかどうか
+        boolean isOwned = DataManager.getUserData().getShips().containsKey(ships[viewingShipInd]);
+        // プレビュー中の船が選択されているかどうか
+        boolean isSelected = DataManager.getUserData().getSelectedShip().equals(ships[viewingShipInd]);
         // 開放しているかどうか
         if (isOwned) {
             // 未選択なら選択ボタンを表示
