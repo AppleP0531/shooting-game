@@ -5,6 +5,8 @@ import java.awt.image.BufferedImage;
 import lombok.Getter;
 import lombok.Setter;
 
+import com.game.shooting_game.utils.UIBuilder;
+
 public class Animation {
     private AnimationLogic customLogic = null;
     private BufferedImage[] images; // アニメーションのフレーム画像
@@ -21,7 +23,11 @@ public class Animation {
         int calculateFrame(int currentFrame, Animation context);
     }
 
-    public Animation(BufferedImage[] images, double frameRate) {
+    public Animation(BufferedImage[] images, double size, double frameRate) {
+        // 画像をリサイズして登録
+        for (int i = 0; i < images.length; i++) {
+            images[i] = UIBuilder.resizeImage(images[i], size);
+        }
         this.images = images;
         this.frameRate = frameRate;
     }
@@ -76,7 +82,7 @@ public class Animation {
      */
     public int getCurrentFrameNum() {
         if (images == null || images.length == 0) {
-            return -1; // 画像がない場合は-1を返す
+            return 0; // 画像がない場合は0を返す
         }
 
         return currentFrame;

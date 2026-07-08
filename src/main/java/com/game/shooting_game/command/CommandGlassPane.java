@@ -1196,7 +1196,7 @@ public final class CommandGlassPane extends JPanel {
                     for (Map.Entry<String, String> entry : NBT.entrySet()) {
                         switch (entry.getKey()) {
                             case "rarity" -> {
-                                rarity = Rarity.valueOf(entry.getValue().toUpperCase());
+                                rarity = Rarity.fromString(entry.getValue().toUpperCase());
                             }
                             default -> {
                                 // NBTが不適切な場合

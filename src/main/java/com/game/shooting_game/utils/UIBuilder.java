@@ -66,11 +66,9 @@ public class UIBuilder extends JPanel {
      * @param masterSheet マスターシート
      * @param grids       一辺当たりのコマ数
      * @param useCount    使用コマ数
-     * @param imageSize   最終画像サイズ
      * @return 各フレーム用に切り分けられた画像
      */
-    public static BufferedImage[] cutSpriteSheet(BufferedImage masterSheet, Vector2 grids, int useCount,
-            double imageSize) {
+    public static BufferedImage[] cutSpriteSheet(BufferedImage masterSheet, Vector2 grids, int useCount) {
         // 1コマ当たりのサイズ
         int sheetWidth = masterSheet.getWidth() / (int) grids.getX();
         int sheetHeiht = masterSheet.getHeight() / (int) grids.getY();
@@ -83,9 +81,7 @@ public class UIBuilder extends JPanel {
             int y = (i / (int) grids.getX()) * sheetHeiht;
 
             // 画像切り分け
-            BufferedImage sub = masterSheet.getSubimage(x, y, sheetWidth, sheetHeiht);
-            // 画像のリサイズ
-            frames[i] = resizeImage(sub, imageSize);
+            frames[i] = masterSheet.getSubimage(x, y, sheetWidth, sheetHeiht);
         }
 
         return frames;

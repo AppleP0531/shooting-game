@@ -19,7 +19,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.interfaces.Manager;
@@ -171,8 +170,7 @@ public final class BulletManager implements Manager {
                             BufferedImage masterSheet = UIBuilder.loadImage(imagePath);
                             Vector2 grids = data.getGrids();
                             int useCount = data.getUseCount();
-                            double imageSize = data.getImageSize() * ShootingGameMain.getScreenSizeAdj();
-                            BufferedImage[] frames = UIBuilder.cutSpriteSheet(masterSheet, grids, useCount, imageSize);
+                            BufferedImage[] frames = UIBuilder.cutSpriteSheet(masterSheet, grids, useCount);
 
                             // 画像をキャッシュに保存
                             bulletImageCache
