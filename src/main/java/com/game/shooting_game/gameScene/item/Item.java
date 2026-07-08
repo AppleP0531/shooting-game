@@ -75,6 +75,8 @@ public abstract class Item implements Moveable, GameObject, Entity {
             frameRate = itemConfig.getFrameRate();
         } else if (kind instanceof ResourceKinds resKind) {
             ResourceConfig resConfig = RM.getResourceConfig().get(resKind.getResName());
+            this.imageSize = resConfig.getResData().get(resKind.getRarity()).getImageSize()
+                    * ShootingGameMain.getScreenSizeAdj();
 
             // 画像情報の取得
             Map<ResourceName, Map<Rarity, BufferedImage[]>> viewCache = RM.getResourceImage();
