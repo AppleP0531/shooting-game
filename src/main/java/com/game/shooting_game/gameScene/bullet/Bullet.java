@@ -37,6 +37,7 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
     @Getter
     protected Vector2 pos; // 位置
     protected double speed = 0; // 速度
+    protected double imageSize; // 画像の大きさ
     @Getter
     protected double collisionSize = 0; // 当たり判定の大きさ
     protected double vec; // 向いてる方向
@@ -63,6 +64,7 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
         this.kind = kind;
         this.mode = mode;
         BulletConfig bulletConfig = this.BM.getBulletConfig().get(owner).get(kind).get(id);
+        this.imageSize = bulletConfig.getImageSize() * ShootingGameMain.getScreenSizeAdj();
         this.collisionSize = bulletConfig.getCollisionSize() * ShootingGameMain.getScreenSizeAdj();
         this.speed = bulletConfig.getSpeed() * ShootingGameMain.getScreenSizeAdj();
         this.damage = bulletConfig.getDamage();
@@ -76,7 +78,7 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
                 .orElse(null);
         if (bulletImages != null) {
             double frameRate = BM.getBulletConfig().get(owner).get(kind).get(id).getFrameRate();
-            this.animationId = AM.addAnimation(new Animation(bulletImages, frameRate));
+            this.animationId = AM.addAnimation(new Animation(bulletImages, imageSize, frameRate));
         }
     }
 

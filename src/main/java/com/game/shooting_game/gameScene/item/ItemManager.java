@@ -19,7 +19,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import com.game.shooting_game.ResourceManager.ResourceKinds;
-import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.interfaces.Collectible;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.utils.ANSI;
@@ -137,8 +136,7 @@ public final class ItemManager implements Manager {
                 BufferedImage masterSheet = UIBuilder.loadImage(imagePath);
                 Vector2 grids = data.getGrids();
                 int useCount = data.getUseCount();
-                double imageSize = data.getImageSize() * ShootingGameMain.getScreenSizeAdj();
-                BufferedImage[] frames = UIBuilder.cutSpriteSheet(masterSheet, grids, useCount, imageSize);
+                BufferedImage[] frames = UIBuilder.cutSpriteSheet(masterSheet, grids, useCount);
 
                 // 画像をキャッシュに保存
                 itemImageCache.put(kind, frames);
