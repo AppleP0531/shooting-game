@@ -465,6 +465,7 @@ package "shooting_game" {
             - prevShipBtn: JButton
             - selectShipBtn: JButton
             - unlockShipBtn: JButton
+            - changeModeBtn: JButton
             - selectStageBtn: JButton
             - viewingShipInd: int
             - ships: String[]
@@ -916,6 +917,7 @@ package "shooting_game" {
                 - resetTimer(kinds: BulletKinds, id: int, state: String): void
                 - initializeMap(): Map<BulletKinds, Map<Integer, Double>>
                 + animation(name: String): void
+                + changeMode(): void
                 + addScore(): void
                 + heal(damage: double): void
                 + addDamage(damage: double): void

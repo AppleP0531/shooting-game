@@ -371,12 +371,7 @@ public class Player extends Ship implements KeyListener {
                 lastHorizontal = "right";
             }
             case KeyEvent.VK_SPACE -> {
-                // モード切替
-                if (mode == ColorMode.BLUE) {
-                    mode = ColorMode.RED;
-                } else {
-                    mode = ColorMode.BLUE;
-                }
+                changeMode();
             }
         }
     }

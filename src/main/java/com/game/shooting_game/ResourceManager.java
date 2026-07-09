@@ -51,11 +51,11 @@ public final class ResourceManager implements Manager {
          * リソース名
          */
         public static enum ResourceName {
-            COIN,
             GEAR,
             SCREW,
             COPPER_PLATE,
             IRON_BAR,
+            COIN,
             FRAME;
 
             public static ResourceName fromString(String value) {
