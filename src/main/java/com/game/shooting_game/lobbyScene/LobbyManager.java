@@ -35,6 +35,7 @@ public final class LobbyManager extends JPanel implements Manager {
     private JButton prevShipBtn;
     private JButton selectShipBtn;
     private JButton unlockShipBtn;
+    private JButton changeModeBtn;
     private JButton selectStageBtn;
 
     private int viewingShipInd = -1;
@@ -176,6 +177,24 @@ public final class LobbyManager extends JPanel implements Manager {
         unlockShipBtn.setVisible(false); // 非表示
         this.add(unlockShipBtn);
 
+        // 変更ボタン(モードを変更)
+        Vector2 changeModeBtnSize = new Vector2(
+                150 * ShootingGameMain.getScreenSizeAdj(),
+                30 * ShootingGameMain.getScreenSizeAdj());
+        String changeModeImagePath = "/static/img/UI/lobbyScene/changeMode.png";
+        changeModeBtn = UIBuilder.createImageBtn(component, changeModeImagePath, changeModeBtnSize,
+                "CHANGE_MODE");
+        changeModeBtn.setBounds(
+                MAIN.getWidth() - (int) changeModeBtn.getWidth() - (int) (10 * ShootingGameMain.getScreenSizeAdj()),
+                MAIN.getHeight() - (int) changeModeBtn.getHeight() / 2
+                        - (int) (100 * ShootingGameMain.getScreenSizeAdj()),
+                (int) changeModeBtn.getWidth(), (int) changeModeBtn.getHeight());
+        changeModeBtn.addActionListener(e -> {
+            SHIP_M.getPlayer().changeMode();
+        });
+        changeModeBtn.setVisible(false); // 非表示
+        this.add(changeModeBtn);
+
         // 鞄ボタン(バックパック画面に遷移)
         Vector2 backpackBtnSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
@@ -266,6 +285,7 @@ public final class LobbyManager extends JPanel implements Manager {
         prevShipBtn.setVisible(true);
         backpackBtn.setVisible(true);
         selectStageBtn.setVisible(true);
+        changeModeBtn.setVisible(true);
 
         selectShipBtn.setVisible(false);
         upgradeBtn.setVisible(false);

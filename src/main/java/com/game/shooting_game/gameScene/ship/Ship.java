@@ -398,6 +398,17 @@ public abstract class Ship implements Moveable, GameObject, Entity {
     }
 
     /**
+     * モード切替
+     */
+    public void changeMode() {
+        if (mode == ColorMode.BLUE) {
+            mode = ColorMode.RED;
+        } else {
+            mode = ColorMode.BLUE;
+        }
+    }
+
+    /**
      * スコアの加算
      */
     public void addScore() {
