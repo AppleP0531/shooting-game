@@ -138,14 +138,14 @@ public final class SceneManager implements Manager {
      * 前のシーンに戻る
      */
     public void changeToPrevScene() {
-        // ゲームシーンの場合はもう一つ戻る
         SceneType prevScene = prevScenes.get(prevScenes.size() - 1);
-        while (prevScene == SceneType.GAME) {
-            prevScene = prevScenes.get(prevScenes.size() - 1);
-            prevScenes.remove(prevScenes.size() - 1);
-        }
-
+        prevScenes.remove(prevScenes.size() - 1);
         sceneName = prevScene;
+
+        // ゲームシーンの場合はもう一つ戻る
+        if (sceneName == SceneType.GAME)
+            changeToPrevScene();
+
         setup();
     }
 

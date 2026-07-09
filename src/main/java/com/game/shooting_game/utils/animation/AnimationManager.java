@@ -55,6 +55,9 @@ public final class AnimationManager implements Manager {
      * @return 識別用ID
      */
     public String addAnimation(Animation animation) {
+        if (animation == null)
+            return null;
+
         // 重複しないIDの作成
         String id = UUID.randomUUID().toString();
         animationCache.put(id, animation);
