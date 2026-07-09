@@ -535,17 +535,24 @@ public class UIBuilder extends JPanel {
                 size.getX() * 3 / 4,
                 size.getY() * 3 / 4);
 
-        // 枠の描画
+        // 画像の取得
+        BufferedImage image = null;
+        if (uuid != null)
+            image = AnimationManager.getInstance().getCurrentImage(uuid);
+
+        // 枠の取得
         BufferedImage[] frameImageFrames = null;
-        // 画像情報の取得
         Map<ResourceName, Map<Rarity, BufferedImage[]>> viewCache = ResourceManager.getInstance().getResourceImage();
         if (viewCache != null) {
             Map<Rarity, BufferedImage[]> rarityMap = viewCache.get(ResourceName.FRAME);
             if (rarityMap != null)
                 frameImageFrames = rarityMap.get(resKind.getRarity());
         }
+        // 枠描画
         if (frameImageFrames != null && frameImageFrames.length > 0) {
-            BufferedImage frameImage = frameImageFrames[AnimationManager.getInstance().getCurrentFrameNum(uuid)];
+            BufferedImage frameImage = frameImageFrames[image != null
+                    ? AnimationManager.getInstance().getCurrentFrameNum(uuid)
+                    : 0];
             frameImage = resizeImage(frameImage, size.getX());
             drawImage(g2, Anchor.CENTER, pos, frameImage);
         } else {
@@ -556,11 +563,7 @@ public class UIBuilder extends JPanel {
                     (int) imageSize.getY());
         }
 
-        // 画像の描画
-        BufferedImage image = null;
-        if (uuid != null)
-            image = AnimationManager.getInstance().getCurrentImage(uuid);
-
+        // 画像描画
         if (image != null) {
             image = resizeImage(image, size.getX() * 2 / 3);
             drawImage(g2, Anchor.CENTER, pos, image);
