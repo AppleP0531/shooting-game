@@ -24,6 +24,10 @@ public class Animation {
     }
 
     public Animation(BufferedImage[] images, double size, double frameRate) {
+        // 画像が存在しなければ無視
+        if (images == null || images.length == 0)
+            return;
+
         // 画像をリサイズして登録
         for (int i = 0; i < images.length; i++) {
             images[i] = UIBuilder.resizeImage(images[i], size);
