@@ -177,10 +177,10 @@ public final class LobbyManager extends JPanel implements Manager {
         unlockShipBtn.setVisible(false); // 非表示
         this.add(unlockShipBtn);
 
-        // 変更ボタン(モードを変更)
+        // モード変更ボタン(モードを変更)
         Vector2 changeModeBtnSize = new Vector2(
-                150 * ShootingGameMain.getScreenSizeAdj(),
-                30 * ShootingGameMain.getScreenSizeAdj());
+                100 * ShootingGameMain.getScreenSizeAdj(),
+                20 * ShootingGameMain.getScreenSizeAdj());
         String changeModeImagePath = "/static/img/UI/lobbyScene/changeMode.png";
         changeModeBtn = UIBuilder.createImageBtn(component, changeModeImagePath, changeModeBtnSize,
                 "CHANGE_MODE");
