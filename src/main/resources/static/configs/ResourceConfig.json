@@ -1,6 +1,6 @@
 {
   "FRAME": {
-    "imagePath": "/frame.png",
+    "imagePath": "/Frame.png",
     "rarity": {
       "COMMON": {
         "grids": [4, 2],
@@ -35,7 +35,7 @@
     }
   },
   "COIN": {
-    "imagePath": "/coin.png",
+    "imagePath": "/Coin.png",
     "rarity": {
       "COMMON": {
         "grids": [4, 4],
@@ -46,7 +46,7 @@
     }
   },
   "GEAR": {
-    "imagePath": "/gear.png",
+    "imagePath": "/Gear.png",
     "rarity": {
       "COMMON": {
         "grids": [4, 2],
@@ -81,7 +81,7 @@
     }
   },
   "SCREW": {
-    "imagePath": "/screw.png",
+    "imagePath": "/Screw.png",
     "rarity": {
       "COMMON": {
         "grids": [4, 2],
@@ -116,7 +116,7 @@
     }
   },
   "COPPER_PLATE": {
-    "imagePath": "/copper_plate.png",
+    "imagePath": "/Copper_plate.png",
     "rarity": {
       "COMMON": {
         "grids": [4, 2],
@@ -151,7 +151,7 @@
     }
   },
   "IRON_BAR": {
-    "imagePath": "/iron_bar.png",
+    "imagePath": "/Iron_bar.png",
     "rarity": {
       "COMMON": {
         "grids": [4, 2],

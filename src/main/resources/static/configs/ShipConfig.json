@@ -2,7 +2,7 @@
   "OBJECT": {
     "shield": {
       "datas": {
-        "imagePath": "/player/shield.png",
+        "imagePath": "/player/Shield.png",
         "sheets": [{ "grids": [1, 1], "useCount": 1 }],
         "frameRate": 0.1,
         "imageSize": 80
@@ -10,7 +10,7 @@
     },
     "explosion": {
       "datas": {
-        "imagePath": "/player/explosion.png",
+        "imagePath": "/player/Explosion.png",
         "sheets": [{ "grids": [1, 1], "useCount": 1 }],
         "frameRate": 0.1,
         "imageSize": 80
@@ -817,9 +817,9 @@
     "Enemy1": {
       "datas": {
         "imagePath": "/enemy/Enemy1.png",
-        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "sheets": [{ "grids": [4, 2], "useCount": 6 }],
         "frameRate": 0.1,
-        "imageSize": 30,
+        "imageSize": 50,
         "collisionSize": 20,
         "hp": 80,
         "speed": 100,
