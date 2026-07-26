@@ -75,7 +75,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
     protected double hp = 100; // Hp
     @Getter
     protected double maxHp = 100; // 最大Hp
-    protected float alpha; // 透明度
+    protected float alpha = 1.0f; // 透明度
     @Getter
     protected double score = 0; // 倒したときに得られるスコア量
     protected String coins = "0~0"; // 倒したときに得られるコイン量
@@ -115,9 +115,6 @@ public abstract class Ship implements Moveable, GameObject, Entity {
         if (def != null && def.getDatas() != null) { // 情報があれば上書き
             ShipConfig datas = def.getDatas();
 
-            if (datas.getMode() != null) {
-                mode = datas.getMode();
-            }
             maxHp = hp = 100;
             collisionSize = datas.getCollisionSize() * ShootingGameMain.getScreenSizeAdj();
             imageSize.put("ship", (int) (datas.getImageSize() * ShootingGameMain.getScreenSizeAdj()));
@@ -126,9 +123,16 @@ public abstract class Ship implements Moveable, GameObject, Entity {
             coins = datas.getCoins();
 
             // 画像の取得とアニメーション登録
-            BufferedImage[] shipImage = Optional.ofNullable(SHIP_M.getShipImage())
-                    .map(images -> images.get(shipId))
-                    .orElse(null);
+            BufferedImage[] shipImage;
+            if (owner == ShipKinds.PLAYER)
+                shipImage = Optional.ofNullable(SHIP_M.getShipImage())
+                        .map(images -> images.get(shipId))
+                        .orElse(null);
+            else
+                shipImage = Optional.ofNullable(SHIP_M.getShipImage())
+                        .map(images -> images.get(shipId + "_" + mode.toString().toLowerCase()))
+                        .orElse(null);
+
             if (shipImage != null) {
                 double frameRate = datas.getFrameRate();
 
@@ -159,34 +163,35 @@ public abstract class Ship implements Moveable, GameObject, Entity {
         if (animationId.get("ship") != null) {
             Animation shipAnim = AM.getAnimationCache().get(animationId.get("ship"));
 
-            shipAnim.setCustomLogic((current, anim) -> {
-                if (anim.getFrameTimer() > anim.getFrameRate()) {
-                    anim.setFrameTimer(0);
+            if (owner == ShipKinds.PLAYER)
+                shipAnim.setCustomLogic((current, anim) -> {
+                    if (anim.getFrameTimer() > anim.getFrameRate()) {
+                        anim.setFrameTimer(0);
 
-                    // 通常状態の使用画像フレーム更新
-                    if (frameAdj == 0)
-                        current = (current + 1) % useCount.get("ship")[0] + frameAdj;
+                        // 通常状態の使用画像フレーム更新
+                        if (frameAdj == 0)
+                            current = (current + 1) % useCount.get("ship")[0] + frameAdj;
 
-                    // 状態遷移時の使用画像フレーム更新
-                    if (shipState.equals("OOC") || useCount.get("ship")[1] < frameAdj) {
-                        if (current == 0 || 0 < frameAdj) {
-                            frameAdj++;
-                            if (Arrays.stream(useCount.get("ship")).sum() < useCount.get("ship")[0] + frameAdj) {
-                                frameAdj = useCount.get("ship")[1] + 1;
+                        // 状態遷移時の使用画像フレーム更新
+                        if (shipState.equals("OOC") || useCount.get("ship")[1] < frameAdj) {
+                            if (current == 0 || 0 < frameAdj) {
+                                frameAdj++;
+                                if (Arrays.stream(useCount.get("ship")).sum() < useCount.get("ship")[0] + frameAdj) {
+                                    frameAdj = useCount.get("ship")[1] + 1;
+                                }
+                                current = useCount.get("ship")[0] - 1 + frameAdj;
                             }
+                        }
+
+                        // OOC状態→通常状態
+                        if (shipState.equals("Normal") && 0 < frameAdj && frameAdj <= useCount.get("ship")[1] + 1) {
+                            frameAdj = Math.max(0, frameAdj - 1);
                             current = useCount.get("ship")[0] - 1 + frameAdj;
                         }
                     }
 
-                    // OOC状態→通常状態
-                    if (shipState.equals("Normal") && 0 < frameAdj && frameAdj <= useCount.get("ship")[1] + 1) {
-                        frameAdj = Math.max(0, frameAdj - 1);
-                        current = useCount.get("ship")[0] - 1 + frameAdj;
-                    }
-                }
-
-                return current;
-            });
+                    return current;
+                });
         }
     }
 

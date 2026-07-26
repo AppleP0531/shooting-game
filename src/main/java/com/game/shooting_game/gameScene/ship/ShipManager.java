@@ -96,7 +96,6 @@ public final class ShipManager implements Manager {
         private SheetConfig[] sheets;
         private double frameRate;
         private int imageSize;
-        private ColorMode mode;
         private double collisionSize;
         private double hp;
         private double speed;
