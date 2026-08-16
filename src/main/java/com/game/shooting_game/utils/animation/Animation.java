@@ -80,7 +80,7 @@ public class Animation {
     }
 
     /**
-     * 現在のフレーム画像の取得
+     * 現在のフレーム番号の取得
      * 
      * @return
      */

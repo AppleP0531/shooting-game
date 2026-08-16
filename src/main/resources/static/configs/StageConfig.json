@@ -23,23 +23,23 @@
     "enemyList": {
       "wave0": [
         {
-          "enemyId": "Enemy2",
+          "enemyId": "NoName2",
           "mode": "BLUE",
-          "level": 0,
+          "level": 1,
           "spawnPos": [-160, 150],
           "stayPos": [-110, 150]
         },
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Bat",
           "mode": "RED",
-          "level": 0,
+          "level": 3,
           "spawnPos": [0, 80],
           "stayPos": [0, 130]
         },
         {
-          "enemyId": "Enemy2",
+          "enemyId": "NoName1",
           "mode": "BLUE",
-          "level": 0,
+          "level": 3,
           "spawnPos": [160, 150],
           "stayPos": [110, 150]
         }

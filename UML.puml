@@ -123,7 +123,7 @@ package "shooting_game" {
             - register(root: Map<String,CommandNode>, name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
             - register(root: CommandNode, name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
             - isSceneValid(allowedTypes: SceneType...): boolean
-            - parseNamedBinaryTag(arg: String): Map<String, String>
+            - parseNBT(arg: String): Map<String, String>
             - registCommands(): void
             - showHelp(): void
             - reload(): void
@@ -204,7 +204,7 @@ package "shooting_game" {
         - imageSize: int
     }
 
-    enum ResourceKinds {
+    class ResourceKinds {
         + {static} COIN: ResourceKinds
         - resName: ResourceName
         - rarity: Rarity
@@ -213,12 +213,13 @@ package "shooting_game" {
         + getResourceKind(): ResourceKinds
     }
 
-    class ResourceName {
-        COIN
+    enum ResourceName {
         GEAR
         SCREW
         COPPER_PLATE
         IRON_BAR
+        COIN
+        FRAME
         --
         + fromString(value: String): ResourceName
     }
@@ -413,7 +414,7 @@ package "shooting_game" {
                 - settingBtn: JButton
                 --
                 - InfinityStageManager()
-                - {static} getInstance(): InfinityStageManager()
+                + {static} getInstance(): InfinityStageManager
                 + initComponents(): void
                 + setup()
                 + update(dt: double)
@@ -437,7 +438,7 @@ package "shooting_game" {
             --
             - SettingManager()
             + initComponents(): void
-            + {static} getInstance: SettingManager
+            + {static} getInstance(): SettingManager
             + setup(): void
             + update(dt: double): void
             + draw(g: Graphics): void
@@ -472,7 +473,7 @@ package "shooting_game" {
             --
             - LobbyManager()
             + initComponents(): void
-            + {static} getInstance: LobbyManager
+            + {static} getInstance(): LobbyManager
             + setup(): void
             + update(dt: double): void
             + draw(g: Graphics): void
@@ -555,12 +556,12 @@ package "shooting_game" {
     package "shopScene" {
         class ShopManager <<Singleton>> {
             - {static} component: String
-            - {static} instance: BagManager
+            - {static} instance: ShopManager
             - goBackBtn: JButton
             --
             - ShopManager()
             + initComponents(): void
-            + {static} getInstance(): BagManager
+            + {static} getInstance(): ShopManager
             + setup(): void
             + update(dt: double): void
             + draw(g: Graphics): void
@@ -703,8 +704,8 @@ package "shooting_game" {
             + GameSceneUI()
             + draw(g: Graphics, uiData: GameSceneUIData): void
             - drawAnimation(g: Graphics, animationName: String, animateTimer: double): void
-            - drawEffects(g: Graphics, list: Map<String, Double>): void
-            - drawActiveEffects(g, name, time, index): void
+            - drawActiveEffects(g: Graphics, list: Map<String, Double>): void
+            - drawActiveEffectIcon(g: Graphics, effectName: String, time: double, ind: int)
             - drawCoin(g: Graphics, coin: int): void
             - drawScore(g: Graphics, score: int): void
         }
@@ -744,14 +745,14 @@ package "shooting_game" {
                 --
                 - StageManager()
                 + {static} getInstance(): StageManager
-                + loadConfig(): void
+                - loadConfig(): void
                 + setup(): void
                 + update(dt: double): void
                 + draw(g: Graphics): void
                 + reload(): void
                 + getStageConfig(): Map<String, StageData>
                 + getStageId(): int
-                + getStage(): Stage
+                + setStageId(id: int): void
             }
 
             class Stage {
@@ -780,14 +781,13 @@ package "shooting_game" {
             }
 
             class EnemyConfig <<Lomboc @Data>> {
-                - owner: ShipKinds
                 - enemyId: String
                 - mode: ColorMode
                 - level: int
                 - spawnPos: Vector2
                 - stayPos: Vector2
                 --
-                + setEnemyId(enemyId: String): void
+                + getOwner(): ShipKinds
             }
         }
 
@@ -800,14 +800,13 @@ package "shooting_game" {
                 - bossList: List<Ship>
                 - shipConfigMap: Map<ShipKinds, Map<String, ShipDefinition>>
                 - shipImageCache: Map<String, BufferedImage[]>
-                - playerShieldImage: BufferedImage
                 - MAIN: ShootingGameMain
                 - GM: GameManager
                 - IM: ItemManager
                 --
                 - ShipManager()
                 + {static} getInstance(): ShipManager
-                - loadCinfig(): void
+                - loadConfig(): void
                 - loadImages(): void
                 + setup(): void
                 + update(dt: double): void
@@ -838,7 +837,7 @@ package "shooting_game" {
             }
 
             class ShipDefinition <<lomboc @Data>> {
-                - stats: ShipConfig
+                - datas: ShipConfig
                 - levels: Map<String, ShotConfig[]>
                 --
                 + addLevelData(key: String, configs: ShotConfig[]): void
@@ -847,10 +846,10 @@ package "shooting_game" {
 
             class ShipConfig <<lomboc @Data>> {
                 - imagePath: String
+                - cost: int
                 - sheets: SheetConfig[]
                 - frameRate: double
                 - imageSize: int
-                - mode: ColorMode
                 - collisionSize: double
                 - hp: double
                 - speed: double
@@ -869,6 +868,7 @@ package "shooting_game" {
                 - pos: Vector2
                 - bulletVecRef: String
                 - vecAdj: int
+                - direction: Direction
             }
 
             abstract class Ship {
@@ -894,7 +894,7 @@ package "shooting_game" {
                 # alpha: float
                 # score: double
                 # coins: String
-                # dropItem: boolean
+                # allowDropItem: boolean
                 # shieldTimer: double
                 # coolDownTimers: Map<BulletKinds, Map<Integer, Double>>
                 # animationId: Map<String, String>
@@ -923,16 +923,16 @@ package "shooting_game" {
                 + addDamage(damage: double): void
                 + kill(dropItem: boolean): void
                 + isDead(): boolean
-                + setShipType(type: String): void
+                + setShipId(type: String): void
                 + setShipLevel(level: int): void
                 + getShipLevel(): int
-                + getPos(pos: Vector2): void
+                + setPos(pos: Vector2): void
                 + getPos(): Vector2
                 + getCollisionSize(): double
                 + setHp(hp: double): void
                 + getHp(): double
                 + getScore(): double
-                + getDropCoinAmount(): void
+                + getDropCoinAmount(): int
                 + setShieldTimer(time: double): void
                 + getShieldTimer(): double
             }
@@ -1046,6 +1046,8 @@ package "shooting_game" {
 
             enum BulletKinds {
                 STRAIGHT
+                CURVE
+                WAVE
                 TRACKING
                 LASER
                 BALL
@@ -1060,6 +1062,7 @@ package "shooting_game" {
                 - collisionSize: double
                 - speed: double
                 - damage: double
+                - diff: double
                 - cooldowns: Map<String, Double>
             }
 
@@ -1083,24 +1086,28 @@ package "shooting_game" {
                 # kind: BulletKinds
                 # animationId: String
                 --
-                + Bullet(owner: ShipKinds, kind: BulletKinds, id: int, mode: CollorMode, pos: Vector2, vec: double)
+                + Bullet(owner: ShipKinds, kind: BulletKinds, id: int, mode: ColorMode, pos: Vector2, vec: double)
                 + move(dt: double): void
                 + update(dt: double): void
                 + draw(g: Graphics): void
                 + inScreen(): boolean
                 + isLife(): boolean
                 + destroySelf(): void
-                + inScreen(): boolean
-                + isLife(): boolean
-                + destroySelf(): void
                 + getPos(): Vector2
                 + getCollisionSize(): double
-                + getDamage(): damage
+                + getDamage(): double
                 + getOwner(): ShipKinds
             }
 
+            enum Direction {
+                RIHGHT
+                LEFT
+                --
+                + getSign(): int
+            }
+
             class BulletFactory {
-                + {static} createBullet(owner: ShipKinds, kind: BulletKinds, id: int, mode: ColorMode pos: Vector2, vec: double): Bullet
+                + {static} createBullet(owner: ShipKinds, kind: BulletKinds, id: int, mode: ColorMode, pos: Vector2, vec: double, direction: Direction): Bullet
             }
 
             package "types" {
@@ -1109,7 +1116,7 @@ package "shooting_game" {
                     - target: Ship
                     - TURNING_SMOOTHNESS: double
                     --
-                    + Tracking(owner ShipKinds, id: int, mode: ColorMode, pos Vector2, vec double)
+                    + Tracking(owner: ShipKinds, id: int, mode: ColorMode, pos: Vector2, vec: double)
                     + update(dt: double): void
                     + draw(g: Graphics): void
                     - speedAdj(dt: double): void
@@ -1118,17 +1125,36 @@ package "shooting_game" {
                 }
 
                 class Straight {
-                    + Straight(owner ShipKinds, id: int, mode: ColorMode, pos Vector2, vec double)
+                    + Straight(owner: ShipKinds, id: int, mode: ColorMode, pos: Vector2, vec: double)
+                    + Straight(owner: ShipKinds, kind: BulletKinds, id: int, mode: ColorMode, pos: Vector2, vec double)
                     + draw(g: Graphics): void
                 }
 
+                class Curve {
+                    - DIFF: double
+                    - DIRECTION: Direction
+                    --
+                    + Curve(owner: ShipKinds, id: int, mode: ColorMode, pos: Vector2, vec: double, direction: Direction)
+                    + move(dt: double): void
+                }
+
+                class Wave {
+                - {static} WAVE_FREQUENCY: double
+                - {static} WAVE_AMPLITUDE: double
+                - BASE_VEC: double
+                - DIRECTION: Direction
+                --
+                + Wave(owner: ShipKinds, id: int, mode: ColorMode, pos: Vector2, vec: double, direction: Direction)
+                + move(dt: double): void
+                }
+
                 class Laser {
-                    + Laser(owner ShipKinds, id: int, mode: ColorMode, pos Vector2, vec double)
+                    + Laser(owner: ShipKinds, id: int, mode: ColorMode, pos: Vector2, vec: double)
                     + draw(g: Graphics): void
                 }
 
                 class Ball {
-                    + Ball(owner ShipKinds, id: int, mode: ColorMode, pos Vector2, vec double)
+                    + Ball(owner: ShipKinds, id: int, mode: ColorMode, pos: Vector2, vec: double)
                     + draw(g: Graphics): void
                 }
             }
@@ -1192,7 +1218,7 @@ package "shooting_game" {
                 # speed: double
                 # animationId: String
                 --
-                + Item(kind Collectible, pos Vector2)
+                + Item(kind: Collectible, pos Vector2)
                 + update(dt: double): void
                 + draw(g: Graphics): void
                 + move(dt: double): void
@@ -1214,7 +1240,7 @@ package "shooting_game" {
                 - {static} RESOURCE_DROP_TABLE: Map<ResourceKinds, Double>
                 --
                 + {static} createResource(model: DropModel, pos: Vector2): Resource
-                + {static} createResource(pos: Vector2, resKind ResourceKinds): Resource
+                + {static} createResource(pos: Vector2, resKind: ResourceKinds): Resource
                 - {static} lottery(model: DropModel): Rarity
             }
 
@@ -1327,7 +1353,7 @@ package "shooting_game" {
     package "utils" {
         package "Animation" {
             interface AnimationLogic <<functional>> {
-                ~ calculateFrame(frameCount: int, currentFrame: int, frameTimer: double, frameRate: double): int
+                ~ calculateFrame(currentFrame: int, context: Animation): int
             }
 
             class Animation {
@@ -1337,10 +1363,11 @@ package "shooting_game" {
                 - frameTimer: double
                 - frameRate: double
                 --
-                + Animation(images: BufferedImage[], useCount: int[],frameRate: double)
+                + Animation(images: BufferedImage[], size: double ,frameRate: double)
                 + setCustomLogic(logic: AnimationLogic): void
                 + update(dt: double): void
-                + getCurrentFrame(): BufferedImage
+                + getCurrentImage(): BufferedImage
+                + getCurrentFrameNum(): int
             }
 
             class AnimationManager <<Singleton>> {
@@ -1354,7 +1381,8 @@ package "shooting_game" {
                 + draw(g: Graphics): void
                 + addAnimation(animation: Animation): String
                 + removeAnimation(id: String): void
-                + getCurrentFrame(id: String): BufferedImage
+                + getCurrentImage(id: String): BufferedImage
+                + getCurrentFrameNum(id: String): int
             }
         }
 
@@ -1404,7 +1432,7 @@ package "shooting_game" {
 
         class UIBuilder {
             + {static} loadImage(path: String): BufferedImage
-            + {static} cutSpriteSheet(masterSheet: BufferedImage, grids: Vector2, useCount: int, imageSize: double)
+            + {static} cutSpriteSheet(masterSheet: BufferedImage, grids: Vector2, useCount: int, imageSize: double): BufferedImage[]
             + {static} createImageBtn(component: String, path: String, size: Vector2, fallBackText: String): JButton
             + {static} createImageBtn(component: String, image: BufferedImage, size: Vector2, fallBackText: String): JButton
             + {static} resizeImage(originImage: BufferedImage, imageSize: double): BufferedImage
@@ -1412,7 +1440,7 @@ package "shooting_game" {
             - {static} applyStateIcon(component: String, button: JButton, basePath: String, suffix: String, size: Vector2): void
             + {static} drawString(g: Graphics, anchor: Anchor, pos: Vector2, size: double, color: Color, style: int, text: String): void
             + {static} drawImage(g: Graphics, anchor: Anchor, pos: Vector2, image: BufferedImage): void
-            + {static} openPanel(p: JPanel, title: String, focus: Boolean, CloseBtnAction: closeAction): void
+            + {static} openPanel(p: JPanel, title: String, focus: Boolean, closeAction: CloseBtnAction): void
             + {static} closePanel(p: JPanel): void
             - {static} findComponentByName(panel: JPanel, name: String): Component
             - {static} mouseFocus(p: JPanel): void
@@ -1444,7 +1472,7 @@ package "shooting_game" {
         class Anchor {
             + {static} CENTER: Anchor
             + horizontal: H
-            + vartical: V
+            + vertical: V
             --
             + Anchor(anchor: Anchor)
             + Anchor(h: H, v: V)
@@ -1485,15 +1513,18 @@ package "shooting_game" {
 
     package "data" {
         class DataManager <<Singleton>> {
+            - {static} component: String
+            - {static} context: ConfigurableApplicationContext
             - {static} instance: DataManager
+            - {static} userRepository: UserRepository
             - {static} userData: UserData
-            - {static} SAVE_PATH: String
             - {static} expData: List<Integer>
+            - {static} sessionStartTime: LocalDateTime
             --
             - DataManager()
             + {static} getInstance(): DataManager
             + setUserRepository(repo: UserRepository): void
-            + {static} convertUserData(entity: UserEntity): UserData
+            + {static} convertToUserData(entity: UserEntity): UserData
             + {static} syncUserDataToEntity(entity: UserEntity): void
             + {static} load(username: String, mode: String): void
             + {static} save(): void
@@ -1503,22 +1534,20 @@ package "shooting_game" {
             + {static} forceChangePassword(username: String, newPassword: String): boolean
             + {static} delete(username: String, password: String): boolean
             + {static} forceDelete(username: String): boolean
-            - {static} loadExpData(): void
+            - {static} loadExpConfig(): void
             - {static} printWelcomeMessage(): void
             + {static} saveSessionPlayTime(): void
-            - {static} parseTimeToSeconds
-            + getUserData(): UserData
+            + {static} getUserData(): UserData
             + setup(): void
             + update(dt: double): void
             + draw(g: Graphics): void
             + {static} setContext(context: ConfigurableApplicationContext): void
-            + {static} getUserLevel(): getUserLevel
+            + {static} getUserLevel(): UserLevelResult
             + {static} getExpData(): List<Integer>
         }
 
-        class UserData <<lomboc @Data>> {
+        class UserData <<lombok @Data>> {
             - username: String
-            - password: String
             - lastPlayTime: String
             - totalPlayTime: String
             - selectedShip: String
@@ -1526,31 +1555,30 @@ package "shooting_game" {
             - progress: Progress
             - resources: Resources
             - ships: Map<String, ShipStats>
-            - sessionStartTime: LocalDateTime
             --
             + UserData()
-            + unlockShip(): void
+            + unlockShip(shipId: String): void
         }
 
-        class Progress <<lomboc @Data>> {
-            - level: int
+        class Progress <<lombok @Data>> {
             - exp: int
             - clearedStage: int
             - highScores: Map<String, Integer>
             --
             + updateHighScore(stageKey: String, score: int): void
+            + addExp(amount: int): void
         }
 
-        class Resources <<lomboc @Data>> {
+        class Resources <<lombok @Data>> {
             - coins: int
             - equipments: Map<ResourceKinds, Integer>
         }
 
-        class ShipStats <<lomboc @Data>> {
+        class ShipStats <<lombok @Data>> {
             - upgrades: Map<String, Integer>
         }
 
-        class getUserLevel <<record>> {
+        class UserLevelResult <<record>> {
             ~ level: int
             ~ exp: int
         }
@@ -1607,7 +1635,7 @@ package "shooting_game" {
         }
 
         interface Moveable <<interface>> {
-            + move(speed: double): void
+            + move(dt: double): void
         }
     }
 }
@@ -1628,13 +1656,13 @@ shooting_game.ResourceManager +-- ResourceData
 shooting_game.ResourceManager +-- ResourceConfig
 ResourceConfig +-- ResourceData
 shooting_game.data.DataManager +-- UserData
+shooting_game.data.DataManager +-- UserLevelResult
 shooting_game.data.UserData +-- Progress
 shooting_game.data.UserData +-- Resources
 shooting_game.data.UserData +-- ShipStats
 shooting_game.stageScene.normal.NormalStageManager +-- StageBtnData
 shooting_game.stageScene.normal.NormalStageManager +-- StageDetailData
 shooting_game.lobbyScene.LobbySceneUI +-- LobbySceneUIData
-shooting_game.gameScene.GameManager +-- GameSceneUIData
 shooting_game.gameScene.GameManager +-- ColorMode
 shooting_game.gameScene.GameSceneUI +-- GameSceneUIData
 shooting_game.gameScene.stage.StageManager +-- StageData
@@ -1646,13 +1674,14 @@ ShipConfig +-- SheetConfig
 ShipDefinition +-- ShotConfig
 shooting_game.gameScene.bullet.BulletManager +-- BulletKinds
 shooting_game.gameScene.bullet.BulletManager +-- BulletConfig
+shooting_game.gameScene.bullet.Bullet +-- Direction
 shooting_game.gameScene.item.ItemManager +-- ItemKinds
 shooting_game.gameScene.item.ItemManager +-- ItemConfig
 shooting_game.gameScene.item.ResourceFactory +-- DropModel
 
 ' extends関係
 shooting_game.repository.UserRepository --|> org.springframework.data.jpa.repository.JpaRepository
-shooting_game.data.LoginDialog --|> javax.swing.JDialog
+shooting_game.data.LoginPanel --|> javax.swing.JPanel
 shooting_game.ShootingGameMain --|> javax.swing.JPanel
 shooting_game.command.CommandGlassPane --|> javax.swing.JPanel
 shooting_game.titleScene.TitleManager --|> javax.swing.JPanel
@@ -1675,11 +1704,11 @@ shooting_game.gameScene.ship.types.Boss --* shooting_game.gameScene.ship.Ship
 shooting_game.gameScene.bullet.types.Ball --* shooting_game.gameScene.bullet.Bullet
 shooting_game.gameScene.bullet.types.Laser --* shooting_game.gameScene.bullet.Bullet
 shooting_game.gameScene.bullet.types.Straight --* shooting_game.gameScene.bullet.Bullet
+shooting_game.gameScene.bullet.types.Curve --* shooting_game.gameScene.bullet.types.Straight
+shooting_game.gameScene.bullet.types.Wave --* shooting_game.gameScene.bullet.types.Straight
 shooting_game.gameScene.bullet.types.Tracking --* shooting_game.gameScene.bullet.Bullet
-shooting_game.gameScene.item.types.Shield --* shooting_game.gameScene.item.Item
 shooting_game.gameScene.item.types.LevelUp --* shooting_game.gameScene.item.Item
 shooting_game.gameScene.item.types.Heal --* shooting_game.gameScene.item.Item
-shooting_game.gameScene.item.types.Coin --* shooting_game.gameScene.item.Item
 shooting_game.gameScene.item.types.Resource --* shooting_game.gameScene.item.Item
 shooting_game.gameResultScene.GameResultManager --|> javax.swing.JPanel
 shooting_game.gameResultScene.subPanels.RewardListPanel --|> javax.swing.JPanel

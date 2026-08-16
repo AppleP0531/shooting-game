@@ -20,6 +20,8 @@ import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
+import com.game.shooting_game.gameScene.ship.ShipManager;
+import com.game.shooting_game.gameScene.ship.ShipManager.ShipDefinition;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.utils.ANSI;
@@ -69,20 +71,21 @@ public final class StageManager implements Manager {
     @NoArgsConstructor // 引数なしコンストラクタの生成
     @JsonIgnoreProperties(ignoreUnknown = true) // 余計な項目の無視
     public static class EnemyConfig {
-        private ShipKinds owner;
         private String enemyId;
         private ColorMode mode;
         private int level;
         private Vector2 spawnPos;
         private Vector2 stayPos;
 
-        public void setEnemyId(String enemyId) {
-            this.enemyId = enemyId;
+        public ShipKinds getOwner() {
+            Map<ShipKinds, Map<String, ShipDefinition>> shipConfig = ShipManager.getInstance().getShipConfig();
 
-            if (enemyId.startsWith("Enemy"))
-                this.owner = ShipKinds.ENEMY;
-            if (enemyId.startsWith("Boss"))
-                this.owner = ShipKinds.BOSS;
+            for (Map.Entry<ShipKinds, Map<String, ShipDefinition>> entry : shipConfig.entrySet()) {
+                if (entry.getValue().containsKey(enemyId)) {
+                    return entry.getKey();
+                }
+            }
+            return null; // 見つからない場合
         }
     }
 
