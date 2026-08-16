@@ -271,10 +271,8 @@ public class Player extends Ship implements KeyListener {
                 }
 
                 // 画面内に収まるように移動
-                pos.setX(Math.clamp(pos.getX(), imageSize.get("ship") / 2,
-                        MAIN.getWidth() - imageSize.get("ship") / 2));
-                pos.setY(Math.clamp(pos.getY(), imageSize.get("ship") / 2,
-                        MAIN.getHeight() - imageSize.get("ship") / 2));
+                pos.setX(Math.clamp(pos.getX(), 0, MAIN.getWidth()));
+                pos.setY(Math.clamp(pos.getY(), 0, MAIN.getHeight()));
             }
             case "breakAway" -> {
                 animateTimer += dt;

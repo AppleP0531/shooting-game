@@ -1446,9 +1446,10 @@ public final class CommandGlassPane extends JPanel {
         UM.reload();
         SM.getCurrentManager().setup();
 
-        // テストシーンの場合敵をクリアして再生成
-        if (SM.getSceneName() == SceneType.TEST)
-            SHIP_M.clear("all");
+        // テストシーンの場合画面ごとリログ
+        if (SM.getSceneName() == SceneType.TEST) {
+            SM.changeScene(SceneType.TEST);
+        }
 
         // リロード完了ログ
         logText = "Reload complete.";

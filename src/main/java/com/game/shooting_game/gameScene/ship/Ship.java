@@ -325,7 +325,8 @@ public abstract class Ship implements Moveable, GameObject, Entity {
                             config.getBulletId(),
                             mode,
                             bulletPos,
-                            Math.toRadians(vecRef + config.getVecAdj())));
+                            Math.toRadians(vecRef + config.getVecAdj()),
+                            config.getDirection()));
                 } else
                     // 基準vecの未定義ログ
                     LogUtils.systemLog(

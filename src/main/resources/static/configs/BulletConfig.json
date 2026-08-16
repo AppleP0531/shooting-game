@@ -245,6 +245,33 @@
         "Normal": 3
       }
     },
+    "CURVE": {
+      "1": {
+        "imagePath": "/enemy/Normal_1.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 150,
+        "damage": 10,
+        "diff": 0.2,
+        "Normal": 3
+      }
+    },
+    "WAVE": {
+      "1": {
+        "imagePath": "/enemy/Normal_1.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 150,
+        "damage": 10,
+        "Normal": 3
+      }
+    },
     "TRACKING": {
       "1": {
         "imagePath": "/enemy/Tracking_1.png",

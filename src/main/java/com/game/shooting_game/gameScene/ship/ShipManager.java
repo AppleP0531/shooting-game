@@ -27,6 +27,7 @@ import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.gameScene.GameManager;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
+import com.game.shooting_game.gameScene.bullet.Bullet.Direction;
 import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
 import com.game.shooting_game.gameScene.item.Item;
 import com.game.shooting_game.gameScene.item.ItemFactory;
@@ -126,6 +127,7 @@ public final class ShipManager implements Manager {
         private Vector2 pos;
         private String bulletVecRef;
         private int vecAdj;
+        private Direction direction;
     }
 
     private Map<ShipKinds, Map<String, ShipDefinition>> shipConfigMap; // 船データが格納された呼び出し用のマップ

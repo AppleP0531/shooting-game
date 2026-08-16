@@ -34,6 +34,8 @@ public final class BulletManager implements Manager {
     // 弾の種類
     public static enum BulletKinds {
         STRAIGHT,
+        CURVE,
+        WAVE,
         TRACKING,
         LASER,
         BALL
@@ -55,6 +57,7 @@ public final class BulletManager implements Manager {
         private double collisionSize;
         private double speed;
         private double damage;
+        private double diff; // Curve用: 変角量
         private Map<String, Double> cooldowns = new HashMap<>();
 
         @JsonAnySetter

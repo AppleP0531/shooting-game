@@ -31,19 +31,19 @@ public class Anchor {
     }
 
     public final H horizontal;
-    public final V vartical;
+    public final V vertical;
 
     public Anchor(Anchor anchor) {
         this.horizontal = anchor.horizontal;
-        this.vartical = anchor.vartical;
+        this.vertical = anchor.vertical;
     }
 
     public Anchor(H h, V v) {
         this.horizontal = h;
-        this.vartical = v;
+        this.vertical = v;
     }
 
     public Vector2 getValue() {
-        return new Vector2(horizontal.rate, vartical.rate);
+        return new Vector2(horizontal.rate, vertical.rate);
     }
 }

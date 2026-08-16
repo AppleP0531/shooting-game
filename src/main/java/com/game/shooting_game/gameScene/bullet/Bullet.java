@@ -26,6 +26,15 @@ import com.game.shooting_game.utils.animation.Animation;
 import com.game.shooting_game.utils.animation.AnimationManager;
 
 public abstract class Bullet implements Moveable, GameObject, Entity {
+    public enum Direction {
+        RIGHT,
+        LEFT;
+
+        public int getSign() {
+            return this == RIGHT ? 1 : -1;
+        }
+    }
+
     protected final ShootingGameMain MAIN;
     protected final AnimationManager AM;
     protected final GameManager GM;
