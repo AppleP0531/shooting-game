@@ -1294,9 +1294,9 @@
       ],
       "Lv1": []
     },
-    "NoName1": {
+    "Beetle": {
       "datas": {
-        "imagePath": "/enemy/NoName1.png",
+        "imagePath": "/enemy/Beetle.png",
         "sheets": [{ "grids": [4, 2], "useCount": 6 }],
         "frameRate": 0.1,
         "imageSize": 50,
@@ -1361,9 +1361,9 @@
         }
       ]
     },
-    "NoName2": {
+    "Clab": {
       "datas": {
-        "imagePath": "/enemy/NoName2.png",
+        "imagePath": "/enemy/Clab.png",
         "sheets": [{ "grids": [4, 2], "useCount": 6 }],
         "frameRate": 0.1,
         "imageSize": 50,

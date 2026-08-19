@@ -15,6 +15,7 @@ import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.lobbyScene.LobbySceneUI.HangarSceneUIData;
+import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.utils.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
@@ -172,6 +173,8 @@ public final class LobbyManager extends JPanel implements Manager {
                 ownedCoins -= targetShipCost;
                 DataManager.getUserData().getResources().setCoins(ownedCoins);
                 updateBtnStates();
+            } else {
+                LogUtils.systemLog("[INFO]", component, "There is no enough mony");
             }
         });
         unlockShipBtn.setVisible(false); // 非表示

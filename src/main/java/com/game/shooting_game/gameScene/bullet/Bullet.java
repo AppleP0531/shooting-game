@@ -26,7 +26,7 @@ import com.game.shooting_game.utils.animation.Animation;
 import com.game.shooting_game.utils.animation.AnimationManager;
 
 public abstract class Bullet implements Moveable, GameObject, Entity {
-    public enum Direction {
+    public static enum Direction {
         RIGHT,
         LEFT;
 

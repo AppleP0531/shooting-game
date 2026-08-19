@@ -335,12 +335,12 @@ public final class ShipManager implements Manager {
      * @param dt
      */
     private void updateAndClean(List<Ship> ships, double dt) {
-        ships.forEach(s -> s.update(dt));
-
-        // 死亡処理
         Iterator<Ship> iterator = ships.iterator();
         while (iterator.hasNext()) {
             Ship s = iterator.next();
+            s.update(dt); // 更新
+
+            // 死亡処理
             if (s.isDead()) {
                 // キル数カウントアップ
                 GM.setKillCountSinceLastLevelUp(GM.getKillCountSinceLastLevelUp() + 1);

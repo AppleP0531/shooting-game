@@ -4,26 +4,14 @@
     "enemyList": {
       "wave1": [],
       "wave2": [],
-      "wave3": [],
-      "wave4": [],
-      "wave5": [],
-      "wave6": [],
-      "wave7": [],
-      "wave8": [],
-      "wave9": [],
-      "wave10": [],
-      "wave11": [],
-      "wave12": [],
-      "wave13": [],
-      "wave14": [],
-      "wave15": []
+      "wave3": []
     }
   },
   "stage0": {
     "enemyList": {
       "wave0": [
         {
-          "enemyId": "NoName2",
+          "enemyId": "Clab",
           "mode": "BLUE",
           "level": 1,
           "spawnPos": [-160, 150],
@@ -37,7 +25,7 @@
           "stayPos": [0, 130]
         },
         {
-          "enemyId": "NoName1",
+          "enemyId": "Beetle",
           "mode": "BLUE",
           "level": 3,
           "spawnPos": [160, 150],
