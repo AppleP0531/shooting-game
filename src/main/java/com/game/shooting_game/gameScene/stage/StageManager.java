@@ -85,7 +85,8 @@ public final class StageManager implements Manager {
                     return entry.getKey();
                 }
             }
-            return null; // 見つからない場合
+            throw new IllegalStateException(
+                    "enemyId '" + enemyId + "' はShipConfig.jsonに存在しません。StageConfig.jsonの記述を確認してください。");
         }
     }
 
@@ -140,14 +141,11 @@ public final class StageManager implements Manager {
                     "Configuration loaded successfully");
         } catch (IOException e) {
             // ロードエラーログ
-            LogUtils.systemLog(
+            LogUtils.error(
                     "[FATAL]",
                     component,
-                    "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + "." + ANSI.RESET);
-            LogUtils.systemLog(
-                    "[FATAL]",
-                    component,
-                    ANSI.RED + "Application will terminate." + ANSI.RESET,
+                    "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + "." + ANSI.RESET + "\n"
+                            + ANSI.RED + "Application will terminate." + ANSI.RESET,
                     e);
         }
     }

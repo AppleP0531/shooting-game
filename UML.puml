@@ -298,8 +298,7 @@ package "shooting_game" {
             - {static} instance: SelectStageManager
             - MAIN: ShootingGameMain
             - goBackBtn: JButton
-            - normalModeBtn: JButton
-            - infinityModeBtn: JButton
+            - modeBtnMap: Map<StageModeButton, JButton>
             --
             - SelectStageManager()
             + initComponents(): void
@@ -307,6 +306,20 @@ package "shooting_game" {
             + setup(): void
             + update(dt: double): void
             + draw(g: Graphics): void
+        }
+
+        enum StageModeButton {
+            NORMAL
+            INFINITY
+            --
+            - label: String
+            - imagePath: String
+            - sceneType:SceneType
+            --
+            - StageModeButton(label: String, imagePath: String, sceneType: SceneType)
+            + getLabel(): String
+            + getImagePath(): String
+            + getSceneType(): SceneType
         }
 
         class SelectStageSceneUI {
@@ -1408,7 +1421,7 @@ package "shooting_game" {
             - {static} ENABLE_STACKTRACE_LOG: boolean
             --
             + {static} systemLog(tag: String, className: String, msg: String): void
-            + {static} systemLog(tag: String, className: String, msg: String, e: Exception): void
+            + {static} error(tag: String, className: String, msg: String, e: Exception): void
             + {static} debugLog(message: Object): void
             + {static} debugLog(format: String, messages: Object...): void
         }
@@ -1660,6 +1673,7 @@ shooting_game.data.DataManager +-- UserLevelResult
 shooting_game.data.UserData +-- Progress
 shooting_game.data.UserData +-- Resources
 shooting_game.data.UserData +-- ShipStats
+shooting_game.stageScene.SelectStageManager +-- StageModeButton
 shooting_game.stageScene.normal.NormalStageManager +-- StageBtnData
 shooting_game.stageScene.normal.NormalStageManager +-- StageDetailData
 shooting_game.lobbyScene.LobbySceneUI +-- LobbySceneUIData

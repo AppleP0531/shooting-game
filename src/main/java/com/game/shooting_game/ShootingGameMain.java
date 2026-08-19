@@ -292,7 +292,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                 }
             } catch (Exception e) {
                 // ゲームループエラー
-                LogUtils.systemLog(
+                LogUtils.error(
                         "[ERROR]",
                         component,
                         "Game Loop Error.",

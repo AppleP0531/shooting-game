@@ -80,19 +80,26 @@ public class Stage implements GameObject {
                         "The current wave is " + ANSI.YELLOW + "wave" + id + ANSI.RESET);
 
                 for (EnemyConfig enemy : waveData) {
-                    SHIP_M.addShip(ShipFactory.createShip(
-                            enemy.getOwner(),
-                            enemy.getEnemyId(),
-                            enemy.getMode(),
-                            enemy.getLevel(),
-                            new Vector2(
-                                    MAIN.getWidth() / 2
-                                            + enemy.getSpawnPos().getX() * ShootingGameMain.getScreenSizeAdj(),
-                                    enemy.getSpawnPos().getY() * ShootingGameMain.getScreenSizeAdj()),
-                            new Vector2(
-                                    MAIN.getWidth() / 2
-                                            + enemy.getStayPos().getX() * ShootingGameMain.getScreenSizeAdj(),
-                                    enemy.getStayPos().getY() * ShootingGameMain.getScreenSizeAdj())));
+                    try {
+                        SHIP_M.addShip(ShipFactory.createShip(
+                                enemy.getOwner(),
+                                enemy.getEnemyId(),
+                                enemy.getMode(),
+                                enemy.getLevel(),
+                                new Vector2(
+                                        MAIN.getWidth() / 2
+                                                + enemy.getSpawnPos().getX() * ShootingGameMain.getScreenSizeAdj(),
+                                        enemy.getSpawnPos().getY() * ShootingGameMain.getScreenSizeAdj()),
+                                new Vector2(
+                                        MAIN.getWidth() / 2
+                                                + enemy.getStayPos().getX() * ShootingGameMain.getScreenSizeAdj(),
+                                        enemy.getStayPos().getY() * ShootingGameMain.getScreenSizeAdj())));
+                    } catch (Exception e) {
+                        LogUtils.systemLog(
+                                "[ERROR]",
+                                component,
+                                "Failed to spawn enemy '" + enemy.getEnemyId() + "''. \n" + "Skipping.");
+                    }
                 }
             } else
                 SHIP_M.getPlayer().animation("breakAway");
