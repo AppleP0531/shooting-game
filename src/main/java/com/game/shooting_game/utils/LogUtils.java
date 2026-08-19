@@ -98,7 +98,7 @@ public class LogUtils {
      * @param message   メッセージ
      * @param e         スタックトレース
      */
-    public static void systemLog(String tag, String component, String message, Exception e) {
+    public static void error(String tag, String component, String message, Exception e) {
         // 通常のログを出力
         systemLog(tag, component, message);
 

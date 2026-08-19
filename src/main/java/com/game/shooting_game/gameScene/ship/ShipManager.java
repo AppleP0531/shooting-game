@@ -186,14 +186,12 @@ public final class ShipManager implements Manager {
                     "Configuration loaded successfully");
         } catch (IOException e) {
             // ロードエラーログ
-            LogUtils.systemLog(
+            LogUtils.error(
                     "[FATAL]",
                     component,
-                    "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + "." + ANSI.RESET);
-            LogUtils.systemLog(
-                    "[FATAL]",
-                    component,
-                    ANSI.RED + "Application will terminate." + ANSI.RESET,
+                    "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + "." + ANSI.RESET + "\n"
+                            +
+                            ANSI.RED + "Application will terminate." + ANSI.RESET,
                     e);
         }
     }

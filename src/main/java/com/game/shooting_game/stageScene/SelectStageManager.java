@@ -27,7 +27,7 @@ public final class SelectStageManager extends JPanel implements Manager {
         private final String imagePath;
         private final SceneType sceneType;
 
-        StageModeButton(String label, String imagePath, SceneType sceneType) {
+        private StageModeButton(String label, String imagePath, SceneType sceneType) {
             this.label = label;
             this.imagePath = imagePath;
             this.sceneType = sceneType;
