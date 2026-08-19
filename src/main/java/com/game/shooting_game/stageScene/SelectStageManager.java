@@ -1,6 +1,8 @@
 package com.game.shooting_game.stageScene;
 
 import java.awt.Graphics;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Objects;
 
 import javax.swing.JButton;
@@ -17,11 +19,37 @@ public final class SelectStageManager extends JPanel implements Manager {
     private static final String component = "[SelectStageManager]";
     private static SelectStageManager instance;
 
+    private static enum StageModeButton {
+        NORMAL("NORMAL MODE", "/static/img/UI/selectStageScene/normalModeImage.png", SceneType.NORMALSTAGE),
+        INFINITY("INFINITY MODE", "/static/img/UI/selectStageScene/infinityModeImage.png", SceneType.INFINITYSTAGE);
+
+        private final String label;
+        private final String imagePath;
+        private final SceneType sceneType;
+
+        StageModeButton(String label, String imagePath, SceneType sceneType) {
+            this.label = label;
+            this.imagePath = imagePath;
+            this.sceneType = sceneType;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public String getImagePath() {
+            return imagePath;
+        }
+
+        public SceneType getTargetScene() {
+            return sceneType;
+        }
+    }
+
     private final ShootingGameMain MAIN;
 
     private JButton goBackBtn;
-    private JButton normalModeBtn;
-    private JButton infinityModeBtn;
+    private final Map<StageModeButton, JButton> modeBtnMap = new EnumMap<>(StageModeButton.class);
 
     private SelectStageManager() {
         MAIN = ShootingGameMain.getInstance();
@@ -47,38 +75,28 @@ public final class SelectStageManager extends JPanel implements Manager {
         });
         this.add(goBackBtn);
 
-        // ノーマルモードボタン
-        Vector2 normalModeBtnSize = new Vector2(
+        // モードボタンを配列(enum)から自動生成
+        Vector2 modeBtnSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
-        String normalModeImagePath = "/static/img/UI/selectStageScene/normalModeImage.png";
-        normalModeBtn = UIBuilder.createImageBtn(component, normalModeImagePath, normalModeBtnSize,
-                "NORMAL MODE");
-        normalModeBtn.setBounds(
-                MAIN.getWidth() / 2 - (int) normalModeBtn.getWidth() / 2,
-                (int) (110 * ShootingGameMain.getScreenSizeAdj()),
-                (int) normalModeBtn.getWidth(), (int) normalModeBtn.getHeight());
-        normalModeBtn.addActionListener(e -> {
-            SceneManager.getInstance().changeScene(SceneType.NORMALSTAGE);
-        });
-        this.add(normalModeBtn);
 
-        // 無限モードボタン
-        Vector2 infinityModeBtnSize = new Vector2(
-                200 * ShootingGameMain.getScreenSizeAdj(),
-                50 * ShootingGameMain.getScreenSizeAdj());
-        String infinityModeImagePath = "/static/img/UI/selectStageScene/infinityModeImage.png";
-        infinityModeBtn = UIBuilder.createImageBtn(component, infinityModeImagePath,
-                infinityModeBtnSize,
-                "INFINITY MODE");
-        infinityModeBtn.setBounds(
-                MAIN.getWidth() / 2 - (int) infinityModeBtn.getWidth() / 2,
-                (int) (170 * ShootingGameMain.getScreenSizeAdj()),
-                (int) infinityModeBtn.getWidth(), (int) infinityModeBtn.getHeight());
-        infinityModeBtn.addActionListener(e -> {
-            SceneManager.getInstance().changeScene(SceneType.INFINITYSTAGE);
-        });
-        this.add(infinityModeBtn);
+        StageModeButton[] modes = StageModeButton.values();
+        for (int i = 0; i < modes.length; i++) {
+            StageModeButton mode = modes[i];
+
+            JButton btn = UIBuilder.createImageBtn(component, mode.getImagePath(), modeBtnSize, mode.getLabel());
+            double y = 110 + i * 60;
+            btn.setBounds(
+                    MAIN.getWidth() / 2 - (int) btn.getWidth() / 2,
+                    (int) (y * ShootingGameMain.getScreenSizeAdj()),
+                    (int) btn.getWidth(), (int) btn.getHeight());
+            btn.addActionListener(e -> {
+                SceneManager.getInstance().changeScene(mode.getTargetScene());
+            });
+
+            modeBtnMap.put(mode, btn);
+            this.add(btn);
+        }
     }
 
     /**
