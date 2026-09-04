@@ -21,8 +21,15 @@
           "enemyId": "Bat",
           "mode": "RED",
           "level": 3,
-          "spawnPos": [0, 80],
-          "stayPos": [0, 130]
+          "spawnPos": [40, 80],
+          "stayPos": [40, 130]
+        },
+        {
+          "enemyId": "Cloud",
+          "mode": "RED",
+          "level": 3,
+          "spawnPos": [-40, 80],
+          "stayPos": [-40, 130]
         },
         {
           "enemyId": "Beetle",
