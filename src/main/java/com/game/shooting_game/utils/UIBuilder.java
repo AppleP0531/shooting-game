@@ -328,6 +328,10 @@ public class UIBuilder extends JPanel {
 
         // タイトルパネル
         double titlePanelSize = 25 * ShootingGameMain.getScreenSizeAdj();
+        // パネルが高くて、タイトルバー(閉じるボタン)が画面の上にはみ出すときは、パネルごと下げる
+        if (p.getY() < (int) titlePanelSize)
+            p.setLocation(p.getX(), (int) titlePanelSize);
+
         JPanel titlePanel = (JPanel) findComponentByName(parent, "titlePanel");
         if (titlePanel == null) {
             titlePanel = new JPanel();
@@ -339,6 +343,8 @@ public class UIBuilder extends JPanel {
                     p.getWidth(), (int) titlePanelSize);
             parent.add(titlePanel);
         }
+        // 開くたびに、今のパネルの上に置き直す(別のパネルが先に開かれていても、閉じるボタンがずれないように)
+        titlePanel.setBounds(p.getX(), p.getY() - (int) titlePanelSize, p.getWidth(), (int) titlePanelSize);
         titlePanel.setVisible(true);
 
         if (focus) {
@@ -373,6 +379,8 @@ public class UIBuilder extends JPanel {
 
                 parent.add(panelFocus);
             }
+            panelFocus.setBounds(p.getX(), p.getY() - (int) titlePanelSize, p.getWidth(),
+                    p.getHeight() + (int) titlePanelSize);
             panelFocus.setVisible(true);
             parent.setComponentZOrder(panelFocus, 0);
         }

@@ -6,6 +6,8 @@ import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
 import com.game.shooting_game.gameScene.bullet.types.Ball;
 import com.game.shooting_game.gameScene.bullet.types.Curve;
 import com.game.shooting_game.gameScene.bullet.types.Laser;
+import com.game.shooting_game.gameScene.bullet.types.Spiral;
+import com.game.shooting_game.gameScene.bullet.types.Split;
 import com.game.shooting_game.gameScene.bullet.types.Straight;
 import com.game.shooting_game.gameScene.bullet.types.Tracking;
 import com.game.shooting_game.gameScene.bullet.types.Wave;
@@ -33,6 +35,8 @@ public class BulletFactory {
             case TRACKING -> new Tracking(owner, id, mode, pos, vec);
             case LASER -> new Laser(owner, id, mode, pos, vec);
             case BALL -> new Ball(owner, id, mode, pos, vec);
+            case SPIRAL -> new Spiral(owner, id, mode, pos, vec, direction);
+            case SPLIT -> new Split(owner, id, mode, pos, vec);
             default -> throw new IllegalArgumentException("不明な弾の種類です: " + kind);
         };
     }

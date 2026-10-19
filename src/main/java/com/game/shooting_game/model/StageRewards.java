@@ -1,12 +1,15 @@
 package com.game.shooting_game.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 import lombok.Data;
 
 import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.module.Module;
 
 @Data
 public class StageRewards {
@@ -14,6 +17,7 @@ public class StageRewards {
 
     private int score; // ステージクリアスコア
     private Map<ResourceKinds, Integer> resources = new HashMap<>(); // ステージクリア報酬
+    private List<Module> modules = new ArrayList<>(); // クリアで手に入ったモジュール
 
     /**
      * インスタンスの取得
@@ -30,6 +34,7 @@ public class StageRewards {
      */
     public void resetRewards() {
         resources.clear();
+        modules.clear();
         score = 0;
     }
 }

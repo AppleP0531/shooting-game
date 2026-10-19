@@ -107,8 +107,8 @@ public class Resource extends Item {
                 case ResourceName.COIN -> {
                     GM.addCoin(100);
                 }
-                default -> {
-                }
+                // 素材はステージクリア時にバックパックへ入る
+                default -> GM.addResource(resKind);
             }
         }
     }

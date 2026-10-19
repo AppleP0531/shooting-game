@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -27,7 +28,10 @@ import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.gameScene.GameManager;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
+import com.game.shooting_game.gameScene.beam.BeamManager;
+import com.game.shooting_game.gameScene.beam.BeamSpec;
 import com.game.shooting_game.gameScene.bullet.Bullet.Direction;
+import com.game.shooting_game.gameScene.bullet.BulletManager;
 import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
 import com.game.shooting_game.gameScene.item.Item;
 import com.game.shooting_game.gameScene.item.ItemFactory;
@@ -35,9 +39,10 @@ import com.game.shooting_game.gameScene.item.ItemManager;
 import com.game.shooting_game.gameScene.item.ItemManager.ItemKinds;
 import com.game.shooting_game.gameScene.item.ResourceFactory;
 import com.game.shooting_game.gameScene.item.ResourceFactory.DropModel;
+import com.game.shooting_game.gameScene.ship.path.PathLibrary;
 import com.game.shooting_game.gameScene.ship.types.Player;
 import com.game.shooting_game.interfaces.Manager;
-import com.game.shooting_game.model.StageRewards;
+import com.game.shooting_game.skill.SkillService;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.LogUtils;
@@ -74,6 +79,7 @@ public final class ShipManager implements Manager {
     public static class ShipDefinition {
         private ShipConfig datas;
         private Map<String, ShotConfig[]> levels = new HashMap<>();
+        private BeamSpec[] beams; // この機体が撃つビーム(敵: 到着後に撃つ / 自機: minLevel以上で撃つ)
 
         @JsonAnySetter
         public void addLevelData(String key, ShotConfig[] configs) {
@@ -128,6 +134,7 @@ public final class ShipManager implements Manager {
         private String bulletVecRef;
         private int vecAdj;
         private Direction direction;
+        private double cooldown; // この弾を撃った後の発射間隔(秒)。0なら弾設定のクールタイムを使う
     }
 
     private Map<ShipKinds, Map<String, ShipDefinition>> shipConfigMap; // 船データが格納された呼び出し用のマップ
@@ -324,6 +331,8 @@ public final class ShipManager implements Manager {
     public void reload() {
         loadConfig();
         loadImages();
+        BossLibrary.reload();
+        PathLibrary.reload();
     }
 
     /**
@@ -338,6 +347,12 @@ public final class ShipManager implements Manager {
             Ship s = iterator.next();
             s.update(dt); // 更新
 
+            // 除去要求(画面外へ離脱した敵など)はドロップ等なしで取り除く
+            if (s.isRemoveRequested()) {
+                iterator.remove();
+                continue;
+            }
+
             // 死亡処理
             if (s.isDead()) {
                 // キル数カウントアップ
@@ -350,6 +365,12 @@ public final class ShipManager implements Manager {
                 s.addScore(); // スコア加算
                 s.animation("death"); // 削除
                 iterator.remove(); // リストから削除
+
+                // ボス撃破時は残っている敵弾を消す
+                if (s.getOwner() == ShipKinds.BOSS) {
+                    BulletManager.getInstance().clearEnemyBullets();
+                    BeamManager.getInstance().clearHostile();
+                }
             }
         }
     }
@@ -363,7 +384,8 @@ public final class ShipManager implements Manager {
         Item newItem;
         // アイテムを生成
         // 連続20体強化アイテムを落とさなかった場合は強制ドロップ
-        if (GM.getKillCountSinceLastLevelUp() >= 20)
+        // (スキルで必要撃破数を最大5減らせる)
+        if (GM.getKillCountSinceLastLevelUp() >= 20 - (int) SkillService.getBonus("LEVELUP_DROP"))
             newItem = ItemFactory.createItem(new Vector2(ship.getPos()), ItemKinds.LEVEL_UP);
         else
             newItem = ItemFactory.createItem(new Vector2(ship.getPos()));
@@ -379,15 +401,61 @@ public final class ShipManager implements Manager {
      * @param ship 参照する船
      */
     private void dropResource(Ship ship) {
-        Item newItem = ResourceFactory.createResource(DropModel.ENEMY_DEFEAT, new Vector2(ship.getPos()));
+        dropResource(new Vector2(ship.getPos()));
+    }
 
-        if (newItem != null && newItem.getKind() instanceof ResourceKinds resKind) {
+    /**
+     * リソースドロップ(位置指定)
+     * 
+     * @param pos 生成位置
+     */
+    private void dropResource(Vector2 pos) {
+        dropResource(pos, DropModel.ENEMY_DEFEAT);
+    }
+
+    /**
+     * リソースドロップ(位置・抽選モデル指定)
+     * 
+     * @param pos   生成位置
+     * @param model 抽選モデル
+     */
+    private void dropResource(Vector2 pos, DropModel model) {
+        Item newItem = ResourceFactory.createResource(model, pos);
+
+        // 拾った時点でステージの獲得素材として記録される(Resource.effect)
+        if (newItem != null)
             IM.addItem(newItem);
+    }
 
-            StageRewards SR = StageRewards.getInstance();
+    /**
+     * ボスのゲージ破壊ボーナスドロップ
+     * アイテムとリソースの抽選を指定回数回し、コインも落とす
+     * 
+     * @param boss  ボス
+     * @param rolls 抽選回数
+     */
+    public void dropBossBonus(Ship boss, int rolls) {
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
 
-            int ownedAmount = SR.getResources().getOrDefault(resKind, 0);
-            SR.getResources().put(resKind, ownedAmount + 1);
+        rolls += (int) Math.floor(SkillService.getBonus("BOSS_ROLLS"));
+        for (int i = 0; i < rolls; i++) {
+            // 少しばらけた位置に落とす
+            Vector2 pos = new Vector2(
+                    boss.getPos().getX() + rnd.nextDouble(-50, 50) * adj,
+                    boss.getPos().getY() + rnd.nextDouble(-20, 40) * adj);
+
+            Item item = ItemFactory.createItem(new Vector2(pos));
+            if (item != null)
+                IM.addItem(item);
+
+            dropResource(new Vector2(pos), DropModel.BOSS_BONUS);
+        }
+
+        // コインドロップ
+        int coinAmount = boss.getDropCoinAmount();
+        for (int i = 0; i < coinAmount; i++) {
+            IM.addItem(ResourceFactory.createResource(new Vector2(boss.getPos()), ResourceKinds.COIN));
         }
     }
 

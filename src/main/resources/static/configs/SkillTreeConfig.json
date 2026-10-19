@@ -1,146 +1,1674 @@
 [
   {
     "name": "Origin",
-    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
-  },
-  {
-    "name": "Skill1",
-    "rootNode": "Origin",
-    "dist": 100,
+    "title": "機体",
+    "rootNode": null,
     "pos": 0,
-    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+    "dist": 0,
+    "effect": null,
+    "perLevel": 0,
+    "maxLevel": 1,
+    "unit": "",
+    "reqLevel": 1,
+    "coin": 0,
+    "coinGrowth": 1.0,
+    "detail": "機体強化の中心。ここから各系統に伸びていく。\n強化には敵のドロップ素材(強化素材)とコインが必要。\n※サブ機パーツ用の素材は強化には使えない。",
+    "matLevels": []
   },
   {
-    "name": "Skill1_1",
-    "rootNode": "Skill1",
-    "dist": 50,
-    "pos": 4,
-    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
-  },
-  {
-    "name": "Skill1_2",
-    "rootNode": "Skill1",
-    "dist": 50,
+    "name": "Power",
+    "title": "火力",
+    "rootNode": "Origin",
     "pos": 0,
-    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+    "dist": 95,
+    "effect": "DAMAGE",
+    "perLevel": 0.03,
+    "maxLevel": 10,
+    "unit": "%",
+    "reqLevel": 1,
+    "coin": 3000,
+    "coinGrowth": 1.4,
+    "detail": "自機の弾のダメージが上がる。",
+    "matLevels": [
+      {
+        "GEAR": {
+          "COMMON": 6
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 9
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 12
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 11,
+          "UNCOMMON": 2
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 14,
+          "UNCOMMON": 2
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 17,
+          "UNCOMMON": 2
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 5,
+          "RARE": 1
+        }
+      }
+    ]
   },
   {
-    "name": "Skill1_3",
-    "rootNode": "Skill1",
-    "dist": 50,
-    "pos": 1,
-    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+    "name": "Rapid",
+    "title": "連射",
+    "rootNode": "Power",
+    "pos": 4,
+    "dist": 95,
+    "effect": "FIRE_RATE",
+    "perLevel": 0.03,
+    "maxLevel": 8,
+    "unit": "%",
+    "reqLevel": 1,
+    "coin": 8000,
+    "coinGrowth": 1.4,
+    "detail": "弾の発射間隔が短くなる。",
+    "matLevels": [
+      {
+        "GEAR": {
+          "COMMON": 6
+        },
+        "ENERGY_CELL": {
+          "COMMON": 3
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 9
+        },
+        "ENERGY_CELL": {
+          "COMMON": 6
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 12
+        },
+        "ENERGY_CELL": {
+          "COMMON": 6
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        },
+        "ENERGY_CELL": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        },
+        "ENERGY_CELL": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        },
+        "ENERGY_CELL": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 11,
+          "UNCOMMON": 2
+        },
+        "ENERGY_CELL": {
+          "COMMON": 7,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 14,
+          "UNCOMMON": 2
+        },
+        "ENERGY_CELL": {
+          "COMMON": 7,
+          "UNCOMMON": 1
+        }
+      }
+    ]
   },
   {
-    "name": "Skill2",
-    "rootNode": "Origin",
-    "dist": 100,
-    "pos": 1,
-    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
-  },
-  {
-    "name": "Skill2_1",
-    "rootNode": "Skill2",
-    "dist": 50,
+    "name": "Breaker",
+    "title": "色破り",
+    "rootNode": "Power",
     "pos": 0,
-    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+    "dist": 95,
+    "effect": "SAME_COLOR",
+    "perLevel": 0.025,
+    "maxLevel": 5,
+    "unit": "%",
+    "reqLevel": 2,
+    "coin": 8000,
+    "coinGrowth": 1.4,
+    "detail": "同じ色の敵に与えるダメージの低下を和らげる(基本は半減)。",
+    "matLevels": [
+      {
+        "GEAR": {
+          "COMMON": 6
+        },
+        "LENS": {
+          "COMMON": 3
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 9
+        },
+        "LENS": {
+          "COMMON": 6
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 12
+        },
+        "LENS": {
+          "COMMON": 6
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        },
+        "LENS": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        },
+        "LENS": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      }
+    ]
   },
   {
-    "name": "Skill2_2",
-    "rootNode": "Skill2",
-    "dist": 50,
+    "name": "Overdrive",
+    "title": "暴走延長",
+    "rootNode": "Power",
     "pos": 1,
-    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+    "dist": 95,
+    "effect": "OOC_TIME",
+    "perLevel": 0.8,
+    "maxLevel": 5,
+    "unit": "秒",
+    "reqLevel": 1,
+    "coin": 8000,
+    "coinGrowth": 1.4,
+    "detail": "暴走状態(Lv5)の持続時間が延びる。",
+    "matLevels": [
+      {
+        "ENERGY_CELL": {
+          "COMMON": 6
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 9
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 12
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        }
+      }
+    ]
   },
   {
-    "name": "Skill2_3",
-    "rootNode": "Skill2",
-    "dist": 50,
-    "pos": 2,
-    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
-  },
-  {
-    "name": "Skill3",
-    "rootNode": "Origin",
-    "dist": 100,
-    "pos": 2,
-    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
-  },
-  {
-    "name": "Skill3_1",
-    "rootNode": "Skill3",
-    "dist": 50,
+    "name": "Berserk",
+    "title": "暴走火力",
+    "rootNode": "Overdrive",
     "pos": 1,
-    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+    "dist": 95,
+    "effect": "OOC_DAMAGE",
+    "perLevel": 0.04,
+    "maxLevel": 5,
+    "unit": "%",
+    "reqLevel": 2,
+    "coin": 20000,
+    "coinGrowth": 1.4,
+    "detail": "暴走状態中のダメージがさらに上がる。",
+    "matLevels": [
+      {
+        "ENERGY_CELL": {
+          "COMMON": 9
+        },
+        "LENS": {
+          "COMMON": 3
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 15
+        },
+        "LENS": {
+          "COMMON": 6
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 18
+        },
+        "LENS": {
+          "COMMON": 6
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 11,
+          "UNCOMMON": 2
+        },
+        "LENS": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 14,
+          "UNCOMMON": 2
+        },
+        "LENS": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      }
+    ]
   },
   {
-    "name": "Skill3_2",
-    "rootNode": "Skill3",
-    "dist": 50,
-    "pos": 2,
-    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
-  },
-  {
-    "name": "Skill3_3",
-    "rootNode": "Skill3",
-    "dist": 50,
-    "pos": 3,
-    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
-  },
-  {
-    "name": "Skill4",
+    "name": "Hull",
+    "title": "装甲",
     "rootNode": "Origin",
-    "dist": 100,
-    "pos": 3,
-    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+    "pos": 1,
+    "dist": 95,
+    "effect": "MAX_HP",
+    "perLevel": 0.06,
+    "maxLevel": 10,
+    "unit": "%",
+    "reqLevel": 1,
+    "coin": 3000,
+    "coinGrowth": 1.4,
+    "detail": "最大HPが上がる。",
+    "matLevels": [
+      {
+        "SCREW": {
+          "COMMON": 6
+        }
+      },
+      {
+        "SCREW": {
+          "COMMON": 9
+        }
+      },
+      {
+        "SCREW": {
+          "COMMON": 12
+        }
+      },
+      {
+        "SCREW": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "SCREW": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        }
+      },
+      {
+        "SCREW": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        }
+      },
+      {
+        "SCREW": {
+          "COMMON": 11,
+          "UNCOMMON": 2
+        }
+      },
+      {
+        "SCREW": {
+          "COMMON": 14,
+          "UNCOMMON": 2
+        }
+      },
+      {
+        "SCREW": {
+          "COMMON": 17,
+          "UNCOMMON": 2
+        }
+      },
+      {
+        "SCREW": {
+          "COMMON": 5,
+          "RARE": 1
+        }
+      }
+    ]
   },
   {
-    "name": "Skill4_1",
-    "rootNode": "Skill4",
-    "dist": 50,
+    "name": "Aegis",
+    "title": "無敵延長",
+    "rootNode": "Hull",
+    "pos": 1,
+    "dist": 95,
+    "effect": "INVINCIBLE",
+    "perLevel": 0.06,
+    "maxLevel": 5,
+    "unit": "秒",
+    "reqLevel": 1,
+    "coin": 8000,
+    "coinGrowth": 1.4,
+    "detail": "被弾後の無敵時間が延びる。",
+    "matLevels": [
+      {
+        "SCREW": {
+          "COMMON": 6
+        },
+        "CIRCUIT": {
+          "COMMON": 3
+        }
+      },
+      {
+        "SCREW": {
+          "COMMON": 9
+        },
+        "CIRCUIT": {
+          "COMMON": 6
+        }
+      },
+      {
+        "SCREW": {
+          "COMMON": 12
+        },
+        "CIRCUIT": {
+          "COMMON": 6
+        }
+      },
+      {
+        "SCREW": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        },
+        "CIRCUIT": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "SCREW": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        },
+        "CIRCUIT": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      }
+    ]
+  },
+  {
+    "name": "Slim",
+    "title": "小型化",
+    "rootNode": "Hull",
     "pos": 2,
-    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+    "dist": 95,
+    "effect": "HITBOX",
+    "perLevel": 0.03,
+    "maxLevel": 5,
+    "unit": "%",
+    "reqLevel": 1,
+    "coin": 8000,
+    "coinGrowth": 1.4,
+    "detail": "自機の当たり判定が小さくなる(最大-15%)。",
+    "matLevels": [
+      {
+        "SCREW": {
+          "COMMON": 6
+        },
+        "LENS": {
+          "COMMON": 3
+        }
+      },
+      {
+        "SCREW": {
+          "COMMON": 9
+        },
+        "LENS": {
+          "COMMON": 6
+        }
+      },
+      {
+        "SCREW": {
+          "COMMON": 12
+        },
+        "LENS": {
+          "COMMON": 6
+        }
+      },
+      {
+        "SCREW": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        },
+        "LENS": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "SCREW": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        },
+        "LENS": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      }
+    ]
   },
   {
-    "name": "Skill4_2",
-    "rootNode": "Skill4",
-    "dist": 50,
-    "pos": 3,
-    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+    "name": "Medic",
+    "title": "修復",
+    "rootNode": "Slim",
+    "pos": 2,
+    "dist": 95,
+    "effect": "HEAL_BONUS",
+    "perLevel": 0.05,
+    "maxLevel": 5,
+    "unit": "%",
+    "reqLevel": 1,
+    "coin": 8000,
+    "coinGrowth": 1.4,
+    "detail": "回復アイテムの回復量が増える。",
+    "matLevels": [
+      {
+        "SCREW": {
+          "COMMON": 6
+        },
+        "ENERGY_CELL": {
+          "COMMON": 3
+        }
+      },
+      {
+        "SCREW": {
+          "COMMON": 9
+        },
+        "ENERGY_CELL": {
+          "COMMON": 6
+        }
+      },
+      {
+        "SCREW": {
+          "COMMON": 12
+        },
+        "ENERGY_CELL": {
+          "COMMON": 6
+        }
+      },
+      {
+        "SCREW": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        },
+        "ENERGY_CELL": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "SCREW": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        },
+        "ENERGY_CELL": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      }
+    ]
   },
   {
-    "name": "Skill4_3",
-    "rootNode": "Skill4",
-    "dist": 50,
-    "pos": 4,
-    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+    "name": "Bulwark",
+    "title": "防壁",
+    "rootNode": "Aegis",
+    "pos": 1,
+    "dist": 95,
+    "effect": "SHIELD_TIME",
+    "perLevel": 1.0,
+    "maxLevel": 5,
+    "unit": "秒",
+    "reqLevel": 2,
+    "coin": 20000,
+    "coinGrowth": 1.4,
+    "detail": "シールドアイテムの持続時間が延びる。",
+    "matLevels": [
+      {
+        "CIRCUIT": {
+          "COMMON": 9
+        },
+        "SCREW": {
+          "COMMON": 6
+        }
+      },
+      {
+        "CIRCUIT": {
+          "COMMON": 15
+        },
+        "SCREW": {
+          "COMMON": 9
+        }
+      },
+      {
+        "CIRCUIT": {
+          "COMMON": 18
+        },
+        "SCREW": {
+          "COMMON": 12
+        }
+      },
+      {
+        "CIRCUIT": {
+          "COMMON": 11,
+          "UNCOMMON": 2
+        },
+        "SCREW": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "CIRCUIT": {
+          "COMMON": 14,
+          "UNCOMMON": 2
+        },
+        "SCREW": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        }
+      }
+    ]
   },
   {
-    "name": "Skill5",
+    "name": "Thruster",
+    "title": "推進",
     "rootNode": "Origin",
-    "dist": 100,
-    "pos": 4,
-    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+    "pos": 2,
+    "dist": 95,
+    "effect": "MOVE_SPEED",
+    "perLevel": 0.03,
+    "maxLevel": 8,
+    "unit": "%",
+    "reqLevel": 1,
+    "coin": 3000,
+    "coinGrowth": 1.4,
+    "detail": "移動速度が上がる。",
+    "matLevels": [
+      {
+        "GEAR": {
+          "COMMON": 3
+        },
+        "SCREW": {
+          "COMMON": 3
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 6
+        },
+        "SCREW": {
+          "COMMON": 6
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 6
+        },
+        "SCREW": {
+          "COMMON": 6
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        },
+        "SCREW": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        },
+        "SCREW": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        },
+        "SCREW": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 7,
+          "UNCOMMON": 1
+        },
+        "SCREW": {
+          "COMMON": 7,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "GEAR": {
+          "COMMON": 7,
+          "UNCOMMON": 1
+        },
+        "SCREW": {
+          "COMMON": 7,
+          "UNCOMMON": 1
+        }
+      }
+    ]
   },
   {
-    "name": "Skill5_1",
-    "rootNode": "Skill5",
-    "dist": 50,
+    "name": "Magnet",
+    "title": "磁力",
+    "rootNode": "Thruster",
+    "pos": 2,
+    "dist": 95,
+    "effect": "ITEM_RANGE",
+    "perLevel": 0.12,
+    "maxLevel": 6,
+    "unit": "%",
+    "reqLevel": 1,
+    "coin": 8000,
+    "coinGrowth": 1.4,
+    "detail": "アイテムを引き寄せる範囲が広がる。",
+    "matLevels": [
+      {
+        "CIRCUIT": {
+          "COMMON": 6
+        }
+      },
+      {
+        "CIRCUIT": {
+          "COMMON": 9
+        }
+      },
+      {
+        "CIRCUIT": {
+          "COMMON": 12
+        }
+      },
+      {
+        "CIRCUIT": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "CIRCUIT": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        }
+      },
+      {
+        "CIRCUIT": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        }
+      }
+    ]
+  },
+  {
+    "name": "Vacuum",
+    "title": "集塵",
+    "rootNode": "Magnet",
+    "pos": 2,
+    "dist": 95,
+    "effect": "MAGNET_TIME",
+    "perLevel": 1.0,
+    "maxLevel": 5,
+    "unit": "秒",
+    "reqLevel": 2,
+    "coin": 20000,
+    "coinGrowth": 1.4,
+    "detail": "マグネットアイテムの持続時間が延びる。",
+    "matLevels": [
+      {
+        "CIRCUIT": {
+          "COMMON": 9
+        },
+        "LENS": {
+          "COMMON": 3
+        }
+      },
+      {
+        "CIRCUIT": {
+          "COMMON": 15
+        },
+        "LENS": {
+          "COMMON": 6
+        }
+      },
+      {
+        "CIRCUIT": {
+          "COMMON": 18
+        },
+        "LENS": {
+          "COMMON": 6
+        }
+      },
+      {
+        "CIRCUIT": {
+          "COMMON": 11,
+          "UNCOMMON": 2
+        },
+        "LENS": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "CIRCUIT": {
+          "COMMON": 14,
+          "UNCOMMON": 2
+        },
+        "LENS": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      }
+    ]
+  },
+  {
+    "name": "Bomber",
+    "title": "爆風",
+    "rootNode": "Thruster",
     "pos": 3,
-    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+    "dist": 95,
+    "effect": "BOMB_POWER",
+    "perLevel": 0.15,
+    "maxLevel": 5,
+    "unit": "%",
+    "reqLevel": 1,
+    "coin": 8000,
+    "coinGrowth": 1.4,
+    "detail": "ボムアイテムのダメージが増える。",
+    "matLevels": [
+      {
+        "ENERGY_CELL": {
+          "COMMON": 6
+        },
+        "GEAR": {
+          "COMMON": 3
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 9
+        },
+        "GEAR": {
+          "COMMON": 6
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 12
+        },
+        "GEAR": {
+          "COMMON": 6
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        },
+        "GEAR": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        },
+        "GEAR": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      }
+    ]
   },
   {
-    "name": "Skill5_2",
-    "rootNode": "Skill5",
-    "dist": 50,
+    "name": "Salvage",
+    "title": "回収",
+    "rootNode": "Origin",
+    "pos": 3,
+    "dist": 95,
+    "effect": "COIN_BONUS",
+    "perLevel": 0.05,
+    "maxLevel": 10,
+    "unit": "%",
+    "reqLevel": 1,
+    "coin": 3000,
+    "coinGrowth": 1.4,
+    "detail": "獲得コインが増える。",
+    "matLevels": [
+      {
+        "CIRCUIT": {
+          "COMMON": 3
+        },
+        "GEAR": {
+          "COMMON": 3
+        }
+      },
+      {
+        "CIRCUIT": {
+          "COMMON": 6
+        },
+        "GEAR": {
+          "COMMON": 6
+        }
+      },
+      {
+        "CIRCUIT": {
+          "COMMON": 6
+        },
+        "GEAR": {
+          "COMMON": 6
+        }
+      },
+      {
+        "CIRCUIT": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        },
+        "GEAR": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "CIRCUIT": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        },
+        "GEAR": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "CIRCUIT": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        },
+        "GEAR": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "CIRCUIT": {
+          "COMMON": 7,
+          "UNCOMMON": 1
+        },
+        "GEAR": {
+          "COMMON": 7,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "CIRCUIT": {
+          "COMMON": 7,
+          "UNCOMMON": 1
+        },
+        "GEAR": {
+          "COMMON": 7,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "CIRCUIT": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        },
+        "GEAR": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "CIRCUIT": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        },
+        "GEAR": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        }
+      }
+    ]
+  },
+  {
+    "name": "Scavenger",
+    "title": "探索",
+    "rootNode": "Salvage",
+    "pos": 3,
+    "dist": 95,
+    "effect": "DROP_RATE",
+    "perLevel": 0.06,
+    "maxLevel": 8,
+    "unit": "%",
+    "reqLevel": 1,
+    "coin": 8000,
+    "coinGrowth": 1.4,
+    "detail": "素材のドロップ率が上がる。",
+    "matLevels": [
+      {
+        "LENS": {
+          "COMMON": 3
+        },
+        "CIRCUIT": {
+          "COMMON": 3
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 6
+        },
+        "CIRCUIT": {
+          "COMMON": 6
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 6
+        },
+        "CIRCUIT": {
+          "COMMON": 6
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        },
+        "CIRCUIT": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        },
+        "CIRCUIT": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        },
+        "CIRCUIT": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 7,
+          "UNCOMMON": 1
+        },
+        "CIRCUIT": {
+          "COMMON": 7,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 7,
+          "UNCOMMON": 1
+        },
+        "CIRCUIT": {
+          "COMMON": 7,
+          "UNCOMMON": 1
+        }
+      }
+    ]
+  },
+  {
+    "name": "Lucky",
+    "title": "強運",
+    "rootNode": "Salvage",
     "pos": 4,
-    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+    "dist": 95,
+    "effect": "LEVELUP_DROP",
+    "perLevel": 1,
+    "maxLevel": 5,
+    "unit": "キル",
+    "reqLevel": 1,
+    "coin": 8000,
+    "coinGrowth": 1.4,
+    "detail": "強化アイテムが確定で出るまでの撃破数が減る(20キル→最大15キル)。",
+    "matLevels": [
+      {
+        "LENS": {
+          "COMMON": 3
+        },
+        "ENERGY_CELL": {
+          "COMMON": 3
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 6
+        },
+        "ENERGY_CELL": {
+          "COMMON": 6
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 6
+        },
+        "ENERGY_CELL": {
+          "COMMON": 6
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        },
+        "ENERGY_CELL": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        },
+        "ENERGY_CELL": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      }
+    ]
   },
   {
-    "name": "Skill5_3",
-    "rootNode": "Skill5",
-    "dist": 50,
+    "name": "Prospector",
+    "title": "採掘",
+    "rootNode": "Scavenger",
+    "pos": 3,
+    "dist": 95,
+    "effect": "BOSS_ROLLS",
+    "perLevel": 0.5,
+    "maxLevel": 6,
+    "unit": "回",
+    "reqLevel": 3,
+    "coin": 20000,
+    "coinGrowth": 1.4,
+    "detail": "ボスのゲージ破壊で素材の抽選回数が増える。",
+    "matLevels": [
+      {
+        "LENS": {
+          "COMMON": 6
+        },
+        "CIRCUIT": {
+          "COMMON": 6
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 9
+        },
+        "CIRCUIT": {
+          "COMMON": 9
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 12
+        },
+        "CIRCUIT": {
+          "COMMON": 12
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        },
+        "CIRCUIT": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        },
+        "CIRCUIT": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        },
+        "CIRCUIT": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        }
+      }
+    ]
+  },
+  {
+    "name": "Link",
+    "title": "連携",
+    "rootNode": "Origin",
+    "pos": 4,
+    "dist": 95,
+    "effect": "SUB_POWER",
+    "perLevel": 0.04,
+    "maxLevel": 10,
+    "unit": "%",
+    "reqLevel": 1,
+    "coin": 3000,
+    "coinGrowth": 1.4,
+    "detail": "サブ機の弾のダメージが上がる。サブ機パーツを制作すると効果が出る。",
+    "matLevels": [
+      {
+        "ENERGY_CELL": {
+          "COMMON": 6
+        },
+        "CIRCUIT": {
+          "COMMON": 3
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 9
+        },
+        "CIRCUIT": {
+          "COMMON": 6
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 12
+        },
+        "CIRCUIT": {
+          "COMMON": 6
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        },
+        "CIRCUIT": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        },
+        "CIRCUIT": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        },
+        "CIRCUIT": {
+          "COMMON": 4,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 11,
+          "UNCOMMON": 2
+        },
+        "CIRCUIT": {
+          "COMMON": 7,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 14,
+          "UNCOMMON": 2
+        },
+        "CIRCUIT": {
+          "COMMON": 7,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 17,
+          "UNCOMMON": 2
+        },
+        "CIRCUIT": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 5,
+          "RARE": 1
+        },
+        "CIRCUIT": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        }
+      }
+    ]
+  },
+  {
+    "name": "Sync",
+    "title": "同調",
+    "rootNode": "Link",
+    "pos": 4,
+    "dist": 95,
+    "effect": "SUB_RATE",
+    "perLevel": 0.03,
+    "maxLevel": 8,
+    "unit": "%",
+    "reqLevel": 1,
+    "coin": 8000,
+    "coinGrowth": 1.4,
+    "detail": "サブ機の連射速度が上がる。",
+    "matLevels": [
+      {
+        "ENERGY_CELL": {
+          "COMMON": 6
+        },
+        "CIRCUIT": {
+          "COMMON": 6
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 9
+        },
+        "CIRCUIT": {
+          "COMMON": 9
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 12
+        },
+        "CIRCUIT": {
+          "COMMON": 12
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        },
+        "CIRCUIT": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        },
+        "CIRCUIT": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        },
+        "CIRCUIT": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 11,
+          "UNCOMMON": 2
+        },
+        "CIRCUIT": {
+          "COMMON": 11,
+          "UNCOMMON": 2
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 14,
+          "UNCOMMON": 2
+        },
+        "CIRCUIT": {
+          "COMMON": 14,
+          "UNCOMMON": 2
+        }
+      }
+    ]
+  },
+  {
+    "name": "Prism",
+    "title": "集光",
+    "rootNode": "Sync",
+    "pos": 4,
+    "dist": 95,
+    "effect": "BEAM_POWER",
+    "perLevel": 0.05,
+    "maxLevel": 10,
+    "unit": "%",
+    "reqLevel": 2,
+    "coin": 20000,
+    "coinGrowth": 1.4,
+    "detail": "自機・サブ機のビームのダメージが上がる。",
+    "matLevels": [
+      {
+        "LENS": {
+          "COMMON": 9
+        },
+        "ENERGY_CELL": {
+          "COMMON": 9
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 15
+        },
+        "ENERGY_CELL": {
+          "COMMON": 15
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 18
+        },
+        "ENERGY_CELL": {
+          "COMMON": 18
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 11,
+          "UNCOMMON": 2
+        },
+        "ENERGY_CELL": {
+          "COMMON": 11,
+          "UNCOMMON": 2
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 14,
+          "UNCOMMON": 2
+        },
+        "ENERGY_CELL": {
+          "COMMON": 14,
+          "UNCOMMON": 2
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 17,
+          "UNCOMMON": 2
+        },
+        "ENERGY_CELL": {
+          "COMMON": 17,
+          "UNCOMMON": 2
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 8,
+          "RARE": 1
+        },
+        "ENERGY_CELL": {
+          "COMMON": 8,
+          "RARE": 1
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 6,
+          "UNCOMMON": 1,
+          "RARE": 1
+        },
+        "ENERGY_CELL": {
+          "COMMON": 6,
+          "UNCOMMON": 1,
+          "RARE": 1
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 9,
+          "UNCOMMON": 1,
+          "RARE": 1
+        },
+        "ENERGY_CELL": {
+          "COMMON": 9,
+          "UNCOMMON": 1,
+          "RARE": 1
+        }
+      },
+      {
+        "LENS": {
+          "COMMON": 7,
+          "UNCOMMON": 2,
+          "RARE": 1
+        },
+        "ENERGY_CELL": {
+          "COMMON": 7,
+          "UNCOMMON": 2,
+          "RARE": 1
+        }
+      }
+    ]
+  },
+  {
+    "name": "Condenser",
+    "title": "収束",
+    "rootNode": "Link",
     "pos": 0,
-    "detail": "SampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\n\n\n\n\n\n\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText\nSampleText SampleText"
+    "dist": 165,
+    "effect": "BEAM_RATE",
+    "perLevel": 0.03,
+    "maxLevel": 8,
+    "unit": "%",
+    "reqLevel": 1,
+    "coin": 8000,
+    "coinGrowth": 1.4,
+    "detail": "自機・サブ機のビームを撃つ間隔が短くなる。",
+    "matLevels": [
+      {
+        "ENERGY_CELL": {
+          "COMMON": 6
+        },
+        "LENS": {
+          "COMMON": 6
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 9
+        },
+        "LENS": {
+          "COMMON": 9
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 12
+        },
+        "LENS": {
+          "COMMON": 12
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        },
+        "LENS": {
+          "COMMON": 10,
+          "UNCOMMON": 1
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        },
+        "LENS": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        },
+        "LENS": {
+          "COMMON": 8,
+          "UNCOMMON": 2
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 11,
+          "UNCOMMON": 2
+        },
+        "LENS": {
+          "COMMON": 11,
+          "UNCOMMON": 2
+        }
+      },
+      {
+        "ENERGY_CELL": {
+          "COMMON": 14,
+          "UNCOMMON": 2
+        },
+        "LENS": {
+          "COMMON": 14,
+          "UNCOMMON": 2
+        }
+      }
+    ]
   }
-]
+]

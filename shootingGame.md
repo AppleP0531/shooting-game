@@ -15,3 +15,8 @@ press "ctrl + shift + p", type "PlantUML: Export Current Diagram" and sellect "s
 
 [DrawIO閲覧方法]
 install extention "https://marketplace.visualstudio.com/items?itemName=hediet.vscode-drawio" to vsc
+
+[起動方法]
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-25.0.4.101-hotspot"
+$env:Path = "$env:JAVA_HOME\bin;$env:Path"
+.\mvnw.cmd clean spring-boot:run

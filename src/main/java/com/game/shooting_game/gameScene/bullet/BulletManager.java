@@ -26,6 +26,7 @@ import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.utils.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
+import com.game.shooting_game.utils.animation.AnimationManager;
 
 public final class BulletManager implements Manager {
     private static final String component = "[BulletManager]";
@@ -38,7 +39,9 @@ public final class BulletManager implements Manager {
         WAVE,
         TRACKING,
         LASER,
-        BALL
+        BALL,
+        SPIRAL, // 進行方向の左右にらせんを描いて進む(2発を逆位相で撃つと二重らせん)
+        SPLIT // 一定時間進んだあと、扇状の小さな弾に分裂する
     }
 
     // ----- データクラスの定義 -----
@@ -58,6 +61,16 @@ public final class BulletManager implements Manager {
         private double speed;
         private double damage;
         private double diff; // Curve用: 変角量
+        private double startSpeed; // 初速(0なら最初から speed)。accel と組み合わせて加速する弾にする
+        private double accel; // 加速度(1秒あたりの速度の増加)。speed まで加速する
+        private int pierce; // 貫通数(当たった敵を何体まで通り抜けるか。0なら当たって消える)
+        private double amplitude; // Spiral用: らせんの振れ幅
+        private double frequency; // Spiral用: らせんの速さ(rad/秒)
+        private double splitTime; // Split用: 分裂するまでの時間(秒)
+        private int splitCount; // Split用: 分裂後の弾の数
+        private double splitSpread; // Split用: 分裂後の弾が広がる角度(度、全体)
+        private int childId; // Split用: 分裂後の弾のID(STRAIGHT)
+        private double childRate = 0.5; // Split用: 分裂後の弾のダメージ倍率
         private Map<String, Double> cooldowns = new HashMap<>();
 
         @JsonAnySetter
@@ -203,19 +216,24 @@ public final class BulletManager implements Manager {
 
     @Override
     public void setup() {
+        bulletList.forEach(this::releaseAnimation);
         bulletListToRemove.clear();
         bulletList.clear();
     }
 
     @Override
     public void update(double dt) {
-        bulletList.forEach(bullet -> bullet.update(dt));
+        // 更新中に分裂弾などが新しい弾を追加しても壊れないよう、コピーを回す
+        new ArrayList<>(bulletList).forEach(bullet -> bullet.update(dt));
         // 条件を満たした弾を削除待ちリストに追加
         for (Bullet bullet : bulletList) {
             // 画面外に出た、または生存していない場合
             if (!bullet.inScreen() || !bullet.isLife())
                 bulletListToRemove.add(bullet);
         }
+
+        // 削除する弾のアニメーションを解放(解放しないとアニメーション更新が弾の数だけ溜まり続ける)
+        bulletListToRemove.forEach(this::releaseAnimation);
 
         // 削除待ちリストの弾をメインリストから削除してから、削除待ちリストを初期化
         bulletList.removeAll(bulletListToRemove);
@@ -249,6 +267,26 @@ public final class BulletManager implements Manager {
      */
     public void clearBullets() {
         bulletList.forEach(bullet -> bulletListToRemove.add(bullet));
+    }
+
+    /**
+     * プレイヤー以外の弾をすべて削除待ちにする(ボスのゲージ破壊時など)
+     */
+    public void clearEnemyBullets() {
+        for (Bullet bullet : bulletList) {
+            if (bullet.getOwner() != ShipKinds.PLAYER)
+                bulletListToRemove.add(bullet);
+        }
+    }
+
+    /**
+     * 弾のアニメーションを解放
+     * 
+     * @param bullet 弾
+     */
+    private void releaseAnimation(Bullet bullet) {
+        if (bullet.animationId != null)
+            AnimationManager.getInstance().removeAnimation(bullet.animationId);
     }
 
     /**

@@ -9,8 +9,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import com.game.shooting_game.ShootingGameMain;
-import com.game.shooting_game.data.DataManager;
+import com.game.shooting_game.skill.SkillService;
+import com.game.shooting_game.upgradeScene.UpgradeManager.SkillTreeData;
 import com.game.shooting_game.upgradeScene.UpgradeManager;
+import com.game.shooting_game.utils.CostPanel;
 import com.game.shooting_game.utils.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
@@ -24,6 +26,8 @@ public class SkillDetailPanel extends JPanel {
     private String skillName; // 詳細参照中のボタンの名前
 
     private JTextArea detailTextArea;
+    private JTextArea statusTextArea;
+    private CostPanel costPanel;
     private JButton upgradeBtn;
 
     public SkillDetailPanel() {
@@ -37,8 +41,8 @@ public class SkillDetailPanel extends JPanel {
         setLayout(null);
         setVisible(false);
 
-        panelSize = new Vector2(250 * ShootingGameMain.getScreenSizeAdj(),
-                300 * ShootingGameMain.getScreenSizeAdj());
+        panelSize = new Vector2(300 * ShootingGameMain.getScreenSizeAdj(),
+                520 * ShootingGameMain.getScreenSizeAdj());
         setBounds(
                 UM.getSkillTreeBtnPanel().getWidth() / 2 - (int) panelSize.getX() / 2,
                 UM.getSkillTreeBtnPanel().getHeight() / 2 - (int) panelSize.getY() / 2,
@@ -64,8 +68,28 @@ public class SkillDetailPanel extends JPanel {
         scrollPane.setBounds(
                 spacing, spacing,
                 (int) panelSize.getX() - 2 * spacing,
-                (int) (panelSize.getY() - 3 * spacing - 50 * ShootingGameMain.getScreenSizeAdj()));
+                (int) (190 * ShootingGameMain.getScreenSizeAdj()));
         this.add(scrollPane);
+
+        // コスト(アイコン + 所有数/必要数)
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        costPanel = new CostPanel();
+        costPanel.setBounds(spacing, (int) (200 * adj), (int) panelSize.getX() - 2 * spacing,
+                costPanel.maxHeight());
+        this.add(costPanel);
+
+        // 強化できるかどうかの一言
+        statusTextArea = new JTextArea();
+        statusTextArea.setEditable(false);
+        statusTextArea.setFocusable(false);
+        statusTextArea.setLineWrap(true);
+        statusTextArea.setWrapStyleWord(true);
+        statusTextArea.setOpaque(false);
+        statusTextArea.setForeground(Color.WHITE);
+        statusTextArea.setFont(new Font("SansSerif", Font.PLAIN, (int) (12 * adj)));
+        statusTextArea.setBounds(spacing, (int) (200 * adj) + costPanel.maxHeight() + spacing,
+                (int) panelSize.getX() - 2 * spacing, (int) (34 * adj));
+        this.add(statusTextArea);
 
         // 強化ボタン(スキルのレベルアップ)
         Vector2 upgradeBtnSize = new Vector2(
@@ -78,13 +102,11 @@ public class SkillDetailPanel extends JPanel {
                 (int) panelSize.getY() - (int) upgradeBtn.getHeight() - spacing,
                 (int) upgradeBtn.getWidth(), (int) upgradeBtn.getHeight());
         upgradeBtn.addActionListener(e -> {
-            String nowShip = DataManager.getUserData().getSelectedShip();
-            int upgradeLevel = DataManager.getUserData().getShips().get(nowShip).getUpgrades()
-                    .getOrDefault(skillName, 0);
-            DataManager.getUserData().getShips().get(nowShip).getUpgrades()
-                    .put(skillName, upgradeLevel + 1);
-            UM.reloadScreen();
+            // コインと強化素材を消費して強化(足りなければ何もしない)
+            if (!SkillService.purchase(skillName))
+                return;
 
+            UM.reloadScreen();
             UIBuilder.closePanel(this);
         });
         this.add(upgradeBtn);
@@ -96,21 +118,28 @@ public class SkillDetailPanel extends JPanel {
     public void showSkillDetail(String skillName) {
         this.skillName = skillName;
 
-        // タイトルの設定
-        String nowShip = DataManager.getUserData().getSelectedShip();
-        int upgradeLevel = DataManager.getUserData().getShips().get(nowShip).getUpgrades()
-                .getOrDefault(skillName, 0);
-        String title = skillName + " Level:" + upgradeLevel;
+        SkillTreeData data = SkillService.find(skillName);
+        String name = data != null && data.getTitle() != null ? data.getTitle() : skillName;
 
-        // 詳細情報の設定
-        String detailText = UM.getSkillTreeConfigMap().stream()
-                .filter(data -> data.getName().equals(skillName))
-                .findFirst()
-                .map(data -> data.getDetail())
-                .orElse("No details available.");
+        // 詳細情報の設定(効果・コスト・状態を含む)
+        String detailText = data != null ? SkillService.describe(data) : "No details available.";
         detailTextArea.setText(detailText);
         detailTextArea.setCaretPosition(0); // テキストエリアのスクロール位置を先頭にする
 
-        UIBuilder.openPanel(this, title, true, null);
+        // 強化できないときはボタンを押せなくする
+        boolean upgradable = data != null
+                && !skillName.equals("Origin")
+                && SkillService.isUnlocked(skillName)
+                && !SkillService.isMaxLevel(data)
+                && SkillService.canAfford(SkillService.getCost(data, SkillService.getLevel(skillName)));
+        upgradeBtn.setEnabled(upgradable);
+
+        // コストと状態(強化できるときだけ表示)
+        boolean showCost = data != null && !skillName.equals("Origin")
+                && SkillService.isUnlocked(skillName) && !SkillService.isMaxLevel(data);
+        costPanel.setCost(showCost ? SkillService.getCost(data, SkillService.getLevel(skillName)) : null);
+        statusTextArea.setText(data != null && showCost ? SkillService.status(data) : "");
+
+        UIBuilder.openPanel(this, name, true, null);
     }
 }

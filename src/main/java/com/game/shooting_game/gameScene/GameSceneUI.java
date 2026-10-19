@@ -216,7 +216,7 @@ public class GameSceneUI {
     private void drawScore(Graphics g, int score) {
         String text = "Score: " + score;
         Vector2 pos = new Vector2(
-                MAIN.getWidth() - (int) (100 * ShootingGameMain.getScreenSizeAdj()),
+                MAIN.getWidth() - (int) (10 * ShootingGameMain.getScreenSizeAdj()),
                 15 * ShootingGameMain.getScreenSizeAdj());
         int size = (int) (20 * ShootingGameMain.getScreenSizeAdj());
         UIBuilder.drawString(g, new Anchor(H.RIGHT, V.CENTER), pos, size, Color.WHITE, Font.BOLD, text);

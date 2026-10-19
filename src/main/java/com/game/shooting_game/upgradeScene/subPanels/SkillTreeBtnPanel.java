@@ -18,7 +18,7 @@ import javax.swing.JPanel;
 import lombok.Getter;
 
 import com.game.shooting_game.ShootingGameMain;
-import com.game.shooting_game.data.DataManager;
+import com.game.shooting_game.skill.SkillService;
 import com.game.shooting_game.upgradeScene.UpgradeManager;
 import com.game.shooting_game.upgradeScene.UpgradeManager.SkillTreeData;
 import com.game.shooting_game.utils.UIBuilder;
@@ -138,11 +138,7 @@ public class SkillTreeBtnPanel extends JPanel {
                     panelPos.getX() + child.getX() + child.getWidth() / 2,
                     panelPos.getY() + child.getY() + child.getHeight() / 2);
 
-            String nowShip = DataManager.getUserData().getSelectedShip();
-            int upgradeLevel = DataManager.getUserData().getShips().get(nowShip)
-                    .getUpgrades().getOrDefault(data.getRootNode(), 0);
-
-            if (data.getName().equals("Origin") || upgradeLevel > 0) {
+            if (data.getName().equals("Origin") || SkillService.isUnlocked(data.getName())) {
                 // パネルのY座標の範囲
                 int panelTop = (int) panelPos.getY();
                 int panelBottom = panelTop + getHeight();
@@ -221,12 +217,8 @@ public class SkillTreeBtnPanel extends JPanel {
             if (isSelfInPanel || isParentInPanel) {
                 // 基準ボタンではない時
                 if (!data.getName().equals("Origin")) {
-                    String nowShip = DataManager.getUserData().getSelectedShip();
-                    int upgradeLevel = DataManager.getUserData().getShips().get(nowShip).getUpgrades()
-                            .getOrDefault(data.getRootNode(), 0);
-
-                    // ルートノードが未強化なら非表示のままにする
-                    if (upgradeLevel == 0)
+                    // 親が未強化(解放条件未達)なら非表示のままにする
+                    if (!SkillService.isUnlocked(data.getName()))
                         continue;
                 }
 
@@ -248,8 +240,8 @@ public class SkillTreeBtnPanel extends JPanel {
             BufferedImage image = entry.getValue();
 
             Vector2 skillTreeBtnSize = new Vector2(
-                    30 * scale * ShootingGameMain.getScreenSizeAdj(),
-                    30 * scale * ShootingGameMain.getScreenSizeAdj());
+                    44 * scale * ShootingGameMain.getScreenSizeAdj(),
+                    44 * scale * ShootingGameMain.getScreenSizeAdj());
             JButton button = UIBuilder.createImageBtn(
                     component, image, skillTreeBtnSize, skillName);
 
@@ -267,8 +259,15 @@ public class SkillTreeBtnPanel extends JPanel {
                 button.setBorderPainted(false);
                 button.setContentAreaFilled(false);
                 button.setText("");
-            } else
-                button.setText(skillName);
+            } else {
+                // 画像がないときは短い表示名と現在のレベルを表示
+                SkillTreeData sd = SkillService.find(skillName);
+                String label = sd != null && sd.getTitle() != null ? sd.getTitle() : skillName;
+                int lv = SkillService.getLevel(skillName);
+                button.setText(lv > 0 ? "<html><center>" + label + "<br>Lv" + lv + "</center></html>" : label);
+                button.setFont(button.getFont().deriveFont((float) (10 * scale * ShootingGameMain.getScreenSizeAdj())));
+                button.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            }
 
             buttonMap.put(skillName, button);
         }

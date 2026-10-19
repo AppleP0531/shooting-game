@@ -41,6 +41,17 @@ public class UserEntity {
     private String selectedShip;
     private String subShip;
 
+    // --- モジュール(所有・装着。JSON文字列) ---
+    @Column(columnDefinition = "LONGTEXT")
+    private String moduleData;
+
+    // --- サブ機パーツ(パーツ名 → Mk) ---
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_sub_ship_parts", joinColumns = @JoinColumn(name = "user_id"))
+    @MapKeyColumn(name = "part_kind")
+    @Column(name = "tier")
+    private Map<String, Integer> subShipParts = new HashMap<>();
+
     // --- Progress ---
     private int exp;
     private int clearedStage;

@@ -45,7 +45,7 @@
         "imageSize": 40,
         "collisionSize": 5,
         "speed": 300,
-        "damage": 5,
+        "damage": 6,
         "Normal": 0.3,
         "OOC": 0.1
       },
@@ -57,7 +57,7 @@
         "imageSize": 40,
         "collisionSize": 5,
         "speed": 300,
-        "damage": 5,
+        "damage": 6,
         "Normal": 0.3,
         "OOC": 0.1
       },
@@ -69,7 +69,7 @@
         "imageSize": 40,
         "collisionSize": 5,
         "speed": 300,
-        "damage": 5,
+        "damage": 8,
         "Normal": 0.3,
         "OOC": 0.1
       },
@@ -81,7 +81,7 @@
         "imageSize": 40,
         "collisionSize": 5,
         "speed": 300,
-        "damage": 5,
+        "damage": 8,
         "Normal": 0.3,
         "OOC": 0.1
       },
@@ -93,7 +93,7 @@
         "imageSize": 40,
         "collisionSize": 5,
         "speed": 300,
-        "damage": 5,
+        "damage": 11,
         "Normal": 0.3,
         "OOC": 0.1
       },
@@ -105,7 +105,7 @@
         "imageSize": 40,
         "collisionSize": 5,
         "speed": 300,
-        "damage": 5,
+        "damage": 12,
         "Normal": 0.3,
         "OOC": 0.1
       },
@@ -117,6 +117,44 @@
         "imageSize": 40,
         "collisionSize": 5,
         "speed": 300,
+        "damage": 5,
+        "Normal": 0.3,
+        "OOC": 0.1
+      },
+      "10": {
+        "imagePath": "/player/Normal_8.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 46,
+        "collisionSize": 6,
+        "speed": 420,
+        "damage": 9,
+        "pierce": 2,
+        "Normal": 0.55,
+        "OOC": 0.2
+      },
+      "11": {
+        "imagePath": "/player/Normal_9.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 56,
+        "collisionSize": 8,
+        "speed": 460,
+        "damage": 11,
+        "pierce": 4,
+        "Normal": 0.7,
+        "OOC": 0.25
+      },
+      "12": {
+        "imagePath": "/player/Normal_3.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 28,
+        "collisionSize": 4,
+        "speed": 340,
         "damage": 5,
         "Normal": 0.3,
         "OOC": 0.1
@@ -162,6 +200,98 @@
         "damage": 10,
         "Normal": 2.4,
         "OOC": 0.8
+      }
+    },
+    "WAVE": {
+      "1": {
+        "imagePath": "/player/Normal_3.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 40,
+        "collisionSize": 5,
+        "speed": 300,
+        "damage": 7,
+        "Normal": 0.3,
+        "OOC": 0.1
+      },
+      "2": {
+        "imagePath": "/player/Normal_5.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 40,
+        "collisionSize": 5,
+        "speed": 300,
+        "damage": 8,
+        "Normal": 0.3,
+        "OOC": 0.1
+      }
+    },
+    "SPIRAL": {
+      "1": {
+        "imagePath": "/player/Normal_6.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 40,
+        "collisionSize": 5,
+        "speed": 320,
+        "damage": 6,
+        "amplitude": 24,
+        "frequency": 8,
+        "Normal": 0.3,
+        "OOC": 0.1
+      },
+      "2": {
+        "imagePath": "/player/Normal_8.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 42,
+        "collisionSize": 5,
+        "speed": 300,
+        "damage": 8,
+        "amplitude": 42,
+        "frequency": 6.5,
+        "Normal": 0.3,
+        "OOC": 0.1
+      }
+    },
+    "SPLIT": {
+      "1": {
+        "imagePath": "/player/Normal_6.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 40,
+        "collisionSize": 5,
+        "speed": 380,
+        "damage": 10,
+        "splitTime": 0.38,
+        "splitCount": 5,
+        "splitSpread": 60,
+        "childId": 12,
+        "childRate": 0.8,
+        "Normal": 0.5,
+        "OOC": 0.18
+      },
+      "2": {
+        "imagePath": "/player/Normal_7.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 44,
+        "collisionSize": 5,
+        "speed": 340,
+        "damage": 9,
+        "splitTime": 0.45,
+        "splitCount": 7,
+        "splitSpread": 100,
+        "childId": 12,
+        "childRate": 0.8,
+        "Normal": 0.7,
+        "OOC": 0.25
       }
     }
   },
@@ -404,8 +534,101 @@
     "STRAIGHT": {
       "1": {
         "imagePath": "/enemy/Normal_1.png",
-        "grids": [1, 1],
-        "useCount": 1,
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 150,
+        "damage": 10,
+        "Normal": 3
+      },
+      "2": {
+        "imagePath": "/enemy/Normal_2.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 150,
+        "damage": 10,
+        "Normal": 3
+      },
+      "3": {
+        "imagePath": "/enemy/Normal_3.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 150,
+        "damage": 10,
+        "Normal": 3
+      },
+      "4": {
+        "imagePath": "/enemy/Normal_4.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 150,
+        "damage": 10,
+        "Normal": 3
+      },
+      "5": {
+        "imagePath": "/enemy/Normal_5.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 150,
+        "damage": 10,
+        "Normal": 3
+      },
+      "6": {
+        "imagePath": "/enemy/Normal_6.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 150,
+        "damage": 10,
+        "Normal": 3
+      },
+      "7": {
+        "imagePath": "/enemy/Normal_7.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 150,
+        "damage": 10,
+        "Normal": 3
+      }
+    },
+    "CURVE": {
+      "1": {
+        "imagePath": "/enemy/Normal_1.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 150,
+        "damage": 10,
+        "diff": 0.2,
+        "Normal": 3
+      }
+    },
+    "WAVE": {
+      "1": {
+        "imagePath": "/enemy/Normal_1.png",
+        "grids": [4, 1],
+        "useCount": 4,
         "frameRate": 0.1,
         "imageSize": 25,
         "collisionSize": 5,

@@ -32,12 +32,17 @@ public final class ItemManager implements Manager {
 
     private List<Item> itemList = new ArrayList<>(); // アイテムリスト
     private List<Item> itemListToRemove = new ArrayList<>(); // 削除待ちアイテムリスト
+    @lombok.Getter
+    @lombok.Setter
+    private double magnetTimer; // マグネット効果の残り時間(0より大きい間は全アイテムを引き寄せる)
 
     // アイテムの種類
     public static enum ItemKinds implements Collectible {
         HEAL,
         LEVEL_UP,
-        SHIELD
+        SHIELD,
+        BOMB,
+        MAGNET
     }
 
     // ----- データクラスの定義 -----
@@ -162,10 +167,12 @@ public final class ItemManager implements Manager {
     public void setup() {
         itemListToRemove.clear();
         itemList.clear();
+        magnetTimer = 0;
     }
 
     @Override
     public void update(double dt) {
+        magnetTimer = Math.max(0, magnetTimer - dt);
         new ArrayList<>(itemList).forEach(item -> item.update(dt));
 
         // 削除待ちリストのアイテムをメインリストから削除してから、削除待ちリストを初期化
