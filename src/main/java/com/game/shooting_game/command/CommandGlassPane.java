@@ -11,11 +11,13 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
@@ -40,9 +42,12 @@ import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.data.DataManager.UserData;
 import com.game.shooting_game.data.DataManager.UserData.Resources;
 import com.game.shooting_game.gameScene.GameManager;
+import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.bullet.BulletManager;
 import com.game.shooting_game.gameScene.item.ItemManager;
+import com.game.shooting_game.gameScene.ship.ShipFactory;
 import com.game.shooting_game.gameScene.ship.ShipManager;
+import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.gameScene.stage.StageManager;
 import com.game.shooting_game.lobbyScene.LobbyManager;
 import com.game.shooting_game.stageScene.normal.NormalStageManager;
@@ -127,6 +132,19 @@ public final class CommandGlassPane extends JPanel {
 
     private boolean isAutoComplete = false;
 
+    /**
+     * 予測変換の1行分
+     * 
+     * @param display    表示する文字列
+     * @param completion Tabで選んだときに入力欄へ入れる文字列
+     * @param matchEnd   表示のうち入力済み(強調する)部分の終わり位置
+     */
+    private record Suggestion(String display, String completion, int matchEnd) {
+    }
+
+    private final List<Suggestion> suggestions = new ArrayList<>(); // 今表示している予測変換
+    private final Map<String, Supplier<List<String>>> argCandidates = new HashMap<>(); // 引数ごとの候補
+
     public CommandGlassPane(Runnable onEnter) {
         MAIN = ShootingGameMain.getInstance();
         SM = SceneManager.getInstance();
@@ -156,6 +174,7 @@ public final class CommandGlassPane extends JPanel {
         commandField.setFont(new Font("Monospaced", Font.BOLD, (int) (16 * ShootingGameMain.getScreenSizeAdj()))); // 文字設定
         commandField.setBorder(BorderFactory.createLineBorder(Color.CYAN)); // 枠線
         commandField.setVisible(false);
+        commandField.setFocusTraversalKeysEnabled(false); // Tabキーを予測変換の選択に使う
 
         // テキストフィールドが更新された時に予測変換も更新する
         commandField.getDocument().addDocumentListener(new DocumentListener() {
@@ -201,6 +220,11 @@ public final class CommandGlassPane extends JPanel {
                     case KeyEvent.VK_DOWN -> {
                         moveHistory(inputHistoryData, MoveOption.ONE_LINE_DOWN);
                         showChatBoxList(inputHistoryData);
+                    }
+                    case KeyEvent.VK_TAB -> {
+                        // Tabで予測変換を順に選ぶ(Shift+Tabで逆順)
+                        e.consume();
+                        cycleSuggestion(e.isShiftDown() ? -1 : 1);
                     }
                     case KeyEvent.VK_ENTER -> executeCommand();
                     case KeyEvent.VK_ESCAPE -> {
@@ -341,40 +365,23 @@ public final class CommandGlassPane extends JPanel {
                 setBackground(list.getBackground());
 
                 if (value != null) {
-                    String fullText = value.toString();
-                    String inputText = commandField.getText();
-
-                    String[] args = inputText.split(" ");
-                    String[] tokens = fullText.split(" ");
-
-                    String matchText = "";
-                    String remainText = "";
-
-                    for (int i = 0; i < args.length - 1; i++) {
-                        matchText += tokens[i] + " ";
-                    }
-
-                    String comparingToken = tokens[args.length - 1];
-                    Boolean isSyntax = comparingToken.startsWith("<");
-                    if (isSyntax) {
-                        matchText += comparingToken + " ";
-                        for (int i = args.length; i < tokens.length; i++) {
-                            remainText += tokens[i] + " ";
-                        }
-                    } else {
-                        matchText += fullText.substring(matchText.length(), inputText.length());
-                        remainText = fullText.substring(inputText.length());
-                    }
+                    String text = value.toString();
+                    int matchEnd = (index >= 0 && index < suggestions.size()) ? suggestions.get(index).matchEnd() : 0;
+                    matchEnd = Math.max(0, Math.min(text.length(), matchEnd));
 
                     // エスケープ文字に変換
-                    matchText = matchText.replace("<", "&lt;").replace(">", "&gt;");
-                    remainText = remainText.replace("<", "&lt;").replace(">", "&gt;");
+                    String matchText = text.substring(0, matchEnd).replace("<", "&lt;").replace(">", "&gt;");
+                    String remainText = text.substring(matchEnd).replace("<", "&lt;").replace(">", "&gt;");
 
                     String htmlText = "<html><font face='Monospaced'>" +
                             "<b><font color='white'>" + matchText + "</font></b>" +
                             "<font color='#808080'>" + remainText + "</font>" +
                             "</font></html>";
                     setText(htmlText);
+
+                    // Tabで選んでいる行は背景を明るくする
+                    if (isSelected)
+                        setBackground(new Color(70, 70, 70));
                 }
 
                 return this;
@@ -390,6 +397,7 @@ public final class CommandGlassPane extends JPanel {
                 suggestIndex,
                 suggestDiff);
 
+        registArgCandidates();
         registCommands();
     }
 
@@ -590,7 +598,7 @@ public final class CommandGlassPane extends JPanel {
         }
 
         String[] args = text.split(" ", -1);
-        CommandNode node = rootCommands.get(args[0]);
+        CommandNode node = findCommand(rootCommands, args[0]);
 
         // コマンドリストになかった場合
         if (node == null) {
@@ -608,8 +616,9 @@ public final class CommandGlassPane extends JPanel {
 
             // 与えられえたサブ引数が存在する場合は一つ階層を潜る、なければ処理
             args = Arrays.copyOfRange(args, 1, args.length);
-            if (args.length > 0 && node.getSubCommands().containsKey(args[0])) {
-                node = node.getSubCommands().get(args[0]);
+            CommandNode subNode = args.length > 0 ? findCommand(node.getSubCommands(), args[0]) : null;
+            if (subNode != null) {
+                node = subNode;
             } else if (node.getAction() != null) {
                 node.getAction().execute(node, args);
                 break;
@@ -621,6 +630,88 @@ public final class CommandGlassPane extends JPanel {
     }
 
     /**
+     * 大文字小文字を区別せずにコマンド(サブコマンド)を探す
+     * 
+     * @param nodes 探す対象
+     * @param token 入力されたコマンド名
+     * @return 見つかったノード、なければnull
+     */
+    private CommandNode findCommand(Map<String, CommandNode> nodes, String token) {
+        CommandNode exact = nodes.get(token);
+        if (exact != null)
+            return exact;
+
+        for (Map.Entry<String, CommandNode> entry : nodes.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase(token))
+                return entry.getValue();
+        }
+        return null;
+    }
+
+    /**
+     * 引数の候補の登録
+     * キーはsyntaxの<>や[]を除いた名前
+     */
+    private void registArgCandidates() {
+        // 敵・ボス(データのあるもの)
+        argCandidates.put("enemyId", () -> {
+            List<String> ids = new ArrayList<>();
+            for (ShipKinds kind : new ShipKinds[] { ShipKinds.ENEMY, ShipKinds.BOSS }) {
+                SHIP_M.getShipConfig().get(kind).forEach((id, def) -> {
+                    if (def != null && def.getDatas() != null)
+                        ids.add(id);
+                });
+            }
+            ids.sort(String.CASE_INSENSITIVE_ORDER);
+            return ids;
+        });
+        argCandidates.put("mode", () -> List.of("blue", "red"));
+        argCandidates.put("target", () -> List.of("player", "enemy", "boss", "all"));
+        argCandidates.put("shipId", () -> SHIP_M.getShipConfig().get(ShipKinds.PLAYER).keySet().stream()
+                .map(String::toLowerCase).sorted().toList());
+        argCandidates.put("sceneName", () -> Arrays.stream(SceneType.values())
+                .map(type -> type.name().toLowerCase()).toList());
+        argCandidates.put("resourceName", () -> Arrays.stream(ResourceName.values())
+                .map(name -> name.name().toLowerCase()).toList());
+    }
+
+    /**
+     * 予測変換の追加
+     */
+    private void addSuggestion(String display, String completion, int matchEnd) {
+        if (suggestions.size() >= MAX_SUGGEST_DISPLAY)
+            return;
+        for (Suggestion s : suggestions) {
+            if (s.display().equals(display))
+                return;
+        }
+        suggestions.add(new Suggestion(display, completion, matchEnd));
+        suggestData.addElement(display);
+    }
+
+    /**
+     * Tabによる予測変換の選択(選んだものを入力欄に反映する)
+     * 
+     * @param dir 1で次、-1で前
+     */
+    private void cycleSuggestion(int dir) {
+        if (suggestions.isEmpty())
+            return;
+
+        int size = suggestions.size();
+        int index = suggestData.getIndex();
+        index = index < 0 ? (dir > 0 ? 0 : size - 1) : Math.floorMod(index + dir, size);
+        suggestData.setIndex(index);
+
+        // 入力欄を更新しても予測変換は作り直さない
+        isAutoComplete = true;
+        commandField.setText(suggestions.get(index).completion());
+        isAutoComplete = false;
+
+        showChatBoxList(suggestData);
+    }
+
+    /**
      * 予測変換リストの作成
      */
     private void registCommandSuggestions() {
@@ -628,56 +719,106 @@ public final class CommandGlassPane extends JPanel {
 
         // リストのクリア
         suggestData.getElements().clear();
+        suggestions.clear();
+        suggestData.setIndex(-1);
 
         // 入力情報の取得
         String command = commandField.getText();
-        String[] args = command.split(" ", -1);
-
         if (command.isEmpty()) {
             showChatBoxList(logHistoryData);
             return;
         }
-
         hideChatBoxList(logHistoryData);
 
-        Map<String, CommandNode> subCommands = rootCommands; // 再外層ノードから探索
-        CommandNode currentNode = null; // 参照中ノード
-        // 引数と一致する子ノードを見つけて階層を移動
-        for (int i = 0; i < args.length - 1; i++) {
-            CommandNode node = subCommands.get(args[i]);
+        String[] tokens = command.split(" ", -1);
+        String partial = tokens[tokens.length - 1]; // 入力中の単語
 
-            if (node != null) {
-                // 権限不足の場合は潜らない
-                if (node.isAdminOnly() && !adminMode)
-                    return;
-
-                subCommands = node.getSubCommands(); // 階層移動
-                currentNode = node; // 参照中ノードの更新
-            } else
+        // 入力済みのコマンド名をたどる(大文字小文字は区別しない)
+        Map<String, CommandNode> level = rootCommands;
+        CommandNode current = null;
+        int consumed = 0; // コマンド名として使われた単語の数
+        for (int i = 0; i < tokens.length - 1; i++) {
+            CommandNode next = findCommand(level, tokens[i]);
+            if (next == null)
+                break;
+            // 権限不足の場合は出さない
+            if (next.isAdminOnly() && !adminMode)
                 return;
-        }
-        String currentToken = args[args.length - 1];
 
-        // 入力中文字と比較
-        for (CommandNode node : subCommands.values()) {
-            if (node.getName().startsWith(currentToken)) {
-                for (String suggests : node.getAllNodes(adminMode)) {
-                    suggestData.addElement(suggests);
+            current = next;
+            level = next.getSubCommands();
+            consumed = i + 1;
+        }
+        // 最初の単語がコマンドではない
+        if (tokens.length > 1 && current == null)
+            return;
+
+        int argPos = tokens.length - 1 - consumed; // 入力中の引数の番号(0始まり)
+        String prefix = String.join(" ", Arrays.copyOfRange(tokens, 0, tokens.length - 1));
+        String prefixSp = prefix.isEmpty() ? "" : prefix + " ";
+        String lowerPartial = partial.toLowerCase();
+
+        // コマンド名の候補(コマンドの直後の単語を入力中のときだけ)
+        boolean hasSubMatch = false;
+        if (argPos == 0) {
+            for (CommandNode node : level.values()) {
+                if (!node.getName().toLowerCase().startsWith(lowerPartial))
+                    continue;
+
+                for (String usage : node.getAllNodes(adminMode)) {
+                    hasSubMatch = true;
+                    // コマンド名の部分(最初の<や[の手前まで)を補完内容にする
+                    String[] words = usage.split(" ");
+                    List<String> path = new ArrayList<>();
+                    for (String word : words) {
+                        if (word.startsWith("<") || word.startsWith("["))
+                            break;
+                        path.add(word);
+                    }
+                    String completion = String.join(" ", path) + (path.size() < words.length ? " " : "");
+                    int matchEnd = usage.toLowerCase().startsWith(prefixSp.toLowerCase() + lowerPartial)
+                            ? (prefixSp + partial).length()
+                            : 0;
+                    addSuggestion(usage, completion, matchEnd);
                 }
             }
         }
 
-        // syntax比較
-        if (currentNode != null) {
-            if (currentNode.getSyntax() != null) {
-                if (currentNode.compersionSyntax(currentToken))
-                    suggestData.addElement(currentNode.getUseage());
+        // 引数の候補(入力中の引数に対応するsyntax)
+        if (current != null && current.getSyntax() != null) {
+            List<String> syntax = current.getSyntax().stream().filter(s -> !s.isBlank()).toList();
+            if (argPos < syntax.size()) {
+                String placeholder = syntax.get(argPos);
+                String key = placeholder.replaceAll("[<>\\[\\]]", "");
+                String rest = String.join(" ", syntax.subList(argPos + 1, syntax.size()));
+                Supplier<List<String>> provider = argCandidates.get(key);
+
+                if (provider != null) {
+                    // 入力に合う候補を出す
+                    for (String candidate : provider.get()) {
+                        if (!candidate.toLowerCase().startsWith(lowerPartial))
+                            continue;
+                        // サブコマンドと同名のものは重複するので出さない
+                        if (argPos == 0 && findCommand(level, candidate) != null)
+                            continue;
+
+                        String head = prefixSp + candidate;
+                        addSuggestion(rest.isEmpty() ? head : head + " " + rest,
+                                rest.isEmpty() ? head : head + " ",
+                                (prefixSp + partial).length()); // 入力済みの文字までを強調
+                    }
+                } else if (!(argPos == 0 && hasSubMatch && !partial.isEmpty())) {
+                    // 自由入力: 入力済みの値を入れた使い方を表示する
+                    String shown = partial.isEmpty() ? placeholder : partial;
+                    String head = prefixSp + shown;
+                    addSuggestion(rest.isEmpty() ? head : head + " " + rest, command,
+                            (prefixSp + partial).length()); // 入力済みの文字までを強調(未入力なら強調なし)
+                }
             }
         }
 
-        if (!suggestData.getElements().isEmpty()) {
+        if (!suggestions.isEmpty())
             showChatBoxList(suggestData);
-        }
     }
 
     /**
@@ -873,7 +1014,7 @@ public final class CommandGlassPane extends JPanel {
                 return;
             }
 
-            String param = args[0].replace("stage", "");
+            String param = args[0].toLowerCase().replace("stage", "");
             try {
                 Integer id = GameUtils.tryParse(param);
 
@@ -936,12 +1077,125 @@ public final class CommandGlassPane extends JPanel {
             if (!isSceneValid(SceneType.GAME, SceneType.TEST))
                 return;
 
-            SHIP_M.kill(args[0]);
+            SHIP_M.kill(args[0].toLowerCase());
 
             logText = args[0] + " killed.";
             logHistoryData.addElement(logText);
             LogUtils.systemLog("[INFO]", component, logText);
         }).setSyntax("<target>");
+
+        // 召喚 /summon <enemyId> <x> <y> [mode] [level] (座標は画面中央が0,0)
+        register(rootCommands, "/summon", "Summon an enemy at (x, y). Origin is the screen center.", true,
+                (node, args) -> {
+                    // 引数が不適切な場合
+                    if (args.length < 3 || args.length > 5) {
+                        logText = node.getUseage();
+                        logHistoryData.addElement(logText);
+                        LogUtils.debugLog(logText);
+                        return;
+                    }
+                    // シーンが不適切な場合
+                    if (!isSceneValid(SceneType.GAME, SceneType.TEST))
+                        return;
+
+                    try {
+                        String enemyId = args[0];
+                        double x = Double.parseDouble(args[1]);
+                        double y = Double.parseDouble(args[2]);
+                        ColorMode mode = args.length >= 4 ? ColorMode.valueOf(args[3].toUpperCase()) : ColorMode.BLUE;
+                        int level = args.length == 5 ? Integer.parseInt(args[4]) : 0;
+
+                        // 船の種類(敵かボス)をIDから判断(大文字小文字は区別しない)
+                        ShipKinds owner = null;
+                        for (ShipKinds kind : new ShipKinds[] { ShipKinds.ENEMY, ShipKinds.BOSS }) {
+                            for (String id : SHIP_M.getShipConfig().get(kind).keySet()) {
+                                if (owner == null && id.equalsIgnoreCase(args[0])) {
+                                    owner = kind;
+                                    enemyId = id;
+                                }
+                            }
+                        }
+                        if (owner == null) {
+                            logText = "Unknown enemy: " + enemyId;
+                            logHistoryData.addElement(logText);
+                            LogUtils.debugLog(logText);
+                            return;
+                        }
+
+                        // 画面中央を(0,0)とした座標を画面座標に変換
+                        double adj = ShootingGameMain.getScreenSizeAdj();
+                        Vector2 pos = new Vector2(
+                                MAIN.getWidth() / 2.0 + x * adj,
+                                MAIN.getHeight() / 2.0 + y * adj);
+
+                        SHIP_M.addShip(ShipFactory.createShip(owner, enemyId, mode, level, pos, new Vector2(pos), null));
+
+                        logText = enemyId + " summoned at (" + x + ", " + y + ").";
+                        logHistoryData.addElement(logText);
+                        LogUtils.systemLog("[INFO]", component, logText);
+                    } catch (NumberFormatException ne) {
+                        logText = "Invalid number: " + ne.getMessage();
+                        logHistoryData.addElement(logText);
+                        LogUtils.debugLog(logText);
+                    } catch (IllegalArgumentException ie) {
+                        logText = "Invalid mode (BLUE or RED).";
+                        logHistoryData.addElement(logText);
+                        LogUtils.debugLog(logText);
+                    } catch (Exception e) {
+                        LogUtils.systemLog("[WARN]", component, "Command Error");
+                    }
+                }).setSyntax("<enemyId>", "<x>", "<y>", "[mode]", "[level]");
+
+        // ビームの試射 /beam <origin> [color]  (SHIP_UPだけは自機のビームを撃つ)
+        register(rootCommands, "/beam", "Fire a test beam. Origins: TOP_PLAYER, TOP_X, TOP_RANDOM, WALL_LEFT, WALL_RIGHT, WALL_RANDOM, SHIP_UP.",
+                true, (node, args) -> {
+                    // 引数が不適切な場合
+                    if (args.length < 1 || args.length > 2) {
+                        logText = node.getUseage();
+                        logHistoryData.addElement(logText);
+                        LogUtils.debugLog(logText);
+                        return;
+                    }
+                    // シーンが不適切な場合
+                    if (!isSceneValid(SceneType.GAME, SceneType.TEST))
+                        return;
+
+                    try {
+                        com.game.shooting_game.gameScene.beam.BeamSpec spec = new com.game.shooting_game.gameScene.beam.BeamSpec();
+                        spec.setOrigin(com.game.shooting_game.gameScene.beam.BeamSpec.Origin.valueOf(args[0].toUpperCase()));
+                        ColorMode mode = args.length == 2 ? ColorMode.valueOf(args[1].toUpperCase()) : ColorMode.RED;
+                        var player = SHIP_M.getPlayer();
+
+                        if (spec.getOrigin() == com.game.shooting_game.gameScene.beam.BeamSpec.Origin.SHIP_UP) {
+                            // 自機のビーム(自機の色に追従)
+                            if (player == null)
+                                return;
+                            spec.setWarn(0.2);
+                            spec.setDuration(1.5);
+                            spec.setWidth(30);
+                            spec.setDamage(40);
+                            com.game.shooting_game.gameScene.beam.BeamManager.getInstance().firePlayer(
+                                    spec,
+                                    () -> new Vector2(player.getPos().getX(), player.getPos().getY() - 10),
+                                    () -> player.getMode(), 1.0);
+                        } else {
+                            // 敵のビーム(予兆1.2秒 → 照射1秒)
+                            spec.setDuration(1.0);
+                            spec.setX(0);
+                            com.game.shooting_game.gameScene.beam.BeamManager.getInstance().fireHostile(spec, null, mode);
+                        }
+
+                        logText = "Beam fired: " + spec.getOrigin() + " " + mode;
+                        logHistoryData.addElement(logText);
+                        LogUtils.systemLog("[INFO]", component, logText);
+                    } catch (IllegalArgumentException ie) {
+                        logText = "Invalid origin or color (BLUE or RED).";
+                        logHistoryData.addElement(logText);
+                        LogUtils.debugLog(logText);
+                    } catch (Exception e) {
+                        LogUtils.systemLog("[WARN]", component, "Command Error");
+                    }
+                }).setSyntax("<origin>", "[color]");
 
         // 消去 /clear <target>
         register(rootCommands, "/clear", "Kill targets.", true, (node, args) -> {
@@ -956,7 +1210,7 @@ public final class CommandGlassPane extends JPanel {
             if (!isSceneValid(SceneType.GAME, SceneType.TEST))
                 return;
 
-            SHIP_M.clear(args[0]);
+            SHIP_M.clear(args[0].toLowerCase());
 
             logText = args[0] + " cleared.";
             logHistoryData.addElement(logText);
@@ -973,7 +1227,7 @@ public final class CommandGlassPane extends JPanel {
                 return;
             }
 
-            String param = args[0].replace("ship", "");
+            String param = args[0].toLowerCase().replace("ship", "");
             try {
                 Integer id = GameUtils.tryParse(param);
 
@@ -1000,11 +1254,14 @@ public final class CommandGlassPane extends JPanel {
                 return;
             }
 
-            String param = args[0].replace("ship", "");
+            String param = args[0].toLowerCase().replace("ship", "");
             try {
-                Integer id = GameUtils.tryParse(args[0].replace("ship", ""));
+                Integer id = GameUtils.tryParse(args[0].toLowerCase().replace("ship", ""));
 
-                DataManager.getUserData().unlockShip("Ship" + id);
+                String sid = "Ship" + id;
+                if (DataManager.getUserData().getShips().containsKey(sid))
+                    com.game.shooting_game.skill.UnitService.addCopy(sid); // 所持済みなら予備機が増える
+                DataManager.getUserData().unlockShip(sid);
                 LobbyManager.getInstance().updateBtnStates();
             } catch (NumberFormatException ne) {
                 logText = "Unknnown param: " + param;

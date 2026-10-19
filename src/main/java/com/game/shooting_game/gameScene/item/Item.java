@@ -18,6 +18,7 @@ import com.game.shooting_game.gameScene.item.ItemManager.ItemConfig;
 import com.game.shooting_game.gameScene.item.ItemManager.ItemKinds;
 import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.interfaces.Collectible;
+import com.game.shooting_game.skill.SkillService;
 import com.game.shooting_game.interfaces.Entity;
 import com.game.shooting_game.interfaces.GameObject;
 import com.game.shooting_game.interfaces.Moveable;
@@ -36,7 +37,7 @@ public abstract class Item implements Moveable, GameObject, Entity {
     protected final ShipManager SHIP_M;
     protected final ItemManager IM;
 
-    private final double ATTRACT_RANGE = 200; // 引き寄せが始まる距離
+    private final double ATTRACT_RANGE = 200 * (1 + SkillService.getBonus("ITEM_RANGE")); // 引き寄せが始まる距離
     private final double ATTRACT_SPEED = 500; // 引き寄せスピード
     protected double imageSize; // 画像の大きさ
     @Getter
@@ -114,7 +115,7 @@ public abstract class Item implements Moveable, GameObject, Entity {
     public void move(double dt) {
         // プレイヤーとの距離が近くなったらプレイヤーに近づく
         double distSq = GameUtils.distSq(SHIP_M.getPlayer().getPos(), pos);
-        if (distSq < Math.pow(ATTRACT_RANGE, 2)) {
+        if (distSq < Math.pow(ATTRACT_RANGE, 2) || IM.getMagnetTimer() > 0) {
             vec = GameUtils.targetVec(this.getPos(), SHIP_M.getPlayer().getPos());
             speed = ATTRACT_SPEED;
         } else {

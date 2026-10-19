@@ -18,6 +18,7 @@ import com.game.shooting_game.lobbyScene.LobbyManager;
 import com.game.shooting_game.settingScene.SettingManager;
 import com.game.shooting_game.shopScene.ShopManager;
 import com.game.shooting_game.stageScene.SelectStageManager;
+import com.game.shooting_game.stageScene.extra.ExtraStageManager;
 import com.game.shooting_game.stageScene.infinity.InfinityStageManager;
 import com.game.shooting_game.stageScene.normal.NormalStageManager;
 import com.game.shooting_game.testScene.TestManager;
@@ -43,6 +44,7 @@ public final class SceneManager implements Manager {
         SELECTSTAGE,
         NORMALSTAGE,
         INFINITYSTAGE,
+        EXTRASTAGE,
         SETTING,
         GAME,
         GAMERESULT,
@@ -67,6 +69,7 @@ public final class SceneManager implements Manager {
         scenes.put(SceneType.SELECTSTAGE, SelectStageManager.getInstance());
         scenes.put(SceneType.NORMALSTAGE, NormalStageManager.getInstance());
         scenes.put(SceneType.INFINITYSTAGE, InfinityStageManager.getInstance());
+        scenes.put(SceneType.EXTRASTAGE, ExtraStageManager.getInstance());
         scenes.put(SceneType.SETTING, SettingManager.getInstance());
         scenes.put(SceneType.GAME, GameManager.getInstance());
         scenes.put(SceneType.GAMERESULT, GameResultManager.getInstance());

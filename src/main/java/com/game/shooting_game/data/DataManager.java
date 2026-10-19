@@ -55,7 +55,9 @@ public final class DataManager implements Manager {
         private String lastPlayTime;
         private String totalPlayTime = "00:00:00";
         private String selectedShip = "Ship1";
-        private String subShip;
+        private String subShip; // サブ機を装備しているか(装備中はnull以外)
+        private Map<String, Integer> subShipParts = new LinkedHashMap<>(); // サブ機パーツの制作状況(パーツ名→Mk)
+        private com.game.shooting_game.module.ModuleInventory modules = new com.game.shooting_game.module.ModuleInventory(); // 所有・装着中のモジュール
         private Progress progress = new Progress();
         private Resources resources = new Resources();
         private Map<String, ShipStats> ships = new LinkedHashMap<>();
@@ -105,6 +107,9 @@ public final class DataManager implements Manager {
         @JsonIgnoreProperties(ignoreUnknown = true) // 余計な項目の無視
         public static class ShipStats {
             private Map<String, Integer> upgrades = new HashMap<>(); // 強化状況
+            private int level = 1; // 機体レベル(1〜50。火力と耐久力の基礎値が上がる)
+            private int stars = 0; // ★(0〜5。同じ機体を消費して上げる)
+            private int copies = 0; // 持っている予備の同一機体の数(★を上げるのに消費)
         }
 
         // 新しい船のアンロック
@@ -168,6 +173,18 @@ public final class DataManager implements Manager {
         data.setTotalPlayTime(entity.getTotalPlayTime());
         data.setSelectedShip(entity.getSelectedShip());
         data.setSubShip(entity.getSubShip());
+        if (entity.getSubShipParts() != null)
+            data.getSubShipParts().putAll(entity.getSubShipParts());
+
+        // モジュールのコピー(DBにはJSON文字列で保存している)
+        if (entity.getModuleData() != null && !entity.getModuleData().isBlank()) {
+            try {
+                data.setModules(new com.fasterxml.jackson.databind.ObjectMapper().readValue(entity.getModuleData(),
+                        com.game.shooting_game.module.ModuleInventory.class));
+            } catch (Exception e) {
+                LogUtils.systemLog("[ERROR]", component, "Failed to read module data.");
+            }
+        }
 
         // 進捗のコピー
         data.getProgress().setExp(entity.getExp());
@@ -187,6 +204,10 @@ public final class DataManager implements Manager {
             if (shipEntity.getUpgrades() != null) {
                 data.getShips().get(shipId).getUpgrades().putAll(shipEntity.getUpgrades());
             }
+            UserData.ShipStats st = data.getShips().get(shipId);
+            st.setLevel(Math.max(1, shipEntity.getUnitLevel())); // 0(未設定)は1として扱う
+            st.setStars(Math.max(0, shipEntity.getStars()));
+            st.setCopies(Math.max(0, shipEntity.getCopies()));
         });
 
         return data;
@@ -203,6 +224,16 @@ public final class DataManager implements Manager {
         entity.setTotalPlayTime(userData.getTotalPlayTime());
         entity.setSelectedShip(userData.getSelectedShip());
         entity.setSubShip(userData.getSubShip());
+        entity.getSubShipParts().clear();
+        if (userData.getSubShipParts() != null)
+            entity.getSubShipParts().putAll(userData.getSubShipParts());
+
+        // モジュール
+        try {
+            entity.setModuleData(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(userData.getModules()));
+        } catch (Exception e) {
+            LogUtils.systemLog("[ERROR]", component, "Failed to write module data.");
+        }
 
         // 進捗
         entity.setExp(userData.getProgress().getExp());
@@ -224,6 +255,9 @@ public final class DataManager implements Manager {
         userData.getShips().forEach((shipId, stats) -> {
             UserShipEntity shipEntity = new UserShipEntity();
             shipEntity.setShipId(shipId);
+            shipEntity.setUnitLevel(stats.getLevel());
+            shipEntity.setStars(stats.getStars());
+            shipEntity.setCopies(stats.getCopies());
 
             if (stats.getUpgrades() != null) {
                 shipEntity.getUpgrades().putAll(stats.getUpgrades());

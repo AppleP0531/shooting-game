@@ -10,10 +10,8 @@ src/main/resources/application.properties
 ### VS Code ###
 .vscode/
 
-### saveData ###
-mysql_data/
-
 ### Others ###
 sampleImages/
 .VSCodeCounter/
 out/
+*.pem

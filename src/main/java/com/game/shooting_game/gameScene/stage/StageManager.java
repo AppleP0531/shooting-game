@@ -4,6 +4,7 @@ import java.awt.Graphics;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
@@ -20,7 +21,10 @@ import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
+import com.game.shooting_game.gameScene.ship.EntranceType;
 import com.game.shooting_game.gameScene.ship.ShipManager;
+import com.game.shooting_game.gameScene.beam.BeamSpec;
+import com.game.shooting_game.gameScene.beam.BlockSpec;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipDefinition;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.interfaces.Manager;
@@ -34,14 +38,35 @@ public final class StageManager implements Manager {
 
     // ----- データクラスの定義 -----
     /**
+     * クリア報酬のモジュール(種類を省略するとランダム)
+     */
+    @Data
+    @NoArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class ModuleReward {
+        private String kind; // ATC / DEF / SHIELD / REPAIR / HP / HEAL(nullならランダム)
+        private String rarity; // COMMON 〜 LEGENDARY
+        private double chance = 1.0; // 手に入る確率(0〜1)
+        private String once; // FIRST: そのステージの初クリアだけ / DAILY: 1日1回 / 省略: 毎回
+    }
+
+    /**
      * ステージ情報
      */
     @Data // Getter, Setterの自動生成
     @NoArgsConstructor // 引数なしコンストラクタの生成
     @JsonIgnoreProperties(ignoreUnknown = true) // 余計な項目の無視
     public static class StageData {
+        private String title; // エクストラステージの名前
+        private String description; // エクストラステージの説明
+        private String category; // エクストラ画面の分類: MODULE / BOSS / MATERIAL / SPECIAL
+        private int unlock; // エクストラステージの解放条件(クリア済みのステージ番号)
+        private List<ModuleReward> moduleRewards; // クリアで手に入るモジュール(確率つき)
+        private StageModifiers.Spec modifiers; // ステージ条件(敵が硬い、回復なし など)
         private Map<ResourceName, Map<Rarity, String>> rewardList;
         private Map<String, EnemyConfig[]> enemyList;
+        private Map<String, BlockSpec[]> blocks; // ウェーブごとのビームブロック(四角ブロック。流れながらビームを撃つ)
+        private Map<String, BeamSpec[]> gimmicks; // ウェーブごとのビームギミック(壁・上からのビーム)
 
         /**
          * 獲得リソース量の決定
@@ -76,6 +101,11 @@ public final class StageManager implements Manager {
         private int level;
         private Vector2 spawnPos;
         private Vector2 stayPos;
+        private EntranceType entrance; // 入場軌道(省略時: 敵は直線、ボスはBossConfigの指定)
+        private String path; // 通る経路ID(指定すると経路を通る小敵になる。spawnPos/stayPosは不要)
+        private boolean mirror; // 経路を左右反転するか
+        private double delay; // 経路を動き出すまでの時間(縦列で出すときのずらし用)
+        private double speedScale = 1.0; // 経路移動の速度倍率
 
         public ShipKinds getOwner() {
             Map<ShipKinds, Map<String, ShipDefinition>> shipConfig = ShipManager.getInstance().getShipConfig();
@@ -176,6 +206,13 @@ public final class StageManager implements Manager {
      * ステージデータの取得
      * 
      * @return ステージデータ
+     */
+    public void putStage(String key, StageData data) {
+        stageConfigMap.put(key, data);
+    }
+
+    /**
+     * ステージデータの一覧(読み取り専用)
      */
     public Map<String, StageData> getStageConfig() {
         // 外部から変更できないように不変ビューを渡す

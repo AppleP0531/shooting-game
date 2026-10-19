@@ -110,7 +110,15 @@ public class CommandNode {
     public boolean compersionSyntax(String token) {
         for (String placeholder : syntax) {
             switch (placeholder) {
-                case "<number>", "<amount>", "<seconds>" -> {
+                case "<x>", "<y>" -> {
+                    try {
+                        Double.parseDouble(token);
+                        return true;
+                    } catch (Exception e) {
+                        return false;
+                    }
+                }
+                case "<number>", "<amount>", "<seconds>", "<level>" -> {
                     try {
                         GameUtils.tryParse(token);
                         return true;
@@ -118,7 +126,7 @@ public class CommandNode {
                         return false;
                     }
                 }
-                case "<sceneName>", "<stageId>", "<shipId>", "<target>", "<effectName>",
+                case "<sceneName>", "<stageId>", "<shipId>", "<enemyId>", "<mode>", "<target>", "<effectName>",
                         "<resourceName>", "username", "<password>", "<oldPassword>", "<newPassword>" -> {
                     return true;
                 }

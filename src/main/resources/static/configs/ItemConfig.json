@@ -25,5 +25,23 @@
     "imageSize": 30,
     "collisionSize": 25,
     "speed": 100
+  },
+  "BOMB": {
+    "imagePath": "/Bomb.png",
+    "grids": [4, 4],
+    "useCount": 15,
+    "frameRate": 0.1,
+    "imageSize": 30,
+    "collisionSize": 25,
+    "speed": 100
+  },
+  "MAGNET": {
+    "imagePath": "/Magnet.png",
+    "grids": [4, 4],
+    "useCount": 15,
+    "frameRate": 0.1,
+    "imageSize": 30,
+    "collisionSize": 25,
+    "speed": 100
   }
 }
