@@ -10,7 +10,6 @@ import java.util.function.Supplier;
 
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.gameScene.DamageCalculator;
-import com.game.shooting_game.gameScene.GameManager;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.beam.Beam.State;
 import com.game.shooting_game.gameScene.beam.Beam.Team;

@@ -1,6 +1,5 @@
 package com.game.shooting_game.gameScene.beam;
 
-import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
