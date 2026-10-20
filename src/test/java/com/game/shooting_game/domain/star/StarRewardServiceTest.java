@@ -121,4 +121,16 @@ class StarRewardServiceTest {
         assertThat(StarRewardService.totalStars()).isEqualTo(24);
         assertThat(DataManager.getUserData().getProgress().getHighScores()).containsKey("starReward:1");
     }
+
+    @Test
+    @DisplayName("60段そろっていて、段ごとに報酬が違い、24段を超えても最後の段の繰り返しにならない")
+    void sixtyDistinctTiers() {
+        for (int n = 1; n <= 60; n++)
+            assertThat(StarRewardService.rewardOf(n).coins()).isGreaterThanOrEqualTo(0);
+        for (int n = 1; n < 60; n++)
+            assertThat(StarRewardService.rewardOf(n)).isNotEqualTo(StarRewardService.rewardOf(n + 1));
+        assertThat(StarRewardService.rewardOf(25)).isNotEqualTo(StarRewardService.rewardOf(60));
+        assertThat(StarRewardService.rewardOf(24)).isNotEqualTo(StarRewardService.rewardOf(60));
+        assertThat(StarRewardService.rewardOf(61)).isEqualTo(StarRewardService.rewardOf(60));
+    }
 }
