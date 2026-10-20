@@ -656,6 +656,9 @@ package "shooting_game" {
                 - lobbyBtn: JButton
                 - settingBtn: JButton
                 - startBtn: JButton
+                - waveDownBtn: JButton <<開始ウェーブを下げる>>
+                - waveUpBtn: JButton <<開始ウェーブを上げる>>
+                - startWave: int = 1
                 --
                 - InfinityStageManager()
                 + {static} getInstance(): InfinityStageManager
@@ -663,6 +666,9 @@ package "shooting_game" {
                 + setup()
                 + update(dt: double)
                 + draw(g: Graphics)
+                - maxStartWave(): int <<スキル「助走」(ENDLESS_SKIP)で増える。最高到達ウェーブ+1まで>>
+                - changeStartWave(delta: int): void
+                - refreshWaveButtons(): void
             }
 
             class InfinityStageSceneUI {
@@ -691,6 +697,7 @@ package "shooting_game" {
             + draw(g: Graphics): void
             - createFpsRow(): JPanel
             - createDamageTextRow(): JPanel
+            - createSlowRateRow(): JPanel <<Shift中の低速移動の割合を決める JSlider>>
             - updateFpsButtons(): void
             - updateDamageTextButtons(): void
             - confirmQuit(): void
@@ -1170,7 +1177,7 @@ package "shooting_game" {
                 + {static} getLevel(shipId: String): int
                 + {static} getStars(shipId: String): int
                 + {static} getCopies(shipId: String): int
-                + {static} attackRate(shipId: String): double
+                + {static} attackRate(shipId: String): double <<レベルは指数、★は足し算(GameBalance)>>
                 + {static} hpRate(shipId: String): double
                 + {static} baseHp(shipId: String): double
                 + {static} levelCost(level: int): Cost
@@ -1426,6 +1433,7 @@ package "shooting_game" {
                 + {static} MAX_LEVEL: int
                 + {static} SUB_STEP: int
                 + {static} SUB_COUNT: int
+                + {static} SUB_CANDIDATES: int = 6 <<サブ能力の値の候補の数>>
                 --
                 + {static} owned(): List<Module>
                 + {static} slotted(): Module[]
@@ -1438,7 +1446,8 @@ package "shooting_game" {
                 + {static} addNew(kind: ModuleKind, rarity: Rarity): Module
                 + {static} dismantleRefund(rarity: Rarity): int
                 + {static} roll(kind: ModuleKind, rarity: Rarity): Module
-                - {static} addRandomSub(m: Module): void
+                + {static} subRatio(index: int): double <<SUB_MIN〜SUB_MAX を等間隔に分けた候補の値>>
+                - {static} addRandomSub(m: Module): void <<値は SUB_CANDIDATES 個の候補から1つを抽選>>
                 + {static} levelUpCost(m: Module): Cost
                 + {static} levelUp(id: long): boolean
                 + {static} dismantle(id: long): boolean
@@ -1644,6 +1653,7 @@ package "shooting_game" {
                 - {static} component: String
                 - stageId: int
                 - waveId: int  <<@Getter>>
+                - startWave: int = 1 <<@Getter @Setter。無限モードの開始ウェーブ。reset() が startWave-1 から数える>>
                 - MAIN: ShootingGameMain
                 - SM: SceneManager
                 - SHIP_M: ShipManager
@@ -1728,8 +1738,10 @@ package "shooting_game" {
                 - {static} difficulty: Difficulty
                 - {static} endlessHp: double
                 - {static} endlessDamage: double
+                - {static} stageHp: double <<ステージ番号に応じた敵HPの倍率(GameBalance)>>
                 + {static} load(spec: Spec): void
                 + {static} load(spec: Spec, diff: Difficulty): void
+                + {static} load(spec: Spec, diff: Difficulty, stageIndex: int): void <<GameManager がステージ番号を渡す>>
                 + {static} setEndlessScale(wave: int): void
                 + {static} enemyHpRate(): double
                 + {static} enemyDamageRate(): double
@@ -2115,6 +2127,7 @@ package "shooting_game" {
                     - down: boolean
                     - left: boolean
                     - right: boolean
+                    - shiftDown: boolean <<Shift中は低速(割合は GameSettings)>>
                     - lastHorizontal: String
                     - lastVertical: String
                     - subShip: List<SubShip>
@@ -2131,6 +2144,7 @@ package "shooting_game" {
                     - updateSubBeams(dt: double): void
                     + draw(g: Graphics): void
                     + move(dt: double): void
+                    - moveMaybeSlow(dt: double): void <<Shift中は速度を設定の割合に下げて動く>>
                     + drawHpBar(g: Graphics): void
                     + keyPressed(e: KeyEvent): void
                     + keyTyped(e: KeyEvent): void
@@ -2238,6 +2252,7 @@ package "shooting_game" {
                     + addDamage(damage: double): void <<戦闘中のみ。受けたダメージを coinCarry にためる>>
                     - payCoins(): void <<たまったダメージを coinStep ごとのコインにして落とす(1フレーム4つまで)>>
                     + getRamDamage(): double
+                    + isTransitioning(): boolean <<形態変化中か。この間、自機の暴走のカウントは止まる>>
                     - drawPlaceholder(g2: Graphics2D): void
                     - startGauge(): void
                     - checkGaugeBreak(): void
@@ -2280,7 +2295,8 @@ package "shooting_game" {
                 - loadImages(): void
                 + setup(): void
                 + update(dt: double): void
-                + draw(g: Graphics): void
+                + draw(g: Graphics): void <<自機の弾だけ描く>>
+                + drawEnemyBullets(g: Graphics): void <<敵の弾。GameManager がビームのあとに呼ぶ>>
                 + reload(): void
                 + addBullet(bullet: Bullet): void
                 + clearBullets(): void
@@ -3002,6 +3018,9 @@ package "shooting_game" {
             - {static} FILE: Path <<settings.properties>>
             + {static} FPS_CHOICES: int[]
             + {static} DEFAULT_FPS: int
+            + {static} SLOW_PERCENT_MIN: int = 10
+            + {static} SLOW_PERCENT_MAX: int = 90
+            + {static} DEFAULT_SLOW_PERCENT: int = 50
             - {static} props: Properties
             - {static} loaded: boolean
             --
@@ -3009,8 +3028,27 @@ package "shooting_game" {
             + {static} setFps(fps: int): void
             + {static} isDamageTextEnabled(): boolean
             + {static} setDamageTextEnabled(enabled: boolean): void
+            + {static} getSlowPercent(): int <<Shift中の移動速度の割合(%)>>
+            + {static} setSlowPercent(percent: int): void
             - {static} load(): void
             - {static} save(): void
+        }
+
+        class GameBalance <<Utility>> {
+            - {static} component: String
+            - {static} CONFIG_PATH: String <<BalanceConfig.json>>
+            - {static} unitAttackGrowth: double = 1.10
+            - {static} attackPerStar: double = 0.25
+            - {static} stageHpGrowth: double = 1.15
+            - {static} endlessHpPerWave: double = 0.015
+            - {static} loaded: boolean
+            --
+            - {static} ensureLoaded(): void
+            + {static} unitAttackGrowth(): double <<機体レベルごとの火力の倍率(指数)>>
+            + {static} attackPerStar(): double <<★1つあたりの火力(足し算)>>
+            + {static} stageHpGrowth(): double
+            + {static} endlessHpPerWave(): double
+            + {static} stageHpRate(stageIndex: double): double <<ステージ番号に応じた敵HPの倍率>>
         }
 
         class GameUtils {
@@ -3484,6 +3522,13 @@ shooting_game.ShootingGameMain ..> shooting_game.ui.LoadProgress
 shooting_game.ShootingGameMain ..> shooting_game.ui.ShooterScrollBarUI
 shooting_game.ShootingGameMain ..> shooting_game.utils.GameSettings
 shooting_game.settingScene.SettingManager ..> shooting_game.utils.GameSettings
+shooting_game.gameScene.ship.types.Player ..> shooting_game.utils.GameSettings
+shooting_game.gameScene.ship.types.Player ..> shooting_game.gameScene.ship.types.Boss
+shooting_game.domain.unit.UnitService ..> shooting_game.utils.GameBalance
+shooting_game.gameScene.stage.StageModifiers ..> shooting_game.utils.GameBalance
+shooting_game.gameScene.GameManager ..> shooting_game.gameScene.stage.StageModifiers
+shooting_game.gameScene.GameManager ..> shooting_game.gameScene.bullet.BulletManager
+shooting_game.stageScene.infinity.InfinityStageManager ..> shooting_game.domain.skill.SkillService
 
 ' 敵のエフェクト・フリーズ
 shooting_game.gameScene.ship.Ship --> shooting_game.gameScene.ship.EnemyAffix
