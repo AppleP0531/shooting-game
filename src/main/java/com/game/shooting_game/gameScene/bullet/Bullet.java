@@ -168,6 +168,12 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
             // 回転処理
             g2.translate((int) drawPos.getX(), (int) drawPos.getY());
             g2.rotate(vec + Math.PI / 2);
+            // 敵の弾は、自機の弾やビームに紛れないよう、うしろに暗い縁(ふち)を敷く
+            if (owner != ShipKinds.PLAYER) {
+                int r = Math.max(image.getWidth(), image.getHeight()) / 2 + 2;
+                g2.setColor(new java.awt.Color(0, 0, 0, 120));
+                g2.fillOval(-r, -r, r * 2, r * 2);
+            }
             // 描画処理
             UIBuilder.drawImage(g2, Anchor.CENTER, new Vector2(0, 0), image);
         }

@@ -31,6 +31,7 @@ import com.game.shooting_game.domain.unit.UnitService;
 import com.game.shooting_game.domain.subship.SubShipService;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.ui.Anchor;
+import com.game.shooting_game.utils.GameSettings;
 import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.ui.UIBuilder;
@@ -47,6 +48,7 @@ public class Player extends Ship implements KeyListener {
     private Vector2 dragMousePos; // ドラッグ中のマウス位置
     @Getter
     private boolean up = false, down = false, left = false, right = false; // キー入力
+    private boolean shiftDown = false; // Shiftを押している間は低速で動く(速度の割合は GameSettings)
     private String lastHorizontal = ""; // 最後に押された左右
     private String lastVertical = ""; // 最後に押された上下
     private List<SubShip> subShip = new ArrayList<>();
@@ -201,7 +203,9 @@ public class Player extends Ship implements KeyListener {
 
                 // 船がレベル5の時は暴走モードにする
                 if (shipLevel >= 5) {
-                    OOCTimer = Math.max(0, OOCTimer - dt);
+                    // ボスが形態変化(ゲージ破壊後の移行)している間は、暴走のカウントを止める
+                    if (!SHIP_M.getBossList().stream().anyMatch(b -> b instanceof Boss boss && boss.isTransitioning()))
+                        OOCTimer = Math.max(0, OOCTimer - dt);
                     shipState = "OOC";
 
                     if (OOCTimer <= 0)
@@ -338,7 +342,7 @@ public class Player extends Ship implements KeyListener {
                 // キーが何かしら押されてるときに移動
                 if (up || down || left || right) {
                     vec = GameUtils.targetVec(new Vector2(0, 0), direction);
-                    super.move(dt);
+                    moveMaybeSlow(dt);
                 }
 
                 // マウス移動処理
@@ -350,7 +354,7 @@ public class Player extends Ship implements KeyListener {
                     // 目標地点との距離が近いときは止まる（ガタつき防止）
                     if (distSq > Math.pow(5 * ShootingGameMain.getScreenSizeAdj(), 2)) {
                         vec = GameUtils.targetVec(pos, targetPos);
-                        super.move(dt);
+                        moveMaybeSlow(dt);
                     }
 
                 }
@@ -374,6 +378,20 @@ public class Player extends Ship implements KeyListener {
         }
 
         subShip.forEach(s -> s.move(dt));
+    }
+
+    /**
+     * 1フレーム分動く(Shiftを押している間は、設定の割合まで速度を下げる)
+     */
+    private void moveMaybeSlow(double dt) {
+        if (!shiftDown) {
+            super.move(dt);
+            return;
+        }
+        double base = speed;
+        speed = base * GameSettings.getSlowPercent() / 100.0;
+        super.move(dt);
+        speed = base;
     }
 
     public double getShieldPoints() {
@@ -471,6 +489,7 @@ public class Player extends Ship implements KeyListener {
                 right = true;
                 lastHorizontal = "right";
             }
+            case KeyEvent.VK_SHIFT -> shiftDown = true;
             case KeyEvent.VK_SPACE -> {
                 changeMode();
             }
@@ -507,6 +526,7 @@ public class Player extends Ship implements KeyListener {
                 if (left)
                     lastHorizontal = "left";
             }
+            case KeyEvent.VK_SHIFT -> shiftDown = false;
         }
     }
 

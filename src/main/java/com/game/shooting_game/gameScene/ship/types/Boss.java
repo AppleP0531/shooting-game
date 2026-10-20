@@ -259,6 +259,13 @@ public class Boss extends Ship {
     }
 
     /**
+     * 形態変化の最中か(ゲージ破壊後の移行中。この間、自機の暴走のカウントは止まる)
+     */
+    public boolean isTransitioning() {
+        return phase == Phase.TRANSITION;
+    }
+
+    /**
      * 撤収を始める(弾とビームを消して、上へ去る)
      */
     private void startRetreat() {

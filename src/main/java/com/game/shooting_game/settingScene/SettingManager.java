@@ -19,6 +19,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.SwingUtilities;
 
 import com.game.shooting_game.SceneManager;
@@ -70,6 +71,10 @@ public final class SettingManager extends JPanel implements Manager {
         gbc.gridy = 1;
         content.add(createDamageTextRow(), gbc);
 
+        // Shift中の移動速度(バーで割合を決める)
+        gbc.gridy = 2;
+        content.add(createSlowRateRow(), gbc);
+
         // ゲーム終了ボタン(確認のあと、ウィンドウを閉じるときと同じ処理でデータを保存して終了)
         Vector2 quitBtnSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
@@ -78,8 +83,42 @@ public final class SettingManager extends JPanel implements Manager {
         quitBtn.setPreferredSize(
                 new Dimension((int) quitBtn.getWidth(), (int) quitBtn.getHeight()));
         quitBtn.addActionListener(e -> confirmQuit());
-        gbc.gridy = 2;
+        gbc.gridy = 3;
         content.add(quitBtn, gbc);
+    }
+
+    /**
+     * Shift中の移動速度の行(「低速移動(Shift)」の文字と、割合を決めるバー)
+     * バーを動かすとすぐ保存する(端末の設定)。
+     */
+    private JPanel createSlowRateRow() {
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        JPanel row = new JPanel(new FlowLayout(FlowLayout.CENTER, (int) (6 * adj), 0));
+        row.setOpaque(false);
+
+        JLabel label = new JLabel("低速移動(Shift)");
+        label.setForeground(Color.WHITE);
+        label.setFont(label.getFont().deriveFont(Font.BOLD, (float) (14 * adj)));
+        row.add(label);
+
+        JSlider slider = new JSlider(GameSettings.SLOW_PERCENT_MIN, GameSettings.SLOW_PERCENT_MAX,
+                GameSettings.getSlowPercent());
+        slider.setOpaque(false);
+        slider.setFocusable(false); // ゲーム中のキー入力を奪わないように
+        slider.setPreferredSize(new Dimension((int) (130 * adj), (int) (28 * adj)));
+        row.add(slider);
+
+        JLabel value = new JLabel(GameSettings.getSlowPercent() + "%");
+        value.setForeground(Color.WHITE);
+        value.setPreferredSize(new Dimension((int) (40 * adj), (int) (20 * adj)));
+        row.add(value);
+
+        slider.addChangeListener(e -> {
+            value.setText(slider.getValue() + "%");
+            if (!slider.getValueIsAdjusting())
+                GameSettings.setSlowPercent(slider.getValue());
+        });
+        return row;
     }
 
     /**

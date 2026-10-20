@@ -229,7 +229,10 @@ public final class GameManager extends JPanel implements Manager {
 
         // ステージ条件の読み込み(敵が硬い・回復なし など。プレイヤーの生成より前に行う)
         StageData sd = STAGE_M.getStageConfig().get("stage" + STAGE_M.getStageId());
-        StageModifiers.load(sd == null ? null : sd.getModifiers(), STAGE_M.getStage().getDifficulty());
+        // 敵HPの強さの目安になるステージ番号(ノーマル=ステージ番号、エクストラ=解放に要るステージ番号。無限は、ウェーブごとに別に決める)
+        int sid = STAGE_M.getStageId();
+        int stageIndex = sid == EndlessWaves.STAGE_ID ? 1 : sid < 100 ? sid : Math.max(1, sd == null ? 1 : sd.getUnlock());
+        StageModifiers.load(sd == null ? null : sd.getModifiers(), STAGE_M.getStage().getDifficulty(), stageIndex);
 
         // リセット
         gameover = false;
@@ -305,6 +308,9 @@ public final class GameManager extends JPanel implements Manager {
         // 各マネージャーの描画
         for (Manager m : managers) {
             m.draw(g);
+            // 敵の弾は、自機の弾とビームの上(船・アイテムの下)に描く
+            if (m instanceof com.game.shooting_game.gameScene.beam.BeamManager)
+                BulletManager.getInstance().drawEnemyBullets(g);
         }
 
         // 必要データのパッキング
