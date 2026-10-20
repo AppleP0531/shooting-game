@@ -1,0 +1,234 @@
+{
+  "BOSS": {
+    "Boss10": {
+      "datas": {
+        "imagePath": "/enemy/Enemy1.png",
+        "sheets": [
+          {
+            "grids": [
+              4,
+              2
+            ],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 236,
+        "collisionSize": 78,
+        "hp": 100,
+        "speed": 100,
+        "score": 48000,
+        "coins": "480~640"
+      },
+      "Lv0": [],
+      "Lv1": []
+    },
+    "Boss11": {
+      "datas": {
+        "imagePath": "/enemy/Enemy2.png",
+        "sheets": [
+          {
+            "grids": [
+              4,
+              2
+            ],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 238,
+        "collisionSize": 79,
+        "hp": 100,
+        "speed": 100,
+        "score": 54000,
+        "coins": "540~720"
+      },
+      "Lv0": [],
+      "Lv1": []
+    },
+    "Boss12": {
+      "datas": {
+        "imagePath": "/enemy/Enemy1.png",
+        "sheets": [
+          {
+            "grids": [
+              4,
+              2
+            ],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 240,
+        "collisionSize": 79,
+        "hp": 100,
+        "speed": 100,
+        "score": 60000,
+        "coins": "600~800"
+      },
+      "Lv0": [],
+      "Lv1": []
+    },
+    "Boss13": {
+      "datas": {
+        "imagePath": "/enemy/Enemy2.png",
+        "sheets": [
+          {
+            "grids": [
+              4,
+              2
+            ],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 242,
+        "collisionSize": 80,
+        "hp": 100,
+        "speed": 100,
+        "score": 66000,
+        "coins": "660~880"
+      },
+      "Lv0": [],
+      "Lv1": []
+    },
+    "Boss14": {
+      "datas": {
+        "imagePath": "/enemy/Enemy1.png",
+        "sheets": [
+          {
+            "grids": [
+              4,
+              2
+            ],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 244,
+        "collisionSize": 81,
+        "hp": 100,
+        "speed": 100,
+        "score": 72000,
+        "coins": "720~960"
+      },
+      "Lv0": [],
+      "Lv1": []
+    },
+    "Boss15": {
+      "datas": {
+        "imagePath": "/enemy/Enemy2.png",
+        "sheets": [
+          {
+            "grids": [
+              4,
+              2
+            ],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 246,
+        "collisionSize": 81,
+        "hp": 100,
+        "speed": 100,
+        "score": 78000,
+        "coins": "780~1040"
+      },
+      "Lv0": [],
+      "Lv1": []
+    },
+    "Boss16": {
+      "datas": {
+        "imagePath": "/enemy/Enemy1.png",
+        "sheets": [
+          {
+            "grids": [
+              4,
+              2
+            ],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 248,
+        "collisionSize": 82,
+        "hp": 100,
+        "speed": 100,
+        "score": 84000,
+        "coins": "840~1120"
+      },
+      "Lv0": [],
+      "Lv1": []
+    },
+    "Boss17": {
+      "datas": {
+        "imagePath": "/enemy/Enemy2.png",
+        "sheets": [
+          {
+            "grids": [
+              4,
+              2
+            ],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 250,
+        "collisionSize": 83,
+        "hp": 100,
+        "speed": 100,
+        "score": 90000,
+        "coins": "900~1200"
+      },
+      "Lv0": [],
+      "Lv1": []
+    },
+    "Boss18": {
+      "datas": {
+        "imagePath": "/enemy/Enemy1.png",
+        "sheets": [
+          {
+            "grids": [
+              4,
+              2
+            ],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 252,
+        "collisionSize": 83,
+        "hp": 100,
+        "speed": 100,
+        "score": 96000,
+        "coins": "960~1280"
+      },
+      "Lv0": [],
+      "Lv1": []
+    },
+    "Boss19": {
+      "datas": {
+        "imagePath": "/enemy/Enemy2.png",
+        "sheets": [
+          {
+            "grids": [
+              4,
+              2
+            ],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 256,
+        "collisionSize": 84,
+        "hp": 100,
+        "speed": 100,
+        "score": 102000,
+        "coins": "1020~1360"
+      },
+      "Lv0": [],
+      "Lv1": []
+    }
+  }
+}

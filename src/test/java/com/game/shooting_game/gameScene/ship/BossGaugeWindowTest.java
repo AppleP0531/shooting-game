@@ -31,7 +31,8 @@ class BossGaugeWindowTest {
     @DisplayName("それ以外のステージ(5の倍数でない・100以降)は定義のまま")
     void others() {
         assertThat(BossLibrary.gaugeWindow(6, 7)).containsExactly(0, 6);
-        assertThat(BossLibrary.gaugeWindow(6, 155)).containsExactly(0, 6);
+        assertThat(BossLibrary.gaugeWindow(6, 1155)).containsExactly(0, 6); // エクストラ(1000番台)
+        assertThat(BossLibrary.gaugeWindow(6, 155)).containsExactly(0, 3); // 自動生成の通常ステージ(5の倍数)
     }
 
     @Test
