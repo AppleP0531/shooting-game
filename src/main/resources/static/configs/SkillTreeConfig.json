@@ -22,7 +22,7 @@
     "pos": 0,
     "dist": 95,
     "effect": "DAMAGE",
-    "perLevel": 0.03,
+    "perLevel": 0.10,
     "maxLevel": 10,
     "unit": "%",
     "reqLevel": 1,
@@ -292,7 +292,7 @@
     "pos": 1,
     "dist": 95,
     "effect": "OOC_DAMAGE",
-    "perLevel": 0.04,
+    "perLevel": 0.10,
     "maxLevel": 5,
     "unit": "%",
     "reqLevel": 2,
@@ -1729,5 +1729,32 @@
       { "SCREW": { "COMMON": 10, "UNCOMMON": 5 }, "LENS": { "COMMON": 7, "UNCOMMON": 1 } }
     ]
   }
-
+  ,
+  {
+    "name": "Runup",
+    "title": "助走",
+    "rootNode": "Thruster",
+    "pos": 4,
+    "dist": 95,
+    "effect": "ENDLESS_SKIP",
+    "perLevel": 5,
+    "maxLevel": 10,
+    "unit": "ウェーブ",
+    "reqLevel": 2,
+    "coin": 15000,
+    "coinGrowth": 1.5,
+    "detail": "無限モードを、これまでに到達したウェーブの範囲で、高いウェーブから始められるようになる(Lvごとに開始できるウェーブが +5)。",
+    "matLevels": [
+      { "ENERGY_CELL": { "COMMON": 7 }, "CIRCUIT": { "COMMON": 5 } },
+      { "ENERGY_CELL": { "COMMON": 8 }, "CIRCUIT": { "COMMON": 5 } },
+      { "ENERGY_CELL": { "COMMON": 9 }, "CIRCUIT": { "COMMON": 5 } },
+      { "ENERGY_CELL": { "COMMON": 10 }, "CIRCUIT": { "COMMON": 6 } },
+      { "ENERGY_CELL": { "COMMON": 11 }, "CIRCUIT": { "COMMON": 7 } },
+      { "ENERGY_CELL": { "COMMON": 12 }, "CIRCUIT": { "COMMON": 7 } },
+      { "ENERGY_CELL": { "COMMON": 10, "UNCOMMON": 2 }, "CIRCUIT": { "COMMON": 6, "UNCOMMON": 1 } },
+      { "ENERGY_CELL": { "COMMON": 11, "UNCOMMON": 3 }, "CIRCUIT": { "COMMON": 7, "UNCOMMON": 1 } },
+      { "ENERGY_CELL": { "COMMON": 12, "UNCOMMON": 4 }, "CIRCUIT": { "COMMON": 8, "UNCOMMON": 1 } },
+      { "ENERGY_CELL": { "COMMON": 13, "UNCOMMON": 5 }, "CIRCUIT": { "COMMON": 8, "UNCOMMON": 1 } }
+    ]
+  }
 ]
