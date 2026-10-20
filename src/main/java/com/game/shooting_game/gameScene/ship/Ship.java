@@ -27,6 +27,7 @@ import com.game.shooting_game.gameScene.bullet.BulletFactory;
 import com.game.shooting_game.gameScene.bullet.BulletManager;
 import com.game.shooting_game.gameScene.bullet.BulletManager.BulletConfig;
 import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
+import com.game.shooting_game.gameScene.stage.StageModifiers;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipConfig;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipDefinition;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
@@ -126,6 +127,8 @@ public abstract class Ship implements Moveable, GameObject, Entity {
             ShipConfig datas = def.getDatas();
 
             maxHp = hp = datas.getHp() > 0 ? datas.getHp() : 100; // 未設定なら100
+            if (owner == ShipKinds.ENEMY)
+                maxHp = hp *= StageModifiers.enemyHpRate(); // 難易度・ステージ条件による敵の硬さはHPで表す(防御力は変えない)
             collisionSize = datas.getCollisionSize() * ShootingGameMain.getScreenSizeAdj() * sizeScale();
             imageSize.put("ship", (int) (datas.getImageSize() * ShootingGameMain.getScreenSizeAdj() * sizeScale()));
             speed = datas.getSpeed() * ShootingGameMain.getScreenSizeAdj();

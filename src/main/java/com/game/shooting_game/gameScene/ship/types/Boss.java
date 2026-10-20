@@ -111,7 +111,8 @@ public class Boss extends Ship {
         // 戦闘定義とHP(ゲージ数 × 1ゲージ分)
         def = BossLibrary.forFight(id, com.game.shooting_game.gameScene.stage.StageManager.getInstance().getStageId());
         gaugeCount = def.getGauges().size();
-        gaugeHp = Math.max(1, def.getGaugeHp());
+        gaugeHp = Math.max(1, def.getGaugeHp())
+                * com.game.shooting_game.gameScene.stage.StageModifiers.enemyHpRate(); // 難易度などの硬さはゲージのHPで表す
         maxHp = hp = gaugeHp * gaugeCount;
 
         // 入場の設定(StageConfigの指定があればそちらを優先)
