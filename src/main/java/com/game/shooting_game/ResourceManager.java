@@ -58,6 +58,7 @@ public final class ResourceManager implements Manager {
             UPGRADE, // スキル強化用
             PART, // サブ機パーツ制作用
             MODULE, // モジュール基板(モジュールの制作にのみ使う)
+            RANK, // ランクコア(機体のランクアップにのみ使う。ボスなどが落とす)
             NONE // 素材ではない
         }
 
@@ -81,7 +82,8 @@ public final class ResourceManager implements Manager {
             ALLOY_PLATE(Family.PART, "合金板"),
             CRYSTAL_SHARD(Family.PART, "結晶片"),
             PLASMA_CORE(Family.PART, "プラズマコア"),
-            MODULE_CHIP(Family.MODULE, "モジュール基板");
+            MODULE_CHIP(Family.MODULE, "モジュール基板"),
+            RANK_CORE(Family.RANK, "ランクコア");
 
             private final Family family;
             private final String displayName;

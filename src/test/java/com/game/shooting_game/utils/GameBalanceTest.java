@@ -12,11 +12,13 @@ class GameBalanceTest {
     void valuesLoaded() {
         assertThat(GameBalance.unitAttackGrowth()).isGreaterThanOrEqualTo(1.0);
         assertThat(GameBalance.stageHpGrowth()).isGreaterThanOrEqualTo(1.0);
-        assertThat(GameBalance.attackPerStar()).isGreaterThanOrEqualTo(0.0);
+        assertThat(GameBalance.rankAttackGrowth()).isGreaterThanOrEqualTo(1.0);
         assertThat(GameBalance.endlessHpPerWave()).isGreaterThanOrEqualTo(0.0);
-        assertThat(GameBalance.unitAttackGrowth()).isCloseTo(1.10, within(1e-9));
-        assertThat(GameBalance.attackPerStar()).isCloseTo(0.25, within(1e-9));
-        assertThat(GameBalance.stageHpGrowth()).isCloseTo(1.15, within(1e-9));
+        assertThat(GameBalance.unitAttackGrowth()).isCloseTo(1.06, within(1e-9));
+        assertThat(GameBalance.rankAttackGrowth()).isCloseTo(18.0, within(1e-9));
+        // ランクアップでレベルが1に戻っても、前のランクのLv50より弱くならない(1.06^49 より大きい)
+        assertThat(GameBalance.rankAttackGrowth()).isGreaterThanOrEqualTo(Math.pow(GameBalance.unitAttackGrowth(), 49));
+        assertThat(GameBalance.stageHpGrowth()).isCloseTo(1.07, within(1e-9));
         assertThat(GameBalance.endlessHpPerWave()).isCloseTo(0.015, within(1e-9));
     }
 

@@ -354,7 +354,7 @@ public class LobbySceneUI {
         g2.drawString(shipId + "  Lv" + UnitService.getLevel(shipId), x + pad + icon + (int) (6 * adj),
                 iy + (int) (14 * adj));
         g2.setColor(new Color(255, 214, 80));
-        g2.drawString(UnitService.starText(shipId), x + pad + icon + (int) (6 * adj), iy + (int) (30 * adj));
+        g2.drawString(UnitService.rankText(shipId), x + pad + icon + (int) (6 * adj), iy + (int) (30 * adj));
 
         // --- サブ機(左下と右上にずらして置く) ---
         int sy = iy + icon + (int) (6 * adj);

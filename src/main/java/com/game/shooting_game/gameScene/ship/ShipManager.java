@@ -25,6 +25,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
+import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
@@ -540,6 +542,13 @@ public final class ShipManager implements Manager {
 
             dropResource(new Vector2(pos), DropModel.BOSS_BONUS);
         }
+
+        // ランクアップ素材(ランクコア)。ゲージを壊すたびに、ダメージ報酬の回数に応じて落とす
+        int cores = Math.max(1, rolls / 3);
+        for (int i = 0; i < cores; i++)
+            IM.addItem(ResourceFactory.createResource(
+                    new Vector2(boss.getPos().getX() + rnd.nextDouble(-50, 50) * adj, boss.getPos().getY()),
+                    new ResourceKinds(ResourceName.RANK_CORE, Rarity.COMMON)));
 
         // コインドロップ
         int coinAmount = boss.getDropCoinAmount();

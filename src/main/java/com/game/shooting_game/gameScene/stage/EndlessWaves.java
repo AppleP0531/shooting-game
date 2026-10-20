@@ -128,6 +128,7 @@ public final class EndlessWaves {
             return r;
         Rarity rarity = tier(cleared);
         r.put(new ResourceKinds(ResourceName.MODULE_CHIP, rarity), n);
+        r.put(new ResourceKinds(ResourceName.RANK_CORE, Rarity.COMMON), n); // ランクアップ素材
         ResourceName[] pool = { ResourceName.GEAR, ResourceName.SCREW, ResourceName.COPPER_PLATE,
                 ResourceName.IRON_BAR };
         r.merge(new ResourceKinds(pool[ThreadLocalRandom.current().nextInt(pool.length)], rarity),

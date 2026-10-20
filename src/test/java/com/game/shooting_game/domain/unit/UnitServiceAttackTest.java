@@ -24,7 +24,7 @@ class UnitServiceAttackTest {
     }
 
     @Test
-    @DisplayName("Lv1・★0 の火力は 1.0")
+    @DisplayName("Lv1・ランク0 の火力は 1.0")
     void baseIsOne() {
         stats.setLevel(1);
         stats.setStars(0);
@@ -32,13 +32,13 @@ class UnitServiceAttackTest {
     }
 
     @Test
-    @DisplayName("レベルを上げると火力は指数的に増える(Lv50 は 1.10^49 付近)")
+    @DisplayName("レベルを上げると火力は指数的に増える(Lv50 は 1.06^49 付近)")
     void levelGrowsExponentially() {
         stats.setStars(0);
         stats.setLevel(50);
         double lv50 = UnitService.attackRate(shipId);
-        assertThat(lv50).isCloseTo(Math.pow(1.10, 49), within(1e-6 * lv50));
-        assertThat(lv50).isBetween(90.0, 130.0);
+        assertThat(lv50).isCloseTo(Math.pow(1.06, 49), within(1e-6 * lv50));
+        assertThat(lv50).isBetween(15.0, 20.0);
 
         double prev = 0;
         for (int lv = 1; lv <= 50; lv++) {
@@ -52,19 +52,19 @@ class UnitServiceAttackTest {
     }
 
     @Test
-    @DisplayName("★は足し算で効く(Lv1 で★ごとに +attackPerStar)")
-    void starsAreAdditive() {
+    @DisplayName("ランクは掛け算で効く(ランクごとに rankAttackGrowth 倍)")
+    void ranksAreMultiplicative() {
         stats.setLevel(1);
-        for (int s = 0; s <= 5; s++) {
-            stats.setStars(s);
-            assertThat(UnitService.attackRate(shipId))
-                    .isCloseTo(1 + GameBalance.attackPerStar() * s, within(1e-9));
+        for (int r = 0; r <= 5; r++) {
+            stats.setStars(r);
+            double expected = Math.pow(GameBalance.rankAttackGrowth(), r);
+            assertThat(UnitService.attackRate(shipId)).isCloseTo(expected, within(1e-6 * expected));
         }
         stats.setLevel(20);
         stats.setStars(0);
         double base = UnitService.attackRate(shipId);
         stats.setStars(4);
-        assertThat(UnitService.attackRate(shipId))
-                .isCloseTo(base * (1 + GameBalance.attackPerStar() * 4), within(1e-9));
+        double expected = base * Math.pow(GameBalance.rankAttackGrowth(), 4);
+        assertThat(UnitService.attackRate(shipId)).isCloseTo(expected, within(1e-6 * expected));
     }
 }
