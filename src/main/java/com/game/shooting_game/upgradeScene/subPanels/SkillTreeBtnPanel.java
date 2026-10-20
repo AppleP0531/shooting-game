@@ -18,10 +18,10 @@ import javax.swing.JPanel;
 import lombok.Getter;
 
 import com.game.shooting_game.ShootingGameMain;
-import com.game.shooting_game.skill.SkillService;
+import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.upgradeScene.UpgradeManager;
 import com.game.shooting_game.upgradeScene.UpgradeManager.SkillTreeData;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 public class SkillTreeBtnPanel extends JPanel {
@@ -152,6 +152,18 @@ public class SkillTreeBtnPanel extends JPanel {
                     g2.drawLine((int) parentPos.getX(), (int) parentPos.getY(),
                             (int) childPos.getX(), (int) childPos.getY());
             }
+        }
+
+        // 研究中なら、パネル上部に研究中のスキルと残り時間を出す
+        String researching = SkillService.researchingSkill();
+        if (researching != null) {
+            SkillTreeData rd = SkillService.find(researching);
+            String text = "研究中: " + (rd != null ? rd.getTitle() : researching)
+                    + "  残り " + SkillService.formatTime(SkillService.researchRemaining());
+            g2.setFont(g2.getFont().deriveFont(java.awt.Font.BOLD,
+                    (float) (13 * ShootingGameMain.getScreenSizeAdj())));
+            g2.setColor(new Color(255, 214, 80));
+            g2.drawString(text, getX() + 8, getY() + (int) (18 * ShootingGameMain.getScreenSizeAdj()));
         }
 
         g2.setClip(null);

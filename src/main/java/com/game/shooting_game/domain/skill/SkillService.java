@@ -1,4 +1,4 @@
-package com.game.shooting_game.skill;
+package com.game.shooting_game.domain.skill;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +16,9 @@ import com.game.shooting_game.ResourceManager.ResourceKinds.Family;
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.data.DataManager;
-import com.game.shooting_game.data.DataManager.UserData;
+import com.game.shooting_game.domain.cost.Cost;
+import com.game.shooting_game.domain.cost.CostService;
+import com.game.shooting_game.data.UserData;
 import com.game.shooting_game.upgradeScene.UpgradeManager.SkillTreeData;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
@@ -37,12 +39,6 @@ public final class SkillService {
     private static String cacheShip = null;
 
     private SkillService() {
-    }
-
-    /**
-     * 強化に必要なコストの内訳
-     */
-    public record Cost(int coins, Map<ResourceKinds, Integer> items) {
     }
 
     // ----- config -----
@@ -80,6 +76,7 @@ public final class SkillService {
     }
 
     public static int getLevel(String name) {
+        tickResearch(); // 研究が終わっていればレベルに反映する
         Map<String, Integer> up = upgrades();
         return up == null ? 0 : up.getOrDefault(name, 0);
     }
@@ -148,37 +145,83 @@ public final class SkillService {
         return new Cost(coins, items);
     }
 
-    /**
-     * 指定した素材(レア度込み)の所持数
-     */
-    public static int owned(ResourceKinds kind) {
+    // ----- 研究時間 -----
+    private static UserData.ShipStats stats() {
         UserData ud = DataManager.getUserData();
-        return ud == null ? 0 : ud.getResources().getEquipments().getOrDefault(kind, 0);
+        return ud == null ? null : ud.getShips().get(ud.getSelectedShip());
     }
 
-    public static boolean canAfford(Cost cost) {
-        UserData ud = DataManager.getUserData();
-        if (ud == null || ud.getResources().getCoins() < cost.coins())
+    /**
+     * 現在のレベルから次のレベルに上げるための研究時間(秒)
+     */
+    public static long researchSeconds(SkillTreeData d, int level) {
+        return Math.max(1, Math.round(d.getResearchSec() * Math.pow(d.getResearchGrowth(), level)));
+    }
+
+    /**
+     * 研究中かどうか(選択中の機体。どのスキルでも1つだけ研究できる)
+     */
+    public static boolean isResearching() {
+        tickResearch();
+        UserData.ShipStats st = stats();
+        return st != null && st.getResearchSkill() != null;
+    }
+
+    /**
+     * 指定したスキルが研究中かどうか
+     */
+    public static boolean isResearching(String name) {
+        UserData.ShipStats st = stats();
+        return isResearching() && name.equals(st.getResearchSkill());
+    }
+
+    /**
+     * 研究中のスキル名(研究していなければnull)
+     */
+    public static String researchingSkill() {
+        return isResearching() ? stats().getResearchSkill() : null;
+    }
+
+    /**
+     * 研究の残り時間(秒)。研究していなければ0
+     */
+    public static long researchRemaining() {
+        if (!isResearching())
+            return 0;
+        long ms = stats().getResearchFinishAt() - System.currentTimeMillis();
+        return Math.max(0, (ms + 999) / 1000);
+    }
+
+    /**
+     * 研究が終わっていればレベルを上げる
+     *
+     * @return このとき研究が完了したらtrue
+     */
+    public static synchronized boolean tickResearch() {
+        UserData.ShipStats st = stats();
+        if (st == null || st.getResearchSkill() == null || System.currentTimeMillis() < st.getResearchFinishAt())
             return false;
-        for (Map.Entry<ResourceKinds, Integer> e : cost.items().entrySet())
-            if (owned(e.getKey()) < e.getValue())
-                return false;
+
+        String name = st.getResearchSkill();
+        st.getUpgrades().merge(name, 1, Integer::sum);
+        st.setResearchSkill(null);
+        st.setResearchFinishAt(0);
+        invalidate();
+        DataManager.save();
+
+        LogUtils.systemLog("[INFO]", component,
+                ANSI.YELLOW + name + ANSI.RESET + " research completed. Lv" + st.getUpgrades().get(name) + ".");
         return true;
     }
 
     /**
-     * コストの支払い(コインと素材を減らす。呼ぶ前に canAfford を確認すること)
+     * 時間の表示(1時間以上は h:mm:ss、それ未満は m:ss)
      */
-    public static void pay(UserData ud, Cost cost) {
-        ud.getResources().setCoins(ud.getResources().getCoins() - cost.coins());
-        Map<ResourceKinds, Integer> eq = ud.getResources().getEquipments();
-        for (Map.Entry<ResourceKinds, Integer> e : cost.items().entrySet()) {
-            int left = eq.getOrDefault(e.getKey(), 0) - e.getValue();
-            if (left <= 0)
-                eq.remove(e.getKey());
-            else
-                eq.put(e.getKey(), left);
-        }
+    public static String formatTime(long sec) {
+        long h = sec / 3600;
+        long m = sec % 3600 / 60;
+        long s = sec % 60;
+        return h > 0 ? String.format("%d:%02d:%02d", h, m, s) : String.format("%d:%02d", m, s);
     }
 
     public static boolean isMaxLevel(SkillTreeData d) {
@@ -196,22 +239,25 @@ public final class SkillService {
         Map<String, Integer> up = upgrades();
         if (d == null || ud == null || up == null)
             return false;
-        if (!isUnlocked(name) || isMaxLevel(d))
+        if (!isUnlocked(name) || isMaxLevel(d) || isResearching())
             return false;
 
         int level = getLevel(name);
         Cost cost = getCost(d, level);
-        if (!canAfford(cost))
+        if (!CostService.canAfford(cost))
             return false;
 
-        pay(ud, cost);
+        CostService.pay(ud, cost);
 
-        up.put(name, level + 1);
-        invalidate();
+        // コストを払ったら研究開始。時間が経つとレベルが上がる
+        UserData.ShipStats st = stats();
+        long sec = researchSeconds(d, level);
+        st.setResearchSkill(name);
+        st.setResearchFinishAt(System.currentTimeMillis() + sec * 1000);
         DataManager.save();
 
         LogUtils.systemLog("[INFO]", component,
-                ANSI.YELLOW + name + ANSI.RESET + " upgraded to Lv" + (level + 1) + ".");
+                ANSI.YELLOW + name + ANSI.RESET + " research started (" + formatTime(sec) + ").");
         return true;
     }
 
@@ -256,6 +302,9 @@ public final class SkillService {
             return sb.toString();
         }
 
+        sb.append("研究時間: ").append(formatTime(researchSeconds(d, level)));
+        if (isResearching(d.getName()))
+            sb.append("\n【研究中】残り ").append(formatTime(researchRemaining()));
         return sb.toString();
     }
 
@@ -266,8 +315,13 @@ public final class SkillService {
         int level = getLevel(d.getName());
         if (level >= d.getMaxLevel() || !isUnlocked(d.getName()))
             return "";
-        if (canAfford(getCost(d, level)))
-            return "強化できます";
-        return "コインか強化素材が足りません";
+        if (isResearching()) {
+            SkillTreeData r = find(researchingSkill());
+            return "「" + (r != null ? r.getTitle() : researchingSkill()) + "」を研究中です(残り "
+                    + formatTime(researchRemaining()) + ")";
+        }
+        if (CostService.canAfford(getCost(d, level)))
+            return "強化できます(研究 " + formatTime(researchSeconds(d, level)) + ")";
+        return "";
     }
 }

@@ -1,5 +1,6 @@
-package com.game.shooting_game.skill;
+package com.game.shooting_game.domain.unit;
 
+import com.game.shooting_game.domain.cost.CostService;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -7,11 +8,11 @@ import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.data.DataManager;
-import com.game.shooting_game.data.DataManager.UserData;
-import com.game.shooting_game.data.DataManager.UserData.ShipStats;
+import com.game.shooting_game.data.UserData;
+import com.game.shooting_game.data.UserData.ShipStats;
 import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
-import com.game.shooting_game.skill.SkillService.Cost;
+import com.game.shooting_game.domain.cost.Cost;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
 
@@ -28,6 +29,9 @@ public final class UnitService {
 
     public static final int MAX_LEVEL = 50;
     public static final int MAX_STARS = 5;
+
+    private static final double LEVEL_COIN_BASE = 150; // Lv1→2に必要なコイン
+    private static final double LEVEL_COIN_GROWTH = 1.15; // レベルごとのコイン倍率(Lv49→50で約12万)
 
     private static final double ATTACK_PER_LEVEL = 0.02; // レベル1つあたりの火力(Lv50で約2倍)
     private static final double HP_PER_LEVEL = 0.03; // レベル1つあたりの耐久力(Lv50で約2.5倍)
@@ -94,7 +98,7 @@ public final class UnitService {
      * 10レベルごとに必要な素材のレア度が上がる。
      */
     public static Cost levelCost(int level) {
-        int coins = (int) (Math.round(150 * Math.pow(1.11, level - 1) / 10.0) * 10);
+        int coins = (int) (Math.round(LEVEL_COIN_BASE * Math.pow(LEVEL_COIN_GROWTH, level - 1) / 10.0) * 10);
         int band = Math.min(4, (level - 1) / 10); // 1〜10: 0, 11〜20: 1, ...
         int step = (level - 1) % 10;
         ResourceName name = band % 2 == 0 ? ResourceName.GEAR : ResourceName.SCREW;
@@ -105,7 +109,7 @@ public final class UnitService {
             case 3 -> Rarity.RARE;
             default -> Rarity.EPIC;
         };
-        int count = 2 + step / 2 + band; // 帯が上がるほど、帯の中で進むほど多い
+        int count = 2 + step + band * 2; // 帯が上がるほど、帯の中で進むほど多い
         Map<ResourceKinds, Integer> items = new LinkedHashMap<>();
         items.put(new ResourceKinds(name, rarity), count);
         return new Cost(coins, items);
@@ -117,9 +121,9 @@ public final class UnitService {
         if (s == null || ud == null || getLevel(shipId) >= MAX_LEVEL)
             return false;
         Cost cost = levelCost(getLevel(shipId));
-        if (!SkillService.canAfford(cost))
+        if (!CostService.canAfford(cost))
             return false;
-        SkillService.pay(ud, cost);
+        CostService.pay(ud, cost);
         s.setLevel(getLevel(shipId) + 1);
         DataManager.save();
         LogUtils.systemLog("[INFO]", component,
@@ -148,9 +152,10 @@ public final class UnitService {
         if (ud == null || s == null || getStars(shipId) + getCopies(shipId) >= MAX_STARS)
             return false;
         int price = copyPrice(shipId);
-        if (ud.getResources().getCoins() < price)
+        if (CostService.coins() < price)
             return false;
-        ud.getResources().setCoins(ud.getResources().getCoins() - price);
+        if (!DataManager.isAdminMode())
+            ud.getResources().setCoins(ud.getResources().getCoins() - price);
         addCopy(shipId);
         return true;
     }

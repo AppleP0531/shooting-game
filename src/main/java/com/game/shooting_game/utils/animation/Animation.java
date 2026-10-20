@@ -5,7 +5,7 @@ import java.awt.image.BufferedImage;
 import lombok.Getter;
 import lombok.Setter;
 
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 
 public class Animation {
     private AnimationLogic customLogic = null;

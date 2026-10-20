@@ -19,12 +19,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import com.game.shooting_game.gameScene.beam.BeamManager;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 import com.game.shooting_game.utils.animation.AnimationManager;
 
@@ -225,6 +226,14 @@ public final class BulletManager implements Manager {
     public void update(double dt) {
         // 更新中に分裂弾などが新しい弾を追加しても壊れないよう、コピーを回す
         new ArrayList<>(bulletList).forEach(bullet -> bullet.update(dt));
+        // ブロックに当たった弾は消える(自機・敵のどちらの弾も。貫通弾とレーザーは通り抜ける)
+        BeamManager beams = BeamManager.getInstance();
+        for (Bullet bullet : new ArrayList<>(bulletList)) {
+            if (bullet.isPiercing() || bullet.getKind() == BulletKinds.LASER || !bullet.isLife())
+                continue;
+            if (beams.blocksBullet(bullet.getPos(), bullet.getCollisionSize()))
+                bullet.destroySelf();
+        }
         // 条件を満たした弾を削除待ちリストに追加
         for (Bullet bullet : bulletList) {
             // 画面外に出た、または生存していない場合

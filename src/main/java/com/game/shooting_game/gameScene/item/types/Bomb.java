@@ -11,7 +11,7 @@ import com.game.shooting_game.gameScene.bullet.BulletManager;
 import com.game.shooting_game.gameScene.item.ItemManager.ItemKinds;
 import com.game.shooting_game.gameScene.ship.Ship;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
-import com.game.shooting_game.skill.SkillService;
+import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.utils.Vector2;
 
 public class Bomb extends Item {

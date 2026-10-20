@@ -5,10 +5,10 @@ import java.awt.Font;
 import java.awt.Graphics;
 
 import com.game.shooting_game.ShootingGameMain;
-import com.game.shooting_game.utils.Anchor;
-import com.game.shooting_game.utils.Anchor.H;
-import com.game.shooting_game.utils.Anchor.V;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.Anchor;
+import com.game.shooting_game.ui.Anchor.H;
+import com.game.shooting_game.ui.Anchor.V;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 public class BagSceneUI {

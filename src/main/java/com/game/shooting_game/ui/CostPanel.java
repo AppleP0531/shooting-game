@@ -1,5 +1,6 @@
-package com.game.shooting_game.utils;
+package com.game.shooting_game.ui;
 
+import com.game.shooting_game.domain.cost.CostService;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
@@ -23,9 +24,9 @@ import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
-import com.game.shooting_game.data.DataManager.UserData;
-import com.game.shooting_game.skill.SkillService;
-import com.game.shooting_game.skill.SkillService.Cost;
+import com.game.shooting_game.data.UserData;
+import com.game.shooting_game.domain.skill.SkillService;
+import com.game.shooting_game.domain.cost.Cost;
 
 /**
  * 必要コスト(コイン・素材)の表示部品
@@ -123,7 +124,7 @@ public class CostPanel extends JPanel {
         entries.clear();
         if (cost != null) {
             UserData ud = DataManager.getUserData();
-            long coins = ud == null ? 0 : ud.getResources().getCoins();
+            long coins = ud == null ? 0 : CostService.coins();
             entries.add(new Entry(ResourceKinds.COIN, coins, cost.coins()));
 
             // 素材名の順 → レア度の低い順
@@ -133,7 +134,7 @@ public class CostPanel extends JPanel {
                 return c != 0 ? c : a.getKey().getRarity().compareTo(b.getKey().getRarity());
             });
             for (Map.Entry<ResourceKinds, Integer> e : list)
-                entries.add(new Entry(e.getKey(), SkillService.owned(e.getKey()), e.getValue()));
+                entries.add(new Entry(e.getKey(), CostService.owned(e.getKey()), e.getValue()));
         }
         repaint();
     }
@@ -242,7 +243,7 @@ public class CostPanel extends JPanel {
             // 所持数 / 必要数
             g2.setFont(font);
             fm = g2.getFontMetrics();
-            String text = String.format("%,d", e.have()) + " / " + String.format("%,d", e.need());
+            String text = haveText(e.have()) + " / " + String.format("%,d", e.need());
             g2.setColor(e.enough() ? ENOUGH : SHORT);
             g2.drawString(text, ix + iconSize + 10, y + (rowH + fm.getAscent()) / 2 - 2);
         }
@@ -257,11 +258,18 @@ public class CostPanel extends JPanel {
             for (Rarity r : RARITIES)
                 x += chip(g2, x, y, h, rarityName(r), rarityColor(r), Color.BLACK) + 3;
             g2.setColor(new Color(200, 200, 200));
-            String hint = "5個→1つ上のレア度に変換可";
+            String hint = "5個→1つ上";
             g2.drawString(hint, Math.max(x + 6, getWidth() - fm.stringWidth(hint) - 4),
                     y + (h + fm.getAscent()) / 2 - 2);
         }
         g2.dispose();
+    }
+
+    /**
+     * 所持数の表示(管理者モードの無制限は∞)
+     */
+    private static String haveText(long have) {
+        return have >= CostService.UNLIMITED ? "∞" : String.format("%,d", have);
     }
 
     @Override
@@ -273,7 +281,7 @@ public class CostPanel extends JPanel {
                 ResourceKinds k = e.kind();
                 if (k.getResName() == ResourceName.COIN)
                     return "コイン";
-                return k.getResName().getDisplayName() + "(" + rarityName(k.getRarity()) + ")  所持 " + e.have()
+                return k.getResName().getDisplayName() + "(" + rarityName(k.getRarity()) + ")  所持 " + haveText(e.have())
                         + " / 必要 " + e.need();
             }
         }

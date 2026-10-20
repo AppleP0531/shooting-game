@@ -6,9 +6,9 @@ import java.awt.Graphics;
 import com.game.shooting_game.gameScene.item.Item;
 import com.game.shooting_game.gameScene.item.ItemManager.ItemKinds;
 import com.game.shooting_game.gameScene.stage.StageModifiers;
-import com.game.shooting_game.module.ModuleService;
-import com.game.shooting_game.module.ModuleStat;
-import com.game.shooting_game.skill.SkillService;
+import com.game.shooting_game.domain.module.ModuleService;
+import com.game.shooting_game.domain.module.ModuleStat;
+import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.utils.Vector2;
 
 public class Heal extends Item {

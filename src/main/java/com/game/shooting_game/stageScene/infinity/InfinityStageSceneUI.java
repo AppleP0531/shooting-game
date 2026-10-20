@@ -2,8 +2,8 @@ package com.game.shooting_game.stageScene.infinity;
 
 import java.awt.Graphics;
 
-public class infinityStageSceneUI {
-    public infinityStageSceneUI() {
+public class InfinityStageSceneUI {
+    public InfinityStageSceneUI() {
 
     }
 

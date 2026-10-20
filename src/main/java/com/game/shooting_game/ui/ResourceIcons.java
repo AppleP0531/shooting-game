@@ -1,4 +1,4 @@
-package com.game.shooting_game.utils;
+package com.game.shooting_game.ui;
 
 import java.awt.image.BufferedImage;
 import java.util.HashMap;

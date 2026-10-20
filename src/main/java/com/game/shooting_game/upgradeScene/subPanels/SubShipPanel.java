@@ -1,5 +1,7 @@
 package com.game.shooting_game.upgradeScene.subPanels;
 
+import com.game.shooting_game.ui.UIStyle;
+import static com.game.shooting_game.ui.UIStyle.px;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.LinkedHashMap;
@@ -12,11 +14,11 @@ import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 
 import com.game.shooting_game.ShootingGameMain;
-import com.game.shooting_game.skill.SkillService.Cost;
-import com.game.shooting_game.subship.SubShipService;
-import com.game.shooting_game.subship.SubShipService.PartData;
-import com.game.shooting_game.utils.CostPanel;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.domain.cost.Cost;
+import com.game.shooting_game.domain.subship.SubShipService;
+import com.game.shooting_game.domain.subship.SubShipService.PartData;
+import com.game.shooting_game.ui.CostPanel;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 /**
@@ -48,10 +50,6 @@ public class SubShipPanel extends JPanel {
 
     public SubShipPanel() {
         MAIN = ShootingGameMain.getInstance();
-    }
-
-    private static int px(double base) {
-        return (int) (base * ShootingGameMain.getScreenSizeAdj());
     }
 
     /**
@@ -165,16 +163,7 @@ public class SubShipPanel extends JPanel {
     }
 
     private JTextArea createTextArea(double fontSize) {
-        JTextArea area = new JTextArea();
-        area.setEditable(false);
-        area.setFocusable(false);
-        area.setLineWrap(true);
-        area.setWrapStyleWord(true);
-        area.setOpaque(false);
-        area.setForeground(Color.WHITE);
-        area.setCaretColor(new Color(0, 0, 0, 0));
-        area.setFont(new Font("SansSerif", Font.PLAIN, Math.max(9, px(fontSize))));
-        return area;
+        return UIStyle.textArea(fontSize, false);
     }
 
     /**
@@ -225,6 +214,6 @@ public class SubShipPanel extends JPanel {
 
         UIBuilder.openPanel(this, "サブ機工房", true, null);
         // 後ろのスキルツリーが透けて文字が読みにくくならないよう、背景を濃くする
-        setBackground(new Color(0, 0, 0, 245));
+        setBackground(UIStyle.PANEL_BG);
     }
 }

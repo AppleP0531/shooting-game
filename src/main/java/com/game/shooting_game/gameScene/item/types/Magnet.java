@@ -5,7 +5,7 @@ import java.awt.Graphics;
 
 import com.game.shooting_game.gameScene.item.Item;
 import com.game.shooting_game.gameScene.item.ItemManager.ItemKinds;
-import com.game.shooting_game.skill.SkillService;
+import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.utils.Vector2;
 
 public class Magnet extends Item {

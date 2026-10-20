@@ -15,7 +15,7 @@ import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.bagScene.BagManager;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 import com.game.shooting_game.utils.animation.Animation;
 import com.game.shooting_game.utils.animation.AnimationManager;

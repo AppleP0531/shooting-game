@@ -19,8 +19,8 @@ import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.interfaces.Entity;
 import com.game.shooting_game.interfaces.GameObject;
 import com.game.shooting_game.interfaces.Moveable;
-import com.game.shooting_game.utils.Anchor;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.Anchor;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 import com.game.shooting_game.utils.animation.Animation;
 import com.game.shooting_game.utils.animation.AnimationManager;
@@ -57,6 +57,7 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
     protected float alpha; // 透明度
     @Getter
     protected ShipKinds owner; // 弾を発射者
+    @Getter
     protected BulletKinds kind; // 弾の種類
     protected String animationId; // アニメーションId
     protected final BulletConfig config; // この弾の設定
@@ -221,6 +222,13 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
     /**
      * 自身(弾)の削除
      */
+    /**
+     * 貫通弾か(ブロックなどを通り抜けられる)
+     */
+    public boolean isPiercing() {
+        return config.getPierce() > 0;
+    }
+
     public void destroySelf() {
         BM.removeBullet(this);
     }

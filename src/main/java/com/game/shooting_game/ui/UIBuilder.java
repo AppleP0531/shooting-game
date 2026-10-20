@@ -1,5 +1,8 @@
-package com.game.shooting_game.utils;
+package com.game.shooting_game.ui;
 
+import com.game.shooting_game.utils.ANSI;
+import com.game.shooting_game.utils.LogUtils;
+import com.game.shooting_game.utils.Vector2;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -9,6 +12,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,8 +33,8 @@ import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.ShootingGameMain;
-import com.game.shooting_game.utils.Anchor.H;
-import com.game.shooting_game.utils.Anchor.V;
+import com.game.shooting_game.ui.Anchor.H;
+import com.game.shooting_game.ui.Anchor.V;
 import com.game.shooting_game.utils.animation.AnimationManager;
 
 public class UIBuilder extends JPanel {
@@ -176,6 +180,24 @@ public class UIBuilder extends JPanel {
         return button;
     }
 
+    private record Resized(BufferedImage origin, BufferedImage image) {
+    }
+
+    private static final java.util.Map<String, Resized> RESIZE_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * 画像のリサイズ(同じ画像・同じ大きさなら、作ったものを使い回す。毎フレーム呼ばれる描画用)
+     */
+    public static BufferedImage cachedResize(BufferedImage originImage, double imageSize) {
+        String key = System.identityHashCode(originImage) + "@" + Math.round(imageSize);
+        Resized cached = RESIZE_CACHE.get(key);
+        if (cached != null && cached.origin() == originImage)
+            return cached.image();
+        BufferedImage resized = resizeImage(originImage, imageSize);
+        RESIZE_CACHE.put(key, new Resized(originImage, resized));
+        return resized;
+    }
+
     /**
      * 画像のリサイズ
      * 
@@ -319,6 +341,20 @@ public class UIBuilder extends JPanel {
      * @param closeAction クローズボタンのアクション
      */
     public static void openPanel(JPanel p, String title, Boolean focus, CloseBtnAction closeAction) {
+        openPanel(p, title, focus, closeAction, true);
+    }
+
+    /**
+     * パネル (タイトル表示のために上部分に25px相当のパネルが張り付けられます)
+     * 
+     * @param p                  パネル
+     * @param title              タイトル
+     * @param focus              フォーカスの有無(trueのとき、画面全体の操作を止める)
+     * @param closeAction        クローズボタンのアクション
+     * @param closeOnOutsideClick パネルの外側を押したときに、クローズボタンと同じ動きをするか(focusがtrueのときだけ)
+     */
+    public static void openPanel(JPanel p, String title, Boolean focus, CloseBtnAction closeAction,
+            boolean closeOnOutsideClick) {
         p.setLayout(null);
         p.setBackground(new Color(0, 0, 0, 220));
         p.setBorder(BorderFactory.createLineBorder(Color.CYAN, 2));
@@ -357,9 +393,26 @@ public class UIBuilder extends JPanel {
                 shield.setOpaque(false);
 
                 mouseFocus(shield);
+                // パネルの外側(シールド)を押したら、今開いているパネルを閉じる
+                JPanel shieldPanel = shield;
+                shield.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mousePressed(MouseEvent e) {
+                        Object action = shieldPanel.getClientProperty("outsideClick");
+                        if (action instanceof Runnable r)
+                            r.run();
+                    }
+                });
 
                 parent.add(shield);
             }
+            // 今開くパネルに合わせて、外側を押したときの動きを更新する(閉じさせたくないパネルはnull)
+            shield.putClientProperty("outsideClick", closeOnOutsideClick ? (Runnable) () -> {
+                if (closeAction != null)
+                    closeAction.onClick();
+                else
+                    UIBuilder.closePanel(p);
+            } : null);
             shield.setVisible(true);
             parent.setComponentZOrder(shield, 0);
         } else {
@@ -409,17 +462,24 @@ public class UIBuilder extends JPanel {
             String closePanelBtnImagePath = "/static/img/UI/closeImage.png";
             closePanelBtn = UIBuilder.createImageBtn("[UIBuilder]", closePanelBtnImagePath,
                     closePanelBtnSize, "X");
+            // ボタンは親の中で使い回されるので、閉じる対象は押された時点で開いているパネル(ボタンに覚えさせたもの)にする
+            JButton btn = closePanelBtn;
             closePanelBtn.addActionListener(e -> {
+                CloseBtnAction action = (CloseBtnAction) btn.getClientProperty("closeAction");
+                JPanel target = (JPanel) btn.getClientProperty("closeTarget");
                 // クローズアクションが指定されていればそれを実行、指定されていなければパネルを閉じる
-                if (closeAction != null)
-                    closeAction.onClick();
-                else
-                    UIBuilder.closePanel(p);
+                if (action != null)
+                    action.onClick();
+                else if (target != null)
+                    UIBuilder.closePanel(target);
             });
 
             closePanelBtn.setName("closeBtn");
             titlePanel.add(closePanelBtn);
         }
+        // 開くたびに、閉じる対象を今のパネルに更新する
+        closePanelBtn.putClientProperty("closeTarget", p);
+        closePanelBtn.putClientProperty("closeAction", closeAction);
         closePanelBtn.setBounds(
                 (int) titlePanel.getWidth() - (int) closePanelBtn.getWidth(),
                 (int) titlePanelSize / 2 - (int) closePanelBtn.getHeight() / 2,
@@ -561,7 +621,7 @@ public class UIBuilder extends JPanel {
             BufferedImage frameImage = frameImageFrames[image != null
                     ? AnimationManager.getInstance().getCurrentFrameNum(uuid)
                     : 0];
-            frameImage = resizeImage(frameImage, size.getX());
+            frameImage = cachedResize(frameImage, size.getX());
             drawImage(g2, Anchor.CENTER, pos, frameImage);
         } else {
             g2.setColor(new Color(0.5f, 0.5f, 0.5f, 0.5f));
@@ -573,7 +633,7 @@ public class UIBuilder extends JPanel {
 
         // 画像描画
         if (image != null) {
-            image = resizeImage(image, size.getX() * 2 / 3);
+            image = cachedResize(image, size.getX() * 2 / 3);
             drawImage(g2, Anchor.CENTER, pos, image);
         } else {
             // noImageテキスト
@@ -582,21 +642,35 @@ public class UIBuilder extends JPanel {
                     "No Image");
         }
 
-        double spacing = size.getY() / 20;
+        // 個数は、アイコン枠の右下に重ねる(桁が増えても枠からはみ出さないよう文字を縮める)
+        double frameSize = size.getX();
+        double inset = frameSize / 16;
+        String amountText = String.format("%,d", amount);
+        double fontSize = Math.max(9, frameSize / 4.5);
+        Font amountFont = new Font(Font.SANS_SERIF, Font.BOLD, (int) fontSize);
+        FontMetrics fm = g2.getFontMetrics(amountFont);
+        while (fm.stringWidth(amountText) > frameSize * 0.8 && fontSize > 8) {
+            fontSize -= 1;
+            amountFont = new Font(Font.SANS_SERIF, Font.BOLD, (int) fontSize);
+            fm = g2.getFontMetrics(amountFont);
+        }
+        int textW = fm.stringWidth(amountText);
+        int textX = (int) (pos.getX() + frameSize / 2 - inset - textW);
+        int textY = (int) (pos.getY() + frameSize / 2 - inset - fm.getDescent());
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2.setFont(amountFont);
+        g2.setColor(new Color(0, 0, 0, 170));
+        g2.fillRoundRect(textX - 3, textY - fm.getAscent() + 1, textW + 6, fm.getHeight() - 2, 6, 6);
+        g2.setColor(Color.WHITE);
+        g2.drawString(amountText, textX, textY);
 
-        double resNameTextSize = size.getY() / 10;
-        Vector2 resNameTextPos = new Vector2(
+        // 名前は枠の下に小さく出す
+        double nameTextSize = size.getY() / 11;
+        Vector2 nameTextPos = new Vector2(
                 pos.getX(),
-                pos.getY() + imageSize.getY() / 2 + spacing);
-        drawString(g, new Anchor(H.CENTER, V.TOP), resNameTextPos, resNameTextSize, Color.WHITE,
-                Font.PLAIN, resKind.getResName().toString());
-
-        double amountTextSize = size.getY() / 10;
-        Vector2 amountTextPos = new Vector2(
-                resNameTextPos.getX(),
-                resNameTextPos.getY() + resNameTextSize / 2 + spacing);
-        drawString(g, new Anchor(H.CENTER, V.TOP), amountTextPos, amountTextSize, Color.WHITE,
-                Font.PLAIN, String.valueOf(amount));
+                pos.getY() + frameSize / 2 + size.getY() / 40);
+        drawString(g, new Anchor(H.CENTER, V.TOP), nameTextPos, nameTextSize, new Color(210, 215, 225),
+                Font.PLAIN, resKind.getResName().getDisplayName());
     }
 
     /**

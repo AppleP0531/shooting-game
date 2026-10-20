@@ -25,7 +25,7 @@ import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
-import com.game.shooting_game.data.DataManager.UserData;
+import com.game.shooting_game.data.UserData;
 import com.game.shooting_game.gameScene.GameSceneUI.GameSceneUIData;
 import com.game.shooting_game.gameScene.bullet.Bullet;
 import com.game.shooting_game.gameScene.beam.BeamManager;
@@ -43,9 +43,9 @@ import com.game.shooting_game.gameScene.stage.StageManager.StageData;
 import com.game.shooting_game.gameScene.subPanels.PausePanel;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.model.StageRewards;
-import com.game.shooting_game.module.ModuleKind;
-import com.game.shooting_game.module.ModuleService;
-import com.game.shooting_game.skill.SkillService;
+import com.game.shooting_game.domain.module.ModuleKind;
+import com.game.shooting_game.domain.module.ModuleService;
+import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.LogUtils;
@@ -74,6 +74,8 @@ public final class GameManager extends JPanel implements Manager {
     private boolean gameover;
     @Setter
     private boolean pause;
+    // setup()が終わるまでupdate()を進めない(途中で進むと、前回の状態のまま船が動いて弾を撃ってしまう)
+    private volatile boolean setupDone = false;
     @Getter
     @Setter
     private int killCountSinceLastLevelUp; // 最近のレベルアップドロップからのキル数
@@ -148,6 +150,7 @@ public final class GameManager extends JPanel implements Manager {
 
     @Override
     public void setup() {
+        setupDone = false;
         LogUtils.systemLog(
                 "[INFO]",
                 component,
@@ -170,10 +173,13 @@ public final class GameManager extends JPanel implements Manager {
         }
 
         animation("start");
+        setupDone = true;
     }
 
     @Override
     public void update(double dt) {
+        if (!setupDone)
+            return;
         if (!pause) {
             switch (animationName) {
                 case "start" -> {

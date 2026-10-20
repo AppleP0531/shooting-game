@@ -1,5 +1,6 @@
 package com.game.shooting_game.lobbyScene;
 
+import com.game.shooting_game.ui.ModuleIcons;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -17,18 +18,18 @@ import com.game.shooting_game.gameScene.ship.ShipFactory;
 import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.gameScene.ship.types.Player;
-import com.game.shooting_game.module.Module;
-import com.game.shooting_game.module.ModuleService;
-import com.game.shooting_game.module.ModuleStat;
-import com.game.shooting_game.skill.SkillService;
-import com.game.shooting_game.skill.UnitService;
-import com.game.shooting_game.subship.SubShipRenderer;
-import com.game.shooting_game.subship.SubShipService;
-import com.game.shooting_game.utils.CostPanel;
-import com.game.shooting_game.utils.Anchor;
-import com.game.shooting_game.utils.Anchor.H;
-import com.game.shooting_game.utils.Anchor.V;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.domain.module.Module;
+import com.game.shooting_game.domain.module.ModuleService;
+import com.game.shooting_game.domain.module.ModuleStat;
+import com.game.shooting_game.domain.skill.SkillService;
+import com.game.shooting_game.domain.unit.UnitService;
+import com.game.shooting_game.domain.subship.SubShipRenderer;
+import com.game.shooting_game.domain.subship.SubShipService;
+import com.game.shooting_game.ui.CostPanel;
+import com.game.shooting_game.ui.Anchor;
+import com.game.shooting_game.ui.Anchor.H;
+import com.game.shooting_game.ui.Anchor.V;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 public class LobbySceneUI {
@@ -37,9 +38,14 @@ public class LobbySceneUI {
     private final BulletManager BM;
     private final ShipManager SHIP_M;
 
+    private final java.util.Map<String, BufferedImage> trimmedImages = new java.util.HashMap<>(); // 余白を除いた機体画像
     private String latestViewingShipName;
     private double levelUpInterval; // 強化の間隔
     private double levelUpIntervalTimer; // タイマー
+
+    private static final double MESSAGE_DURATION = 2.5; // 通知を出し続ける秒数
+    private String message; // 画面に出す通知(なければnull)
+    private double messageTimer; // 通知の残り時間
 
     public record HangarSceneUIData(
             String[] ships,
@@ -74,6 +80,7 @@ public class LobbySceneUI {
         SHIP_M.getEnemyList().getFirst().setHp(Double.POSITIVE_INFINITY);
         levelUpIntervalTimer = levelUpInterval;
         latestViewingShipName = null;
+        message = null;
     }
 
     /**
@@ -82,6 +89,12 @@ public class LobbySceneUI {
      * @param dt
      */
     public void update(double dt) {
+        if (message != null) {
+            messageTimer -= dt;
+            if (messageTimer <= 0)
+                message = null;
+        }
+
         levelUpIntervalTimer -= dt;
         if (levelUpIntervalTimer <= 0) {
             levelUpIntervalTimer = levelUpInterval;
@@ -108,6 +121,45 @@ public class LobbySceneUI {
         drawTabBar(g, uiData.ships.length, uiData.ind);
         drawUserLevel(g);
         drawEquipment(g);
+        drawMessage(g);
+    }
+
+    /**
+     * 画面中央に通知を出す(一定時間で消える)
+     *
+     * @param text 表示する文章
+     */
+    public void showMessage(String text) {
+        message = text;
+        messageTimer = MESSAGE_DURATION;
+    }
+
+    /**
+     * 通知の描画(最後の0.5秒でフェードアウト)
+     */
+    private void drawMessage(Graphics g) {
+        if (message == null)
+            return;
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        float alpha = (float) Math.min(1.0, messageTimer / 0.5);
+
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2.setFont(new Font("SansSerif", Font.BOLD, Math.max(10, (int) (14 * adj))));
+        int textW = g2.getFontMetrics().stringWidth(message);
+        int padX = (int) (14 * adj);
+        int boxH = (int) (32 * adj);
+        int boxW = textW + 2 * padX;
+        int bx = MAIN.getWidth() / 2 - boxW / 2;
+        int by = (int) (MAIN.getHeight() * 0.62);
+
+        g2.setColor(new Color(0, 0, 0, (int) (200 * alpha)));
+        g2.fillRoundRect(bx, by, boxW, boxH, 12, 12);
+        g2.setColor(new Color(255, 120, 120, (int) (230 * alpha)));
+        g2.drawRoundRect(bx, by, boxW, boxH, 12, 12);
+        g2.setColor(new Color(255, 255, 255, (int) (255 * alpha)));
+        g2.drawString(message, bx + padX, by + boxH / 2 + g2.getFontMetrics().getAscent() / 2 - 2);
+        g2.dispose();
     }
 
     /**
@@ -201,6 +253,28 @@ public class LobbySceneUI {
     }
 
     /**
+     * 透明な余白を除いた機体画像(アイコンに大きく収めるため)
+     */
+    private BufferedImage trimmed(String shipId, BufferedImage src) {
+        return trimmedImages.computeIfAbsent(shipId, k -> {
+            int minX = src.getWidth(), minY = src.getHeight(), maxX = -1, maxY = -1;
+            for (int yy = 0; yy < src.getHeight(); yy++) {
+                for (int xx = 0; xx < src.getWidth(); xx++) {
+                    if ((src.getRGB(xx, yy) >>> 24) > 24) {
+                        minX = Math.min(minX, xx);
+                        minY = Math.min(minY, yy);
+                        maxX = Math.max(maxX, xx);
+                        maxY = Math.max(maxY, yy);
+                    }
+                }
+            }
+            if (maxX < minX || maxY < minY)
+                return src;
+            return src.getSubimage(minX, minY, maxX - minX + 1, maxY - minY + 1);
+        });
+    }
+
+    /**
      * 現在の装備一覧の描画(左上のカード)
      * 自機(Lv・★)、サブ機(左下と右上にずらして2機)、装甲(HP)、火力、無敵時間、暴走時間、モジュール枠。
      * モジュールは装着中のものを種類の文字とレア度の色で出す。
@@ -219,7 +293,7 @@ public class LobbySceneUI {
         int x = (int) (6 * adj);
         int y = (int) (30 * adj);
         int w = (int) (150 * adj);
-        int h = (int) (238 * adj);
+        int h = (int) (226 * adj);
         int pad = (int) (6 * adj);
 
         g2.setColor(new Color(0, 0, 0, 150));
@@ -240,8 +314,8 @@ public class LobbySceneUI {
         g2.fillRoundRect(x + pad, iy, icon, icon, 8, 8);
         BufferedImage[] frames = SHIP_M.getShipImage().get(shipId);
         if (frames != null && frames.length > 0 && frames[0] != null) {
-            BufferedImage img = frames[0];
-            double k = Math.min((double) icon / img.getWidth(), (double) icon / img.getHeight()) * 0.9;
+            BufferedImage img = trimmed(shipId, frames[0]);
+            double k = Math.min((double) icon / img.getWidth(), (double) icon / img.getHeight()) * 0.92;
             int dw = (int) (img.getWidth() * k);
             int dh = (int) (img.getHeight() * k);
             g2.drawImage(img, x + pad + (icon - dw) / 2, iy + (icon - dh) / 2, dw, dh, null);
@@ -257,9 +331,9 @@ public class LobbySceneUI {
 
         // --- サブ機(左下と右上にずらして置く) ---
         int sy = iy + icon + (int) (6 * adj);
-        int cell = (int) (50 * adj);
+        int cell = icon; // 自機のアイコンと同じ大きさにそろえる
         g2.setColor(new Color(255, 255, 255, 20));
-        g2.fillRoundRect(x + pad, sy, cell + (int) (8 * adj), cell, 8, 8);
+        g2.fillRoundRect(x + pad, sy, cell, cell, 8, 8);
         double time = System.nanoTime() / 1e9;
         boolean equipped = SubShipService.isEquipped() && SubShipService.hullTier() > 0;
         if (equipped) {
@@ -268,20 +342,25 @@ public class LobbySceneUI {
             int engine = SubShipService.getTier("ENGINE");
             int core = SubShipService.getTier("CORE");
             int emitter = SubShipService.getTier("EMITTER");
-            double sc = 0.55;
-            // 左機は左下、右機は右上
-            SubShipRenderer.draw(g2, x + pad + cell * 0.30, sy + cell * 0.68, true,
+            double sc = 0.30 * cell / (38 * adj); // 枠の中に収まる大きさ
+            // 左機は左下、右機は右上(枠の外には描かない)
+            Graphics2D clipped = (Graphics2D) g2.create();
+            clipped.clipRect(x + pad, sy, cell, cell);
+            SubShipRenderer.draw(clipped, x + pad + cell * 0.30, sy + cell * 0.68, true,
                     hull, cannon, engine, core, emitter, ColorMode.BLUE, time, 1f, sc);
-            SubShipRenderer.draw(g2, x + pad + cell * 0.30 + cell * 0.45, sy + cell * 0.32, false,
+            SubShipRenderer.draw(clipped, x + pad + cell * 0.30 + cell * 0.45, sy + cell * 0.32, false,
                     hull, cannon, engine, core, emitter, ColorMode.BLUE, time, 1f, sc);
+            clipped.dispose();
         } else {
             g2.setFont(small);
             g2.setColor(new Color(150, 150, 150));
-            g2.drawString("なし", x + pad + (int) (14 * adj), sy + cell / 2 + (int) (4 * adj));
+            g2.drawString("なし", x + pad + (int) (10 * adj), sy + cell / 2 + (int) (4 * adj));
         }
+        g2.setColor(new Color(255, 214, 80, 200));
+        g2.drawRoundRect(x + pad, sy, cell, cell, 8, 8);
         g2.setFont(small);
         g2.setColor(Color.WHITE);
-        int tx = x + pad + cell + (int) (12 * adj);
+        int tx = x + pad + cell + (int) (6 * adj);
         g2.drawString("サブ機", tx, sy + (int) (14 * adj));
         g2.setColor(equipped ? new Color(170, 230, 255) : new Color(150, 150, 150));
         g2.drawString(equipped ? SubShipService.hullLabel().replace(" ", " ") : "未装備", tx,
@@ -328,14 +407,7 @@ public class LobbySceneUI {
                 g2.setColor(new Color(255, 255, 255, 90));
                 g2.drawRoundRect(sx, my - 1, slot, slot, 4, 4);
             } else {
-                Color rc = CostPanel.rarityColor(m.getRarity());
-                g2.setColor(new Color(rc.getRed(), rc.getGreen(), rc.getBlue(), 90));
-                g2.fillRoundRect(sx, my - 1, slot, slot, 4, 4);
-                g2.setColor(rc);
-                g2.drawRoundRect(sx, my - 1, slot, slot, 4, 4);
-                g2.setFont(small);
-                g2.setColor(Color.WHITE);
-                g2.drawString(m.getKind().getShortName(), sx + (int) (2 * adj), my + (int) (10 * adj));
+                ModuleIcons.draw(g2, m, sx, my - 1, slot);
             }
         }
         g2.dispose();

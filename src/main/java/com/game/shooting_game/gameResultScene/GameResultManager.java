@@ -11,7 +11,7 @@ import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.gameResultScene.subPanels.RewardListPanel;
 import com.game.shooting_game.interfaces.Manager;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 public final class GameResultManager extends JPanel implements Manager {

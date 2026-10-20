@@ -14,7 +14,7 @@ import javax.swing.Timer;
 
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
-import com.game.shooting_game.subship.SubShipService;
+import com.game.shooting_game.domain.subship.SubShipService;
 
 /**
  * サブ機のプレビュー
@@ -133,7 +133,7 @@ public class SubShipPreview extends JPanel {
         double y = cy + 8 * adj;
         // 完成していない(必須パーツが足りない)ときも、制作済みの分は表示する
         for (boolean left : new boolean[] { true, false })
-            com.game.shooting_game.subship.SubShipRenderer.draw(g2,
+            com.game.shooting_game.domain.subship.SubShipRenderer.draw(g2,
                     left ? cx - off : cx + off, y, left,
                     t[0], t[1], t[2], t[3], t[4], ColorMode.BLUE, time, alpha, 0.8);
     }

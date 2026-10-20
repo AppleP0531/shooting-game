@@ -1,5 +1,6 @@
-package com.game.shooting_game.subship;
+package com.game.shooting_game.domain.subship;
 
+import com.game.shooting_game.domain.cost.CostService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
@@ -18,9 +19,9 @@ import com.game.shooting_game.ResourceManager.ResourceKinds.Family;
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.data.DataManager;
-import com.game.shooting_game.data.DataManager.UserData;
-import com.game.shooting_game.skill.SkillService;
-import com.game.shooting_game.skill.SkillService.Cost;
+import com.game.shooting_game.data.UserData;
+import com.game.shooting_game.domain.skill.SkillService;
+import com.game.shooting_game.domain.cost.Cost;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
 
@@ -212,6 +213,9 @@ public final class SubShipService {
         return t.getParams() == null ? def : t.getParams().getOrDefault(key, def);
     }
 
+    /** ゲーム中・ロビーのプレビューで、サブ機を自機に対して小さく描く倍率(工房のプレビューは大きく見せる) */
+    public static final double WORLD_SCALE = 0.5;
+
     /**
      * フレームのMkごとの大きさ倍率
      */
@@ -273,7 +277,7 @@ public final class SubShipService {
 
     public static boolean canAfford(Cost cost) {
         // コインと素材の所持確認は強化と共通
-        return cost != null && SkillService.canAfford(cost);
+        return cost != null && CostService.canAfford(cost);
     }
 
     /**
@@ -289,7 +293,7 @@ public final class SubShipService {
 
         boolean wasAssembled = isAssembled();
 
-        SkillService.pay(ud, cost);
+        CostService.pay(ud, cost);
         ud.getSubShipParts().put(kind, getTier(kind) + 1);
 
         // フレームを強化したときは、新しいフレームを使う
