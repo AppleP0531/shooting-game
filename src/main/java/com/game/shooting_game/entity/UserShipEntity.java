@@ -27,6 +27,13 @@ public class UserShipEntity {
 
     private String shipId;
 
+    private int unitLevel = 1; // 機体レベル
+    private int stars = 0; // ★
+    private int copies = 0; // 予備の同一機体
+
+    private String researchSkill; // 研究中のスキル名(なければnull)
+    private long researchFinishAt = 0; // 研究が終わる時刻(エポックミリ秒)
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_ship_upgrades", joinColumns = @JoinColumn(name = "ship_entity_id"))
     @MapKeyColumn(name = "upgrade_name")

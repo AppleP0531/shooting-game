@@ -8,10 +8,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
@@ -19,9 +20,11 @@ import lombok.Getter;
 
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
+import com.game.shooting_game.upgradeScene.SkillTreeLayout;
+import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.upgradeScene.UpgradeManager;
 import com.game.shooting_game.upgradeScene.UpgradeManager.SkillTreeData;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 public class SkillTreeBtnPanel extends JPanel {
@@ -40,6 +43,8 @@ public class SkillTreeBtnPanel extends JPanel {
     private Vector2 skillTreeBtnOrigin; // 基準点の位置
 
     private Map<String, JButton> buttonMap;
+    private Map<String, double[]> layoutCache; // 機体ごとの模様の配置
+    private String layoutShip; // layoutCache を作ったときの機体
 
     public SkillTreeBtnPanel() {
         MAIN = ShootingGameMain.getInstance();
@@ -73,7 +78,7 @@ public class SkillTreeBtnPanel extends JPanel {
                 if (e.getPreciseWheelRotation() < 0) {
                     scale = Math.min(scale + zoomAmount, 2);
                 } else {
-                    scale = Math.max(scale - zoomAmount, 0.5);
+                    scale = Math.max(scale - zoomAmount, 0.4);
                 }
 
                 reload();
@@ -85,12 +90,15 @@ public class SkillTreeBtnPanel extends JPanel {
      * UIコンポーネントの初期化
      */
     public void initComponents() {
-        panelSize = new Vector2(MAIN.getWidth(), MAIN.getHeight() * 5 / 6);
+        // 画面下のボタン列(CONVERT / UNIT / MODULE)に重ならないよう、その上までをスキルツリーの領域にする
+        double top = MAIN.getHeight() / 12.0;
+        double bottom = MAIN.getHeight() - 116 * ShootingGameMain.getScreenSizeAdj();
+        panelSize = new Vector2(MAIN.getWidth(), bottom - top);
         setLayout(null);
         setOpaque(false);
         setBounds(
                 MAIN.getWidth() / 2 - (int) panelSize.getX() / 2,
-                MAIN.getHeight() / 2 - (int) panelSize.getY() / 2,
+                (int) top,
                 (int) panelSize.getX(), (int) panelSize.getY());
 
         skillDetailPanel.initComponents();
@@ -101,6 +109,13 @@ public class SkillTreeBtnPanel extends JPanel {
      */
     public void setup() {
         skillTreeBtnOrigin = new Vector2(panelSize.getX() / 2, panelSize.getY() / 2);
+
+        // 最初は、ツリー全体が画面に収まる大きさにする(ホイールで拡大・縮小できる)
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        double[] ext = SkillTreeLayout.extent(currentLayout());
+        double fitX = (panelSize.getX() / 2 - 28 * adj) / Math.max(1, ext[0] * adj);
+        double fitY = (panelSize.getY() / 2 - 28 * adj) / Math.max(1, ext[1] * adj);
+        scale = Math.max(0.45, Math.min(1.0, Math.min(fitX, fitY)));
 
         drawBtn();
         drawPanel();
@@ -128,6 +143,9 @@ public class SkillTreeBtnPanel extends JPanel {
                 continue;
             JButton parent = buttonMap.get(data.getRootNode());
             JButton child = buttonMap.get(data.getName());
+            // 画像キャッシュにないスキルはボタンが作られないので飛ばす
+            if (parent == null || child == null)
+                continue;
 
             // 親ボタンの中心座標
             Vector2 parentPos = new Vector2(
@@ -138,11 +156,7 @@ public class SkillTreeBtnPanel extends JPanel {
                     panelPos.getX() + child.getX() + child.getWidth() / 2,
                     panelPos.getY() + child.getY() + child.getHeight() / 2);
 
-            String nowShip = DataManager.getUserData().getSelectedShip();
-            int upgradeLevel = DataManager.getUserData().getShips().get(nowShip)
-                    .getUpgrades().getOrDefault(data.getRootNode(), 0);
-
-            if (data.getName().equals("Origin") || upgradeLevel > 0) {
+            if (data.getName().equals("Origin") || SkillService.isUnlocked(data.getName())) {
                 // パネルのY座標の範囲
                 int panelTop = (int) panelPos.getY();
                 int panelBottom = panelTop + getHeight();
@@ -158,6 +172,18 @@ public class SkillTreeBtnPanel extends JPanel {
             }
         }
 
+        // 研究中なら、パネル上部に研究中のスキルと残り時間を出す
+        String researching = SkillService.researchingSkill();
+        if (researching != null) {
+            SkillTreeData rd = SkillService.find(researching);
+            String text = "研究中: " + (rd != null ? rd.getTitle() : researching)
+                    + "  残り " + SkillService.formatTime(SkillService.researchRemaining());
+            g2.setFont(g2.getFont().deriveFont(java.awt.Font.BOLD,
+                    (float) (13 * ShootingGameMain.getScreenSizeAdj())));
+            g2.setColor(new Color(255, 214, 80));
+            g2.drawString(text, getX() + 8, getY() + (int) (18 * ShootingGameMain.getScreenSizeAdj()));
+        }
+
         g2.setClip(null);
     }
 
@@ -167,6 +193,21 @@ public class SkillTreeBtnPanel extends JPanel {
     public void reload() {
         drawBtn();
         drawPanel();
+    }
+
+    /**
+     * いまの機体の模様での、各ボタンの位置(基準点からのずれ)。機体が変わったら作り直す
+     */
+    private Map<String, double[]> currentLayout() {
+        String ship = DataManager.getUserData() == null ? null : DataManager.getUserData().getSelectedShip();
+        if (layoutCache == null || !java.util.Objects.equals(ship, layoutShip)) {
+            List<SkillTreeLayout.Node> nodes = new ArrayList<>();
+            for (SkillTreeData d : UM.getSkillTreeConfigMap())
+                nodes.add(new SkillTreeLayout.Node(d.getName(), d.getRootNode(), d.getPos()));
+            layoutCache = SkillTreeLayout.compute(SkillTreeLayout.patternFor(ship), nodes);
+            layoutShip = ship;
+        }
+        return layoutCache;
     }
 
     /**
@@ -183,28 +224,25 @@ public class SkillTreeBtnPanel extends JPanel {
         if (skillTreeBtnOrigin == null)
             skillTreeBtnOrigin = new Vector2(this.getWidth() / 2, this.getHeight() / 2);
 
+        // 機体ごとの模様で、各ボタンの位置を決める
+        Map<String, double[]> layout = currentLayout();
+
         // スキルツリーボタンの追加
         for (SkillTreeData data : UM.getSkillTreeConfigMap()) {
             JButton button = buttonMap.get(data.getName());
+            if (button == null)
+                continue;
 
             button.setVisible(false);
 
-            // ボタン同士の距離
-            double radius = data.getDist() * scale * ShootingGameMain.getScreenSizeAdj();
-            Vector2 buttonPos;
-            // 各ボタンの位置設定
-            if (data.getName().equals("Origin")) {
-                buttonPos = new Vector2(
-                        skillTreeBtnOrigin.getX() - button.getWidth() / 2,
-                        skillTreeBtnOrigin.getY() - button.getHeight() / 2);
-            } else {
-                // 子要素の円形配置用(5個)
-                double ang = Math.PI * 2 / 5;
-                JButton parentBtn = buttonMap.get(data.getRootNode());
-                buttonPos = new Vector2(
-                        parentBtn.getX() + Math.cos(ang * data.getPos() - Math.PI / 2) * radius,
-                        parentBtn.getY() + Math.sin(ang * data.getPos() - Math.PI / 2) * radius);
-            }
+            // 各ボタンの位置設定(機体ごとの模様。基準点からのずれに画面倍率とズームをかける)
+            double[] off = layout.get(data.getName());
+            if (off == null)
+                continue;
+            double k = scale * ShootingGameMain.getScreenSizeAdj();
+            Vector2 buttonPos = new Vector2(
+                    skillTreeBtnOrigin.getX() + off[0] * k - button.getWidth() / 2,
+                    skillTreeBtnOrigin.getY() + off[1] * k - button.getHeight() / 2);
             // 位置
             int x = (int) buttonPos.getX();
             int y = (int) buttonPos.getY();
@@ -221,12 +259,8 @@ public class SkillTreeBtnPanel extends JPanel {
             if (isSelfInPanel || isParentInPanel) {
                 // 基準ボタンではない時
                 if (!data.getName().equals("Origin")) {
-                    String nowShip = DataManager.getUserData().getSelectedShip();
-                    int upgradeLevel = DataManager.getUserData().getShips().get(nowShip).getUpgrades()
-                            .getOrDefault(data.getRootNode(), 0);
-
-                    // ルートノードが未強化なら非表示のままにする
-                    if (upgradeLevel == 0)
+                    // 親が未強化(解放条件未達)なら非表示のままにする
+                    if (!SkillService.isUnlocked(data.getName()))
                         continue;
                 }
 
@@ -245,11 +279,16 @@ public class SkillTreeBtnPanel extends JPanel {
 
         for (Map.Entry<String, BufferedImage> entry : UM.getSkillTreeImageCache().entrySet()) {
             String skillName = entry.getKey();
-            BufferedImage image = entry.getValue();
+            BufferedImage glyph = entry.getValue();
+            SkillTreeData sd0 = SkillService.find(skillName);
+            int maxLv = sd0 == null ? 1 : sd0.getMaxLevel();
+            // 模様の画像があれば、枠とレベルの札を重ねたボタン画像にする(最大レベルは金の枠)
+            BufferedImage image = glyph == null ? null
+                    : SkillIconComposer.compose(glyph, SkillService.getLevel(skillName), maxLv, "Origin".equals(skillName));
 
             Vector2 skillTreeBtnSize = new Vector2(
-                    30 * scale * ShootingGameMain.getScreenSizeAdj(),
-                    30 * scale * ShootingGameMain.getScreenSizeAdj());
+                    44 * scale * ShootingGameMain.getScreenSizeAdj(),
+                    44 * scale * ShootingGameMain.getScreenSizeAdj());
             JButton button = UIBuilder.createImageBtn(
                     component, image, skillTreeBtnSize, skillName);
 
@@ -263,12 +302,21 @@ public class SkillTreeBtnPanel extends JPanel {
 
             // ボタン画像のセット、画像がなければテキストをセット
             if (button.getIcon() != null) {
-                button.setIcon(new ImageIcon(image));
                 button.setBorderPainted(false);
                 button.setContentAreaFilled(false);
                 button.setText("");
-            } else
-                button.setText(skillName);
+                SkillTreeData tip = SkillService.find(skillName);
+                button.setToolTipText((tip != null && tip.getTitle() != null ? tip.getTitle() : skillName)
+                        + (maxLv > 1 ? "  Lv" + SkillService.getLevel(skillName) + "/" + maxLv : ""));
+            } else {
+                // 画像がないときは短い表示名と現在のレベルを表示
+                SkillTreeData sd = SkillService.find(skillName);
+                String label = sd != null && sd.getTitle() != null ? sd.getTitle() : skillName;
+                int lv = SkillService.getLevel(skillName);
+                button.setText(lv > 0 ? "<html><center>" + label + "<br>Lv" + lv + "</center></html>" : label);
+                button.setFont(button.getFont().deriveFont((float) (10 * scale * ShootingGameMain.getScreenSizeAdj())));
+                button.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            }
 
             buttonMap.put(skillName, button);
         }

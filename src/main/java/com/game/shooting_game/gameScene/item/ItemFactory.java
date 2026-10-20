@@ -5,8 +5,12 @@ import java.util.Map;
 import java.util.Random;
 
 import com.game.shooting_game.gameScene.item.ItemManager.ItemKinds;
+import com.game.shooting_game.gameScene.item.types.Bomb;
+import com.game.shooting_game.gameScene.item.types.Freeze;
 import com.game.shooting_game.gameScene.item.types.Heal;
 import com.game.shooting_game.gameScene.item.types.LevelUp;
+import com.game.shooting_game.gameScene.item.types.Magnet;
+import com.game.shooting_game.gameScene.item.types.Shield;
 import com.game.shooting_game.utils.Vector2;
 
 public class ItemFactory {
@@ -17,6 +21,8 @@ public class ItemFactory {
         ITEM_DROP_TABLE.put(ItemKinds.HEAL, 2.0); // 回復のドロップ率
         ITEM_DROP_TABLE.put(ItemKinds.LEVEL_UP, 5.0); // レベルアップのドロップ率
         ITEM_DROP_TABLE.put(ItemKinds.SHIELD, 3.0); // シールドのドロップ率
+        ITEM_DROP_TABLE.put(ItemKinds.MAGNET, 1.5); // マグネットのドロップ率
+        // BOMB と FREEZE はショップ専売(ドロップしない)
     }
 
     /**
@@ -32,6 +38,10 @@ public class ItemFactory {
         return switch (kind) {
             case ItemKinds.HEAL -> new Heal(pos);
             case ItemKinds.LEVEL_UP -> new LevelUp(pos);
+            case ItemKinds.SHIELD -> new Shield(pos);
+            case ItemKinds.BOMB -> new Bomb(pos);
+            case ItemKinds.MAGNET -> new Magnet(pos);
+            case ItemKinds.FREEZE -> new Freeze(pos);
             case null -> null;
             default -> null;
         };
@@ -48,7 +58,11 @@ public class ItemFactory {
         return switch (kind) {
             case HEAL -> new Heal(pos);
             case LEVEL_UP -> new LevelUp(pos);
-            default -> null;
+            case SHIELD -> new Shield(pos);
+            case BOMB -> new Bomb(pos);
+            case MAGNET -> new Magnet(pos);
+            case FREEZE -> new Freeze(pos);
+            case SKIP_TICKET -> null;
         };
     }
 

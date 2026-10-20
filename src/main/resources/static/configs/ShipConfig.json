@@ -2,16 +2,26 @@
   "OBJECT": {
     "shield": {
       "datas": {
-        "imagePath": "/player/shield.png",
-        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "imagePath": "/player/Shield.png",
+        "sheets": [
+          {
+            "grids": [1, 1],
+            "useCount": 1
+          }
+        ],
         "frameRate": 0.1,
-        "imageSize": 80
+        "imageSize": 50
       }
     },
     "explosion": {
       "datas": {
-        "imagePath": "/player/explosion.png",
-        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "imagePath": "/player/Explosion.png",
+        "sheets": [
+          {
+            "grids": [1, 1],
+            "useCount": 1
+          }
+        ],
         "frameRate": 0.1,
         "imageSize": 80
       }
@@ -22,13 +32,22 @@
       "datas": {
         "imagePath": "/player/Ship1.png",
         "sheets": [
-          { "grids": [1, 1], "useCount": 1 },
-          { "grids": [0, 0], "useCount": 0 },
-          { "grids": [0, 0], "useCount": 0 }
+          {
+            "grids": [1, 1],
+            "useCount": 1
+          },
+          {
+            "grids": [0, 0],
+            "useCount": 0
+          },
+          {
+            "grids": [0, 0],
+            "useCount": 0
+          }
         ],
         "frameRate": 0.1,
         "imageSize": 30,
-        "collisionSize": 40,
+        "collisionSize": 12,
         "speed": 250
       },
       "Lv0": [
@@ -62,14 +81,14 @@
           "bulletId": 1,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": 10
+          "vecAdj": 8
         },
         {
           "bulletKind": "STRAIGHT",
           "bulletId": 1,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": -10
+          "vecAdj": -8
         }
       ],
       "Lv3": [
@@ -78,14 +97,14 @@
           "bulletId": 1,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": 20
+          "vecAdj": 16
         },
         {
           "bulletKind": "STRAIGHT",
           "bulletId": 1,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": -20
+          "vecAdj": -16
         }
       ],
       "Lv4": [
@@ -94,14 +113,14 @@
           "bulletId": 1,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": 30
+          "vecAdj": 24
         },
         {
           "bulletKind": "STRAIGHT",
           "bulletId": 1,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": -30
+          "vecAdj": -24
         }
       ],
       "Lv5": []
@@ -111,13 +130,22 @@
         "imagePath": "/player/Ship2.png",
         "cost": 10000,
         "sheets": [
-          { "grids": [1, 1], "useCount": 1 },
-          { "grids": [0, 0], "useCount": 0 },
-          { "grids": [0, 0], "useCount": 0 }
+          {
+            "grids": [1, 1],
+            "useCount": 1
+          },
+          {
+            "grids": [0, 0],
+            "useCount": 0
+          },
+          {
+            "grids": [0, 0],
+            "useCount": 0
+          }
         ],
         "frameRate": 0.1,
         "imageSize": 30,
-        "collisionSize": 40,
+        "collisionSize": 12,
         "speed": 250
       },
       "Lv0": [
@@ -133,19 +161,37 @@
         {
           "bulletKind": "STRAIGHT",
           "bulletId": 2,
-          "pos": [4, 0],
+          "pos": [5, 0],
           "bulletVecRef": "up",
           "vecAdj": 0
         },
         {
           "bulletKind": "STRAIGHT",
           "bulletId": 2,
-          "pos": [-4, 0],
+          "pos": [-5, 0],
           "bulletVecRef": "up",
           "vecAdj": 0
         }
       ],
       "Lv2": [
+        {
+          "bulletKind": "WAVE",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0,
+          "direction": "RIGHT"
+        },
+        {
+          "bulletKind": "WAVE",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0,
+          "direction": "LEFT"
+        }
+      ],
+      "Lv3": [
         {
           "bulletKind": "STRAIGHT",
           "bulletId": 3,
@@ -161,7 +207,25 @@
           "vecAdj": -10
         }
       ],
-      "Lv3": [
+      "Lv4": [
+        {
+          "bulletKind": "WAVE",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 14,
+          "direction": "RIGHT"
+        },
+        {
+          "bulletKind": "WAVE",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -14,
+          "direction": "LEFT"
+        }
+      ],
+      "Lv5": [
         {
           "bulletKind": "STRAIGHT",
           "bulletId": 3,
@@ -176,37 +240,29 @@
           "bulletVecRef": "up",
           "vecAdj": -20
         }
-      ],
-      "Lv4": [
-        {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 3,
-          "pos": [0, 0],
-          "bulletVecRef": "up",
-          "vecAdj": 30
-        },
-        {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 3,
-          "pos": [0, 0],
-          "bulletVecRef": "up",
-          "vecAdj": -30
-        }
-      ],
-      "Lv5": []
+      ]
     },
     "Ship3": {
       "datas": {
         "imagePath": "/player/Ship3.png",
         "cost": 50000,
         "sheets": [
-          { "grids": [1, 1], "useCount": 1 },
-          { "grids": [0, 0], "useCount": 0 },
-          { "grids": [0, 0], "useCount": 0 }
+          {
+            "grids": [1, 1],
+            "useCount": 1
+          },
+          {
+            "grids": [0, 0],
+            "useCount": 0
+          },
+          {
+            "grids": [0, 0],
+            "useCount": 0
+          }
         ],
         "frameRate": 0.1,
         "imageSize": 30,
-        "collisionSize": 40,
+        "collisionSize": 12,
         "speed": 250
       },
       "Lv0": [
@@ -222,14 +278,14 @@
         {
           "bulletKind": "STRAIGHT",
           "bulletId": 4,
-          "pos": [4, 0],
+          "pos": [5, 0],
           "bulletVecRef": "up",
           "vecAdj": 0
         },
         {
           "bulletKind": "STRAIGHT",
           "bulletId": 4,
-          "pos": [-4, 0],
+          "pos": [-5, 0],
           "bulletVecRef": "up",
           "vecAdj": 0
         }
@@ -240,62 +296,111 @@
           "bulletId": 5,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": 10
+          "vecAdj": 8
         },
         {
           "bulletKind": "STRAIGHT",
           "bulletId": 5,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": -10
+          "vecAdj": -8
         }
       ],
       "Lv3": [
         {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 5,
+          "bulletKind": "TRACKING",
+          "bulletId": 1,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": 20
+          "vecAdj": 30,
+          "cooldown": 0.8
+        },
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -30,
+          "cooldown": 0.8
         },
         {
           "bulletKind": "STRAIGHT",
           "bulletId": 5,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": -20
+          "vecAdj": 16
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -16
         }
       ],
       "Lv4": [
         {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 5,
+          "bulletKind": "TRACKING",
+          "bulletId": 1,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": 30
+          "vecAdj": 60,
+          "cooldown": 0.8
+        },
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -60,
+          "cooldown": 0.8
         },
         {
           "bulletKind": "STRAIGHT",
           "bulletId": 5,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": -30
+          "vecAdj": 24
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -24
         }
       ],
-      "Lv5": []
+      "Lv5": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 10,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 0
+        }
+      ]
     },
     "Ship4": {
       "datas": {
         "imagePath": "/player/Ship4.png",
         "cost": 1000000,
         "sheets": [
-          { "grids": [4, 2], "useCount": 6 },
-          { "grids": [4, 3], "useCount": 10 },
-          { "grids": [4, 2], "useCount": 6 }
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          },
+          {
+            "grids": [4, 3],
+            "useCount": 10
+          },
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
         ],
         "frameRate": 0.1,
         "imageSize": 80,
-        "collisionSize": 40,
+        "collisionSize": 16,
         "speed": 250
       },
       "Lv0": [
@@ -311,32 +416,25 @@
         {
           "bulletKind": "STRAIGHT",
           "bulletId": 6,
-          "pos": [4, 0],
+          "pos": [6, 0],
           "bulletVecRef": "up",
           "vecAdj": 0
         },
         {
           "bulletKind": "STRAIGHT",
           "bulletId": 6,
-          "pos": [-4, 0],
+          "pos": [-6, 0],
           "bulletVecRef": "up",
           "vecAdj": 0
         }
       ],
       "Lv2": [
         {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 7,
+          "bulletKind": "SPLIT",
+          "bulletId": 1,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": 10
-        },
-        {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 7,
-          "pos": [0, 0],
-          "bulletVecRef": "up",
-          "vecAdj": -10
+          "vecAdj": 0
         }
       ],
       "Lv3": [
@@ -345,74 +443,85 @@
           "bulletId": 7,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": 20
+          "vecAdj": 12
         },
         {
           "bulletKind": "STRAIGHT",
           "bulletId": 7,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": -20
+          "vecAdj": -12
+        },
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 35,
+          "cooldown": 0.9
+        },
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -35,
+          "cooldown": 0.9
         }
       ],
       "Lv4": [
         {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 7,
+          "bulletKind": "SPLIT",
+          "bulletId": 1,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": 30
+          "vecAdj": 18
         },
         {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 7,
+          "bulletKind": "SPLIT",
+          "bulletId": 1,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": -30
+          "vecAdj": -18
         }
       ],
       "Lv5": [
         {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 7,
+          "bulletKind": "SPLIT",
+          "bulletId": 2,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": 5
+          "vecAdj": 0
         },
         {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 7,
+          "bulletKind": "TRACKING",
+          "bulletId": 1,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": -5
+          "vecAdj": 60,
+          "cooldown": 0.7
         },
         {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 7,
+          "bulletKind": "TRACKING",
+          "bulletId": 1,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": 15
-        },
+          "vecAdj": -60,
+          "cooldown": 0.7
+        }
+      ],
+      "beams": [
         {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 7,
-          "pos": [0, 0],
-          "bulletVecRef": "up",
-          "vecAdj": -15
-        },
-        {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 7,
-          "pos": [0, 0],
-          "bulletVecRef": "up",
-          "vecAdj": 25
-        },
-        {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 7,
-          "pos": [0, 0],
-          "bulletVecRef": "up",
-          "vecAdj": -25
+          "origin": "SHIP_UP",
+          "color": "PLAYER",
+          "minLevel": 5,
+          "warn": 0.5,
+          "duration": 1.2,
+          "fade": 0.25,
+          "width": 26,
+          "damage": 45,
+          "interval": 7,
+          "bossRate": 0.5
         }
       ]
     },
@@ -421,13 +530,22 @@
         "imagePath": "/player/Ship5.png",
         "cost": 20000000,
         "sheets": [
-          { "grids": [4, 2], "useCount": 6 },
-          { "grids": [4, 3], "useCount": 10 },
-          { "grids": [4, 2], "useCount": 6 }
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          },
+          {
+            "grids": [4, 3],
+            "useCount": 10
+          },
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
         ],
         "frameRate": 0.1,
         "imageSize": 80,
-        "collisionSize": 40,
+        "collisionSize": 16,
         "speed": 250
       },
       "Lv0": [
@@ -441,35 +559,23 @@
       ],
       "Lv1": [
         {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 9,
-          "pos": [4, 0],
+          "bulletKind": "SPIRAL",
+          "bulletId": 1,
+          "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": 0
+          "vecAdj": 0,
+          "direction": "RIGHT"
         },
         {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 9,
-          "pos": [-4, 0],
+          "bulletKind": "SPIRAL",
+          "bulletId": 1,
+          "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": 0
+          "vecAdj": 0,
+          "direction": "LEFT"
         }
       ],
       "Lv2": [
-        {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 9,
-          "pos": [8, 4],
-          "bulletVecRef": "up",
-          "vecAdj": 0
-        },
-        {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 9,
-          "pos": [-8, 4],
-          "bulletVecRef": "up",
-          "vecAdj": 0
-        },
         {
           "bulletKind": "STRAIGHT",
           "bulletId": 8,
@@ -487,85 +593,119 @@
       ],
       "Lv3": [
         {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 8,
+          "bulletKind": "SPIRAL",
+          "bulletId": 2,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": 20
+          "vecAdj": 0,
+          "direction": "RIGHT"
         },
         {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 8,
+          "bulletKind": "SPIRAL",
+          "bulletId": 2,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": -20
+          "vecAdj": 0,
+          "direction": "LEFT"
+        },
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": 40,
+          "cooldown": 0.7
+        },
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -40,
+          "cooldown": 0.7
         }
       ],
       "Lv4": [
         {
           "bulletKind": "STRAIGHT",
-          "bulletId": 8,
+          "bulletId": 11,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": 30
+          "vecAdj": 0
         },
         {
           "bulletKind": "STRAIGHT",
           "bulletId": 8,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": -30
+          "vecAdj": 22
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "up",
+          "vecAdj": -22
         }
       ],
       "Lv5": [
         {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 8,
-          "pos": [0, 0],
+          "bulletKind": "SPIRAL",
+          "bulletId": 1,
+          "pos": [10, 0],
           "bulletVecRef": "up",
-          "vecAdj": 5
+          "vecAdj": 0,
+          "direction": "RIGHT"
         },
         {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 8,
-          "pos": [0, 0],
+          "bulletKind": "SPIRAL",
+          "bulletId": 1,
+          "pos": [-10, 0],
           "bulletVecRef": "up",
-          "vecAdj": -5
+          "vecAdj": 0,
+          "direction": "LEFT"
         },
         {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 8,
+          "bulletKind": "TRACKING",
+          "bulletId": 1,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": 15
+          "vecAdj": 70,
+          "cooldown": 0.55
         },
         {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 8,
+          "bulletKind": "TRACKING",
+          "bulletId": 1,
           "pos": [0, 0],
           "bulletVecRef": "up",
-          "vecAdj": -15
-        },
+          "vecAdj": -70,
+          "cooldown": 0.55
+        }
+      ],
+      "beams": [
         {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 8,
-          "pos": [0, 0],
-          "bulletVecRef": "up",
-          "vecAdj": 25
-        },
-        {
-          "bulletKind": "STRAIGHT",
-          "bulletId": 8,
-          "pos": [0, 0],
-          "bulletVecRef": "up",
-          "vecAdj": -25
+          "origin": "SHIP_UP",
+          "color": "PLAYER",
+          "minLevel": 3,
+          "warn": 0.45,
+          "duration": 1.6,
+          "fade": 0.25,
+          "width": 34,
+          "damage": 60,
+          "interval": 6.5,
+          "bossRate": 0.5
         }
       ]
     },
     "SubShip1_L": {
       "datas": {
         "imagePath": "/player/SubShip1_L.png",
-        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "sheets": [
+          {
+            "grids": [1, 1],
+            "useCount": 1
+          }
+        ],
         "frameRate": 0.1,
         "imageSize": 80,
         "speed": 250
@@ -583,7 +723,12 @@
     "SubShip1_R": {
       "datas": {
         "imagePath": "/player/SubShip1_R.png",
-        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "sheets": [
+          {
+            "grids": [1, 1],
+            "useCount": 1
+          }
+        ],
         "frameRate": 0.1,
         "imageSize": 80,
         "speed": 250
@@ -601,7 +746,12 @@
     "SubShip2_L": {
       "datas": {
         "imagePath": "/player/SubShip2_L.png",
-        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "sheets": [
+          {
+            "grids": [1, 1],
+            "useCount": 1
+          }
+        ],
         "frameRate": 0.1,
         "imageSize": 80,
         "speed": 250
@@ -619,7 +769,12 @@
     "SubShip2_R": {
       "datas": {
         "imagePath": "/player/SubShip2_R.png",
-        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "sheets": [
+          {
+            "grids": [1, 1],
+            "useCount": 1
+          }
+        ],
         "frameRate": 0.1,
         "imageSize": 80,
         "speed": 250
@@ -637,7 +792,12 @@
     "SubShip3_L": {
       "datas": {
         "imagePath": "/player/SubShip3_L.png",
-        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "sheets": [
+          {
+            "grids": [1, 1],
+            "useCount": 1
+          }
+        ],
         "frameRate": 0.1,
         "imageSize": 80,
         "speed": 250
@@ -669,7 +829,12 @@
     "SubShip3_R": {
       "datas": {
         "imagePath": "/player/SubShip3_R.png",
-        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "sheets": [
+          {
+            "grids": [1, 1],
+            "useCount": 1
+          }
+        ],
         "frameRate": 0.1,
         "imageSize": 80,
         "speed": 250
@@ -701,7 +866,12 @@
     "SubShip4_L": {
       "datas": {
         "imagePath": "/player/SubShip4_L.png",
-        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "sheets": [
+          {
+            "grids": [1, 1],
+            "useCount": 1
+          }
+        ],
         "frameRate": 0.1,
         "imageSize": 80,
         "speed": 250
@@ -740,7 +910,12 @@
     "SubShip4_R": {
       "datas": {
         "imagePath": "/player/SubShip4_R.png",
-        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "sheets": [
+          {
+            "grids": [1, 1],
+            "useCount": 1
+          }
+        ],
         "frameRate": 0.1,
         "imageSize": 80,
         "speed": 250
@@ -779,7 +954,12 @@
     "SubShip5_L": {
       "datas": {
         "imagePath": "/player/SubShip5_L.png",
-        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "sheets": [
+          {
+            "grids": [1, 1],
+            "useCount": 1
+          }
+        ],
         "frameRate": 0.1,
         "imageSize": 80,
         "speed": 250
@@ -797,7 +977,12 @@
     "SubShip5_R": {
       "datas": {
         "imagePath": "/player/SubShip5_R.png",
-        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "sheets": [
+          {
+            "grids": [1, 1],
+            "useCount": 1
+          }
+        ],
         "frameRate": 0.1,
         "imageSize": 80,
         "speed": 250
@@ -817,9 +1002,14 @@
     "Enemy1": {
       "datas": {
         "imagePath": "/enemy/Enemy1.png",
-        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
         "frameRate": 0.1,
-        "imageSize": 30,
+        "imageSize": 50,
         "collisionSize": 20,
         "hp": 80,
         "speed": 100,
@@ -840,9 +1030,14 @@
     "Enemy2": {
       "datas": {
         "imagePath": "/enemy/Enemy2.png",
-        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
         "frameRate": 0.1,
-        "imageSize": 30,
+        "imageSize": 50,
         "collisionSize": 20,
         "hp": 100,
         "speed": 100,
@@ -894,7 +1089,12 @@
     "Enemy3": {
       "datas": {
         "imagePath": "/enemy/Enemy2.png",
-        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
         "frameRate": 0.1,
         "imageSize": 30,
         "collisionSize": 20,
@@ -947,8 +1147,13 @@
     },
     "Enemy4": {
       "datas": {
-        "imagePath": "/enemy/Enemy3.png",
-        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "imagePath": "/small_enemy/Enemy3.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
         "frameRate": 0.1,
         "imageSize": 30,
         "collisionSize": 20,
@@ -1001,8 +1206,13 @@
     },
     "Enemy5": {
       "datas": {
-        "imagePath": "/enemy/Enemy4.png",
-        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "imagePath": "/small_enemy/Enemy4.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
         "frameRate": 0.1,
         "imageSize": 30,
         "collisionSize": 20,
@@ -1055,8 +1265,13 @@
     },
     "Enemy6": {
       "datas": {
-        "imagePath": "/enemy/Enemy5.png",
-        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "imagePath": "/small_enemy/Enemy5.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
         "frameRate": 0.1,
         "imageSize": 30,
         "collisionSize": 20,
@@ -1111,13 +1326,30 @@
           "pos": [0, 0],
           "bulletVecRef": "down",
           "vecAdj": -37.5
+        }
+      ],
+      "beams": [
+        {
+          "origin": "TOP_SELF",
+          "color": "ALT",
+          "delay": 4,
+          "interval": 10,
+          "warn": 1.3,
+          "duration": 0.8,
+          "width": 28,
+          "damage": 12
         }
       ]
     },
     "Enemy7": {
       "datas": {
-        "imagePath": "/enemy/Enemy6.png",
-        "sheets": [{ "grids": [1, 1], "useCount": 1 }],
+        "imagePath": "/small_enemy/Enemy6.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
         "frameRate": 0.1,
         "imageSize": 30,
         "collisionSize": 20,
@@ -1172,22 +1404,2586 @@
           "pos": [0, 0],
           "bulletVecRef": "target",
           "vecAdj": -37.5
+        }
+      ],
+      "beams": [
+        {
+          "origin": "TOP_PLAYER",
+          "color": "ALT",
+          "delay": 3,
+          "interval": 9,
+          "warn": 1.5,
+          "duration": 0.8,
+          "width": 26,
+          "damage": 12
         }
       ]
     },
     "Enemy8": {
       "Lv0": [],
       "Lv1": []
+    },
+    "Bat": {
+      "datas": {
+        "imagePath": "/enemy/Bat.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 50,
+        "collisionSize": 20,
+        "hp": 80,
+        "speed": 100,
+        "score": 50,
+        "coins": "0~3"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 1,
+          "pos": [20, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -5,
+          "direction": "RIGHT"
+        },
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 1,
+          "pos": [-20, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 5,
+          "direction": "LEFT"
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 1,
+          "pos": [20, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "direction": "RIGHT"
+        },
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 1,
+          "pos": [-20, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "direction": "LEFT"
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 1,
+          "pos": [20, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 5,
+          "direction": "RIGHT"
+        },
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 1,
+          "pos": [-20, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -5,
+          "direction": "LEFT"
+        }
+      ],
+      "Lv3": [
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 1,
+          "pos": [20, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 10,
+          "direction": "RIGHT"
+        },
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 1,
+          "pos": [-20, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -10,
+          "direction": "LEFT"
+        }
+      ]
+    },
+    "Cloud": {
+      "datas": {
+        "imagePath": "/enemy/Cloud.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 50,
+        "collisionSize": 20,
+        "hp": 80,
+        "speed": 100,
+        "score": 50,
+        "coins": "0~3"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0
+        }
+      ],
+      "Lv1": []
+    },
+    "Beetle": {
+      "datas": {
+        "imagePath": "/enemy/Beetle.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 50,
+        "collisionSize": 20,
+        "hp": 80,
+        "speed": 100,
+        "score": 50,
+        "coins": "0~3"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "WAVE",
+          "bulletId": 1,
+          "pos": [20, 10],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "direction": "RIGHT"
+        },
+        {
+          "bulletKind": "WAVE",
+          "bulletId": 1,
+          "pos": [-20, 10],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "direction": "LEFT"
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "WAVE",
+          "bulletId": 1,
+          "pos": [20, 10],
+          "bulletVecRef": "down",
+          "vecAdj": 20,
+          "direction": "RIGHT"
+        },
+        {
+          "bulletKind": "WAVE",
+          "bulletId": 1,
+          "pos": [-20, 10],
+          "bulletVecRef": "down",
+          "vecAdj": -20,
+          "direction": "LEFT"
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "WAVE",
+          "bulletId": 1,
+          "pos": [20, 10],
+          "bulletVecRef": "down",
+          "vecAdj": 20,
+          "direction": "LEFT"
+        },
+        {
+          "bulletKind": "WAVE",
+          "bulletId": 1,
+          "pos": [-20, 10],
+          "bulletVecRef": "down",
+          "vecAdj": -20,
+          "direction": "RIGHT"
+        }
+      ]
+    },
+    "Clab": {
+      "datas": {
+        "imagePath": "/enemy/Clab.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 50,
+        "collisionSize": 20,
+        "hp": 80,
+        "speed": 100,
+        "score": 50,
+        "coins": "0~3"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [13, 6],
+          "bulletVecRef": "down",
+          "vecAdj": 0
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [-13, 6],
+          "bulletVecRef": "down",
+          "vecAdj": 0
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [21, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [-21, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0
+        }
+      ]
+    },
+    "Scout": {
+      "datas": {
+        "imagePath": "/enemy/Enemy1.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 38,
+        "collisionSize": 15,
+        "hp": 25,
+        "speed": 150,
+        "score": 40,
+        "coins": "0~2"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "cooldown": 2.6
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 12,
+          "cooldown": 2.6
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -12,
+          "cooldown": 2.6
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 0,
+          "cooldown": 2.6
+        }
+      ]
+    },
+    "Gunner": {
+      "datas": {
+        "imagePath": "/enemy/Enemy2.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 56,
+        "collisionSize": 22,
+        "hp": 90,
+        "speed": 100,
+        "score": 120,
+        "coins": "2~4"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 0,
+          "cooldown": 2.2
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 14,
+          "cooldown": 2.2
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -14,
+          "cooldown": 2.2
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 28,
+          "cooldown": 2.2
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -28,
+          "cooldown": 2.2
+        }
+      ]
+    },
+    "Sniper": {
+      "datas": {
+        "imagePath": "/enemy/Cloud.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 46,
+        "collisionSize": 18,
+        "hp": 60,
+        "speed": 90,
+        "score": 110,
+        "coins": "2~4"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "cooldown": 4.5
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 4,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 0,
+          "cooldown": 1.6
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 30,
+          "cooldown": 4.5
+        },
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -30,
+          "cooldown": 4.5
+        }
+      ],
+      "beams": [
+        {
+          "origin": "TOP_PLAYER",
+          "color": "RANDOM",
+          "delay": 2.5,
+          "interval": 6.5,
+          "warn": 1.2,
+          "duration": 0.7,
+          "width": 22,
+          "damage": 14,
+          "lock": 0.7
+        }
+      ]
+    },
+    "Fanner": {
+      "datas": {
+        "imagePath": "/enemy/Beetle.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 60,
+        "collisionSize": 24,
+        "hp": 100,
+        "speed": 90,
+        "score": 150,
+        "coins": "3~5"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "cooldown": 2.4
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 20,
+          "cooldown": 2.4
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -20,
+          "cooldown": 2.4
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 40,
+          "cooldown": 2.4
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -40,
+          "cooldown": 2.4
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 60,
+          "cooldown": 2.4
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -60,
+          "cooldown": 2.4
+        }
+      ]
+    },
+    "Spinner": {
+      "datas": {
+        "imagePath": "/enemy/Clab.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 54,
+        "collisionSize": 22,
+        "hp": 90,
+        "speed": 95,
+        "score": 140,
+        "coins": "3~5"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 1,
+          "pos": [16, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -20,
+          "direction": "RIGHT",
+          "cooldown": 2.0
+        },
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 1,
+          "pos": [-16, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 20,
+          "direction": "LEFT",
+          "cooldown": 2.0
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 1,
+          "pos": [16, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 20,
+          "direction": "RIGHT",
+          "cooldown": 2.0
+        },
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 1,
+          "pos": [-16, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -20,
+          "direction": "LEFT",
+          "cooldown": 2.0
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 1,
+          "pos": [16, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 60,
+          "direction": "RIGHT",
+          "cooldown": 2.0
+        },
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 1,
+          "pos": [-16, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -60,
+          "direction": "LEFT",
+          "cooldown": 2.0
+        }
+      ]
+    },
+    "Waver": {
+      "datas": {
+        "imagePath": "/enemy/Bat.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 48,
+        "collisionSize": 19,
+        "hp": 70,
+        "speed": 110,
+        "score": 100,
+        "coins": "1~3"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "WAVE",
+          "bulletId": 1,
+          "pos": [14, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "direction": "RIGHT",
+          "cooldown": 1.8
+        },
+        {
+          "bulletKind": "WAVE",
+          "bulletId": 1,
+          "pos": [-14, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "direction": "LEFT",
+          "cooldown": 1.8
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 0,
+          "cooldown": 2.8
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "WAVE",
+          "bulletId": 1,
+          "pos": [14, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 25,
+          "direction": "RIGHT",
+          "cooldown": 1.8
+        },
+        {
+          "bulletKind": "WAVE",
+          "bulletId": 1,
+          "pos": [-14, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -25,
+          "direction": "LEFT",
+          "cooldown": 1.8
+        }
+      ]
+    },
+    "Bomber": {
+      "datas": {
+        "imagePath": "/enemy/Cloud.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 72,
+        "collisionSize": 30,
+        "hp": 200,
+        "speed": 65,
+        "score": 300,
+        "coins": "8~14"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "cooldown": 3.2
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 25,
+          "cooldown": 3.2
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -25,
+          "cooldown": 3.2
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 50,
+          "cooldown": 3.2
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -50,
+          "cooldown": 3.2
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 75,
+          "cooldown": 3.2
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -75,
+          "cooldown": 3.2
+        }
+      ]
+    },
+    "Ringer": {
+      "datas": {
+        "imagePath": "/enemy/Clab.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 66,
+        "collisionSize": 26,
+        "hp": 170,
+        "speed": 70,
+        "score": 260,
+        "coins": "6~10"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 45,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 90,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 135,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 180,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 225,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 270,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 315,
+          "cooldown": 3.6
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 22,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 67,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 112,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 157,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 202,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 247,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 292,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 5,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 337,
+          "cooldown": 3.6
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 6,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 0,
+          "cooldown": 2.2
+        }
+      ],
+      "beams": [
+        {
+          "origin": "TOP_SELF",
+          "color": "RANDOM",
+          "delay": 3,
+          "interval": 4.5,
+          "warn": 1.1,
+          "duration": 0.6,
+          "width": 18,
+          "damage": 10
+        }
+      ]
+    },
+    "Drone": {
+      "datas": {
+        "imagePath": "/enemy/Enemy1.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 32,
+        "collisionSize": 14,
+        "hp": 18,
+        "speed": 175,
+        "score": 30,
+        "coins": "0~2"
+      },
+      "Lv0": [],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 0,
+          "cooldown": 3.2
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 10,
+          "cooldown": 3.2
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -10,
+          "cooldown": 3.2
+        }
+      ]
+    },
+    "Guard": {
+      "datas": {
+        "imagePath": "/enemy/Enemy2.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 78,
+        "collisionSize": 32,
+        "hp": 260,
+        "speed": 55,
+        "score": 350,
+        "coins": "10~16"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 6,
+          "pos": [-22, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "cooldown": 1.3
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 6,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "cooldown": 1.3
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 6,
+          "pos": [22, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "cooldown": 1.3
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "cooldown": 5.0
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 7,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 20,
+          "cooldown": 2.4
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 7,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -20,
+          "cooldown": 2.4
+        }
+      ],
+      "beams": [
+        {
+          "origin": "TOP_SELF",
+          "x": -50,
+          "color": "RED",
+          "delay": 5,
+          "interval": 9,
+          "warn": 1.5,
+          "duration": 0.9,
+          "width": 40,
+          "damage": 16
+        },
+        {
+          "origin": "TOP_SELF",
+          "x": 50,
+          "color": "BLUE",
+          "delay": 5,
+          "interval": 9,
+          "warn": 1.5,
+          "duration": 0.9,
+          "width": 40,
+          "damage": 16
+        }
+      ]
+    },
+    "Twin": {
+      "datas": {
+        "imagePath": "/enemy/Beetle.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 52,
+        "collisionSize": 21,
+        "hp": 85,
+        "speed": 105,
+        "score": 130,
+        "coins": "3~5"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 1,
+          "pos": [-18, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "direction": "LEFT",
+          "cooldown": 2.0
+        },
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 1,
+          "pos": [18, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "direction": "RIGHT",
+          "cooldown": 2.0
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "WAVE",
+          "bulletId": 1,
+          "pos": [18, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "direction": "RIGHT",
+          "cooldown": 2.0
+        },
+        {
+          "bulletKind": "WAVE",
+          "bulletId": 1,
+          "pos": [-18, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "direction": "LEFT",
+          "cooldown": 2.0
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 0,
+          "cooldown": 2.8
+        }
+      ]
+    },
+    "Ace": {
+      "datas": {
+        "imagePath": "/enemy/Bat.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 58,
+        "collisionSize": 23,
+        "hp": 130,
+        "speed": 125,
+        "score": 220,
+        "coins": "5~9"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 7,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 0,
+          "cooldown": 1.2
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 7,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 8,
+          "cooldown": 1.2
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 7,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -8,
+          "cooldown": 1.2
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "cooldown": 6.0
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 7,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 20,
+          "cooldown": 1.2
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 7,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -20,
+          "cooldown": 1.2
+        }
+      ],
+      "beams": [
+        {
+          "origin": "TOP_PLAYER",
+          "color": "ALT",
+          "delay": 2.5,
+          "interval": 5.5,
+          "warn": 1.1,
+          "duration": 0.7,
+          "width": 24,
+          "damage": 12,
+          "lock": 0.7
+        }
+      ]
+    },
+    "Serpent": {
+      "datas": {
+        "imagePath": "/enemy/Serpent.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 56,
+        "collisionSize": 20,
+        "hp": 95,
+        "speed": 105,
+        "score": 110,
+        "coins": "2~5"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "WAVE",
+          "bulletId": 1,
+          "pos": [-10, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "direction": "RIGHT",
+          "cooldown": 1.7
+        },
+        {
+          "bulletKind": "WAVE",
+          "bulletId": 1,
+          "pos": [10, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "direction": "LEFT",
+          "cooldown": 1.7
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "WAVE",
+          "bulletId": 1,
+          "pos": [-10, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 22,
+          "direction": "RIGHT",
+          "cooldown": 2.4
+        },
+        {
+          "bulletKind": "WAVE",
+          "bulletId": 1,
+          "pos": [10, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -22,
+          "direction": "LEFT",
+          "cooldown": 2.4
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "WAVE",
+          "bulletId": 1,
+          "pos": [-10, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 45,
+          "direction": "RIGHT",
+          "cooldown": 3.0
+        },
+        {
+          "bulletKind": "WAVE",
+          "bulletId": 1,
+          "pos": [10, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -45,
+          "direction": "LEFT",
+          "cooldown": 3.0
+        }
+      ]
+    },
+    "Helix": {
+      "datas": {
+        "imagePath": "/enemy/Helix.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 56,
+        "collisionSize": 20,
+        "hp": 100,
+        "speed": 100,
+        "score": 130,
+        "coins": "3~6"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "SPIRAL",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "direction": "RIGHT",
+          "cooldown": 1.5
+        },
+        {
+          "bulletKind": "SPIRAL",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "direction": "LEFT",
+          "cooldown": 1.5
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "SPIRAL",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 20,
+          "direction": "RIGHT",
+          "cooldown": 2.2
+        },
+        {
+          "bulletKind": "SPIRAL",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -20,
+          "direction": "LEFT",
+          "cooldown": 2.2
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "SPIRAL",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 40,
+          "direction": "RIGHT",
+          "cooldown": 2.8
+        },
+        {
+          "bulletKind": "SPIRAL",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -40,
+          "direction": "LEFT",
+          "cooldown": 2.8
+        }
+      ]
+    },
+    "Splitter": {
+      "datas": {
+        "imagePath": "/enemy/Splitter.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 58,
+        "collisionSize": 22,
+        "hp": 120,
+        "speed": 95,
+        "score": 160,
+        "coins": "3~7"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "SPLIT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 0,
+          "cooldown": 2.8
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "SPLIT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 28,
+          "cooldown": 3.4
+        },
+        {
+          "bulletKind": "SPLIT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -28,
+          "cooldown": 3.4
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "SPLIT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 50,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "SPLIT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -50,
+          "cooldown": 3.6
+        }
+      ]
+    },
+    "Rusher": {
+      "datas": {
+        "imagePath": "/enemy/Rusher.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 50,
+        "collisionSize": 18,
+        "hp": 70,
+        "speed": 120,
+        "score": 100,
+        "coins": "2~4"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 0,
+          "cooldown": 1.9
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 12,
+          "cooldown": 2.6
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -12,
+          "cooldown": 2.6
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 26,
+          "cooldown": 3.0
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 8,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -26,
+          "cooldown": 3.0
+        }
+      ]
+    },
+    "Sprinkler": {
+      "datas": {
+        "imagePath": "/enemy/Sprinkler.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 60,
+        "collisionSize": 24,
+        "hp": 140,
+        "speed": 90,
+        "score": 180,
+        "coins": "4~8"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "direction": "RIGHT",
+          "cooldown": 2.3
+        },
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 90,
+          "direction": "RIGHT",
+          "cooldown": 2.3
+        },
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 180,
+          "direction": "RIGHT",
+          "cooldown": 2.3
+        },
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 270,
+          "direction": "RIGHT",
+          "cooldown": 2.3
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 45,
+          "direction": "LEFT",
+          "cooldown": 2.3
+        },
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 135,
+          "direction": "LEFT",
+          "cooldown": 2.3
+        },
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 225,
+          "direction": "LEFT",
+          "cooldown": 2.3
+        },
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 315,
+          "direction": "LEFT",
+          "cooldown": 2.3
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 22,
+          "direction": "RIGHT",
+          "cooldown": 2.3
+        },
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 112,
+          "direction": "RIGHT",
+          "cooldown": 2.3
+        },
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 202,
+          "direction": "RIGHT",
+          "cooldown": 2.3
+        },
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 3,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 292,
+          "direction": "RIGHT",
+          "cooldown": 2.3
+        }
+      ]
+    },
+    "Orbiter": {
+      "datas": {
+        "imagePath": "/enemy/Orbiter.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 64,
+        "collisionSize": 24,
+        "hp": 160,
+        "speed": 85,
+        "score": 200,
+        "coins": "4~8"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "BALL",
+          "bulletId": 11,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 0,
+          "cooldown": 2.9
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "BALL",
+          "bulletId": 12,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "cooldown": 3.4
+        },
+        {
+          "bulletKind": "BALL",
+          "bulletId": 12,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 60,
+          "cooldown": 3.4
+        },
+        {
+          "bulletKind": "BALL",
+          "bulletId": 12,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 120,
+          "cooldown": 3.4
+        },
+        {
+          "bulletKind": "BALL",
+          "bulletId": 12,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 180,
+          "cooldown": 3.4
+        },
+        {
+          "bulletKind": "BALL",
+          "bulletId": 12,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 240,
+          "cooldown": 3.4
+        },
+        {
+          "bulletKind": "BALL",
+          "bulletId": 12,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 300,
+          "cooldown": 3.4
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "BALL",
+          "bulletId": 12,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 30,
+          "cooldown": 3.4
+        },
+        {
+          "bulletKind": "BALL",
+          "bulletId": 12,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 90,
+          "cooldown": 3.4
+        },
+        {
+          "bulletKind": "BALL",
+          "bulletId": 12,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 150,
+          "cooldown": 3.4
+        },
+        {
+          "bulletKind": "BALL",
+          "bulletId": 12,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 210,
+          "cooldown": 3.4
+        },
+        {
+          "bulletKind": "BALL",
+          "bulletId": 12,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 270,
+          "cooldown": 3.4
+        },
+        {
+          "bulletKind": "BALL",
+          "bulletId": 12,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 330,
+          "cooldown": 3.4
+        }
+      ]
+    },
+    "Lancer": {
+      "datas": {
+        "imagePath": "/enemy/Lancer.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 54,
+        "collisionSize": 16,
+        "hp": 60,
+        "speed": 115,
+        "score": 140,
+        "coins": "3~6"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 9,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 0,
+          "cooldown": 3.0
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 9,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 7,
+          "cooldown": 3.0
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 9,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -7,
+          "cooldown": 3.0
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 9,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 14,
+          "cooldown": 3.0
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 9,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -14,
+          "cooldown": 3.0
+        }
+      ]
+    },
+    "Trio": {
+      "datas": {
+        "imagePath": "/enemy/Trio.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 58,
+        "collisionSize": 22,
+        "hp": 110,
+        "speed": 95,
+        "score": 170,
+        "coins": "3~7"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -30,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 30,
+          "cooldown": 3.6
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -60,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -30,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 30,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 60,
+          "cooldown": 3.6
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -70,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -35,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 35,
+          "cooldown": 3.6
+        },
+        {
+          "bulletKind": "TRACKING",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 70,
+          "cooldown": 3.6
+        }
+      ]
+    },
+    "Scatter": {
+      "datas": {
+        "imagePath": "/enemy/Scatter.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 66,
+        "collisionSize": 26,
+        "hp": 150,
+        "speed": 85,
+        "score": 190,
+        "coins": "4~8"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -45,
+          "cooldown": 2.7
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -30,
+          "cooldown": 2.7
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -15,
+          "cooldown": 2.7
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 0,
+          "cooldown": 2.7
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 15,
+          "cooldown": 2.7
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 30,
+          "cooldown": 2.7
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 45,
+          "cooldown": 2.7
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -52,
+          "cooldown": 2.7
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -38,
+          "cooldown": 2.7
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -24,
+          "cooldown": 2.7
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 24,
+          "cooldown": 2.7
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 38,
+          "cooldown": 2.7
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 52,
+          "cooldown": 2.7
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -60,
+          "cooldown": 2.7
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -45,
+          "cooldown": 2.7
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 45,
+          "cooldown": 2.7
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 1,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 60,
+          "cooldown": 2.7
+        }
+      ]
+    },
+    "Gatling": {
+      "datas": {
+        "imagePath": "/enemy/Gatling.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 58,
+        "collisionSize": 22,
+        "hp": 130,
+        "speed": 100,
+        "score": 175,
+        "coins": "3~7"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 10,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 0,
+          "cooldown": 0.24
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 10,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 7,
+          "cooldown": 0.36
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 10,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -7,
+          "cooldown": 0.36
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 10,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": 14,
+          "cooldown": 0.5
+        },
+        {
+          "bulletKind": "STRAIGHT",
+          "bulletId": 10,
+          "pos": [0, 0],
+          "bulletVecRef": "target",
+          "vecAdj": -14,
+          "cooldown": 0.5
+        }
+      ]
+    },
+    "Crosser": {
+      "datas": {
+        "imagePath": "/enemy/Crosser.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 58,
+        "collisionSize": 20,
+        "hp": 100,
+        "speed": 105,
+        "score": 150,
+        "coins": "3~6"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -38,
+          "direction": "RIGHT",
+          "cooldown": 2.1
+        },
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 38,
+          "direction": "LEFT",
+          "cooldown": 2.1
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -62,
+          "direction": "RIGHT",
+          "cooldown": 2.1
+        },
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 62,
+          "direction": "LEFT",
+          "cooldown": 2.1
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -15,
+          "direction": "RIGHT",
+          "cooldown": 2.1
+        },
+        {
+          "bulletKind": "CURVE",
+          "bulletId": 2,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 15,
+          "direction": "LEFT",
+          "cooldown": 2.1
+        }
+      ]
+    },
+    "Mine": {
+      "datas": {
+        "imagePath": "/enemy/Mine.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 62,
+        "collisionSize": 28,
+        "hp": 200,
+        "speed": 70,
+        "score": 210,
+        "coins": "5~9"
+      },
+      "Lv0": [
+        {
+          "bulletKind": "BALL",
+          "bulletId": 10,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -30,
+          "cooldown": 3.2
+        },
+        {
+          "bulletKind": "BALL",
+          "bulletId": 10,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "cooldown": 3.2
+        },
+        {
+          "bulletKind": "BALL",
+          "bulletId": 10,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 30,
+          "cooldown": 3.2
+        }
+      ],
+      "Lv1": [
+        {
+          "bulletKind": "BALL",
+          "bulletId": 10,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -60,
+          "cooldown": 3.2
+        },
+        {
+          "bulletKind": "BALL",
+          "bulletId": 10,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -20,
+          "cooldown": 3.2
+        },
+        {
+          "bulletKind": "BALL",
+          "bulletId": 10,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 20,
+          "cooldown": 3.2
+        },
+        {
+          "bulletKind": "BALL",
+          "bulletId": 10,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 60,
+          "cooldown": 3.2
+        }
+      ],
+      "Lv2": [
+        {
+          "bulletKind": "BALL",
+          "bulletId": 10,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -70,
+          "cooldown": 3.2
+        },
+        {
+          "bulletKind": "BALL",
+          "bulletId": 10,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": -35,
+          "cooldown": 3.2
+        },
+        {
+          "bulletKind": "BALL",
+          "bulletId": 10,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 0,
+          "cooldown": 3.2
+        },
+        {
+          "bulletKind": "BALL",
+          "bulletId": 10,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 35,
+          "cooldown": 3.2
+        },
+        {
+          "bulletKind": "BALL",
+          "bulletId": 10,
+          "pos": [0, 0],
+          "bulletVecRef": "down",
+          "vecAdj": 70,
+          "cooldown": 3.2
+        }
+      ]
     }
   },
   "BOSS": {
     "Boss1": {
+      "datas": {
+        "imagePath": "/enemy/Enemy1.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 130,
+        "collisionSize": 45,
+        "hp": 100,
+        "speed": 100,
+        "score": 3000,
+        "coins": "30~50"
+      },
       "Lv0": [],
       "Lv1": []
     },
-    "Boss2": {},
-    "Boss3": {},
-    "Boss4": {},
-    "Boss5": {}
+    "Boss2": {
+      "datas": {
+        "imagePath": "/enemy/Enemy2.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 150,
+        "collisionSize": 52,
+        "hp": 100,
+        "speed": 100,
+        "score": 6000,
+        "coins": "60~90"
+      },
+      "Lv0": [],
+      "Lv1": []
+    },
+    "Boss3": {
+      "datas": {
+        "imagePath": "/enemy/Enemy2.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 160,
+        "collisionSize": 56,
+        "hp": 100,
+        "speed": 100,
+        "score": 9000,
+        "coins": "90~130"
+      },
+      "Lv0": [],
+      "Lv1": []
+    },
+    "Boss4": {
+      "datas": {
+        "imagePath": "/enemy/Enemy1.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 175,
+        "collisionSize": 60,
+        "hp": 100,
+        "speed": 100,
+        "score": 12000,
+        "coins": "120~170"
+      },
+      "Lv0": [],
+      "Lv1": []
+    },
+    "Boss5": {
+      "datas": {
+        "imagePath": "/enemy/Enemy2.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 190,
+        "collisionSize": 64,
+        "hp": 100,
+        "speed": 100,
+        "score": 16000,
+        "coins": "160~220"
+      },
+      "Lv0": [],
+      "Lv1": []
+    },
+    "Boss6": {
+      "datas": {
+        "imagePath": "/enemy/Enemy1.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 210,
+        "collisionSize": 70,
+        "hp": 100,
+        "speed": 100,
+        "score": 22000,
+        "coins": "220~300"
+      },
+      "Lv0": [],
+      "Lv1": []
+    },
+    "Boss7": {
+      "datas": {
+        "imagePath": "/enemy/Enemy1.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 220,
+        "collisionSize": 72,
+        "hp": 100,
+        "speed": 100,
+        "score": 28000,
+        "coins": "280~380"
+      },
+      "Lv0": [],
+      "Lv1": []
+    },
+    "Boss8": {
+      "datas": {
+        "imagePath": "/enemy/Enemy2.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 225,
+        "collisionSize": 74,
+        "hp": 100,
+        "speed": 100,
+        "score": 34000,
+        "coins": "340~460"
+      },
+      "Lv0": [],
+      "Lv1": []
+    },
+    "Boss9": {
+      "datas": {
+        "imagePath": "/enemy/Enemy1.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 230,
+        "collisionSize": 76,
+        "hp": 100,
+        "speed": 100,
+        "score": 42000,
+        "coins": "420~560"
+      },
+      "Lv0": [],
+      "Lv1": []
+    },
+    "BossCoin": {
+      "datas": {
+        "imagePath": "/enemy/Enemy1.png",
+        "sheets": [
+          {
+            "grids": [4, 2],
+            "useCount": 6
+          }
+        ],
+        "frameRate": 0.1,
+        "imageSize": 130,
+        "collisionSize": 45,
+        "hp": 100,
+        "speed": 100,
+        "score": 3000,
+        "coins": "0~0"
+      },
+      "Lv0": [],
+      "Lv1": []
+    }
   }
 }

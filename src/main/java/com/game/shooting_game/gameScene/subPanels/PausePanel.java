@@ -7,20 +7,17 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
-import com.game.shooting_game.SceneManager;
-import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.gameScene.GameManager;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 public class PausePanel extends JPanel {
     private static final String component = "[pausePanel]";
 
     private final ShootingGameMain MAIN;
-    private final SceneManager SM;
     private final GameManager GM;
 
     private Vector2 panelSize; // ステージ詳細パネルの大きさ
@@ -31,7 +28,6 @@ public class PausePanel extends JPanel {
 
     public PausePanel() {
         MAIN = ShootingGameMain.getInstance();
-        SM = SceneManager.getInstance();
         GM = GameManager.getInstance();
     }
 
@@ -61,8 +57,8 @@ public class PausePanel extends JPanel {
                 (int) panelSize.getY() - (int) resumeBtn.getHeight() - spacing,
                 (int) resumeBtn.getWidth(), (int) resumeBtn.getHeight());
         resumeBtn.addActionListener(e -> {
-            GM.setPause(false);
             UIBuilder.closePanel(this);
+            GM.resume(); // 3・2・1を数えてから再開する
             // 再開ログ
             LogUtils.systemLog(
                     "[INFO]",
@@ -82,9 +78,8 @@ public class PausePanel extends JPanel {
                 (int) panelSize.getY() - (int) quitBtn.getHeight() - spacing,
                 (int) quitBtn.getWidth(), (int) quitBtn.getHeight());
         quitBtn.addActionListener(e -> {
-            GM.setPause(false);
             UIBuilder.closePanel(this);
-            SM.changeScene(SceneType.NORMALSTAGE);
+            GM.leave(); // 画面を暗くしてから、ステージ選択へ戻る
         });
         this.add(quitBtn);
 
@@ -106,8 +101,8 @@ public class PausePanel extends JPanel {
                 ANSI.YELLOW + "Game Paused" + ANSI.RESET);
 
         UIBuilder.openPanel(this, "Pause", true, () -> {
-            GM.setPause(false);
             UIBuilder.closePanel(this);
+            GM.resume();
         });
     }
 }

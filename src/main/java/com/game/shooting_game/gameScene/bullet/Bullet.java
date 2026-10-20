@@ -19,13 +19,22 @@ import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.interfaces.Entity;
 import com.game.shooting_game.interfaces.GameObject;
 import com.game.shooting_game.interfaces.Moveable;
-import com.game.shooting_game.utils.Anchor;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.Anchor;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 import com.game.shooting_game.utils.animation.Animation;
 import com.game.shooting_game.utils.animation.AnimationManager;
 
 public abstract class Bullet implements Moveable, GameObject, Entity {
+    public static enum Direction {
+        RIGHT,
+        LEFT;
+
+        public int getSign() {
+            return this == RIGHT ? 1 : -1;
+        }
+    }
+
     protected final ShootingGameMain MAIN;
     protected final AnimationManager AM;
     protected final GameManager GM;
@@ -41,15 +50,22 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
     @Getter
     protected double collisionSize = 0; // 当たり判定の大きさ
     protected double vec; // 向いてる方向
-    @Getter
-    protected double damage = 0; // 攻撃力
+    protected double damage = 0; // 攻撃力(設定値)
+    protected double damageScale = 1.0; // 攻撃力の倍率(サブ機など)
     protected double lifeTime = 10; // 存在可能時間
     protected double lifeTimer; // 存在時間
     protected float alpha; // 透明度
     @Getter
     protected ShipKinds owner; // 弾を発射者
+    @Getter
     protected BulletKinds kind; // 弾の種類
     protected String animationId; // アニメーションId
+    protected final BulletConfig config; // この弾の設定
+    protected double maxSpeed; // 加速する弾の最高速度
+    protected double accel; // 加速度(画面倍率込み)
+    private int pierceLeft; // 残りの貫通数
+    private final java.util.Set<Object> hitTargets = java.util.Collections
+            .newSetFromMap(new java.util.IdentityHashMap<>()); // 貫通弾が当たった相手(同じ相手に2度当たらない)
 
     public Bullet(ShipKinds owner, BulletKinds kind, int id, ColorMode mode, Vector2 pos, double vec) {
         MAIN = ShootingGameMain.getInstance();
@@ -68,6 +84,13 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
         this.collisionSize = bulletConfig.getCollisionSize() * ShootingGameMain.getScreenSizeAdj();
         this.speed = bulletConfig.getSpeed() * ShootingGameMain.getScreenSizeAdj();
         this.damage = bulletConfig.getDamage();
+        this.config = bulletConfig;
+        this.maxSpeed = this.speed;
+        this.accel = bulletConfig.getAccel() * ShootingGameMain.getScreenSizeAdj();
+        this.pierceLeft = bulletConfig.getPierce();
+        // 加速する弾は初速から始める
+        if (bulletConfig.getStartSpeed() > 0)
+            this.speed = bulletConfig.getStartSpeed() * ShootingGameMain.getScreenSizeAdj();
 
         // 画像の取得とアニメーション登録
         String bulletId = id + "_" + mode.toString().toLowerCase();
@@ -82,6 +105,15 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
         }
     }
 
+    /**
+     * 速度の倍率変更(弾幕の模様作り用)
+     * 
+     * @param scale 倍率
+     */
+    public void scaleSpeed(double scale) {
+        speed *= scale;
+    }
+
     @Override
     public void move(double dt) {
         pos.setX(pos.getX() + Math.cos(vec) * speed * dt);
@@ -90,8 +122,35 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
 
     @Override
     public void update(double dt) {
+        // 加速(最高速度まで)
+        if (accel != 0)
+            speed = Math.max(0, Math.min(maxSpeed, speed + accel * dt));
+
         move(dt);
         lifeTimer += dt;
+    }
+
+    /**
+     * 敵に当たったことを記録する(貫通弾は同じ相手に2度ダメージを与えない)
+     * 
+     * @param target 当たった相手
+     * @return 初めて当たったならtrue(ダメージを与えてよい)
+     */
+    public boolean registerHit(Object target) {
+        return hitTargets.add(target);
+    }
+
+    /**
+     * 当たった後に消えるか(貫通数が残っていれば通り抜けて、残りを1減らす)
+     * 
+     * @return 消えるならtrue
+     */
+    public boolean consumeHit() {
+        if (pierceLeft > 0) {
+            pierceLeft--;
+            return false;
+        }
+        return true;
     }
 
     public void draw(Graphics g) {
@@ -103,10 +162,9 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
 
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
         Vector2 drawPos = new Vector2(pos.getX(), pos.getY());
-        // 画像が存在するときは読み込む
-        if (animationId != null) {
-            BufferedImage image = AM.getCurrentImage(animationId);
-
+        // 画像が存在するときは読み込む(削除直後でアニメーションが解放済みの場合は描画しない)
+        BufferedImage image = animationId == null ? null : AM.getCurrentImage(animationId);
+        if (image != null) {
             // 回転処理
             g2.translate((int) drawPos.getX(), (int) drawPos.getY());
             g2.rotate(vec + Math.PI / 2);
@@ -116,6 +174,24 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
         g2.setTransform(oldTransform);
         // 透明度を1に戻す
         g2.setComposite(AlphaComposite.SrcOver);
+    }
+
+    /**
+     * 攻撃力(倍率込み)
+     * 
+     * @return 攻撃力
+     */
+    public double getDamage() {
+        return damage * damageScale;
+    }
+
+    /**
+     * 攻撃力の倍率の設定
+     * 
+     * @param scale 倍率
+     */
+    public void setDamageScale(double scale) {
+        this.damageScale = scale;
     }
 
     /**
@@ -146,6 +222,13 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
     /**
      * 自身(弾)の削除
      */
+    /**
+     * 貫通弾か(ブロックなどを通り抜けられる)
+     */
+    public boolean isPiercing() {
+        return config.getPierce() > 0;
+    }
+
     public void destroySelf() {
         BM.removeBullet(this);
     }

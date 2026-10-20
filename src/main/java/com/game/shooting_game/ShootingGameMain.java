@@ -3,12 +3,13 @@ package com.game.shooting_game;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import javax.swing.AbstractAction;
@@ -31,14 +32,14 @@ import com.game.shooting_game.data.UserService;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.titleScene.TitleManager;
 import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.utils.Anchor;
-import com.game.shooting_game.utils.Anchor.H;
-import com.game.shooting_game.utils.Anchor.V;
+import com.game.shooting_game.utils.GameSettings;
 import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
-import com.game.shooting_game.utils.Vector2;
+import com.game.shooting_game.ui.LoadProgress;
+import com.game.shooting_game.ui.ShooterButtonUI;
+import com.game.shooting_game.ui.ShooterScrollBarUI;
 
 public final class ShootingGameMain extends JPanel implements Runnable {
+    private static final double MAX_DELTA = 0.05; // 1フレームで進める時間の上限(秒)
     private static final String component = "[MAIN]";
     private static ShootingGameMain instance;
     @Getter
@@ -48,14 +49,13 @@ public final class ShootingGameMain extends JPanel implements Runnable {
 
     @Getter
     private static Boolean onlineMode = true;
-    private static String loadStat;
 
     private SceneType lastScene = null;
     @Getter
     private static double screenSizeAdj = 1;
     @Getter
     @Setter
-    private int fps = 120; // FPS
+    private int fps = GameSettings.getFps(); // FPS(端末の設定。なければ既定値)
     private Thread gameThread;
     @Setter
     private boolean loaded = false; // 初期設定が完了したかどうか
@@ -90,6 +90,10 @@ public final class ShootingGameMain extends JPanel implements Runnable {
     }
 
     public static void setup(String[] args) {
+        // すべてのボタンを、シューティングゲーム風の見た目にする(画面を作る前に登録する)
+        ShooterButtonUI.install();
+        ShooterScrollBarUI.install();
+
         // ターミナルのクリア
         try {
             if (System.getProperty("os.name").contains("Windows")) { // windows用
@@ -128,10 +132,17 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                         "[INFO]",
                         component,
                         ANSI.GREEN + "Connecting to game server..." + ANSI.RESET);
-                loadStat = "Server connecting";
+                LoadProgress.creep("Server connecting", 0, 0.30);
 
                 // Spring Bootの起動
-                context = SpringApplication.run(ShootingGameApplication.class, args);
+                SpringApplication app = new SpringApplication(ShootingGameApplication.class);
+                // 保存を速くする既定値(application.properties に書けばそちらが優先される)。
+                // まとめて送る(バッチ)ことで、DBまでの往復の回数を減らす
+                app.setDefaultProperties(java.util.Map.of(
+                        "spring.jpa.properties.hibernate.jdbc.batch_size", "50",
+                        "spring.jpa.properties.hibernate.order_inserts", "true",
+                        "spring.jpa.properties.hibernate.order_updates", "true"));
+                context = app.run(args);
                 DataManager.setContext(context);
 
                 // サーバー接続成功ログ
@@ -157,7 +168,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                     "[INFO]",
                     component,
                     ANSI.GREEN + "Initializing Game Setup..." + ANSI.RESET);
-            loadStat = "Loading game configs";
+            LoadProgress.set("Loading game configs", 0.35);
 
             if (onlineMode) {
                 // DataManagerをSpringから取得して初期化
@@ -189,10 +200,16 @@ public final class ShootingGameMain extends JPanel implements Runnable {
             });
 
             // リソース情報の読み込み
+            LoadProgress.set("Loading resources", 0.40);
             ResourceManager.getInstance();
+            LoadProgress.set("Building screens", 0.75);
 
             // UIのセットアップ
-            SceneManager.getInstance().getSceneMap().values().forEach(Manager::initComponents);
+            List<Manager> managers = new ArrayList<>(SceneManager.getInstance().getSceneMap().values());
+            for (int i = 0; i < managers.size(); i++) {
+                managers.get(i).initComponents();
+                LoadProgress.set("Building screens", 0.75 + 0.25 * (i + 1) / managers.size());
+            }
 
             // すべてのマネージャーをSceneManagerから取得しカードレイアウトに登録
             SceneManager.getInstance().getSceneMap().forEach((type, manager) -> {
@@ -201,6 +218,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                 }
             });
 
+            LoadProgress.set("Ready", 1);
             panel.setLoaded(true);
 
             if (onlineMode) {
@@ -228,6 +246,8 @@ public final class ShootingGameMain extends JPanel implements Runnable {
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
+                // 保存のあいだ画面が固まって見えないよう、先にウィンドウを隠す(保存と終了はそのあと)
+                e.getWindow().setVisible(false);
                 // データセーブ開始ログ
                 LogUtils.systemLog(
                         "[INFO]",
@@ -264,41 +284,70 @@ public final class ShootingGameMain extends JPanel implements Runnable {
      */
     @Override
     public void run() {
+        keepTimerResolution();
         long lastTime = System.nanoTime();
         double deltaTime;
 
         while (running) {
             try {
-                long now = System.nanoTime();
-                double nsPerFrame = 1_000_000_000.0 / fps;
+                long frameStart = System.nanoTime();
 
-                // 秒単位に変換
-                deltaTime = (now - lastTime) / 1_000_000_000.0;
-                lastTime = now;
+                // 秒単位に変換。一瞬止まった(GCなど)後に、動きが1回で大きく飛ばないよう上限を付ける
+                deltaTime = Math.min(MAX_DELTA, (frameStart - lastTime) / 1_000_000_000.0);
+                lastTime = frameStart;
 
                 if (loaded)
                     update(deltaTime);
 
                 repaint();
 
-                // FPS制御（目標フレーム間隔までスリープ）
-                long sleepTime = (long) (nsPerFrame - (System.nanoTime() - now)) / 1_000_000;
-                if (sleepTime > 0) {
-                    try {
-                        Thread.sleep(sleepTime);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
+                // FPS制御(目標のフレーム間隔まで待つ)
+                waitUntil(frameStart + (long) (1_000_000_000.0 / fps));
             } catch (Exception e) {
                 // ゲームループエラー
-                LogUtils.systemLog(
+                LogUtils.error(
                         "[ERROR]",
                         component,
                         "Game Loop Error.",
                         e);
             }
         }
+    }
+
+    /**
+     * 指定の時刻まで待つ
+     * Thread.sleepはWindowsで誤差が大きく、フレーム間隔が時々伸びてラグく見える。
+     * 手前までは寝て、最後の1msほどは待ち続けて、ぴったりの時刻に合わせる。
+     */
+    private static void waitUntil(long targetNanos) {
+        long remain;
+        while ((remain = targetNanos - System.nanoTime()) > 0) {
+            if (remain > 2_000_000) {
+                try {
+                    Thread.sleep((remain - 1_500_000) / 1_000_000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            } else {
+                Thread.onSpinWait();
+            }
+        }
+    }
+
+    /**
+     * Windowsのタイマーの刻みを細かく保つ(長く眠るスレッドがあると、JVMが刻みを1msにする)
+     */
+    private static void keepTimerResolution() {
+        Thread t = new Thread(() -> {
+            try {
+                Thread.sleep(Long.MAX_VALUE);
+            } catch (InterruptedException ignored) {
+                // 何もしない
+            }
+        }, "timer-resolution");
+        t.setDaemon(true);
+        t.start();
     }
 
     /**
@@ -324,13 +373,8 @@ public final class ShootingGameMain extends JPanel implements Runnable {
         if (!loaded) {
             // ロゴ表示
 
-            // ロードステータスの表示
-            double spacing = 10 * ShootingGameMain.getScreenSizeAdj();
-            double size = 14 * ShootingGameMain.getScreenSizeAdj();
-            Vector2 pos = new Vector2(
-                    getWidth() - spacing,
-                    getHeight() - spacing);
-            UIBuilder.drawString(g, new Anchor(H.RIGHT, V.BOTTOM), pos, size, Color.WHITE, Font.BOLD, loadStat + "...");
+            // 進捗バーと状況の表示
+            LoadProgress.draw(g, getWidth(), getHeight());
         } else {
             SceneManager.getInstance().draw(g);
         }
