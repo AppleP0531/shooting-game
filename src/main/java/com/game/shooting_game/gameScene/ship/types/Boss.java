@@ -231,7 +231,21 @@ public class Boss extends Ship {
     public void addDamage(double damage) {
         if (phase != Phase.FIGHT)
             return;
-        super.addDamage(damage);
+        // どんなに大きいダメージでも、一度に削れるのは今のゲージの残りまで(余りは捨てる)。
+        // コマンドの /kill は addDamage を通らないので、ゲージに関係なく倒せる
+        double floorHp = (gaugeCount - currentGauge - 1) * gaugeHp;
+        double allowed = Math.max(0, hp - floorHp);
+        if (damage >= allowed) {
+            if (allowed <= 0)
+                return;
+            damage = allowed;
+            double before = hp;
+            super.addDamage(damage);
+            if (hp < before) // シールド中は減っていない
+                hp = floorHp; // 誤差で次のゲージにはみ出したり、わずかに残ったりしないようにする
+        } else {
+            super.addDamage(damage);
+        }
 
         // ダメージを受けたぶんだけコインを落とす(被弾の回数ではなく、受けたダメージの合計に比例する)
         if (def.getCoinStep() > 0)
