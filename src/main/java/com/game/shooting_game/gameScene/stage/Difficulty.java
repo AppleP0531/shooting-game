@@ -13,7 +13,7 @@ public enum Difficulty {
     EASY("EASY", "イージー", 0.8, 0.8, 0.8, 1.0, 0, 1.0, 1.0),
     NORMAL("NORMAL", "ノーマル", 1.0, 1.0, 1.0, 1.0, 0, 1.0, 1.0),
     HARD("HARD", "ハード", 1.8, 1.4, 1.6, 1.5, 0, 1.3, 1.2),
-    NIGHTMARE("NIGHTMARE", "ナイトメア", 3.5, 2.0, 2.5, 2.0, 1, 2.8, 1.4);
+    NIGHTMARE("NIGHTMARE", "ナイトメア", 35.0, 2.0, 2.5, 2.0, 1, 2.8, 1.4);
 
     private final String label;
     private final String title;
