@@ -42,12 +42,19 @@ public enum Difficulty {
      * 難易度の説明(表示用)
      */
     public String describe(StageModifiers.Spec spec, boolean boss) {
-        double hp = enemyHpRate * (boss ? bossHpRate : 1.0);
+        return describe(spec, boss, 1);
+    }
+
+    /**
+     * 難易度の説明(表示用)。ステージ固有の条件とステージ番号の倍率も重ねて、実際にかかる倍率を見せる。
+     *
+     * @param stageIndex ステージの番号(ノーマルはステージ番号。エクストラは解放に要るステージ番号)
+     */
+    public String describe(StageModifiers.Spec spec, boolean boss, int stageIndex) {
+        double hp = StageModifiers.previewEnemyHpRate(spec, this, boss, stageIndex);
         double dmg = enemyDamageRate * (boss ? bossDamageRate : 1.0);
-        if (spec != null) { // ステージ固有の条件も重ねて、実際にかかる倍率を見せる
-            hp *= spec.getEnemyHpRate();
+        if (spec != null)
             dmg *= spec.getEnemyDamageRate();
-        }
         return "敵HP ×" + fmt(hp) + " / 敵から受けるダメージ ×" + fmt(dmg)
                 + "<br>報酬 ×" + fmt(rewardRate)
                 + (moduleChanceRate != 1.0 ? " / モジュール確率 ×" + fmt(moduleChanceRate) : "")
