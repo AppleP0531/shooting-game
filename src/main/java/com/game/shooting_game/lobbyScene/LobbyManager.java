@@ -22,7 +22,6 @@ import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.lobbyScene.LobbySceneUI.HangarSceneUIData;
 import com.game.shooting_game.ui.UIBuilder;
-import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.utils.Vector2;
 
 public final class LobbyManager extends JPanel implements Manager {

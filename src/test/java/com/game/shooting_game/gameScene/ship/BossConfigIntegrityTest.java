@@ -74,11 +74,11 @@ class BossConfigIntegrityTest {
         JsonNode ships = readTree("ShipConfig.json");
         Map<String, BossDefinition> defs = bosses();
 
-        stages.fields().forEachRemaining(st -> {
+        stages.properties().forEach(st -> {
             JsonNode waves = st.getValue().get("enemyList");
             if (waves == null)
                 return;
-            waves.fields().forEachRemaining(w -> w.getValue().forEach(en -> {
+            waves.properties().forEach(w -> w.getValue().forEach(en -> {
                 String id = en.get("enemyId").asText();
                 if (id.startsWith("Boss")) {
                     assertTrue(containsKey(ships, id), st.getKey() + ": " + id + " not in ShipConfig");

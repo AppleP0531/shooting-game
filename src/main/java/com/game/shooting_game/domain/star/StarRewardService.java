@@ -78,7 +78,7 @@ public final class StarRewardService {
         JsonNode r = t.path("resources");
         r.fieldNames().forEachRemaining(name -> {
             ResourceName rn = ResourceName.fromString(name);
-            r.get(name).fields().forEachRemaining(en -> {
+            r.get(name).properties().forEach(en -> {
                 int count = en.getValue().asInt(0);
                 if (count > 0)
                     res.merge(new ResourceKinds(rn, Rarity.fromString(en.getKey())), count, Integer::sum);

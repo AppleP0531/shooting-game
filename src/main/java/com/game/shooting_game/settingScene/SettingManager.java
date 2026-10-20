@@ -10,7 +10,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
