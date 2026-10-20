@@ -95,6 +95,37 @@ public final class DamageCalculator {
         return damage;
     }
 
+    // ----- 会心 -----
+    /** 会心率の基礎値 */
+    public static final double BASE_CRIT_RATE = 0.05;
+    /** 会心ダメージ(倍率)の基礎値 */
+    public static final double BASE_CRIT_MULT = 1.5;
+
+    /**
+     * 会心率(基礎 + スキル + モジュール。0〜1)
+     */
+    public static double critRate() {
+        return Math.clamp(BASE_CRIT_RATE + SkillService.getBonus("CRIT_RATE")
+                + ModuleService.stat(ModuleStat.CRIT_RATE), 0.0, 1.0);
+    }
+
+    /**
+     * 会心ダメージ(会心時にダメージにかかる倍率)
+     */
+    public static double critMult() {
+        return BASE_CRIT_MULT + SkillService.getBonus("CRIT_DMG") + ModuleService.stat(ModuleStat.CRIT_DMG);
+    }
+
+    /**
+     * 自機の攻撃を敵に当てる(会心を抽選し、当たればダメージを増やして会心表示にする)
+     */
+    public static void hitEnemy(Ship target, double damage) {
+        if (Math.random() < critRate())
+            target.addCritDamage(damage * critMult());
+        else
+            target.addDamage(damage);
+    }
+
     // ----- 自機が受ける -----
     /**
      * 自機が受けるダメージの軽減率(0〜0.8)

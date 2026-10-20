@@ -15,7 +15,9 @@ public enum ModuleStat {
     HP_PCT("体力", true),
     HP_FLAT("体力", false),
     HEAL_PCT("回復量", true),
-    HEAL_FLAT("回復量", false);
+    HEAL_FLAT("回復量", false),
+    CRIT_RATE("会心率", true),
+    CRIT_DMG("会心ダメージ", true);
 
     private final String label;
     private final boolean percent;

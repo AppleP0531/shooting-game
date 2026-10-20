@@ -160,4 +160,35 @@ class BeamBlockTest {
         assertThat(b.hits(new Vector2(5000, 5000), 10)).isFalse();
         assertThat(b.pushOut(new Vector2(5000, 5000), 10, null)).isEqualTo(BeamBlock.Push.NONE);
     }
+
+    @Test
+    @DisplayName("ゴースト: 追加・解除でき、別の船には影響しない")
+    void ghost() {
+        BeamBlock b = block(100, 0, 0, 0);
+        Object a = new Object();
+        Object other = new Object();
+        assertThat(b.isGhost(a)).isFalse();
+        b.addGhost(a);
+        assertThat(b.isGhost(a)).isTrue();
+        assertThat(b.isGhost(other)).isFalse();
+        b.removeGhost(a);
+        assertThat(b.isGhost(a)).isFalse();
+    }
+
+    @Test
+    @DisplayName("overlaps: 円の中心がブロックに入っているか(角度0・45度)、画面外は false")
+    void overlaps() {
+        BeamBlock b = block(100, 0, 0, 0); // half = 50
+        assertThat(b.overlaps(new Vector2(0, 0), 10)).isTrue();
+        assertThat(b.overlaps(new Vector2(59, 0), 10)).isTrue();
+        assertThat(b.overlaps(new Vector2(61, 0), 10)).isFalse();
+        BeamBlock r = block(100, 45, 0, 0);
+        assertThat(r.overlaps(new Vector2(60, 0), 5)).isTrue(); // 頂点方向 (約70.7)
+        assertThat(r.overlaps(new Vector2(60, 60), 5)).isFalse();
+
+        BlockSpec s = new BlockSpec();
+        s.setX(5000);
+        s.setY(5000);
+        assertThat(new BeamBlock(s).overlaps(new Vector2(5000, 5000), 10)).isFalse();
+    }
 }

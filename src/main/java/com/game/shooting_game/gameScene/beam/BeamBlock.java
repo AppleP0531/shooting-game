@@ -99,6 +99,38 @@ public final class BeamBlock {
         SQUEEZED // 押し出す先が画面の外で、めり込んだまま(押し潰し)
     }
 
+    // 押し潰されて、重なりが解けるまで当たり判定をなくしている船(外へ瞬間移動させないため)
+    private final java.util.Set<Object> ghosts = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+
+    public boolean isGhost(Object ship) {
+        return ghosts.contains(ship);
+    }
+
+    public void addGhost(Object ship) {
+        ghosts.add(ship);
+    }
+
+    public void removeGhost(Object ship) {
+        ghosts.remove(ship);
+    }
+
+    /**
+     * 船(円)がブロックと重なっているか
+     */
+    public boolean overlaps(Vector2 pos, double radius) {
+        return onScreen() && hitsCenter(pos, radius);
+    }
+
+    private boolean hitsCenter(Vector2 p, double radius) {
+        double cos = Math.cos(angle);
+        double sin = Math.sin(angle);
+        double wx = p.getX() - this.pos.getX();
+        double wy = p.getY() - this.pos.getY();
+        double dx = wx * cos + wy * sin;
+        double dy = -wx * sin + wy * cos;
+        return half + radius - Math.abs(dx) > 0 && half + radius - Math.abs(dy) > 0;
+    }
+
     private boolean crushing = false; // 押し潰しのダメージを与えている最中か(めり込みが解けるまで、続けて与えない)
 
     /**
