@@ -361,9 +361,9 @@ public class Player extends Ship implements KeyListener {
             }
             case "breakAway" -> {
                 animateTimer += dt;
-                // 1秒経過後に上に飛び始める
-                if (animateTimer > 1) {
-                    double acceleration = 500 * ShootingGameMain.getScreenSizeAdj();
+                // 0.3秒経過後に上に飛び始める
+                if (animateTimer > 0.3) {
+                    double acceleration = 1500 * ShootingGameMain.getScreenSizeAdj();
                     breakawaySpeed += acceleration * dt;
                     pos.setY(pos.getY() - breakawaySpeed * dt);
 
