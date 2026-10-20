@@ -26,6 +26,7 @@ import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.data.UserData;
+import com.game.shooting_game.gameScene.damage.DamagePopupManager;
 import com.game.shooting_game.gameScene.GameSceneUI.GameSceneUIData;
 import com.game.shooting_game.gameScene.bullet.Bullet;
 import com.game.shooting_game.gameScene.beam.BeamManager;
@@ -110,6 +111,7 @@ public final class GameManager extends JPanel implements Manager {
         managers.add(BEAM_M); // 船より後ろに描くので船より前に置く
         managers.add(SHIP_M);
         managers.add(IM);
+        managers.add(DamagePopupManager.getInstance()); // ダメージ数字は一番手前に描く
 
         effectList = new LinkedHashMap<>();
     }
