@@ -36,6 +36,7 @@ public final class StageModifiers {
     private static Difficulty difficulty = Difficulty.NORMAL;
     private static double endlessHp = 1.0;
     private static double endlessDamage = 1.0;
+    private static boolean bossStage = false; // ボスチャレンジか(難易度のボス用倍率をかける)
     private static double stageHp = 1.0; // ステージが進むほど敵のHPが増える倍率(BalanceConfig.json の stageHpGrowth)
 
     private StageModifiers() {
@@ -61,6 +62,14 @@ public final class StageModifiers {
      * @param stageIndex ステージの番号(ノーマルはステージ番号。エクストラは解放に要るステージ番号)
      */
     public static void load(Spec spec, Difficulty diff, int stageIndex) {
+        load(spec, diff, stageIndex, false);
+    }
+
+    /**
+     * ステージの開始時に読み込む(ボスチャレンジなら、難易度のボス用倍率も重ねる)
+     */
+    public static void load(Spec spec, Difficulty diff, int stageIndex, boolean boss) {
+        bossStage = boss;
         stageHp = GameBalance.stageHpRate(stageIndex);
         current = spec == null ? new Spec() : spec;
         difficulty = diff == null ? Difficulty.NORMAL : diff;
@@ -84,11 +93,11 @@ public final class StageModifiers {
     }
 
     public static double enemyHpRate() {
-        return active() ? current.getEnemyHpRate() * difficulty.getEnemyHpRate() * endlessHp * stageHp : 1.0;
+        return active() ? current.getEnemyHpRate() * difficulty.getEnemyHpRate() * (bossStage ? difficulty.getBossHpRate() : 1.0) * endlessHp * stageHp : 1.0;
     }
 
     public static double enemyDamageRate() {
-        return active() ? current.getEnemyDamageRate() * difficulty.getEnemyDamageRate() * endlessDamage : 1.0;
+        return active() ? current.getEnemyDamageRate() * difficulty.getEnemyDamageRate() * (bossStage ? difficulty.getBossDamageRate() : 1.0) * endlessDamage : 1.0;
     }
 
     public static double playerHpRate() {

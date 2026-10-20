@@ -116,14 +116,17 @@ public final class DamageCalculator {
         return BASE_CRIT_MULT + SkillService.getBonus("CRIT_DMG") + ModuleService.stat(ModuleStat.CRIT_DMG);
     }
 
+    /** 1回の攻撃で与えるダメージの上限(ダメージ表示を5桁に収める) */
+    public static final double MAX_HIT_DAMAGE = 99_999;
+
     /**
      * 自機の攻撃を敵に当てる(会心を抽選し、当たればダメージを増やして会心表示にする)
      */
     public static void hitEnemy(Ship target, double damage) {
         if (Math.random() < critRate())
-            target.addCritDamage(damage * critMult());
+            target.addCritDamage(Math.min(MAX_HIT_DAMAGE, damage * critMult()));
         else
-            target.addDamage(damage);
+            target.addDamage(Math.min(MAX_HIT_DAMAGE, damage));
     }
 
     // ----- 自機が受ける -----
