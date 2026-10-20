@@ -647,7 +647,10 @@ public final class GameManager extends JPanel implements Manager {
 
         // アイテム衝突
         for (Item item : IM.getItemList()) {
-            if (GameUtils.collidesWith(SHIP_M.getPlayer(), item)) {
+            // 拾う範囲は、弾の当たり判定(白いドット)とは別に、機体ごとの元の大きさ
+            Player picker = SHIP_M.getPlayer();
+            if (GameUtils.distSq(picker.getPos(), item.getPos())
+                    < Math.pow(picker.getPickupSize() + item.getCollisionSize(), 2)) {
                 item.effect();
                 item.destroySelf();
             }

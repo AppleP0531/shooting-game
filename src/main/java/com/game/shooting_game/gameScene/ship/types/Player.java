@@ -52,6 +52,9 @@ public class Player extends Ship implements KeyListener {
     private String lastHorizontal = ""; // 最後に押された左右
     private String lastVertical = ""; // 最後に押された上下
     private List<SubShip> subShip = new ArrayList<>();
+    private static final double HITBOX_RADIUS = 2; // 弾の当たり判定の半径(白いドット)
+    private static final double GLOW_RADIUS = 12; // ドットの後ろの、モードの色のぼかしの半径
+    private double pickupSize; // アイテムを拾う範囲の半径(機体ごとの元の判定の大きさ)
     private double OOCTime = 10; // 暴走状態持続時間
     @Setter
     @Getter
@@ -149,7 +152,9 @@ public class Player extends Ship implements KeyListener {
             maxShield = 0;
         shieldPoints = maxShield;
         speed *= 1 + SkillService.getBonus("MOVE_SPEED");
-        collisionSize *= 1 - Math.min(0.15, SkillService.getBonus("HITBOX"));
+        // 弾の当たり判定は、中心の白いドットだけ(半径2px)。アイテムを拾う範囲は、これまでの判定の大きさのまま
+        pickupSize = collisionSize;
+        collisionSize = HITBOX_RADIUS * ShootingGameMain.getScreenSizeAdj() * (1 - Math.min(0.15, SkillService.getBonus("HITBOX")));
         OOCTime = 10 + SkillService.getBonus("OOC_TIME");
 
         mouseHandler = new MouseAdapter() {
@@ -311,6 +316,10 @@ public class Player extends Ship implements KeyListener {
             }
         }
 
+        // 当たり判定の白いドットと、後ろのモードの色(赤・青)のぼかし
+        if (SM.getSceneName() != SceneType.LOBBY)
+            drawHitDot(g2);
+
         switch (animationName) {
             case "death" -> {
                 GM.result();
@@ -318,6 +327,34 @@ public class Player extends Ship implements KeyListener {
         }
 
         subShip.forEach(s -> s.draw(g));
+    }
+
+    /**
+     * 当たり判定の白いドット(半径2px)。後ろに、今のモードの色のぼかしを置いて、モードを見分けやすくする
+     */
+    private void drawHitDot(Graphics2D g2) {
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        float glow = (float) (GLOW_RADIUS * adj);
+        Color c = mode == ColorMode.RED ? new Color(255, 70, 70) : new Color(70, 140, 255);
+        java.awt.Paint oldPaint = g2.getPaint();
+        g2.setPaint(new java.awt.RadialGradientPaint((float) pos.getX(), (float) pos.getY(), glow,
+                new float[] { 0f, 0.45f, 1f },
+                new Color[] { new Color(c.getRed(), c.getGreen(), c.getBlue(), 200),
+                        new Color(c.getRed(), c.getGreen(), c.getBlue(), 90),
+                        new Color(c.getRed(), c.getGreen(), c.getBlue(), 0) }));
+        g2.fill(new java.awt.geom.Ellipse2D.Double(pos.getX() - glow, pos.getY() - glow, glow * 2, glow * 2));
+        g2.setPaint(oldPaint);
+
+        double r = Math.max(2, HITBOX_RADIUS * adj);
+        g2.setColor(Color.WHITE);
+        g2.fill(new java.awt.geom.Ellipse2D.Double(pos.getX() - r, pos.getY() - r, r * 2, r * 2));
+    }
+
+    /**
+     * アイテムを拾う範囲の半径
+     */
+    public double getPickupSize() {
+        return pickupSize;
     }
 
     @Override
