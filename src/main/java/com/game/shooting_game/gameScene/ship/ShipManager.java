@@ -1,5 +1,6 @@
 package com.game.shooting_game.gameScene.ship;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -304,6 +305,7 @@ public final class ShipManager implements Manager {
     @Override
     public void setup() {
         clear("all");
+        freezeTimer = 0;
 
         // プレイヤー生成
         player = new Player(
@@ -314,6 +316,8 @@ public final class ShipManager implements Manager {
 
     @Override
     public void update(double dt) {
+        freezeTimer = Math.max(0, freezeTimer - dt);
+
         // プレイヤーの更新
         if (player != null)
             player.update(dt);
@@ -328,6 +332,55 @@ public final class ShipManager implements Manager {
             pushOutOfBlocks(player, true);
         for (Ship e : enemyList)
             pushOutOfBlocks(e, false);
+    }
+
+    private static final double FREEZE_BOSS_RATE = 0.5; // 凍結中のボスの進む速さ(動きと弾の間隔)
+    private double freezeTimer = 0; // 敵が凍っている残り時間(秒)
+
+    /**
+     * 敵を一定時間凍らせる(ボス以外は止まり、ボスは半分の速さになる)
+     * 
+     * @param seconds 凍る時間(秒。いま凍っているなら、長い方になる)
+     */
+    public void freezeEnemies(double seconds) {
+        freezeTimer = Math.max(freezeTimer, seconds);
+    }
+
+    /**
+     * 凍結中に、船の更新へ渡す経過時間(状態を読まない純粋な計算)
+     * 
+     * @param dt          実際の経過時間
+     * @param owner       船の種類
+     * @param freezeTimer 凍結の残り時間(0以下なら凍っていない)
+     * @return 更新に使う経過時間(敵は0、ボスは半分、それ以外はそのまま)
+     */
+    static double frozenStep(double dt, ShipKinds owner, double freezeTimer) {
+        if (freezeTimer <= 0)
+            return dt;
+        return switch (owner) {
+            case ENEMY -> 0;
+            case BOSS -> dt * FREEZE_BOSS_RATE;
+            default -> dt;
+        };
+    }
+
+    /**
+     * 凍っている敵に、氷の輪を重ねて描く(終わりが近いと点滅する)
+     */
+    private void drawFrozenRings(java.awt.Graphics2D g2) {
+        if (freezeTimer <= 0)
+            return;
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        float blink = freezeTimer < 1 ? (float) (0.5 + 0.5 * Math.sin(freezeTimer * 24)) : 1f;
+        g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+        for (Ship e : getAllEnemies()) {
+            double r = e.bodyRadius() + 5 * adj;
+            g2.setColor(new Color(150, 230, 255, (int) (50 * blink)));
+            g2.fill(new java.awt.geom.Ellipse2D.Double(e.getPos().getX() - r, e.getPos().getY() - r, r * 2, r * 2));
+            g2.setStroke(new java.awt.BasicStroke((float) (2 * adj)));
+            g2.setColor(new Color(190, 240, 255, (int) (210 * blink)));
+            g2.draw(new java.awt.geom.Ellipse2D.Double(e.getPos().getX() - r, e.getPos().getY() - r, r * 2, r * 2));
+        }
     }
 
     /**
@@ -356,6 +409,7 @@ public final class ShipManager implements Manager {
     public void draw(Graphics g) {
         player.draw(g);
         getAllEnemies().forEach(e -> e.draw(g));
+        drawFrozenRings((java.awt.Graphics2D) g);
     }
 
     /**
@@ -378,7 +432,9 @@ public final class ShipManager implements Manager {
         Iterator<Ship> iterator = ships.iterator();
         while (iterator.hasNext()) {
             Ship s = iterator.next();
-            s.update(dt); // 更新
+            double step = frozenStep(dt, s.getOwner(), freezeTimer);
+            if (step > 0)
+                s.update(step); // 更新(凍結中の敵は動かない)
 
             // 除去要求(画面外へ離脱した敵など)はドロップ等なしで取り除く
             if (s.isRemoveRequested()) {

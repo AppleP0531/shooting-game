@@ -42,7 +42,8 @@ public final class ItemManager implements Manager {
         LEVEL_UP,
         SHIELD,
         BOMB,
-        MAGNET
+        MAGNET,
+        FREEZE
     }
 
     // ----- データクラスの定義 -----

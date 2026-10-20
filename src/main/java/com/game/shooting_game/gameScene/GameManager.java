@@ -49,6 +49,10 @@ import com.game.shooting_game.model.StageRewards;
 import com.game.shooting_game.domain.module.ModuleKind;
 import com.game.shooting_game.domain.module.ModuleService;
 import com.game.shooting_game.domain.skill.SkillService;
+import com.game.shooting_game.domain.shop.ShopService;
+import com.game.shooting_game.gameScene.item.ItemFactory;
+import com.game.shooting_game.gameScene.item.ItemManager.ItemKinds;
+import com.game.shooting_game.utils.Vector2;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.LogUtils;
@@ -91,6 +95,8 @@ public final class GameManager extends JPanel implements Manager {
     private int hitCount; // このステージで受けた被弾の回数(HARDのミッション用)
     private double playTime; // このステージの経過時間(秒。ポーズ中は進まない)
     private boolean skipped; // スキップで報酬だけ受け取ったか(ミッションの対象外)
+    private ItemSlotButton bombBtn; // ショップで買ったボム(キー1)
+    private ItemSlotButton freezeBtn; // ショップで買ったフリーズ(キー2)
     private final Map<ResourceKinds, Integer> collectedResources = new LinkedHashMap<>(); // このステージで拾った素材
 
     private final List<Manager> managers = new ArrayList<>();
@@ -147,6 +153,58 @@ public final class GameManager extends JPanel implements Manager {
                 }
             }
         });
+
+        // ショップで買った特殊アイテム: 数字キー(テンキー可)とボタンで使う
+        bombBtn = createItemSlot(ItemKinds.BOMB, "1", new java.awt.Color(255, 150, 40), 0);
+        freezeBtn = createItemSlot(ItemKinds.FREEZE, "2", new java.awt.Color(80, 200, 255), 1);
+        bindItemKey(im, am, KeyEvent.VK_1, KeyEvent.VK_NUMPAD1, ItemKinds.BOMB);
+        bindItemKey(im, am, KeyEvent.VK_2, KeyEvent.VK_NUMPAD2, ItemKinds.FREEZE);
+    }
+
+    private ItemSlotButton createItemSlot(ItemKinds kind, String keyHint, java.awt.Color color, int index) {
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        int size = (int) (56 * adj), gap = (int) (8 * adj), margin = (int) (12 * adj);
+        ItemSlotButton btn = new ItemSlotButton(kind, keyHint, color);
+        btn.setBounds(margin + index * (size + gap), ShootingGameMain.getInstance().getHeight() - margin - size,
+                size, size);
+        btn.addActionListener(e -> useItem(kind));
+        this.add(btn);
+        return btn;
+    }
+
+    private void bindItemKey(InputMap im, ActionMap am, int key, int numpadKey, ItemKinds kind) {
+        String name = "useItem" + kind.name();
+        im.put(KeyStroke.getKeyStroke(key, 0), name);
+        im.put(KeyStroke.getKeyStroke(numpadKey, 0), name);
+        am.put(name, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                useItem(kind);
+            }
+        });
+    }
+
+    /**
+     * ショップで買った特殊アイテムを使う(ステージが実際に進んでいるときだけ)
+     */
+    private void useItem(ItemKinds kind) {
+        if (!setupDone || pause || resumeTimer >= 0 || leaveTimer >= 0 || !"none".equals(animationName))
+            return;
+        if (ShootingGameMain.getGlassPane().isVisible()) // コマンド入力中
+            return;
+        Player player = SHIP_M.getPlayer();
+        if (player == null || player.isDead())
+            return;
+        if (ShopService.consume(kind))
+            ItemFactory.createItem(new Vector2(player.getPos().getX(), player.getPos().getY()), kind).effect();
+        refreshItemSlots();
+    }
+
+    private void refreshItemSlots() {
+        if (bombBtn != null)
+            bombBtn.refresh();
+        if (freezeBtn != null)
+            freezeBtn.refresh();
     }
 
     /**
@@ -241,6 +299,7 @@ public final class GameManager extends JPanel implements Manager {
     @Override
     public void draw(Graphics g) {
         updateEffectData();
+        refreshItemSlots(); // 残り数の表示(変わったときだけ再描画される)
 
         // 各マネージャーの描画
         for (Manager m : managers) {
