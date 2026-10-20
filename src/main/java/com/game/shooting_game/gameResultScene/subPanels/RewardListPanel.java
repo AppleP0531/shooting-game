@@ -1,6 +1,7 @@
 package com.game.shooting_game.gameResultScene.subPanels;
 
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -17,6 +18,7 @@ import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.gameResultScene.GameResultSceneUI;
 import com.game.shooting_game.model.StageRewards;
 import com.game.shooting_game.domain.module.Module;
+import com.game.shooting_game.ui.ModuleIcons;
 import com.game.shooting_game.domain.module.ModuleService;
 import com.game.shooting_game.ui.CostPanel;
 import com.game.shooting_game.ui.UIBuilder;
@@ -25,6 +27,8 @@ import com.game.shooting_game.utils.animation.Animation;
 import com.game.shooting_game.utils.animation.AnimationManager;
 
 public class RewardListPanel extends JPanel {
+    private static final double MODULE_ICON = 56; // モジュールのアイコンの大きさ(画面倍率なし)
+    private static final double MODULE_CELL_H = 80; // モジュール1つ分の高さ(アイコン + 能力値)
     private final ShootingGameMain MAIN;
     private final AnimationManager AM;
     private final ResourceManager RM;
@@ -136,7 +140,8 @@ public class RewardListPanel extends JPanel {
      */
     private double moduleBlockHeight() {
         int n = StageRewards.getInstance().getModules().size();
-        return n == 0 ? 0 : (n * 20 + 8) * ShootingGameMain.getScreenSizeAdj();
+        int rows = (n + col - 1) / col;
+        return n == 0 ? 0 : (rows * MODULE_CELL_H + 8) * ShootingGameMain.getScreenSizeAdj();
     }
 
     /**
@@ -150,17 +155,22 @@ public class RewardListPanel extends JPanel {
         StageRewards rewards = StageRewards.getInstance();
         double adj = ShootingGameMain.getScreenSizeAdj();
 
-        // 手に入ったモジュール(素材の一覧の上に、1つ1行で出す)
+        // 手に入ったモジュール(素材の一覧の上に、アイコンで並べる。レア度の枠とレベルの札つき、下に能力値)
         if (!rewards.getModules().isEmpty()) {
-            g.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, Math.max(10, (int) (12 * adj))));
-            double lineH = 20 * adj;
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, Math.max(10, (int) (11 * adj))));
+            java.awt.FontMetrics fm = g2.getFontMetrics();
+            int icon = (int) (MODULE_ICON * adj);
             for (int i = 0; i < rewards.getModules().size(); i++) {
                 Module m = rewards.getModules().get(i);
-                g.setColor(CostPanel.rarityColor(m.getRarity()).brighter());
-                g.drawString("★ " + ModuleService.title(m) + "  "
-                        + m.getKind().getMainStat().format(ModuleService.mainNow(m)),
-                        getX() + (int) (10 * adj), getY() + (int) (10 * adj + scrollOffset + lineH * (i + 1) - 4 * adj));
+                int cx = getX() + (int) ((10 + 40 + 90 * (i % col)) * adj); // 素材の並びと同じ間隔
+                int top = getY() + (int) (10 * adj + scrollOffset + MODULE_CELL_H * adj * (i / col));
+                ModuleIcons.draw(g2, m, cx - icon / 2, top, icon);
+                String v = m.getKind().getMainStat().format(ModuleService.mainNow(m));
+                g2.setColor(CostPanel.rarityColor(m.getRarity()).brighter());
+                g2.drawString(v, cx - fm.stringWidth(v) / 2, top + icon + fm.getAscent() + (int) (2 * adj));
             }
+            g2.dispose();
         }
 
         // 基準点

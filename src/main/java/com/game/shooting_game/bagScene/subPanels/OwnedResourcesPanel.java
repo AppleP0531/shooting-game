@@ -37,7 +37,7 @@ public class OwnedResourcesPanel extends JPanel {
     private Vector2 originPos; // ドラッグ開始時のパネルの位置
     private double scrollOffset = 0; // スクロール量
     private double maxScrollOffset = 0; // 最大スクロール量
-    private int col = 4; // 一行の個数
+    private int col = 6; // 一行の個数
 
     public OwnedResourcesPanel() {
         MAIN = ShootingGameMain.getInstance();
@@ -71,7 +71,7 @@ public class OwnedResourcesPanel extends JPanel {
         // スクロール制限
         maxScrollOffset = Math.max(0,
                 20 * ShootingGameMain.getScreenSizeAdj() +
-                        rows * (100 * ShootingGameMain.getScreenSizeAdj() + 10 * ShootingGameMain.getScreenSizeAdj())
+                        rows * (62 * ShootingGameMain.getScreenSizeAdj() + 6 * ShootingGameMain.getScreenSizeAdj())
                         - panelSize.getY());
 
         for (ResourceKinds resKind : resources.keySet()) {
@@ -96,7 +96,7 @@ public class OwnedResourcesPanel extends JPanel {
 
             if (resData != null) {
                 double frameRate = resData.getFrameRate();
-                double imageSize = 100 * ShootingGameMain.getScreenSizeAdj(); // 描画時に再調整入るためそれより大きめに設定
+                double imageSize = 62 * ShootingGameMain.getScreenSizeAdj(); // 描画時に再調整入るためそれより大きめに設定
                 animationId.put(resKind, AM.addAnimation(new Animation(imageFrames, imageSize, frameRate)));
             }
         }
@@ -112,8 +112,10 @@ public class OwnedResourcesPanel extends JPanel {
 
         // 基準点
         originPos = new Vector2(
-                50 * ShootingGameMain.getScreenSizeAdj(),
-                50 * ShootingGameMain.getScreenSizeAdj() + scrollOffset);
+                // 横は、1行分(6個)の幅がパネルの中央に来るように置く(1つ目の中心の位置)
+                (getWidth() - (col * 50 + (col - 1) * 6) * ShootingGameMain.getScreenSizeAdj()) / 2
+                        + 25 * ShootingGameMain.getScreenSizeAdj(),
+                40 * ShootingGameMain.getScreenSizeAdj() + scrollOffset);
 
         int index = 0;
         // 並べ替えて表示
@@ -131,24 +133,25 @@ public class OwnedResourcesPanel extends JPanel {
                     index % col,
                     (int) (index / col));
             Vector2 size = new Vector2(
-                    80 * ShootingGameMain.getScreenSizeAdj(),
-                    100 * ShootingGameMain.getScreenSizeAdj());
-            double spacing = 10 * ShootingGameMain.getScreenSizeAdj();
+                    50 * ShootingGameMain.getScreenSizeAdj(),
+                    62 * ShootingGameMain.getScreenSizeAdj());
+            double spacing = 6 * ShootingGameMain.getScreenSizeAdj();
             Vector2 pos = new Vector2(
                     originPos.getX() + (size.getX() + spacing) * posInd.getX(),
                     originPos.getY() + (size.getY() + spacing) * posInd.getY());
+            drawEmptySlot(g, pos); // すべてのマスに、素材の枠の下地(空きマスと同じ枠)を敷く
             UIBuilder.drawEquipmentsIcon(this, g, pos, size, animationId.get(resKind), resKind, amount);
 
             index++;
         }
 
         // 素材の後ろに空欄のフレームを並べる(最後の行を埋め、パネルの高さを埋めるところまで)
-        double pitchY = 110 * ShootingGameMain.getScreenSizeAdj(); // 100(枠)+10(間隔)
+        double pitchY = 68 * ShootingGameMain.getScreenSizeAdj(); // 62(枠)+6(間隔)
         int minRows = (int) Math.ceil(getHeight() / pitchY);
         int slots = Math.max((index + col - 1) / col, minRows) * col;
         for (int i = index; i < slots; i++) {
             Vector2 pos = new Vector2(
-                    originPos.getX() + (80 + 10) * ShootingGameMain.getScreenSizeAdj() * (i % col),
+                    originPos.getX() + (50 + 6) * ShootingGameMain.getScreenSizeAdj() * (i % col),
                     originPos.getY() + pitchY * (i / col));
             drawEmptySlot(g, pos);
         }
@@ -176,15 +179,16 @@ public class OwnedResourcesPanel extends JPanel {
         Graphics2D g2 = (Graphics2D) g.create();
         double adj = ShootingGameMain.getScreenSizeAdj();
         Point p = SwingUtilities.convertPoint(this, (int) pos.getX(), (int) pos.getY(), MAIN);
-        int size = (int) (80 * adj);
+        int size = (int) (50 * adj);
+        int slotH = (int) (62 * adj); // 素材1つ分の枠と同じ高さ
         int arc = (int) (10 * adj);
 
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setColor(new Color(255, 255, 255, 14));
-        g2.fillRoundRect(p.x - size / 2, p.y - size / 2, size, size, arc, arc);
+        g2.fillRoundRect(p.x - size / 2, p.y - slotH / 2, size, slotH, arc, arc);
         g2.setStroke(new BasicStroke(Math.max(1f, (float) (1.5 * adj))));
         g2.setColor(new Color(70, 215, 255, 55));
-        g2.drawRoundRect(p.x - size / 2, p.y - size / 2, size, size, arc, arc);
+        g2.drawRoundRect(p.x - size / 2, p.y - slotH / 2, size, slotH, arc, arc);
         g2.dispose();
     }
 }

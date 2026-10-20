@@ -45,42 +45,41 @@ public final class SettingManager extends JPanel implements Manager {
 
     public void initComponents() {
         setOpaque(false);
-        setLayout(new GridBagLayout());
+        setLayout(null);
 
-        // 戻るボタン(一つ前の画面に遷移)
-        Vector2 goBackBtnSize = new Vector2(
-                200 * ShootingGameMain.getScreenSizeAdj(),
-                50 * ShootingGameMain.getScreenSizeAdj());
-        String goBackImagePath = "/static/img/UI/settingScene/goBackImage.png";
-        goBackBtn = UIBuilder.createImageBtn(component, goBackImagePath, goBackBtnSize,
-                "GO BACK");
-        goBackBtn.setPreferredSize(
-                new Dimension((int) goBackBtn.getWidth(), (int) goBackBtn.getHeight()));
-        goBackBtn.addActionListener(e -> {
-            SceneManager.getInstance().changeToPrevScene();
-        });
+        // 設定の項目は、画面全体の中央に縦に並べる(戻るボタンは左下の隅に別に置く)
+        JPanel content = new JPanel(new GridBagLayout());
+        content.setOpaque(false);
+        content.setBounds(0, 0, ShootingGameMain.getInstance().getWidth(), ShootingGameMain.getInstance().getHeight());
+        this.add(content);
+
+        // 戻るボタン(一つ前の画面に遷移。左下の隅の矢印)
+        goBackBtn = UIBuilder.createBackBtn(component, () -> SceneManager.getInstance().changeToPrevScene());
+        this.add(goBackBtn);
+        setComponentZOrder(goBackBtn, 0);
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.insets = new Insets(0, 0, (int) (10 * ShootingGameMain.getScreenSizeAdj()), 0);
 
         // FPSの選択(押すとすぐ反映して、端末の設定として保存する)
         gbc.gridy = 0;
-        this.add(createFpsRow(), gbc);
+        content.add(createFpsRow(), gbc);
 
         // ダメージ数字の表示(ON/OFF)
         gbc.gridy = 1;
-        this.add(createDamageTextRow(), gbc);
-
-        gbc.gridy = 2;
-        this.add(goBackBtn, gbc);
+        content.add(createDamageTextRow(), gbc);
 
         // ゲーム終了ボタン(確認のあと、ウィンドウを閉じるときと同じ処理でデータを保存して終了)
-        quitBtn = UIBuilder.createImageBtn(component, (BufferedImage) null, goBackBtnSize, "QUIT GAME");
+        Vector2 quitBtnSize = new Vector2(
+                200 * ShootingGameMain.getScreenSizeAdj(),
+                50 * ShootingGameMain.getScreenSizeAdj());
+        quitBtn = UIBuilder.createImageBtn(component, (BufferedImage) null, quitBtnSize, "QUIT GAME");
         quitBtn.setPreferredSize(
                 new Dimension((int) quitBtn.getWidth(), (int) quitBtn.getHeight()));
         quitBtn.addActionListener(e -> confirmQuit());
-        gbc.gridy = 3;
-        this.add(quitBtn, gbc);
+        gbc.gridy = 2;
+        content.add(quitBtn, gbc);
     }
 
     /**

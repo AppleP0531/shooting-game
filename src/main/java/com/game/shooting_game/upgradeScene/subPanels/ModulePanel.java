@@ -9,7 +9,6 @@ import com.game.shooting_game.domain.cost.CostService;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
-import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -17,7 +16,6 @@ import java.util.List;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -31,7 +29,6 @@ import com.game.shooting_game.domain.module.Module;
 import com.game.shooting_game.domain.module.ModuleInventory;
 import com.game.shooting_game.domain.module.ModuleKind;
 import com.game.shooting_game.domain.module.ModuleService;
-import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.ui.CostPanel;
 import com.game.shooting_game.ui.UIBuilder;
 
@@ -47,8 +44,9 @@ public class ModulePanel extends JPanel {
     private JButton equipBtn;
     private JButton levelUpBtn;
     private JButton dismantleBtn;
-    private JComboBox<ModuleKind> kindBox;
-    private JComboBox<Rarity> rarityBox;
+    private IconChoiceRow<ModuleKind> kindBox; // 作るモジュールの種類(アイコンで選ぶ)
+    private IconChoiceRow<Rarity> rarityBox; // レア度(色と★の数で選ぶ)
+    private JLabel pickLabel; // いま選んでいる種類とレア度の名前
     private CostPanel costPanel;
     private JButton craftBtn;
     private JTextArea statusArea;
@@ -73,7 +71,7 @@ public class ModulePanel extends JPanel {
         setVisible(false);
 
         int w = px(385);
-        int h = px(574);
+        int h = px(640);
         setBounds(ShootingGameMain.getInstance().getWidth() / 2 - w / 2,
                 ShootingGameMain.getInstance().getHeight() / 2 - h / 2, w, h);
         int pad = px(8);
@@ -134,6 +132,11 @@ public class ModulePanel extends JPanel {
         scroll.setBounds(pad, px(68), innerW, px(124));
         add(scroll);
 
+        // 1行の個数を決め、セルの幅をスクロールバーまでちょうど埋まるように広げる(右に余白が残らないように)
+        int avail = innerW - scroll.getVerticalScrollBar().getPreferredSize().width - px(4);
+        int cols = Math.max(1, avail / px(52));
+        list.setFixedCellWidth(avail / cols);
+
         // 選んだモジュールの能力
         detailArea = area(11);
         detailArea.setBounds(pad, px(196), innerW, px(106));
@@ -181,49 +184,37 @@ public class ModulePanel extends JPanel {
         craftLabel.setBounds(pad, px(340), innerW, px(16));
         add(craftLabel);
 
-        kindBox = new JComboBox<>(ModuleKind.values());
-        rarityBox = new JComboBox<>(Rarity.values());
-        kindBox.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> l, Object value, int index, boolean sel,
-                    boolean focus) {
-                JLabel c = (JLabel) super.getListCellRendererComponent(l, value, index, sel, focus);
-                ModuleKind k = (ModuleKind) value;
-                c.setText(k.getId() + "  " + k.getTitle());
-                return c;
-            }
-        });
-        rarityBox.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> l, Object value, int index, boolean sel,
-                    boolean focus) {
-                JLabel c = (JLabel) super.getListCellRendererComponent(l, value, index, sel, focus);
-                c.setText(ModuleService.rarityName((Rarity) value));
-                c.setForeground(CostPanel.rarityColor((Rarity) value).darker());
-                return c;
-            }
-        });
-        kindBox.setBounds(pad, px(358), innerW * 6 / 10 - px(2), px(26));
-        rarityBox.setBounds(pad + innerW * 6 / 10 + px(2), px(358), innerW * 4 / 10 - px(2), px(26));
-        kindBox.addActionListener(e -> refreshCraft());
-        rarityBox.addActionListener(e -> refreshCraft());
+        kindBox = new IconChoiceRow<>(List.of(ModuleKind.values()), px(38), px(5),
+                k -> ModuleIcons.get(k, px(38)), k -> new Color(70, 215, 255), ModuleKind::getShortName,
+                ModuleKind::getTitle, this::refreshCraft);
+        kindBox.setBounds(pad, px(358), innerW, px(42));
         add(kindBox);
+        rarityBox = new IconChoiceRow<>(List.of(Rarity.values()), px(46), px(6), r -> null,
+                CostPanel::rarityColor, r -> "★".repeat(r.ordinal() + 1), ModuleService::rarityName,
+                this::refreshCraft);
+        rarityBox.setBounds(pad, px(402), innerW, px(28));
         add(rarityBox);
+
+        pickLabel = new JLabel("", SwingConstants.CENTER);
+        pickLabel.setForeground(Color.WHITE);
+        pickLabel.setFont(new Font("SansSerif", Font.BOLD, Math.max(10, px(12))));
+        pickLabel.setBounds(pad, px(432), innerW, px(18));
+        add(pickLabel);
 
         lastLabel = new JLabel("");
         lastLabel.setForeground(Color.WHITE);
         lastLabel.setFont(new Font("SansSerif", Font.PLAIN, Math.max(9, px(10))));
-        lastLabel.setBounds(pad, px(386), innerW, px(16));
+        lastLabel.setBounds(pad, px(452), innerW, px(16));
         add(lastLabel);
 
         costPanel = new CostPanel(1);
-        costPanel.setBounds(pad, px(404), innerW, costPanel.maxHeight());
+        costPanel.setBounds(pad, px(470), innerW, costPanel.maxHeight());
         add(costPanel);
 
-        craftBtn = button("制作する", pad, px(404) + costPanel.maxHeight() + px(4), innerW, px(34));
+        craftBtn = button("制作する", pad, px(470) + costPanel.maxHeight() + px(4), innerW, px(34));
         craftBtn.addActionListener(e -> {
-            Module m = ModuleService.craft((ModuleKind) kindBox.getSelectedItem(),
-                    (Rarity) rarityBox.getSelectedItem());
+            Module m = ModuleService.craft(kindBox.getSelected(),
+                    rarityBox.getSelected());
             if (m != null) {
                 refresh();
                 list.setSelectedValue(m, true);
@@ -232,7 +223,7 @@ public class ModulePanel extends JPanel {
         });
 
         statusArea = area(11);
-        statusArea.setBounds(pad, px(404) + costPanel.maxHeight() + px(40), innerW, px(30));
+        statusArea.setBounds(pad, px(470) + costPanel.maxHeight() + px(40), innerW, px(30));
         add(statusArea);
     }
 
@@ -257,14 +248,15 @@ public class ModulePanel extends JPanel {
     }
 
     private void refreshCraft() {
-        ModuleKind k = (ModuleKind) kindBox.getSelectedItem();
-        Rarity r = (Rarity) rarityBox.getSelectedItem();
+        ModuleKind k = kindBox.getSelected();
+        Rarity r = rarityBox.getSelected();
         if (k == null || r == null)
             return;
         var cost = ModuleService.recipe(k, r);
         costPanel.setCost(cost);
         boolean ok = CostService.canAfford(cost);
         craftBtn.setEnabled(ok);
+        pickLabel.setText(k.getTitle() + "  /  " + ModuleService.rarityName(r));
         lastLabel.setText(k.getDetail() + "  メイン " + k.getMainStat().format(ModuleService.mainValue(k, r)));
         statusArea.setText(ok ? "制作できます" : "コインか素材が足りません(素材は変換所でレア度を上げられます)");
     }

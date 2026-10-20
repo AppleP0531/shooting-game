@@ -1,7 +1,6 @@
 package com.game.shooting_game.stageScene;
 
 import java.awt.Graphics;
-import java.awt.image.BufferedImage;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
@@ -9,10 +8,11 @@ import java.util.Objects;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+import com.game.shooting_game.domain.unlock.UnlockService;
+import com.game.shooting_game.domain.unlock.UnlockService.Feature;
 import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
-import com.game.shooting_game.domain.star.StarRewardService;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
@@ -24,10 +24,10 @@ public final class SelectStageManager extends JPanel implements Manager {
     private static enum StageModeButton {
         NORMAL("NORMAL MODE", "/static/img/UI/selectStageScene/normalModeImage.png", SceneType.NORMALSTAGE),
         INFINITY("INFINITY MODE", "/static/img/UI/selectStageScene/infinityModeImage.png", SceneType.INFINITYSTAGE),
-        EXTRA_MODULE("MODULE", "/static/img/UI/selectStageScene/extraModeImage.png", SceneType.EXTRA_MODULE),
-        EXTRA_BOSS("BOSS", "/static/img/UI/selectStageScene/extraModeImage.png", SceneType.EXTRA_BOSS),
-        EXTRA_MATERIAL("MATERIAL", "/static/img/UI/selectStageScene/extraModeImage.png", SceneType.EXTRA_MATERIAL),
-        EXTRA_SPECIAL("SPECIAL", "/static/img/UI/selectStageScene/extraModeImage.png", SceneType.EXTRA_SPECIAL);
+        EXTRA_MODULE("MODULE", "/static/img/UI/selectStageScene/extraModuleImage.png", SceneType.EXTRA_MODULE),
+        EXTRA_BOSS("BOSS", "/static/img/UI/selectStageScene/extraBossImage.png", SceneType.EXTRA_BOSS),
+        EXTRA_MATERIAL("MATERIAL", "/static/img/UI/selectStageScene/extraMaterialImage.png", SceneType.EXTRA_MATERIAL),
+        EXTRA_SPECIAL("SPECIAL", "/static/img/UI/selectStageScene/extraSpecialImage.png", SceneType.EXTRA_SPECIAL);
 
         private final String label;
         private final String imagePath;
@@ -55,8 +55,6 @@ public final class SelectStageManager extends JPanel implements Manager {
     private final ShootingGameMain MAIN;
 
     private JButton goBackBtn;
-    private JButton starBtn;
-    private StarRewardPanel starRewardPanel;
     private final Map<StageModeButton, JButton> modeBtnMap = new EnumMap<>(StageModeButton.class);
 
     private SelectStageManager() {
@@ -68,19 +66,7 @@ public final class SelectStageManager extends JPanel implements Manager {
         setOpaque(false);
 
         // 戻るボタン(一つ前の画面に遷移)
-        Vector2 goBackBtnSize = new Vector2(
-                200 * ShootingGameMain.getScreenSizeAdj(),
-                50 * ShootingGameMain.getScreenSizeAdj());
-        String goBackImagePath = "/static/img/UI/selectStageScene/goBackImage.png";
-        goBackBtn = UIBuilder.createImageBtn(component, goBackImagePath, goBackBtnSize,
-                "GO BACK");
-        goBackBtn.setBounds(
-                MAIN.getWidth() / 2 - (int) goBackBtn.getWidth() / 2,
-                (int) (50 * ShootingGameMain.getScreenSizeAdj()),
-                (int) goBackBtn.getWidth(), (int) goBackBtn.getHeight());
-        goBackBtn.addActionListener(e -> {
-            SceneManager.getInstance().changeToPrevScene();
-        });
+        goBackBtn = UIBuilder.createBackBtn(component, () -> SceneManager.getInstance().changeToPrevScene());
         this.add(goBackBtn);
 
         // モードボタンを配列(enum)から自動生成
@@ -104,33 +90,13 @@ public final class SelectStageManager extends JPanel implements Manager {
 
             modeBtnMap.put(mode, btn);
             this.add(btn);
+            try {
+                UnlockService.guard(btn, Feature.valueOf(mode.name()));
+            } catch (IllegalArgumentException ignored) {
+                // 解放条件のないモード(NORMAL)
+            }
         }
 
-        // ★報酬(★の数と次の目標を出し、押すと報酬パネルを開く)
-        Vector2 starBtnSize = new Vector2(
-                150 * ShootingGameMain.getScreenSizeAdj(),
-                40 * ShootingGameMain.getScreenSizeAdj());
-        starBtn = UIBuilder.createImageBtn(component, (BufferedImage) null, starBtnSize, "★");
-        starBtn.setBounds(
-                MAIN.getWidth() / 2 - (int) starBtn.getWidth() / 2,
-                (int) ((110 + modes.length * 60 + 10) * ShootingGameMain.getScreenSizeAdj()),
-                (int) starBtn.getWidth(), (int) starBtn.getHeight());
-        starBtn.addActionListener(e -> starRewardPanel.showPanel());
-        this.add(starBtn);
-
-        starRewardPanel = new StarRewardPanel(this::refreshStarBtn);
-        this.add(starRewardPanel);
-        refreshStarBtn();
-    }
-
-    /** ★ボタンの表記を更新する(受け取れる報酬があれば "!" を付けて黄色にする) */
-    private void refreshStarBtn() {
-        if (starBtn == null)
-            return;
-        boolean claimable = StarRewardService.claimableCount() > 0;
-        starBtn.setText("★ " + StarRewardService.totalStars() + "/" + StarRewardService.nextTarget()
-                + (claimable ? " !" : ""));
-        starBtn.setForeground(claimable ? java.awt.Color.YELLOW : java.awt.Color.WHITE);
     }
 
     /**
@@ -144,7 +110,7 @@ public final class SelectStageManager extends JPanel implements Manager {
 
     @Override
     public void setup() {
-        refreshStarBtn();
+        UnlockService.refreshAll();
     }
 
     @Override

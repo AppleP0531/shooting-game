@@ -4,10 +4,8 @@ import com.game.shooting_game.ui.UIStyle;
 import static com.game.shooting_game.ui.UIStyle.px;
 import com.game.shooting_game.domain.cost.CostService;
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 
@@ -18,7 +16,6 @@ import javax.swing.JTextArea;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.gameScene.ship.ShipManager;
-import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.domain.unit.UnitService;
 import com.game.shooting_game.ui.CostPanel;
 import com.game.shooting_game.ui.UIBuilder;

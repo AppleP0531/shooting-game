@@ -54,7 +54,7 @@ public final class InfinityStageManager extends JPanel implements Manager {
         Vector2 lobbyBtnSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
-        String lobbyImagePath = "/static/img/UI/stageScene/infinity/lobbyImage.pnt";
+        String lobbyImagePath = "/static/img/UI/stageScene/infinity/lobbyImage.png";
         lobbyBtn = UIBuilder.createImageBtn(component, lobbyImagePath, lobbyBtnSize, "LOBBY");
         lobbyBtn.setBounds(
                 MAIN.getWidth() / 2 - (int) lobbyBtn.getWidth() / 2,

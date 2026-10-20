@@ -24,7 +24,9 @@ import lombok.NoArgsConstructor;
 import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.domain.star.StarRewardService;
 import com.game.shooting_game.interfaces.Manager;
+import com.game.shooting_game.stageScene.StarRewardPanel;
 import com.game.shooting_game.stageScene.normal.subPanels.StageBtnPanel;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
@@ -55,6 +57,8 @@ public final class NormalStageManager extends JPanel implements Manager {
 
     private JButton lobbyBtn;
     private JButton settingBtn;
+    private JButton starBtn;
+    private StarRewardPanel starRewardPanel;
 
     private List<StageBtnData> stageBtnConfigList; // ボタンデータ
     @Getter
@@ -107,7 +111,34 @@ public final class NormalStageManager extends JPanel implements Manager {
         settingBtn.addActionListener(e -> SM.changeScene(SceneType.SETTING));
         this.add(settingBtn);
 
+        // ★報酬(★の数と次の目標を出し、押すと報酬パネルを開く)
+        Vector2 starBtnSize = new Vector2(
+                150 * ShootingGameMain.getScreenSizeAdj(),
+                40 * ShootingGameMain.getScreenSizeAdj());
+        starBtn = UIBuilder.createImageBtn(component, (BufferedImage) null, starBtnSize, "★");
+        // 右上の設定ボタンの左(左上のコイン表示と重ならないように)
+        starBtn.setBounds(
+                MAIN.getWidth() - 10 - (int) settingBtn.getWidth() - (int) (5 * ShootingGameMain.getScreenSizeAdj())
+                        - (int) starBtn.getWidth(),
+                10, (int) starBtn.getWidth(), (int) starBtn.getHeight());
+        starBtn.addActionListener(e -> starRewardPanel.showPanel());
+        this.add(starBtn);
+
+        starRewardPanel = new StarRewardPanel(this::refreshStarBtn);
+        this.add(starRewardPanel);
+        refreshStarBtn();
+
         stageBtnPanel.initComponents();
+    }
+
+    /** ★ボタンの表記を更新する(受け取れる報酬があれば "!" を付けて黄色にする) */
+    private void refreshStarBtn() {
+        if (starBtn == null)
+            return;
+        boolean claimable = StarRewardService.claimableCount() > 0;
+        starBtn.setText("★ " + StarRewardService.totalStars() + "/" + StarRewardService.nextTarget()
+                + (claimable ? " !" : ""));
+        starBtn.setForeground(claimable ? java.awt.Color.YELLOW : java.awt.Color.WHITE);
     }
 
     /**
@@ -197,6 +228,7 @@ public final class NormalStageManager extends JPanel implements Manager {
 
     @Override
     public void setup() {
+        refreshStarBtn();
         stageBtnPanel.setup();
     }
 

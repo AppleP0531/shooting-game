@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
@@ -23,9 +22,6 @@ import com.game.shooting_game.gameScene.stage.StageManager;
 import com.game.shooting_game.stageScene.normal.NormalStageManager;
 import com.game.shooting_game.stageScene.normal.NormalStageManager.StageBtnData;
 import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.ui.Anchor;
-import com.game.shooting_game.ui.Anchor.H;
-import com.game.shooting_game.ui.Anchor.V;
 import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.ui.StageLockIcon;
 import com.game.shooting_game.ui.UIBuilder;
