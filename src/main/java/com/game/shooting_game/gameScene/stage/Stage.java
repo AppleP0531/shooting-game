@@ -34,6 +34,9 @@ public class Stage implements GameObject {
     private Difficulty difficulty = Difficulty.NORMAL; // 選んだ難易度(ステージを選び直すとNORMALに戻る)
     @Getter
     private int waveId;
+    @Getter
+    @Setter
+    private int startWave = 1; // 無限モードの開始ウェーブ(スキルで高くできる)
     private final ShootingGameMain MAIN;
     private final SceneManager SM;
     private final ShipManager SHIP_M;
@@ -60,7 +63,8 @@ public class Stage implements GameObject {
      * リセット
      */
     public void reset() {
-        waveId = 0;
+        // 無限モードは、選んだ開始ウェーブから始める(それ以外は最初から)
+        waveId = stageId == EndlessWaves.STAGE_ID ? Math.max(1, startWave) - 1 : 0;
     }
 
     @Override
