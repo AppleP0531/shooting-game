@@ -21,6 +21,8 @@ $env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-25.0.4.101-hotspot"
 $env:Path = "$env:JAVA_HOME\bin;$env:Path"
 .\mvnw.cmd clean spring-boot:run
 
-空フォルダの整理をしたい
+[単体テスト(DB抜き)]
+.\mvnw.cmd test "-Djava.awt.headless=true" "-Dtest=GameUtilsTest,BeamBlockTest,DexServiceTest,UserDataTest,DifficultyServiceTest,ChatBoxContextTest,ShipFactoryTest,DamageFormulaTest,StageLockIconTest,MissionStarsTest,StarRewardServiceTest"
 
-エクストラステージ内の各種類をエクストラステージとしてまとめるのではなく、「ノーマルステージ」「無限ステージ」と同じ階層に並べたい
+[全体テスト]
+.\mvnw.cmd test "-Djava.awt.headless=true"
