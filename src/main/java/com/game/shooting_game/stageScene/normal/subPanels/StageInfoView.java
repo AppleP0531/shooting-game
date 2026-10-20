@@ -9,6 +9,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
@@ -21,6 +22,7 @@ import javax.swing.ToolTipManager;
 
 import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
+import com.game.shooting_game.gameScene.stage.DifficultyService.Mission;
 import com.game.shooting_game.ui.CostPanel;
 import com.game.shooting_game.ui.ResourceIcons;
 import com.game.shooting_game.ui.UIStyle;
@@ -44,6 +46,10 @@ public class StageInfoView extends JPanel {
     private int highScore;
     private final List<Reward> rewards = new ArrayList<>();
     private final List<String> enemies = new ArrayList<>();
+    private final List<Mission> missions = new ArrayList<>(); // 空なら非表示
+    private int missionStars;
+    private int missionHeadingY;
+    private final List<Integer> missionRowYs = new ArrayList<>();
 
     // レイアウトの結果(setDataで作る)
     private final List<Cell> cells = new ArrayList<>();
@@ -74,6 +80,20 @@ public class StageInfoView extends JPanel {
         repaint();
     }
 
+    /**
+     * 難易度ごとのミッション表示の設定(空のリストなら、ミッションの項目を出さない)
+     */
+    public void setMissions(List<Mission> missions, int stars) {
+        this.missions.clear();
+        if (missions != null)
+            this.missions.addAll(missions);
+        this.missionStars = stars;
+        layoutItems();
+        setPreferredSize(new Dimension(viewWidth, totalHeight));
+        revalidate();
+        repaint();
+    }
+
     private Font headingFont() {
         return UIStyle.font(13, true);
     }
@@ -91,6 +111,18 @@ public class StageInfoView extends JPanel {
         // ハイスコア
         scoreY = y;
         y += px(26);
+
+        // ミッション
+        missionRowYs.clear();
+        if (!missions.isEmpty()) {
+            missionHeadingY = y;
+            y += px(24);
+            for (int i = 0; i < missions.size(); i++) {
+                missionRowYs.add(y);
+                y += px(20);
+            }
+            y += px(8);
+        }
 
         // 報酬(素材のアイコンを格子に並べる)
         rewardHeadingY = y;
@@ -149,6 +181,25 @@ public class StageInfoView extends JPanel {
         String score = highScore > 0 ? String.format("%,d", highScore) : "-";
         g2.drawString(score, px(8) + g2.getFontMetrics().stringWidth("ハイスコア") + px(10), scoreY + px(16));
 
+        // ミッション(★は黄色、☆は灰色。フォントに依存しないよう多角形で描く)
+        if (!missions.isEmpty()) {
+            int sz = px(14);
+            heading(g2, "ミッション", missionHeadingY);
+            for (int i = 0; i < 3; i++)
+                drawStar(g2, px(8) + px(80) + i * (sz + px(2)), missionHeadingY + px(15) - sz, sz,
+                        i < missionStars);
+            g2.setFont(bodyFont());
+            FontMetrics mfm = g2.getFontMetrics();
+            for (int i = 0; i < missions.size(); i++) {
+                Mission m = missions.get(i);
+                int ry = missionRowYs.get(i);
+                drawStar(g2, px(10), ry + (px(20) - sz) / 2, sz, m.done());
+                g2.setFont(bodyFont());
+                g2.setColor(m.done() ? Color.WHITE : new Color(180, 180, 180));
+                g2.drawString(m.text(), px(10) + sz + px(6), ry + (px(20) + mfm.getAscent() - mfm.getDescent()) / 2);
+            }
+        }
+
         // 報酬
         heading(g2, "報酬(ステージごとに増減します)", rewardHeadingY);
         if (cells.isEmpty()) {
@@ -175,6 +226,24 @@ public class StageInfoView extends JPanel {
             g2.drawString(enemies.get(i), r.x + px(7), r.y + (r.height + fm.getAscent() - fm.getDescent()) / 2);
         }
         g2.dispose();
+    }
+
+    private void drawStar(Graphics2D g2, int x, int y, int size, boolean filled) {
+        Polygon p = new Polygon();
+        double cx = x + size / 2.0, cy = y + size / 2.0, ro = size / 2.0, ri = ro * 0.45;
+        for (int i = 0; i < 10; i++) {
+            double r = i % 2 == 0 ? ro : ri;
+            double a = -Math.PI / 2 + i * Math.PI / 5;
+            p.addPoint((int) Math.round(cx + r * Math.cos(a)), (int) Math.round(cy + r * Math.sin(a)));
+        }
+        if (filled) {
+            g2.setColor(new Color(255, 214, 80));
+            g2.fillPolygon(p);
+        } else {
+            g2.setColor(new Color(150, 150, 150));
+            g2.setStroke(new BasicStroke(1.2f));
+            g2.drawPolygon(p);
+        }
     }
 
     private void drawReward(Graphics2D g2, Cell c, int icon) {
