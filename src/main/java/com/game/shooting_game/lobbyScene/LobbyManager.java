@@ -159,8 +159,8 @@ public final class LobbyManager extends JPanel implements Manager {
 
         // セレクトボタン(船を選択)
         Vector2 selectShipBtnSize = new Vector2(
-                150 * ShootingGameMain.getScreenSizeAdj(),
-                30 * ShootingGameMain.getScreenSizeAdj());
+                180 * ShootingGameMain.getScreenSizeAdj(),
+                36 * ShootingGameMain.getScreenSizeAdj());
         String selectShipImagePath = "/static/img/UI/lobbyScene/selectShip.png";
         selectShipBtn = UIBuilder.createImageBtn(component, selectShipImagePath, selectShipBtnSize,
                 "SELLECT");
@@ -178,8 +178,8 @@ public final class LobbyManager extends JPanel implements Manager {
 
         // アンロックボタン(船を開放)
         Vector2 unlockShipBtnSize = new Vector2(
-                150 * ShootingGameMain.getScreenSizeAdj(),
-                30 * ShootingGameMain.getScreenSizeAdj());
+                180 * ShootingGameMain.getScreenSizeAdj(),
+                36 * ShootingGameMain.getScreenSizeAdj());
         String unlockShipImagePath = "/static/img/UI/lobbyScene/unlockShip.png";
         unlockShipBtn = UIBuilder.createImageBtn(component, unlockShipImagePath, unlockShipBtnSize,
                 "UNLOCK");
@@ -285,6 +285,30 @@ public final class LobbyManager extends JPanel implements Manager {
                 viewingShipInd);
         lobbyUI.draw(g, uiData);
         drawModeIndicator(g);
+        drawUnlockCost(g);
+    }
+
+    /**
+     * 未開放の船を見ているとき、解放ボタンの上に必要なコインを出す(足りなければ赤)
+     */
+    private void drawUnlockCost(Graphics g) {
+        if (unlockShipBtn == null || !unlockShipBtn.isVisible() || viewingShipInd < 0)
+            return;
+        var def = SHIP_M.getShipConfig().get(ShipKinds.PLAYER).get(ships[viewingShipInd]);
+        if (def == null || def.getDatas() == null)
+            return;
+        int cost = def.getDatas().getCost();
+        boolean enough = DataManager.isAdminMode() || CostService.coins() >= cost;
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+        g2.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, Math.max(10, (int) (13 * adj))));
+        String text = "必要: " + String.format("%,d", cost) + " コイン"
+                + (DataManager.isAdminMode() ? "" : "(所持 " + String.format("%,d", CostService.coins()) + ")");
+        java.awt.FontMetrics fm = g2.getFontMetrics();
+        g2.setColor(enough ? new java.awt.Color(255, 214, 80) : new java.awt.Color(255, 120, 120));
+        g2.drawString(text, unlockShipBtn.getX() + (unlockShipBtn.getWidth() - fm.stringWidth(text)) / 2,
+                unlockShipBtn.getY() - (int) (6 * adj));
+        g2.dispose();
     }
 
     /**
@@ -346,7 +370,7 @@ public final class LobbyManager extends JPanel implements Manager {
         changeModeBtn.setVisible(true);
 
         selectShipBtn.setVisible(false);
-        upgradeBtn.setVisible(false);
+        upgradeBtn.setVisible(true); // 強化ボタンは、未開放の船でもグレーアウトで見せる
         unlockShipBtn.setVisible(false);
 
         // プレビュー中の船を所有しているかどうか
@@ -359,9 +383,10 @@ public final class LobbyManager extends JPanel implements Manager {
             if (!isSelected)
                 selectShipBtn.setVisible(true);
 
-            upgradeBtn.setVisible(true); // 強化ボタンを表示
+            upgradeBtn.setEnabled(true);
         } else {
             unlockShipBtn.setVisible(true); // アンロックボタンを表示
+            upgradeBtn.setEnabled(false); // 未開放の船は強化できない(隠さず、グレーアウトする)
         }
     }
 }

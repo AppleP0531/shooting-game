@@ -698,6 +698,8 @@ package "shooting_game" {
             - createFpsRow(): JPanel
             - createDamageTextRow(): JPanel
             - createSlowRateRow(): JPanel <<Shift中の低速移動の割合を決める JSlider>>
+            - toggleBtn(basePath: String, size: Vector2, text: String): JButton <<選べる絵のボタン。img/UI/settingScene/ の「基本パス.png」と「基本パス_on.png」を使う>>
+            - {static} showSelected(btn: JButton, selected: boolean, text: String): void <<選ばれているかで絵を切り替える(絵がなければ文字を[ ]で囲む)>>
             - updateFpsButtons(): void
             - updateDamageTextButtons(): void
             - confirmQuit(): void
@@ -739,8 +741,9 @@ package "shooting_game" {
             + update(dt: double): void
             + draw(g: Graphics): void
             - drawModeIndicator(g: Graphics): void <<いまの色(青/赤)を、切り替えボタンのまわりに出す>>
+            - drawUnlockCost(g: Graphics): void <<未開放の船を見ているとき、解放ボタンの上に必要コインを出す(足りなければ赤)>>
             + setDefaultViewingShip(shipName: String): void
-            - updateBtnStates(): void
+            - updateBtnStates(): void <<強化ボタンは未開放の船でも隠さず、グレーアウトする>>
         }
 
         class LobbySceneUI {
