@@ -42,7 +42,9 @@ public final class BulletManager implements Manager {
         LASER,
         BALL,
         SPIRAL, // 進行方向の左右にらせんを描いて進む(2発を逆位相で撃つと二重らせん)
-        SPLIT // 一定時間進んだあと、扇状の小さな弾に分裂する
+        SPLIT, // 一定時間(または一定距離)進んだあと、小さな弾に分裂する
+        REDIRECT, // 少し進んで停止し、その瞬間のプレイヤー位置へ向き直って加速する
+        ACCEL // 遅い速度から直線的に加速する
     }
 
     // ----- データクラスの定義 -----
@@ -72,6 +74,14 @@ public final class BulletManager implements Manager {
         private double splitSpread; // Split用: 分裂後の弾が広がる角度(度、全体)
         private int childId; // Split用: 分裂後の弾のID(STRAIGHT)
         private double childRate = 0.5; // Split用: 分裂後の弾のダメージ倍率
+        private double splitDistance; // Split用: 分裂するまでの距離(基準px。0ならsplitTimeで分裂)
+        private String splitShape = "FAN"; // Split用: 分裂の形(FAN=扇 / RING=全周 / AIM=プレイヤーへ向けた扇)
+        private double redirectDistance; // Redirect用: 直進する距離(基準px)
+        private double pauseTime = 0.5; // Redirect用: 停止している時間(秒)
+        private double redirectSpeed = 1.6; // Redirect用: 向き直った後の速度倍率
+        private double accelStart = 0.3; // Accel用: 初速の倍率(speedに対して)
+        private double accelEnd = 1.8; // Accel用: 最終速度の倍率(speedに対して)
+        private double accelTime = 1.5; // Accel用: 加速にかける時間(秒)
         private Map<String, Double> cooldowns = new HashMap<>();
 
         @JsonAnySetter
@@ -218,12 +228,14 @@ public final class BulletManager implements Manager {
     @Override
     public void setup() {
         bulletList.forEach(this::releaseAnimation);
+        com.game.shooting_game.gameScene.bullet.barrage.AnchorMarkers.getInstance().clear();
         bulletListToRemove.clear();
         bulletList.clear();
     }
 
     @Override
     public void update(double dt) {
+        com.game.shooting_game.gameScene.bullet.barrage.AnchorMarkers.getInstance().update(dt); // 照準の予告(終わると弾が出る)
         // 更新中に分裂弾などが新しい弾を追加しても壊れないよう、コピーを回す
         new ArrayList<>(bulletList).forEach(bullet -> bullet.update(dt));
         // ブロックに当たった弾は消える(自機・敵のどちらの弾も。貫通弾とレーザーは通り抜ける)
@@ -252,6 +264,7 @@ public final class BulletManager implements Manager {
     @Override
     public void draw(Graphics g) {
         new ArrayList<>(bulletList).forEach(bullet -> bullet.draw(g));
+        com.game.shooting_game.gameScene.bullet.barrage.AnchorMarkers.getInstance().draw(g);
     }
 
     /**
@@ -282,6 +295,7 @@ public final class BulletManager implements Manager {
      * プレイヤー以外の弾をすべて削除待ちにする(ボスのゲージ破壊時など)
      */
     public void clearEnemyBullets() {
+        com.game.shooting_game.gameScene.bullet.barrage.AnchorMarkers.getInstance().clear(); // 予告中の照準も消す
         for (Bullet bullet : bulletList) {
             if (bullet.getOwner() != ShipKinds.PLAYER)
                 bulletListToRemove.add(bullet);

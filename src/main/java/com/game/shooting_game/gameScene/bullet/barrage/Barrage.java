@@ -87,7 +87,55 @@ public class Barrage {
             case FLOWER -> fireFlower(origin, base);
             case POLYGON -> firePolygon(origin, base);
             case CURTAIN -> fireCurtain(origin, t);
+            case ANCHOR -> fireAnchor(origin, base, t);
         }
+    }
+
+    /**
+     * 照準点を予告して、予告が終わったらそこを中心に弾を爆発させる
+     * 照準する点は撃った瞬間に決まり、予告の間に自機が動いても変わらない(スナップショット)。
+     */
+    private void fireAnchor(Vector2 origin, double base, double t) {
+        Vector2 target = anchorPoint(origin);
+        com.game.shooting_game.gameScene.bullet.barrage.AnchorMarkers.getInstance().add(target, spec.getWarnTime(),
+                () -> burstAt(target, base, t));
+    }
+
+    /**
+     * 照準する点(画面座標)
+     */
+    private Vector2 anchorPoint(Vector2 origin) {
+        ShootingGameMain main = ShootingGameMain.getInstance();
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        String rule = spec.getAnchor() == null ? "player" : spec.getAnchor().toLowerCase();
+        switch (rule) {
+            case "fixed" -> {
+                Vector2 p = spec.getAnchorPos() == null ? new Vector2(0, 200) : spec.getAnchorPos();
+                return new Vector2(main.getWidth() / 2.0 + p.getX() * adj, p.getY() * adj);
+            }
+            case "random" -> {
+                java.util.concurrent.ThreadLocalRandom rnd = java.util.concurrent.ThreadLocalRandom.current();
+                return new Vector2(rnd.nextDouble(main.getWidth() * 0.1, main.getWidth() * 0.9),
+                        rnd.nextDouble(main.getHeight() * 0.15, main.getHeight() * 0.55));
+            }
+            default -> {
+                Ship player = ShipManager.getInstance().getPlayer();
+                return player != null ? new Vector2(player.getPos()) : new Vector2(main.getWidth() / 2.0, main.getHeight() * 0.7);
+            }
+        }
+    }
+
+    /**
+     * 照準点を中心にした爆発(burst の形で、既存の模様をそのまま使う)
+     */
+    private void burstAt(Vector2 target, double base, double t) {
+        switch (spec.getBurst() == null ? BarrageSpec.Type.RING : spec.getBurst()) {
+            case FLOWER -> fireFlower(target, base);
+            case POLYGON -> firePolygon(target, base);
+            case FAN -> fireFan(target, t);
+            default -> fireRing(target, base);
+        }
+        volley++;
     }
 
     /**
