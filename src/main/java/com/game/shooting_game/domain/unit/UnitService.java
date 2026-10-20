@@ -128,7 +128,6 @@ public final class UnitService {
             return false;
         CostService.pay(ud, cost);
         s.setLevel(getLevel(shipId) + 1);
-        DataManager.save();
         LogUtils.systemLog("[INFO]", component,
                 ANSI.YELLOW + shipId + ANSI.RESET + " reached Lv" + s.getLevel() + ".");
         return true;
@@ -143,7 +142,6 @@ public final class UnitService {
         if (s == null)
             return;
         s.setCopies(s.getCopies() + 1);
-        DataManager.save();
     }
 
     /**
@@ -179,7 +177,6 @@ public final class UnitService {
             return false;
         s.setCopies(s.getCopies() - 1);
         s.setStars(getStars(shipId) + 1);
-        DataManager.save();
         LogUtils.systemLog("[INFO]", component,
                 ANSI.YELLOW + shipId + ANSI.RESET + " is now " + starText(shipId) + ".");
         return true;

@@ -121,7 +121,6 @@ public final class SubShipService {
         if (ud == null)
             return;
         ud.setSubShip(on ? equippedValue() : null);
-        DataManager.save();
     }
 
     // 使うフレームの指定(0なら制作済みの最高Mk)。装備中は "Custom:N" として保存する
@@ -176,7 +175,6 @@ public final class SubShipService {
         UserData ud = DataManager.getUserData();
         if (ud != null && ud.getSubShip() != null)
             ud.setSubShip(equippedValue());
-        DataManager.save();
     }
 
     /**
@@ -307,7 +305,6 @@ public final class SubShipService {
         if (!wasAssembled && isAssembled())
             setEquipped(true);
 
-        DataManager.save();
         LogUtils.systemLog("[INFO]", component,
                 ANSI.YELLOW + kind + ANSI.RESET + " crafted: Mk" + getTier(kind) + ".");
         return true;
