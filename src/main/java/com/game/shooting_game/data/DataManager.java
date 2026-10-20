@@ -7,27 +7,18 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.entity.UserEntity;
-import com.game.shooting_game.entity.UserShipEntity;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.repository.UserRepository;
 import com.game.shooting_game.utils.ANSI;
@@ -41,84 +32,16 @@ public final class DataManager implements Manager {
     private static DataManager instance;
     private static UserRepository userRepository;
     private static UserData userData;
-    private static List<Integer> expData;
+    private static volatile boolean adminMode; // 管理者モード(コインと素材が無制限になる)
 
-    // ----- データクラスの定義 -----
-    /**
-     * ユーザーデータ
-     */
-    @Data // Getter, Setterの自動生成
-    @JsonIgnoreProperties(ignoreUnknown = true) // 余計な項目の無視
-    @JsonPropertyOrder({ "lastPlayTime", "totalPlayTime", "selectedShip", "subShip", "progress", "resources", "ships" }) // 並び順の指定
-    public static class UserData {
-        private String username = "";
-        private String lastPlayTime;
-        private String totalPlayTime = "00:00:00";
-        private String selectedShip = "Ship1";
-        private String subShip;
-        private Progress progress = new Progress();
-        private Resources resources = new Resources();
-        private Map<String, ShipStats> ships = new LinkedHashMap<>();
-
-        public UserData() {
-            unlockShip("Ship1");
-        }
-
-        /**
-         * 進捗
-         */
-        @Data // Getter, Setterの自動生成
-        @NoArgsConstructor // 引数なしコンストラクタの生成
-        @JsonIgnoreProperties(ignoreUnknown = true) // 余計な項目の無視
-        public static class Progress {
-            private int exp = 0; // 獲得経験値の総量
-            private int clearedStage = 0; // ステージクリア状況
-            private Map<String, Integer> highScores = new HashMap<>(); // ステージごとの最高スコア
-
-            // 最高スコアの更新と保存
-            public void updateHighScore(String stageKey, int score) {
-                if (score > highScores.getOrDefault(stageKey, 0)) {
-                    highScores.put(stageKey, score);
-                }
-            }
-
-            // スコアの加算
-            public void addExp(int amount) {
-                exp += amount;
-            }
-        }
-
-        /**
-         * 所有資源
-         */
-        @Data // Getter, Setterの自動生成
-        @NoArgsConstructor // 引数なしコンストラクタの生成
-        @JsonIgnoreProperties(ignoreUnknown = true) // 余計な項目の無視
-        public static class Resources {
-            private int coins = 0; // コイン
-            private Map<ResourceKinds, Integer> equipments = new HashMap<>(); // 資源
-        }
-
-        // 船の情報
-        @Data // Getter, Setterの自動生成
-        @NoArgsConstructor // 引数なしコンストラクタの生成
-        @JsonIgnoreProperties(ignoreUnknown = true) // 余計な項目の無視
-        public static class ShipStats {
-            private Map<String, Integer> upgrades = new HashMap<>(); // 強化状況
-        }
-
-        // 新しい船のアンロック
-        public void unlockShip(String shipId) {
-            // まだ所有していない場合は追加
-            if (!ships.containsKey(shipId)) {
-                ships.put(shipId, new ShipStats());
-                LogUtils.systemLog(
-                        "[INFO]",
-                        component,
-                        shipId + " unlocked.");
-            }
-        }
+    public static boolean isAdminMode() {
+        return adminMode;
     }
+
+    public static void setAdminMode(boolean enabled) {
+        adminMode = enabled;
+    }
+    private static List<Integer> expData;
 
     // レベル情報
     public record UserLevelResult(int level, int exp) {
@@ -154,85 +77,6 @@ public final class DataManager implements Manager {
     }
 
     /**
-     * UserEntityからUserDataへの変換
-     * 
-     * @param entity UserEntityオブジェクト
-     * @return
-     */
-    public static UserData convertToUserData(UserEntity entity) {
-        UserData data = new UserData();
-
-        // 基本情報のコピー
-        data.setUsername(entity.getUsername());
-        data.setLastPlayTime(entity.getLastPlayTime());
-        data.setTotalPlayTime(entity.getTotalPlayTime());
-        data.setSelectedShip(entity.getSelectedShip());
-        data.setSubShip(entity.getSubShip());
-
-        // 進捗のコピー
-        data.getProgress().setExp(entity.getExp());
-        data.getProgress().setClearedStage(entity.getClearedStage());
-        data.getProgress().setHighScores(entity.getHighScores());
-
-        // 資源のコピー
-        data.getResources().setCoins(entity.getCoins());
-        data.getResources().setEquipments(entity.getEquipments());
-
-        // 船の情報のコピー
-        entity.getOwnedShips().forEach(shipEntity -> {
-            String shipId = shipEntity.getShipId();
-            data.unlockShip(shipId);
-
-            // アップグレード情報のコピー
-            if (shipEntity.getUpgrades() != null) {
-                data.getShips().get(shipId).getUpgrades().putAll(shipEntity.getUpgrades());
-            }
-        });
-
-        return data;
-    }
-
-    /**
-     * UserDataからUserEntityへの変換と同期
-     * 
-     * @param entity
-     */
-    public static void syncUserDataToEntity(UserEntity entity) {
-        // 基本フィールド
-        entity.setLastPlayTime(userData.getLastPlayTime());
-        entity.setTotalPlayTime(userData.getTotalPlayTime());
-        entity.setSelectedShip(userData.getSelectedShip());
-        entity.setSubShip(userData.getSubShip());
-
-        // 進捗
-        entity.setExp(userData.getProgress().getExp());
-        entity.setClearedStage(userData.getProgress().getClearedStage());
-        entity.getHighScores().clear();
-        if (userData.getProgress().getHighScores() != null) {
-            entity.getHighScores().putAll(userData.getProgress().getHighScores());
-        }
-
-        // 資源
-        entity.setCoins(userData.getResources().getCoins());
-        entity.getEquipments().clear();
-        if (userData.getResources().getEquipments() != null) {
-            entity.getEquipments().putAll(userData.getResources().getEquipments());
-        }
-
-        // 船の情報
-        entity.getOwnedShips().clear();
-        userData.getShips().forEach((shipId, stats) -> {
-            UserShipEntity shipEntity = new UserShipEntity();
-            shipEntity.setShipId(shipId);
-
-            if (stats.getUpgrades() != null) {
-                shipEntity.getUpgrades().putAll(stats.getUpgrades());
-            }
-            entity.getOwnedShips().add(shipEntity);
-        });
-    }
-
-    /**
      * データ読み込み
      */
     public static void load(String username, String mode) {
@@ -247,7 +91,7 @@ public final class DataManager implements Manager {
         // セーブデータが存在した場合は読み込む、存在しなければ新規作成
         if (mode.equals("login")) {
             UserEntity entity = userRepository.findByUsername(username).orElse(null);
-            userData = convertToUserData(entity);
+            userData = UserDataMapper.toUserData(entity);
         } else if (mode.equals("create")) {
             create(username);
         }
@@ -267,6 +111,7 @@ public final class DataManager implements Manager {
             return;
         }
 
+        long startedAt = System.currentTimeMillis();
         try {
             // 総プレイ時間の更新
             saveSessionPlayTime();
@@ -280,7 +125,7 @@ public final class DataManager implements Manager {
             UserEntity entity = userRepository.findByUsername(userData.getUsername()).orElse(null);
 
             // データの同期
-            syncUserDataToEntity(entity);
+            UserDataMapper.copyToEntity(userData, entity);
 
             // データベースに保存
             userRepository.save(entity);
@@ -289,7 +134,7 @@ public final class DataManager implements Manager {
             LogUtils.systemLog(
                     "[INFO]",
                     component,
-                    "User data saved successfully.");
+                    "User data saved successfully. (" + (System.currentTimeMillis() - startedAt) + " ms)");
         } catch (Exception e) {
             // セーブ失敗ログ
             LogUtils.systemLog(
@@ -401,14 +246,11 @@ public final class DataManager implements Manager {
                     "Configuration loaded successfully");
         } catch (IOException e) {
             // ロードエラーログ
-            LogUtils.systemLog(
+            LogUtils.error(
                     "[FATAL]",
                     component,
-                    "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + "." + ANSI.RESET);
-            LogUtils.systemLog(
-                    "[FATAL]",
-                    component,
-                    ANSI.RED + "Application will terminate." + ANSI.RESET,
+                    "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + "." + ANSI.RESET + "\n"
+                            + ANSI.RED + "Application will terminate." + ANSI.RESET,
                     e);
         }
     }

@@ -5,6 +5,10 @@ import java.awt.Graphics;
 
 import com.game.shooting_game.gameScene.item.Item;
 import com.game.shooting_game.gameScene.item.ItemManager.ItemKinds;
+import com.game.shooting_game.gameScene.stage.StageModifiers;
+import com.game.shooting_game.domain.module.ModuleService;
+import com.game.shooting_game.domain.module.ModuleStat;
+import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.utils.Vector2;
 
 public class Heal extends Item {
@@ -26,7 +30,11 @@ public class Heal extends Item {
 
     @Override
     public void effect() {
+        if (StageModifiers.noHeal())
+            return; // 回復なしのステージ条件
         // HPを20%回復
-        SHIP_M.getPlayer().heal(SHIP_M.getPlayer().getMaxHp() * 0.2);
+        SHIP_M.getPlayer().heal(SHIP_M.getPlayer().getMaxHp() * 0.2
+                * (1 + SkillService.getBonus("HEAL_BONUS") + ModuleService.stat(ModuleStat.HEAL_PCT))
+                + ModuleService.stat(ModuleStat.HEAL_FLAT)); // モジュールの回復量
     }
 }

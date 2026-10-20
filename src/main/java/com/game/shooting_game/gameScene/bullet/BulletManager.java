@@ -19,13 +19,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import com.game.shooting_game.gameScene.beam.BeamManager;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
+import com.game.shooting_game.utils.animation.AnimationManager;
 
 public final class BulletManager implements Manager {
     private static final String component = "[BulletManager]";
@@ -34,9 +36,15 @@ public final class BulletManager implements Manager {
     // 弾の種類
     public static enum BulletKinds {
         STRAIGHT,
+        CURVE,
+        WAVE,
         TRACKING,
         LASER,
-        BALL
+        BALL,
+        SPIRAL, // 進行方向の左右にらせんを描いて進む(2発を逆位相で撃つと二重らせん)
+        SPLIT, // 一定時間(または一定距離)進んだあと、小さな弾に分裂する
+        REDIRECT, // 少し進んで停止し、その瞬間のプレイヤー位置へ向き直って加速する
+        ACCEL // 遅い速度から直線的に加速する
     }
 
     // ----- データクラスの定義 -----
@@ -55,6 +63,25 @@ public final class BulletManager implements Manager {
         private double collisionSize;
         private double speed;
         private double damage;
+        private double diff; // Curve用: 変角量
+        private double startSpeed; // 初速(0なら最初から speed)。accel と組み合わせて加速する弾にする
+        private double accel; // 加速度(1秒あたりの速度の増加)。speed まで加速する
+        private int pierce; // 貫通数(当たった敵を何体まで通り抜けるか。0なら当たって消える)
+        private double amplitude; // Spiral用: らせんの振れ幅
+        private double frequency; // Spiral用: らせんの速さ(rad/秒)
+        private double splitTime; // Split用: 分裂するまでの時間(秒)
+        private int splitCount; // Split用: 分裂後の弾の数
+        private double splitSpread; // Split用: 分裂後の弾が広がる角度(度、全体)
+        private int childId; // Split用: 分裂後の弾のID(STRAIGHT)
+        private double childRate = 0.5; // Split用: 分裂後の弾のダメージ倍率
+        private double splitDistance; // Split用: 分裂するまでの距離(基準px。0ならsplitTimeで分裂)
+        private String splitShape = "FAN"; // Split用: 分裂の形(FAN=扇 / RING=全周 / AIM=プレイヤーへ向けた扇)
+        private double redirectDistance; // Redirect用: 直進する距離(基準px)
+        private double pauseTime = 0.5; // Redirect用: 停止している時間(秒)
+        private double redirectSpeed = 1.6; // Redirect用: 向き直った後の速度倍率
+        private double accelStart = 0.3; // Accel用: 初速の倍率(speedに対して)
+        private double accelEnd = 1.8; // Accel用: 最終速度の倍率(speedに対して)
+        private double accelTime = 1.5; // Accel用: 加速にかける時間(秒)
         private Map<String, Double> cooldowns = new HashMap<>();
 
         @JsonAnySetter
@@ -119,14 +146,11 @@ public final class BulletManager implements Manager {
                     "Configuration loaded successfully");
         } catch (IOException e) {
             // ロードエラーログ
-            LogUtils.systemLog(
+            LogUtils.error(
                     "[FATAL]",
                     component,
-                    "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + "." + ANSI.RESET);
-            LogUtils.systemLog(
-                    "[FATAL]",
-                    component,
-                    ANSI.RED + "Application will terminate." + ANSI.RESET,
+                    "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + "." + ANSI.RESET + "\n"
+                            + ANSI.RED + "Application will terminate." + ANSI.RESET,
                     e);
         }
     }
@@ -203,19 +227,34 @@ public final class BulletManager implements Manager {
 
     @Override
     public void setup() {
+        bulletList.forEach(this::releaseAnimation);
+        com.game.shooting_game.gameScene.bullet.barrage.AnchorMarkers.getInstance().clear();
         bulletListToRemove.clear();
         bulletList.clear();
     }
 
     @Override
     public void update(double dt) {
-        bulletList.forEach(bullet -> bullet.update(dt));
+        com.game.shooting_game.gameScene.bullet.barrage.AnchorMarkers.getInstance().update(dt); // 照準の予告(終わると弾が出る)
+        // 更新中に分裂弾などが新しい弾を追加しても壊れないよう、コピーを回す
+        new ArrayList<>(bulletList).forEach(bullet -> bullet.update(dt));
+        // ブロックに当たった弾は消える(自機・敵のどちらの弾も。貫通弾とレーザーは通り抜ける)
+        BeamManager beams = BeamManager.getInstance();
+        for (Bullet bullet : new ArrayList<>(bulletList)) {
+            if (bullet.isPiercing() || bullet.getKind() == BulletKinds.LASER || !bullet.isLife())
+                continue;
+            if (beams.blocksBullet(bullet.getPos(), bullet.getCollisionSize()))
+                bullet.destroySelf();
+        }
         // 条件を満たした弾を削除待ちリストに追加
         for (Bullet bullet : bulletList) {
             // 画面外に出た、または生存していない場合
             if (!bullet.inScreen() || !bullet.isLife())
                 bulletListToRemove.add(bullet);
         }
+
+        // 削除する弾のアニメーションを解放(解放しないとアニメーション更新が弾の数だけ溜まり続ける)
+        bulletListToRemove.forEach(this::releaseAnimation);
 
         // 削除待ちリストの弾をメインリストから削除してから、削除待ちリストを初期化
         bulletList.removeAll(bulletListToRemove);
@@ -224,7 +263,11 @@ public final class BulletManager implements Manager {
 
     @Override
     public void draw(Graphics g) {
-        new ArrayList<>(bulletList).forEach(bullet -> bullet.draw(g));
+        // 自機の弾を先に、敵の弾をあとに描く(敵の弾が自機の弾に隠れないように)
+        List<Bullet> snapshot = new ArrayList<>(bulletList);
+        snapshot.stream().filter(b -> b.getOwner() == ShipKinds.PLAYER).forEach(bullet -> bullet.draw(g));
+        snapshot.stream().filter(b -> b.getOwner() != ShipKinds.PLAYER).forEach(bullet -> bullet.draw(g));
+        com.game.shooting_game.gameScene.bullet.barrage.AnchorMarkers.getInstance().draw(g);
     }
 
     /**
@@ -249,6 +292,27 @@ public final class BulletManager implements Manager {
      */
     public void clearBullets() {
         bulletList.forEach(bullet -> bulletListToRemove.add(bullet));
+    }
+
+    /**
+     * プレイヤー以外の弾をすべて削除待ちにする(ボスのゲージ破壊時など)
+     */
+    public void clearEnemyBullets() {
+        com.game.shooting_game.gameScene.bullet.barrage.AnchorMarkers.getInstance().clear(); // 予告中の照準も消す
+        for (Bullet bullet : bulletList) {
+            if (bullet.getOwner() != ShipKinds.PLAYER)
+                bulletListToRemove.add(bullet);
+        }
+    }
+
+    /**
+     * 弾のアニメーションを解放
+     * 
+     * @param bullet 弾
+     */
+    private void releaseAnimation(Bullet bullet) {
+        if (bullet.animationId != null)
+            AnimationManager.getInstance().removeAnimation(bullet.animationId);
     }
 
     /**

@@ -23,7 +23,7 @@ import com.game.shooting_game.interfaces.Collectible;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 public final class ItemManager implements Manager {
@@ -32,12 +32,19 @@ public final class ItemManager implements Manager {
 
     private List<Item> itemList = new ArrayList<>(); // アイテムリスト
     private List<Item> itemListToRemove = new ArrayList<>(); // 削除待ちアイテムリスト
+    @lombok.Getter
+    @lombok.Setter
+    private double magnetTimer; // マグネット効果の残り時間(0より大きい間は全アイテムを引き寄せる)
 
     // アイテムの種類
     public static enum ItemKinds implements Collectible {
         HEAL,
         LEVEL_UP,
-        SHIELD
+        SHIELD,
+        BOMB,
+        MAGNET,
+        FREEZE,
+        SKIP_TICKET // ショップ専用(研究スキップ券。ステージには出ない)
     }
 
     // ----- データクラスの定義 -----
@@ -107,14 +114,11 @@ public final class ItemManager implements Manager {
                     "Configuration loaded successfully");
         } catch (IOException e) {
             // ロードエラーログ
-            LogUtils.systemLog(
+            LogUtils.error(
                     "[FATAL]",
                     component,
-                    "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + "." + ANSI.RESET);
-            LogUtils.systemLog(
-                    "[FATAL]",
-                    component,
-                    ANSI.RED + "Application will terminate." + ANSI.RESET,
+                    "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + "." + ANSI.RESET + "\n"
+                            + ANSI.RED + "Application will terminate." + ANSI.RESET,
                     e);
         }
     }
@@ -165,10 +169,12 @@ public final class ItemManager implements Manager {
     public void setup() {
         itemListToRemove.clear();
         itemList.clear();
+        magnetTimer = 0;
     }
 
     @Override
     public void update(double dt) {
+        magnetTimer = Math.max(0, magnetTimer - dt);
         new ArrayList<>(itemList).forEach(item -> item.update(dt));
 
         // 削除待ちリストのアイテムをメインリストから削除してから、削除待ちリストを初期化

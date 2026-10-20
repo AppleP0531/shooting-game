@@ -1,6 +1,6 @@
 {
   "FRAME": {
-    "imagePath": "/frame.png",
+    "imagePath": "/Frame.png",
     "rarity": {
       "COMMON": {
         "grids": [4, 2],
@@ -35,18 +35,21 @@
     }
   },
   "COIN": {
-    "imagePath": "/coin.png",
+    "imagePath": "/Coin.png",
     "rarity": {
       "COMMON": {
         "grids": [4, 4],
         "useCount": 13,
         "frameRate": 0.02,
-        "imageSize": 15
+        "imageSize": 15,
+        "viewGrids": [4, 2],
+        "viewUseCount": 8,
+        "viewFrameRate": 0.1
       }
     }
   },
   "GEAR": {
-    "imagePath": "/gear.png",
+    "imagePath": "/Gear.png",
     "rarity": {
       "COMMON": {
         "grids": [4, 2],
@@ -81,7 +84,7 @@
     }
   },
   "SCREW": {
-    "imagePath": "/screw.png",
+    "imagePath": "/Screw.png",
     "rarity": {
       "COMMON": {
         "grids": [4, 2],
@@ -116,7 +119,7 @@
     }
   },
   "COPPER_PLATE": {
-    "imagePath": "/copper_plate.png",
+    "imagePath": "/Copper_plate.png",
     "rarity": {
       "COMMON": {
         "grids": [4, 2],
@@ -151,7 +154,252 @@
     }
   },
   "IRON_BAR": {
-    "imagePath": "/iron_bar.png",
+    "imagePath": "/Iron_bar.png",
+    "rarity": {
+      "COMMON": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "UNCOMMON": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "RARE": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "EPIC": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "LEGENDARY": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      }
+    }
+  },
+  "ENERGY_CELL": {
+    "imagePath": "/Energy_cell.png",
+    "rarity": {
+      "COMMON": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "UNCOMMON": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "RARE": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "EPIC": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "LEGENDARY": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      }
+    }
+  },
+  "CIRCUIT": {
+    "imagePath": "/Circuit.png",
+    "rarity": {
+      "COMMON": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "UNCOMMON": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "RARE": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "EPIC": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "LEGENDARY": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      }
+    }
+  },
+  "LENS": {
+    "imagePath": "/Lens.png",
+    "rarity": {
+      "COMMON": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "UNCOMMON": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "RARE": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "EPIC": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "LEGENDARY": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      }
+    }
+  },
+  "ALLOY_PLATE": {
+    "imagePath": "/Alloy_plate.png",
+    "rarity": {
+      "COMMON": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "UNCOMMON": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "RARE": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "EPIC": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "LEGENDARY": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      }
+    }
+  },
+  "CRYSTAL_SHARD": {
+    "imagePath": "/Crystal_shard.png",
+    "rarity": {
+      "COMMON": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "UNCOMMON": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "RARE": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "EPIC": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "LEGENDARY": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      }
+    }
+  },
+  "PLASMA_CORE": {
+    "imagePath": "/Plasma_core.png",
+    "rarity": {
+      "COMMON": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "UNCOMMON": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "RARE": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "EPIC": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      },
+      "LEGENDARY": {
+        "grids": [4, 2],
+        "useCount": 8,
+        "frameRate": 0.1,
+        "imageSize": 25
+      }
+    }
+  },
+  "MODULE_CHIP": {
+    "imagePath": "/Module_chip.png",
     "rarity": {
       "COMMON": {
         "grids": [4, 2],
