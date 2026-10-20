@@ -21,11 +21,13 @@ class DifficultyBossTest {
     }
 
     @Test
-    @DisplayName("通常倍率: HARD は HP 1.8・被ダメ 1.4、NIGHTMARE は HP 3.5・被ダメ 2.0")
+    @DisplayName("通常倍率: HP は EASY 1・NORMAL 15・HARD 230・NIGHTMARE 3500、被ダメは HARD 1.4・NIGHTMARE 2.0")
     void normalRates() {
-        assertThat(Difficulty.HARD.getEnemyHpRate()).isEqualTo(1.8);
+        assertThat(Difficulty.EASY.getEnemyHpRate()).isEqualTo(1.0);
+        assertThat(Difficulty.NORMAL.getEnemyHpRate()).isEqualTo(15.0);
+        assertThat(Difficulty.HARD.getEnemyHpRate()).isEqualTo(230.0);
         assertThat(Difficulty.HARD.getEnemyDamageRate()).isEqualTo(1.4);
-        assertThat(Difficulty.NIGHTMARE.getEnemyHpRate()).isEqualTo(3.5);
+        assertThat(Difficulty.NIGHTMARE.getEnemyHpRate()).isEqualTo(3500.0);
         assertThat(Difficulty.NIGHTMARE.getEnemyDamageRate()).isEqualTo(2.0);
     }
 
@@ -45,17 +47,21 @@ class DifficultyBossTest {
         }
         double hardHp = Difficulty.HARD.getEnemyHpRate() * Difficulty.HARD.getBossHpRate();
         double nmHp = Difficulty.NIGHTMARE.getEnemyHpRate() * Difficulty.NIGHTMARE.getBossHpRate();
-        assertThat(hardHp).isCloseTo(2.34, within(1e-9));
-        assertThat(nmHp).isCloseTo(9.8, within(1e-9));
+        assertThat(hardHp).isCloseTo(299.0, within(1e-9));
+        assertThat(nmHp).isCloseTo(9800.0, within(1e-9));
     }
 
     @Test
-    @DisplayName("describeBoss: NORMAL は describe と同じ、HARD/NIGHTMARE はボス用倍率を掛けた値を出す")
+    @DisplayName("describe: ボスチャレンジはボス用倍率を掛けた値、ステージ固有の条件も重ねた値を出す")
     void describeBoss() {
-        assertThat(Difficulty.NORMAL.describeBoss()).isEqualTo(Difficulty.NORMAL.describe());
-        assertThat(Difficulty.HARD.describeBoss()).contains("敵HP ×2.3").contains("被ダメージ ×1.7");
-        assertThat(Difficulty.NIGHTMARE.describeBoss()).contains("敵HP ×9.8").contains("被ダメージ ×2.8")
+        assertThat(Difficulty.NORMAL.describe(null, true)).isEqualTo(Difficulty.NORMAL.describe(null, false));
+        assertThat(Difficulty.HARD.describe(null, true)).contains("敵HP ×299").contains("ダメージ ×1.7");
+        assertThat(Difficulty.NIGHTMARE.describe(null, true)).contains("敵HP ×9,800").contains("ダメージ ×2.8")
                 .contains("レア度UP");
-        assertThat(Difficulty.HARD.describeBoss()).isNotEqualTo(Difficulty.HARD.describe());
+        assertThat(Difficulty.HARD.describe(null, true)).isNotEqualTo(Difficulty.HARD.describe(null, false));
+
+        StageModifiers.Spec spec = new StageModifiers.Spec();
+        spec.setEnemyHpRate(2.0);
+        assertThat(Difficulty.NORMAL.describe(spec, false)).contains("敵HP ×30.0");
     }
 }

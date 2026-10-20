@@ -41,28 +41,20 @@ public enum Difficulty {
     /**
      * 難易度の説明(表示用)
      */
-    public String describe() {
-        if (this == NORMAL)
-            return "敵HP ×" + fmt(enemyHpRate) + "  標準の報酬";
-        return "敵HP ×" + fmt(enemyHpRate) + " / 被ダメージ ×" + fmt(enemyDamageRate)
-                + "  報酬 ×" + fmt(rewardRate)
-                + (moduleChanceRate != 1.0 ? " / モジュール確率 ×" + fmt(moduleChanceRate) : "")
-                + (rarityBump > 0 ? " / モジュールのレア度UP" : "");
-    }
-
-    /**
-     * ボスチャレンジでの説明(表示用)。通常ステージの倍率に、ボス用の倍率が重なる。
-     */
-    public String describeBoss() {
-        if (this == NORMAL)
-            return describe();
-        return "敵HP ×" + fmt(enemyHpRate * bossHpRate) + " / 被ダメージ ×" + fmt(enemyDamageRate * bossDamageRate)
-                + "  報酬 ×" + fmt(rewardRate)
+    public String describe(StageModifiers.Spec spec, boolean boss) {
+        double hp = enemyHpRate * (boss ? bossHpRate : 1.0);
+        double dmg = enemyDamageRate * (boss ? bossDamageRate : 1.0);
+        if (spec != null) { // ステージ固有の条件も重ねて、実際にかかる倍率を見せる
+            hp *= spec.getEnemyHpRate();
+            dmg *= spec.getEnemyDamageRate();
+        }
+        return "敵HP ×" + fmt(hp) + " / 敵から受けるダメージ ×" + fmt(dmg)
+                + "<br>報酬 ×" + fmt(rewardRate)
                 + (moduleChanceRate != 1.0 ? " / モジュール確率 ×" + fmt(moduleChanceRate) : "")
                 + (rarityBump > 0 ? " / モジュールのレア度UP" : "");
     }
 
     private static String fmt(double v) {
-        return String.format("%.1f", v);
+        return v >= 100 ? String.format("%,.0f", v) : String.format("%.1f", v);
     }
 }

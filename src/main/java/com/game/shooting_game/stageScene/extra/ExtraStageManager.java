@@ -295,8 +295,12 @@ public final class ExtraStageManager extends JPanel implements Manager {
         StringBuilder sb = new StringBuilder();
         sb.append(d.getDescription()).append("\n");
         // ボスチャレンジなどの固定条件(デイリーは説明文に含まれている)
-        if (id != DailyService.STAGE_ID && d.getModifiers() != null)
-            sb.append("\n【条件】\n").append(StageModifiers.describe(d.getModifiers()));
+        // (敵のHP・受けるダメージの倍率は、難易度の欄に、難易度と重ねた値で出す)
+        if (id != DailyService.STAGE_ID && d.getModifiers() != null) {
+            String conds = StageModifiers.describe(d.getModifiers(), false);
+            if (!conds.isEmpty())
+                sb.append("\n【条件】\n").append(conds);
+        }
         sb.append("\n【クリア報酬】\n");
         if (d.getModuleRewards() != null) {
             for (ModuleReward r : d.getModuleRewards()) {
