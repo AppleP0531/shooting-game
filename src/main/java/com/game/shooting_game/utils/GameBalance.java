@@ -15,9 +15,9 @@ public final class GameBalance {
     private static final String component = "[GameBalance]";
     private static final String CONFIG_PATH = "/static/configs/BalanceConfig.json";
 
-    private static double unitAttackGrowth = 1.06;
-    private static double rankAttackGrowth = 18.0;
-    private static double stageHpGrowth = 1.07;
+    private static double unitAttackGrowth = 1.03;
+    private static double rankAttackGrowth = 4.5;
+    private static double stageHpGrowth = 1.034;
     private static double endlessHpPerWave = 0.015;
     private static boolean loaded = false;
 

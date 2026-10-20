@@ -32,13 +32,13 @@ class UnitServiceAttackTest {
     }
 
     @Test
-    @DisplayName("レベルを上げると火力は指数的に増える(Lv50 は 1.06^49 付近)")
+    @DisplayName("レベルを上げると火力は指数的に増える(Lv50 は unitAttackGrowth^49 付近)")
     void levelGrowsExponentially() {
         stats.setStars(0);
         stats.setLevel(50);
         double lv50 = UnitService.attackRate(shipId);
-        assertThat(lv50).isCloseTo(Math.pow(1.06, 49), within(1e-6 * lv50));
-        assertThat(lv50).isBetween(15.0, 20.0);
+        assertThat(lv50).isCloseTo(Math.pow(GameBalance.unitAttackGrowth(), 49), within(1e-6 * lv50));
+        assertThat(lv50).isBetween(3.5, 5.0);
 
         double prev = 0;
         for (int lv = 1; lv <= 50; lv++) {
@@ -66,5 +66,13 @@ class UnitServiceAttackTest {
         stats.setStars(4);
         double expected = base * Math.pow(GameBalance.rankAttackGrowth(), 4);
         assertThat(UnitService.attackRate(shipId)).isCloseTo(expected, within(1e-6 * expected));
+    }
+
+    @Test
+    @DisplayName("最大強化(Lv50・ランク5)の火力は 99,999 未満(ダメージ表示の上限内)")
+    void maxedAttackBelowCap() {
+        stats.setLevel(50);
+        stats.setStars(5);
+        assertThat(UnitService.attackRate(shipId)).isLessThan(99_999);
     }
 }
