@@ -9,13 +9,12 @@ import javax.swing.JPanel;
 
 import lombok.Getter;
 
-import com.game.shooting_game.domain.unlock.UnlockService;
 import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.SceneManager;
-import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.bagScene.BagSceneUI.BagSceneUIData;
 import com.game.shooting_game.bagScene.subPanels.OwnedResourcesPanel;
 import com.game.shooting_game.data.DataManager;
+import com.game.shooting_game.domain.unlock.UnlockService;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.ui.UIBuilder;
 
@@ -23,7 +22,6 @@ public final class BagManager extends JPanel implements Manager {
     private static final String component = "[BagManager]";
     private static BagManager instance;
 
-    private final ShootingGameMain MAIN;
     private final BagSceneUI bagUI;
     private final OwnedResourcesPanel ownedResourcesPanel;
 
@@ -33,8 +31,6 @@ public final class BagManager extends JPanel implements Manager {
     private Map<ResourceKinds, Integer> equipments;
 
     private BagManager() {
-        MAIN = ShootingGameMain.getInstance();
-
         bagUI = new BagSceneUI();
         ownedResourcesPanel = new OwnedResourcesPanel();
     }
@@ -48,8 +44,6 @@ public final class BagManager extends JPanel implements Manager {
         // 戻るボタン(一つ前の画面に遷移)
         goBackBtn = UIBuilder.createBackBtn(component, () -> SceneManager.getInstance().changeToPrevScene());
         this.add(goBackBtn);
-
-
 
         ownedResourcesPanel.initComponents();
     }
