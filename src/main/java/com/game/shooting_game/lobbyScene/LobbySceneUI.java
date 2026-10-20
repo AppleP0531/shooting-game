@@ -169,7 +169,7 @@ public class LobbySceneUI {
             SHIP_M.setPlayer(new Player(
                     shipName,
                     ColorMode.BLUE,
-                    new Vector2(MAIN.getWidth() / 2, MAIN.getHeight() - 160 * ShootingGameMain.getScreenSizeAdj())));
+                    new Vector2(MAIN.getWidth() / 2, MAIN.getHeight() - 215 * ShootingGameMain.getScreenSizeAdj())));
         }
 
         BM.draw(g);
@@ -185,7 +185,7 @@ public class LobbySceneUI {
     private void drawTabBar(Graphics g, int totalLength, int ind) {
         Vector2 barPos = new Vector2(
                 MAIN.getWidth() / 2,
-                MAIN.getHeight() - 130 * ShootingGameMain.getScreenSizeAdj());
+                MAIN.getHeight() - 150 * ShootingGameMain.getScreenSizeAdj()); // 船(と、その下の炎)にめり込まない位置
         Vector2 barSize = new Vector2(
                 120,
                 10);

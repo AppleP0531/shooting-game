@@ -79,7 +79,7 @@ public final class SettingManager extends JPanel implements Manager {
         Vector2 quitBtnSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
-        quitBtn = UIBuilder.createImageBtn(component, (BufferedImage) null, quitBtnSize, "QUIT GAME");
+        quitBtn = UIBuilder.createImageBtn(component, "/static/img/UI/settingScene/quitGame.png", quitBtnSize, "QUIT GAME");
         quitBtn.setPreferredSize(
                 new Dimension((int) quitBtn.getWidth(), (int) quitBtn.getHeight()));
         quitBtn.addActionListener(e -> confirmQuit());
@@ -122,6 +122,33 @@ public final class SettingManager extends JPanel implements Manager {
     }
 
     /**
+     * 選べるボタン(選ばれているかで絵が切り替わる。「<基本パス>.png」と「<基本パス>_on.png」を使う)
+     */
+    private JButton toggleBtn(String basePath, Vector2 size, String text) {
+        JButton btn = UIBuilder.createImageBtn(component, basePath + ".png", size, text);
+        JButton on = UIBuilder.createImageBtn(component, basePath + "_on.png", size, text);
+        btn.putClientProperty("iconOff", btn.getIcon());
+        btn.putClientProperty("iconOn", on.getIcon());
+        btn.setPreferredSize(new Dimension((int) size.getX(), (int) size.getY()));
+        btn.setMargin(new Insets(0, 0, 0, 0));
+        return btn;
+    }
+
+    /**
+     * 選ばれているかを見せる(絵があれば絵を切り替え、なければ文字を[ ]で囲む)
+     */
+    private static void showSelected(JButton btn, boolean selected, String text) {
+        javax.swing.Icon off = (javax.swing.Icon) btn.getClientProperty("iconOff");
+        javax.swing.Icon on = (javax.swing.Icon) btn.getClientProperty("iconOn");
+        if (off != null && on != null) {
+            btn.setIcon(selected ? on : off);
+            return;
+        }
+        btn.setText(selected ? "[" + text + "]" : text);
+        btn.setFont(btn.getFont().deriveFont(selected ? Font.BOLD : Font.PLAIN));
+    }
+
+    /**
      * FPSの行(「FPS」の文字と、選べる値のボタン)
      */
     private JPanel createFpsRow() {
@@ -135,8 +162,8 @@ public final class SettingManager extends JPanel implements Manager {
         row.add(label);
 
         for (int fps : GameSettings.FPS_CHOICES) {
-            JButton btn = UIBuilder.createImageBtn(component, (BufferedImage) null,
-                    new Vector2(52 * adj, 30 * adj), String.valueOf(fps));
+            JButton btn = toggleBtn("/static/img/UI/settingScene/fps" + fps, new Vector2(52 * adj, 30 * adj),
+                    String.valueOf(fps));
             btn.setPreferredSize(new Dimension((int) (52 * adj), (int) (30 * adj)));
             btn.setMargin(new Insets(0, 0, 0, 0));
             btn.addActionListener(e -> {
@@ -165,7 +192,7 @@ public final class SettingManager extends JPanel implements Manager {
         row.add(label);
 
         for (boolean enabled : new boolean[] { true, false }) {
-            JButton btn = UIBuilder.createImageBtn(component, (BufferedImage) null,
+            JButton btn = toggleBtn("/static/img/UI/settingScene/" + (enabled ? "on" : "off"),
                     new Vector2(60 * adj, 30 * adj), enabled ? "ON" : "OFF");
             btn.setPreferredSize(new Dimension((int) (60 * adj), (int) (30 * adj)));
             btn.setMargin(new Insets(0, 0, 0, 0));
@@ -188,8 +215,7 @@ public final class SettingManager extends JPanel implements Manager {
         damageTextBtns.forEach((enabled, btn) -> {
             boolean selected = enabled == current;
             String name = enabled ? "ON" : "OFF";
-            btn.setText(selected ? "[" + name + "]" : name);
-            btn.setFont(btn.getFont().deriveFont(selected ? Font.BOLD : Font.PLAIN));
+            showSelected(btn, selected, name);
         });
     }
 
@@ -200,8 +226,7 @@ public final class SettingManager extends JPanel implements Manager {
         int current = ShootingGameMain.getInstance().getFps();
         fpsBtns.forEach((fps, btn) -> {
             boolean selected = fps == current;
-            btn.setText(selected ? "[" + fps + "]" : String.valueOf(fps));
-            btn.setFont(btn.getFont().deriveFont(selected ? Font.BOLD : Font.PLAIN));
+            showSelected(btn, selected, String.valueOf(fps));
         });
     }
 
