@@ -89,8 +89,6 @@ final class PlayerDataCommands extends CommandGroup {
                     error("Unknown ship: " + sid);
                     return;
                 }
-                if (DataManager.getUserData().getShips().containsKey(sid))
-                    com.game.shooting_game.domain.unit.UnitService.addCopy(sid); // 所持済みなら予備機が増える
                 DataManager.getUserData().unlockShip(sid);
                 LobbyManager.getInstance().updateBtnStates();
             } catch (NumberFormatException ne) {
