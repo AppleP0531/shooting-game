@@ -161,8 +161,8 @@ public class Boss extends Ship {
                 alpha = (float) Math.max(0.0, alpha - dt * 0.6);
             }
             case TRANSITION -> {
-                // 無敵中は点滅
-                alpha = (float) (0.55 + 0.45 * Math.sin(phaseTimer * 28));
+                // 無敵中。点滅はせず、機体の震え・光・衝撃波で形態の変化を見せる(描画側)
+                alpha = 1f;
                 if (phaseTimer >= def.getTransitionTime())
                     startGauge();
             }
@@ -348,15 +348,143 @@ public class Boss extends Ship {
         Graphics2D g2 = (Graphics2D) g;
         super.draw(g);
 
+        // 形態が変わる間は、ためて(縮んで震える)→ 弾けて(膨らむ)→ 落ち着く、の動きを機体に付ける
+        AffineTransform oldTransform = g2.getTransform();
+        if (phase == Phase.TRANSITION)
+            applyTransitionTransform(g2);
+
         // 種類・形態ごとのPNG画像で描く。画像がなければ図形の仮描画にする
         if (!drawBodyImage(g2))
             drawPlaceholder(g2);
+
+        g2.setTransform(oldTransform);
+        if (phase == Phase.TRANSITION)
+            drawTransitionEffect(g2);
 
         switch (animationName) {
             case "death" -> {
                 clear();
             }
         }
+    }
+
+    // ---- 形態変化の演出 ----
+    private static final double BURST_AT = 0.45; // 移行の進み具合のうち、ためが終わって弾ける位置(0〜1)
+
+    /**
+     * 移行の進み具合(0〜1。移行中でなければ1)
+     */
+    private double transitionProgress() {
+        return phase == Phase.TRANSITION ? Math.min(1, phaseTimer / Math.max(0.1, def.getTransitionTime())) : 1;
+    }
+
+    /**
+     * 前の形態から新しい形態へ切り替わる具合(0〜1)。弾ける瞬間のあたりで滑らかに入れ替わる。
+     */
+    private double formBlend() {
+        double x = Math.clamp((transitionProgress() - BURST_AT + 0.08) / 0.3, 0, 1);
+        return x * x * (3 - 2 * x);
+    }
+
+    /**
+     * 機体の動き: ためる間は少し縮んで震えが強まり、弾ける瞬間に膨らんでから元の大きさに落ち着く
+     */
+    private void applyTransitionTransform(Graphics2D g2) {
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        double p = transitionProgress();
+        double dx = 0;
+        double dy = 0;
+        double scale;
+        if (p < BURST_AT) {
+            double c = p / BURST_AT; // ため(0→1)
+            double amp = c * c * 3 * adj;
+            dx = Math.sin(phaseTimer * 47) * amp;
+            dy = Math.cos(phaseTimer * 39) * amp * 0.6;
+            scale = 1 - 0.06 * c;
+        } else {
+            double q = (p - BURST_AT) / (1 - BURST_AT); // 弾けたあと(0→1)
+            scale = 0.94 + 0.06 * q + 0.14 * Math.sin(Math.PI * Math.min(1, q * 2)) * (1 - q);
+        }
+        g2.translate(pos.getX() + dx, pos.getY() + dy);
+        g2.scale(scale, scale);
+        g2.translate(-pos.getX(), -pos.getY());
+    }
+
+    /**
+     * 光と衝撃波: ためる間は光が集まり、弾けた瞬間に光がふくらんで輪が広がる
+     */
+    private void drawTransitionEffect(Graphics2D g2) {
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        double p = transitionProgress();
+        double r = imageSize.getOrDefault("ship", 120) / 2.0;
+        Color accent = BossLook.of(shipId).accent();
+        Color bright = new Color((accent.getRed() + 255 * 2) / 3, (accent.getGreen() + 255 * 2) / 3,
+                (accent.getBlue() + 255 * 2) / 3);
+        double cx = pos.getX();
+        double cy = pos.getY();
+
+        var oldComposite = g2.getComposite();
+        var oldPaint = g2.getPaint();
+        var oldStroke = g2.getStroke();
+        g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // 機体のまわりの光(ためる間に強まり、弾けたあとゆっくり消える)
+        double glow = p < BURST_AT ? p / BURST_AT : 1 - (p - BURST_AT) / (1 - BURST_AT);
+        double glowR = r * (1.0 + 0.9 * glow);
+        fillGlow(g2, cx, cy, glowR, accent, 0.55 * glow * glow);
+
+        // 集まってくる光の粒(ためる間だけ)
+        if (p < BURST_AT) {
+            double c = p / BURST_AT;
+            g2.setColor(new Color(bright.getRed(), bright.getGreen(), bright.getBlue(), (int) (200 * Math.min(1, c * 2))));
+            int n = 14;
+            for (int i = 0; i < n; i++) {
+                double a = i * (2 * Math.PI / n) + phaseTimer * 2.2;
+                double dist = r * (2.4 - 1.9 * c) * (0.8 + 0.2 * Math.sin(i * 1.7));
+                double d = Math.max(2, 3.5 * adj * (1 - 0.4 * c));
+                g2.fill(new java.awt.geom.Ellipse2D.Double(cx + Math.cos(a) * dist - d / 2,
+                        cy + Math.sin(a) * dist - d / 2, d, d));
+            }
+        }
+
+        // 弾ける瞬間の核の光(一瞬だけ、色をにじませたやわらかい光)
+        double burst = Math.max(0, 1 - Math.abs(p - BURST_AT) / 0.1);
+        if (burst > 0)
+            fillGlow(g2, cx, cy, r * 1.5, bright, 0.7 * burst * burst);
+
+        // 衝撃波の輪(2本、少しずらして広がる)
+        if (p >= BURST_AT) {
+            double q = (p - BURST_AT) / (1 - BURST_AT);
+            for (int i = 0; i < 2; i++) {
+                double lq = Math.clamp((q - 0.12 * i) / (1 - 0.12 * i), 0, 1);
+                if (lq <= 0)
+                    continue;
+                double ease = 1 - Math.pow(1 - lq, 3);
+                double ringR = r * (0.7 + 3.2 * ease);
+                float w = (float) Math.max(1, (9 - 5 * i) * adj * (1 - lq));
+                g2.setStroke(new BasicStroke(w));
+                g2.setColor(new Color(bright.getRed(), bright.getGreen(), bright.getBlue(),
+                        (int) (230 * (1 - lq) * (1 - 0.35 * i))));
+                g2.draw(new java.awt.geom.Ellipse2D.Double(cx - ringR, cy - ringR, ringR * 2, ringR * 2));
+            }
+        }
+
+        g2.setComposite(oldComposite);
+        g2.setPaint(oldPaint);
+        g2.setStroke(oldStroke);
+    }
+
+    private static void fillGlow(Graphics2D g2, double cx, double cy, double radius, Color c, double a) {
+        if (radius < 1 || a <= 0)
+            return;
+        int alpha = (int) Math.clamp(a * 255, 0, 255);
+        g2.setPaint(new java.awt.RadialGradientPaint(
+                new java.awt.geom.Point2D.Double(cx, cy), (float) radius,
+                new float[] { 0f, 0.45f, 1f },
+                new Color[] { new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha),
+                        new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha / 2),
+                        new Color(c.getRed(), c.getGreen(), c.getBlue(), 0) }));
+        g2.fill(new java.awt.geom.Ellipse2D.Double(cx - radius, cy - radius, radius * 2, radius * 2));
     }
 
     // ---- PNG画像での描画 ----
@@ -404,7 +532,7 @@ public class Boss extends Ship {
         double s = imageSize.getOrDefault("ship", 120) / 2.0;
         double k = s / BODY_IMAGE_UNIT;
         double base = Math.max(0f, Math.min(1f, alpha));
-        double grow = phase == Phase.TRANSITION ? Math.min(1, phaseTimer / Math.max(0.1, def.getTransitionTime())) : 1;
+        double grow = formBlend();
         int frame = (int) (bodyClock / BODY_FRAME_TIME);
 
         Composite oldComposite = g2.getComposite();
@@ -435,7 +563,7 @@ public class Boss extends Ship {
      */
     private void drawPlaceholder(Graphics2D g2) {
         // 今の形態に入った直後は、新しい部品が伸びてくる(0→1)
-        double grow = phase == Phase.TRANSITION ? Math.min(1, phaseTimer / Math.max(0.1, def.getTransitionTime())) : 1;
+        double grow = formBlend();
         drawBody(g2, pos.getX(), pos.getY(), imageSize.getOrDefault("ship", 120) / 2.0, BossLook.of(shipId),
                 currentGauge, grow, phaseTimer, alpha);
     }
