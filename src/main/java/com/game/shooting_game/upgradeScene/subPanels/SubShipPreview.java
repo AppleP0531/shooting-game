@@ -15,15 +15,14 @@ import javax.swing.Timer;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.domain.subship.SubShipService;
+import com.game.shooting_game.domain.subship.SubShipTypeService.TypeDef;
 
 /**
  * サブ機のプレビュー
- * 左に「いまのサブ機」、右に「選んでいるパーツを制作・強化した後のサブ機」を、自機の両側に付いた形で並べて動かして見せる。
+ * 左に「いまのレベルのサブ機」、右に「1レベル強化した後のサブ機」を、自機の両側に付いた形で並べて動かして見せる。
  */
 public class SubShipPreview extends JPanel {
-    private static final String[] KINDS = { "HULL", "CANNON", "ENGINE", "CORE", "EMITTER" };
-
-    private String selectedKind;
+    private TypeDef type;
     private double time = 0;
     private final Timer timer;
 
@@ -47,24 +46,21 @@ public class SubShipPreview extends JPanel {
     }
 
     /**
-     * 強化候補のパーツの設定
+     * 見せるタイプの設定
      */
-    public void setSelectedKind(String kind) {
-        this.selectedKind = kind;
+    public void setType(TypeDef type) {
+        this.type = type;
         repaint();
     }
 
     /**
-     * 今のMkに対して、選択中のパーツを1段階上げたMkの配列を返す(上げられなければ今のまま)
+     * いまのレベル(after なら1レベル上)の見た目の部品の段階
      */
     private int[] tiers(boolean after) {
-        int[] t = new int[KINDS.length];
-        for (int i = 0; i < KINDS.length; i++) {
-            t[i] = "HULL".equals(KINDS[i]) ? SubShipService.hullTier() : SubShipService.getTier(KINDS[i]);
-            if (after && KINDS[i].equals(selectedKind) && SubShipService.getTier(KINDS[i]) < SubShipService.maxTier(KINDS[i]))
-                t[i] = SubShipService.getTier(KINDS[i]) + 1; // 制作後は、新しく作ったMkを使う
-        }
-        return t;
+        if (type == null)
+            return new int[5];
+        int lv = SubShipService.level(type);
+        return SubShipService.look(type, after ? Math.min(type.maxLevel(), lv + 1) : lv);
     }
 
     @Override
@@ -83,12 +79,22 @@ public class SubShipPreview extends JPanel {
         g2.setColor(new Color(120, 200, 255, 70));
         g2.drawRoundRect(0, 0, w - 1, h - 1, 10, 10);
 
-        boolean canUpgrade = selectedKind != null
-                && SubShipService.getTier(selectedKind) < SubShipService.maxTier(selectedKind);
+        boolean canUpgrade = type != null && !SubShipService.isMaxLevel(type);
+
+        // 未解放のタイプは、強化の前後を見せずに、解放が必要なことだけ出す
+        if (type == null) {
+            g2.setFont(new Font("SansSerif", Font.BOLD, (int) (14 * adj)));
+            g2.setColor(new Color(220, 220, 220));
+            String s = "未解放(解放すると強化できます)";
+            FontMetrics fm0 = g2.getFontMetrics();
+            g2.drawString(s, w / 2 - fm0.stringWidth(s) / 2, h / 2 + fm0.getAscent() / 2);
+            g2.dispose();
+            return;
+        }
 
         drawHalf(g2, 0, w / 2, h, "いま", tiers(false), 1f);
         if (canUpgrade) {
-            drawHalf(g2, w / 2, w, h, "制作後", tiers(true), 1f);
+            drawHalf(g2, w / 2, w, h, "強化後", tiers(true), 1f);
             // 矢印
             g2.setColor(new Color(255, 255, 255, 170));
             g2.setFont(new Font("SansSerif", Font.BOLD, (int) (18 * adj)));
@@ -131,10 +137,9 @@ public class SubShipPreview extends JPanel {
         // サブ機(フレームが大きいほど外側に付く)
         double off = (24 + 6 * SubShipService.hullSize(Math.max(1, t[0]))) * adj * 0.8;
         double y = cy + 8 * adj;
-        // 完成していない(必須パーツが足りない)ときも、制作済みの分は表示する
         for (boolean left : new boolean[] { true, false })
             com.game.shooting_game.domain.subship.SubShipRenderer.draw(g2,
                     left ? cx - off : cx + off, y, left,
-                    t[0], t[1], t[2], t[3], t[4], ColorMode.BLUE, time, alpha, 0.45);
+                    t[0], t[1], t[2], t[3], t[4], SubShipService.typeIndex(type), ColorMode.BLUE, time, alpha, 0.45);
     }
 }
