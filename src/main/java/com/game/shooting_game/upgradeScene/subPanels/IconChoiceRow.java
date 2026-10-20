@@ -28,8 +28,6 @@ public class IconChoiceRow<T> extends JPanel {
     private final Function<T, BufferedImage> imageOf;
     private final Function<T, Color> colorOf;
     private final Function<T, String> labelOf;
-    private final Function<T, String> tooltipOf;
-    private final Runnable onChange;
     private int selected = 0;
 
     public IconChoiceRow(List<T> items, int chip, int gap, Function<T, BufferedImage> imageOf,
@@ -41,8 +39,6 @@ public class IconChoiceRow<T> extends JPanel {
         this.imageOf = imageOf;
         this.colorOf = colorOf;
         this.labelOf = labelOf;
-        this.tooltipOf = tooltipOf;
-        this.onChange = onChange;
         setOpaque(false);
         addMouseListener(new MouseAdapter() {
             @Override
