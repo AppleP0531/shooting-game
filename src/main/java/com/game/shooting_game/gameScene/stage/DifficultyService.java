@@ -113,8 +113,11 @@ public final class DifficultyService {
         return waves * m.getSecondsPerWave();
     }
 
-    private static String missionKey(int stageId, int index) {
-        return "mission:stage" + stageId + ":" + index;
+    /** 難易度ごとの記録キー。HARD は従来のキー(mission:stageN:i)をそのまま使い、これまでのセーブデータを引き継ぐ */
+    static String missionKey(int stageId, Difficulty diff, int index) {
+        return diff == Difficulty.HARD
+                ? "mission:stage" + stageId + ":" + index
+                : "mission:stage" + stageId + ":" + diff.name() + ":" + index;
     }
 
     private static List<String> missionTexts(int stageId) {
@@ -127,41 +130,93 @@ public final class DifficultyService {
     }
 
     /**
-     * ステージのミッション一覧と達成状況
+     * ステージのミッション一覧と、その難易度での達成状況(★)
      */
-    public static List<Mission> missions(int stageId) {
+    public static List<Mission> missions(int stageId, Difficulty diff) {
         Map<String, Integer> s = store();
         List<String> texts = missionTexts(stageId);
         List<Mission> list = new ArrayList<>();
         for (int i = 0; i < texts.size(); i++)
-            list.add(new Mission(texts.get(i), s != null && s.containsKey(missionKey(stageId, i))));
+            list.add(new Mission(texts.get(i), s != null && s.containsKey(missionKey(stageId, diff, i))));
         return list;
     }
 
-    public static boolean allMissionsDone(int stageId) {
-        return missions(stageId).stream().allMatch(Mission::done);
+    /**
+     * HARD でのミッション一覧と達成状況(NIGHTMARE の解放条件に使う)
+     */
+    public static List<Mission> missions(int stageId) {
+        return missions(stageId, Difficulty.HARD);
     }
 
     /**
-     * HARD でクリアしたときの成績からミッションを判定して記録する
-     *
-     * @return 今回新しく達成したミッションの文
+     * その難易度で獲得した★の数(0〜3)
      */
-    public static List<String> recordMissions(int stageId, int hits, double hpRate, double seconds) {
+    public static int stars(int stageId, Difficulty diff) {
+        return (int) missions(stageId, diff).stream().filter(Mission::done).count();
+    }
+
+    /**
+     * 獲得した★の合計(全ステージ・全難易度。★の累計報酬に使う)
+     * ミッションの記録キー(mission:...)の数がそのまま★の数になる。
+     */
+    public static int totalStars() {
         Map<String, Integer> s = store();
-        List<String> newly = new ArrayList<>();
         if (s == null)
-            return newly;
+            return 0;
+        return (int) s.keySet().stream().filter(k -> k.startsWith("mission:")).count();
+    }
+
+    /** HARD のミッションをすべて達成したか(NIGHTMARE の解放条件) */
+    public static boolean allMissionsDone(int stageId) {
+        return missions(stageId, Difficulty.HARD).stream().allMatch(Mission::done);
+    }
+
+    /**
+     * クリアしたときの判定結果
+     *
+     * @param missions       判定後のミッション一覧と達成状況(これまでの分を含む)
+     * @param achievedNow    今回の成績で満たしたか(ミッションの並び順)
+     * @param newlyEarned    今回はじめて★になったか(ミッションの並び順)
+     */
+    public record MissionResult(List<Mission> missions, boolean[] achievedNow, boolean[] newlyEarned) {
+        /** 今回はじめて★になった数 */
+        public int newStarCount() {
+            int n = 0;
+            for (boolean b : newlyEarned)
+                if (b)
+                    n++;
+            return n;
+        }
+    }
+
+    /**
+     * ミッションを判定してその難易度の★として記録する(1度達成したものは残る)
+     */
+    public static MissionResult recordMissions(int stageId, Difficulty diff, int hits, double hpRate,
+            double seconds) {
+        Map<String, Integer> s = store();
         MissionSpec m = spec(stageId);
-        boolean[] ok = { hits <= m.getMaxHits(), hpRate >= m.getMinHpRate(), seconds <= timeLimit(stageId) };
-        List<String> texts = missionTexts(stageId);
-        for (int i = 0; i < ok.length; i++) {
-            if (ok[i] && !s.containsKey(missionKey(stageId, i))) {
-                s.put(missionKey(stageId, i), 1);
-                newly.add(texts.get(i));
+        boolean[] ok = judge(m, timeLimit(stageId), hits, hpRate, seconds);
+        boolean[] fresh = new boolean[ok.length];
+        if (s != null) {
+            for (int i = 0; i < ok.length; i++) {
+                String key = missionKey(stageId, diff, i);
+                if (ok[i] && !s.containsKey(key)) {
+                    s.put(key, 1);
+                    fresh[i] = true;
+                }
             }
         }
-        return newly;
+        return new MissionResult(missions(stageId, diff), ok, fresh);
+    }
+
+    /**
+     * 成績から、3つのミッションを満たしたかを判定する(状態を読まない純粋な判定)
+     *
+     * @return {被弾回数, HPの残り割合, クリア時間} の順の達成
+     */
+    static boolean[] judge(MissionSpec m, double timeLimit, int hits, double hpRate, double seconds) {
+        return new boolean[] { hits <= m.getMaxHits(), hpRate >= m.getMinHpRate(), seconds <= timeLimit };
     }
 
     // ----- 報酬 -----
