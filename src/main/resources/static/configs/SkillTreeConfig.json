@@ -1743,7 +1743,7 @@
     "reqLevel": 2,
     "coin": 15000,
     "coinGrowth": 1.5,
-    "detail": "無限モードを、これまでに到達したウェーブの範囲で、高いウェーブから始められるようになる(Lvごとに開始できるウェーブが +5)。",
+    "detail": "無限モードが、これまでに到達したウェーブの範囲で、高いウェーブまで自動で飛ばして始まるようになる(道中の敵はすべて倒した扱い。Lvごとに飛ばせるウェーブが +5)。",
     "matLevels": [
       { "ENERGY_CELL": { "COMMON": 7 }, "CIRCUIT": { "COMMON": 5 } },
       { "ENERGY_CELL": { "COMMON": 8 }, "CIRCUIT": { "COMMON": 5 } },
