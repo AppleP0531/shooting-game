@@ -7,6 +7,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+import com.game.shooting_game.domain.gacha.GachaService;
+import com.game.shooting_game.domain.gacha.PieceService;
 import com.game.shooting_game.domain.unlock.UnlockService;
 import com.game.shooting_game.domain.unlock.UnlockService.Feature;
 import com.game.shooting_game.SceneManager;
@@ -35,6 +37,7 @@ public final class LobbyManager extends JPanel implements Manager {
 
     private JButton upgradeBtn;
     private JButton shopBtn;
+    private JButton gachaBtn;
     private JButton settingBtn;
     private JButton dexBtn;
     private JButton backpackBtn;
@@ -88,6 +91,13 @@ public final class LobbyManager extends JPanel implements Manager {
         shopBtn.setVisible(false); // 非表示
         this.add(shopBtn);
         UnlockService.guard(shopBtn, Feature.SHOP);
+
+        // ガチャボタン(ガチャ画面に遷移。ショップの右)
+        gachaBtn = UIBuilder.createImageBtn(component, "/static/img/UI/lobbyScene/gachaIcon.png", upgradeBtnSize, "GACHA");
+        gachaBtn.setBounds(edge + (iconSize + iconGap) * 3, rowY, iconSize, iconSize);
+        gachaBtn.addActionListener(e -> SM.changeScene(SceneType.GACHA));
+        gachaBtn.setVisible(false); // 非表示
+        this.add(gachaBtn);
 
         // 設定ボタン(設定画面に遷移)
         Vector2 settingBtnSize = new Vector2(
@@ -189,20 +199,19 @@ public final class LobbyManager extends JPanel implements Manager {
                         - (int) (100 * ShootingGameMain.getScreenSizeAdj()),
                 (int) unlockShipBtn.getWidth(), (int) unlockShipBtn.getHeight());
         unlockShipBtn.addActionListener(e -> {
-            int targetShipCost = SHIP_M.getShipConfig().get(ShipKinds.PLAYER).get(ships[viewingShipInd])
-                    .getDatas()
-                    .getCost();
-            int ownedCoins = CostService.coins();
-            if (ownedCoins >= targetShipCost) {
-                DataManager.getUserData().unlockShip(ships[viewingShipInd]);
-                // 管理者モードはコインを減らさない
-                if (!DataManager.isAdminMode())
-                    DataManager.getUserData().getResources().setCoins(ownedCoins - targetShipCost);
+            String id = ships[viewingShipInd];
+            if (GachaService.unlock(id)) {
                 updateBtnStates();
-            } else {
-                LogUtils.systemLog("[INFO]", component, "There is no enough money");
-                lobbyUI.showMessage("コインが足りません（必要: " + targetShipCost + " / 所持: " + ownedCoins + "）");
+                return;
             }
+            // 足りないものを知らせる(ピースはガチャで集める)
+            int have = PieceService.owned(id);
+            int cost = GachaService.shipCost(id);
+            if (have < PieceService.UNLOCK_PIECES)
+                lobbyUI.showMessage("ピースが足りません(必要: " + PieceService.UNLOCK_PIECES + " / 所持: " + have + "。ガチャで集めます)");
+            else
+                lobbyUI.showMessage("コインが足りません(必要: " + String.format("%,d", cost) + " / 所持: "
+                        + String.format("%,d", CostService.coins()) + ")");
         });
         unlockShipBtn.setVisible(false); // 非表示
         this.add(unlockShipBtn);
@@ -235,7 +244,7 @@ public final class LobbyManager extends JPanel implements Manager {
         this.add(backpackBtn);
 
         // ステージ選択ボタン(ステージ選択画面に遷移)
-        int stageX = edge + (iconSize + iconGap) * 3;
+        int stageX = edge + (iconSize + iconGap) * 4;
         Vector2 selectStageBtnSize = new Vector2(
                 MAIN.getWidth() - stageX - edge,
                 iconSize);
@@ -302,8 +311,10 @@ public final class LobbyManager extends JPanel implements Manager {
         double adj = ShootingGameMain.getScreenSizeAdj();
         java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
         g2.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, Math.max(10, (int) (13 * adj))));
-        String text = "必要: " + String.format("%,d", cost) + " コイン"
-                + (DataManager.isAdminMode() ? "" : "(所持 " + String.format("%,d", CostService.coins()) + ")");
+        int havePieces = PieceService.owned(ships[viewingShipInd]);
+        enough = enough && havePieces >= PieceService.UNLOCK_PIECES;
+        String text = "ピース " + havePieces + " / " + PieceService.UNLOCK_PIECES + " + "
+                + String.format("%,d", cost) + " コイン";
         java.awt.FontMetrics fm = g2.getFontMetrics();
         g2.setColor(enough ? new java.awt.Color(255, 214, 80) : new java.awt.Color(255, 120, 120));
         g2.drawString(text, unlockShipBtn.getX() + (unlockShipBtn.getWidth() - fm.stringWidth(text)) / 2,
@@ -362,6 +373,7 @@ public final class LobbyManager extends JPanel implements Manager {
     public void updateBtnStates() {
         settingBtn.setVisible(true);
         shopBtn.setVisible(true);
+        gachaBtn.setVisible(true);
         dexBtn.setVisible(true);
         nextShipBtn.setVisible(true);
         prevShipBtn.setVisible(true);

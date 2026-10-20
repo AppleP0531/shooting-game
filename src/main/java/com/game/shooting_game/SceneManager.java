@@ -17,6 +17,7 @@ import com.game.shooting_game.gameScene.GameManager;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.lobbyScene.LobbyManager;
 import com.game.shooting_game.settingScene.SettingManager;
+import com.game.shooting_game.gachaScene.GachaManager;
 import com.game.shooting_game.shopScene.ShopManager;
 import com.game.shooting_game.stageScene.SelectStageManager;
 import com.game.shooting_game.stageScene.extra.ExtraStageManager;
@@ -43,6 +44,7 @@ public final class SceneManager implements Manager {
         BAG,
         UPGRADE,
         SHOP,
+        GACHA,
         ENCYCLOPEDIA,
         SELECTSTAGE,
         NORMALSTAGE,
@@ -72,6 +74,7 @@ public final class SceneManager implements Manager {
         scenes.put(SceneType.BAG, BagManager.getInstance());
         scenes.put(SceneType.UPGRADE, UpgradeManager.getInstance());
         scenes.put(SceneType.SHOP, ShopManager.getInstance());
+        scenes.put(SceneType.GACHA, GachaManager.getInstance());
         scenes.put(SceneType.ENCYCLOPEDIA, EncyclopediaManager.getInstance());
         scenes.put(SceneType.SELECTSTAGE, SelectStageManager.getInstance());
         scenes.put(SceneType.NORMALSTAGE, NormalStageManager.getInstance());

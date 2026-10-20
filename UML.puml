@@ -54,6 +54,7 @@ package "shooting_game" {
         BAG
         UPGRADE
         SHOP
+        GACHA
         ENCYCLOPEDIA
         SELECTSTAGE
         NORMALSTAGE
@@ -315,6 +316,8 @@ package "shooting_game" {
         ALLOY_PLATE : パーツ素材
         CRYSTAL_SHARD : パーツ素材
         PLASMA_CORE : パーツ素材
+        MODULE_CHIP : モジュール基板
+        RANK_CORE : ランクアップ素材(ボスなどが落とす)
         --
         - family: Family
         - displayName: String
@@ -326,6 +329,8 @@ package "shooting_game" {
     enum Family {
         UPGRADE : スキル強化用
         PART : サブ機パーツ制作用
+        MODULE : モジュール基板(モジュールの制作にのみ使う)
+        RANK : ランクコア(機体のランクアップにのみ使う)
         NONE
     }
 
@@ -730,6 +735,7 @@ package "shooting_game" {
             - changeModeBtn: JButton
             - selectStageBtn: JButton
             - shopBtn: JButton <<ショップ。SHOP へ遷移(バッグ画面から移動。解放前はグレーアウト)>>
+            - gachaBtn: JButton <<ガチャ。GACHA へ遷移(ショップの右)>>
             - dexBtn: JButton <<図鑑。ENCYCLOPEDIA へ遷移(バッグ画面から移動)>>
             - viewingShipInd: int
             - ships: String[]
@@ -741,7 +747,7 @@ package "shooting_game" {
             + update(dt: double): void
             + draw(g: Graphics): void
             - drawModeIndicator(g: Graphics): void <<いまの色(青/赤)を、切り替えボタンのまわりに出す>>
-            - drawUnlockCost(g: Graphics): void <<未開放の船を見ているとき、解放ボタンの上に必要コインを出す(足りなければ赤)>>
+            - drawUnlockCost(g: Graphics): void <<未開放の船を見ているとき、解放ボタンの上に必要なピースとコインを出す(足りなければ赤)。解放は GachaService.unlock>>
             + setDefaultViewingShip(shipName: String): void
             - updateBtnStates(): void <<強化ボタンは未開放の船でも隠さず、グレーアウトする>>
         }
@@ -902,6 +908,29 @@ package "shooting_game" {
         }
     }
 
+    package "gachaScene" {
+        class GachaManager <<Singleton>> {
+            - {static} component: String
+            - {static} instance: GachaManager
+            - MAIN: ShootingGameMain
+            - goBackBtn: JButton
+            - singleBtn: JButton
+            - tenBtn: JButton
+            - lastResults: List<Result> <<直近の結果(GachaService.Result)>>
+            - message: String
+            --
+            - GachaManager()
+            + initComponents(): void
+            + {static} getInstance(): GachaManager
+            - pull(times: int): void <<GachaService.pull で引き、結果かコイン不足の文言を入れる>>
+            - refresh(): void <<コインが足りないボタンを無効にする>>
+            + setup(): void
+            + update(dt: double): void
+            + draw(g: Graphics): void <<結果(機体ごとにまとめる)と、機体ごとのピースの進み具合を出す>>
+            - {static} center(g: Graphics2D, s: String, cx: int, y: int): void
+        }
+    }
+
     package "upgradeScene" {
         class UpgradeManager <<Singleton>> {
             - {static} component: String
@@ -1057,6 +1086,15 @@ package "shooting_game" {
             }
 
             class UnitPanel {
+                - headerArea: JTextArea
+                - statArea: JTextArea
+                - costPanel: CostPanel <<レベルアップの素材>>
+                - starArea: JTextArea
+                - statusArea: JTextArea
+                - levelBtn: JButton
+                - rankCostPanel: CostPanel <<ランクアップに必要なランクコア>>
+                - starBtn: JButton <<ランクアップ(レベル最大で押せる。レベルは1に戻る)>>
+                --
                 + initComponents(): void
                 - refresh(): void
                 + showPanel(): void
@@ -1175,21 +1213,56 @@ package "shooting_game" {
         package "unit" {
             class UnitService <<Utility>> {
                 + {static} MAX_LEVEL: int
-                + {static} MAX_STARS: int
+                + {static} MAX_RANK: int
+                + {static} RANK_BASE: int <<ランク0→1に要るランクコア。以降ランクごとに2倍>>
                 --
                 + {static} getLevel(shipId: String): int
-                + {static} getStars(shipId: String): int
-                + {static} getCopies(shipId: String): int
-                + {static} attackRate(shipId: String): double <<レベルは指数、★は足し算(GameBalance)>>
-                + {static} hpRate(shipId: String): double
+                + {static} getRank(shipId: String): int <<保存の欄は以前の★(ShipStats.stars)>>
+                + {static} attackRate(shipId: String): double <<レベルとランクの両方が指数(GameBalance)>>
+                + {static} hpRate(shipId: String): double <<レベルとランク>>
                 + {static} baseHp(shipId: String): double
                 + {static} levelCost(level: int): Cost
                 + {static} levelUp(shipId: String): boolean
-                + {static} addCopy(shipId: String): void
-                + {static} buyCopy(shipId: String): boolean
-                + {static} copyPrice(shipId: String): int
-                + {static} starUp(shipId: String): boolean
-                + {static} starText(shipId: String): String
+                + {static} rankUpCost(rank: int): Cost <<ランクコア。ランク0→1は RANK_BASE 個>>
+                + {static} canRankUp(shipId: String): boolean <<レベル最大・ランクコアと機体のピースが足りる>>
+                + {static} rankUp(shipId: String): boolean <<素材とピースを払い、ランク+1、レベルは1に戻る>>
+                + {static} rankText(shipId: String): String
+            }
+        }
+
+        package "gacha" {
+            class PieceService <<Utility>> {
+                - {static} PREFIX: String = "piece:" <<progress.highScores に相乗り>>
+                + {static} UNLOCK_PIECES: int = 50
+                - {static} RANK_UP_PIECES: int[]
+                --
+                + {static} rankUpPieces(rank: int): int
+                + {static} owned(shipId: String): int
+                + {static} add(shipId: String, amount: int): void
+                + {static} consume(shipId: String, amount: int): boolean
+            }
+
+            class GachaService <<Utility>> {
+                + {static} SINGLE_COST: int = 1000
+                + {static} TEN_COST: int = 9000
+                - {static} PIECE_COUNTS: int[]
+                - {static} PIECE_WEIGHTS: int[]
+                + {static} TEN_GUARANTEE_PIECES: int = 3
+                --
+                + {static} weight(shipCost: int): double <<入手コインが高いほど出にくい>>
+                + {static} pickShip(rnd: Random, costs: Map<String,Integer>): String
+                + {static} pickPieces(rnd: Random): int
+                + {static} roll(rnd: Random, costs: Map<String,Integer>, times: int): List<Result> <<コインやピースは動かさない>>
+                + {static} shipCosts(): Map<String,Integer> <<ShipConfig から>>
+                + {static} pull(times: int): List<Result> <<コインを払いピースを増やす>>
+                + {static} canUnlock(shipId: String): boolean
+                + {static} unlock(shipId: String): boolean <<ピース50個とコインで機体を解放>>
+                + {static} shipCost(shipId: String): int
+            }
+
+            class Result <<record>> {
+                ~ shipId: String
+                ~ pieces: int
             }
         }
 
@@ -1463,6 +1536,10 @@ package "shooting_game" {
 
         SkillService ..> CostService
         UnitService ..> CostService
+        UnitService ..> PieceService
+        GachaService ..> PieceService
+        GachaService ..> CostService
+        GachaService +-- Result
         ConvertService ..> CostService
         SubShipService ..> CostService
         ModuleService ..> CostService
@@ -1771,7 +1848,7 @@ package "shooting_game" {
                 + {static} generate(wave: int): Wave
                 - {static} pickBoss(wave: int): EnemyConfig
                 - {static} boss(bossId: String): EnemyConfig
-                + {static} materialRewards(cleared: int): Map<ResourceKinds, Integer>
+                + {static} materialRewards(cleared: int): Map<ResourceKinds, Integer> <<モジュール基板・ランクコアなど>>
                 + {static} moduleRewards(cleared: int): List<Rarity>
             }
 
@@ -1847,7 +1924,7 @@ package "shooting_game" {
                 - dropResource(ship: Ship): void
                 - dropResource(pos: Vector2): void
                 - dropCoin(ship: Ship): void
-                + dropBossBonus(boss: Ship, rolls: int): void
+                + dropBossBonus(boss: Ship, rolls: int): void <<ランクコアも落とす>>
                 + clear(target: String): void
                 + kill(target: String): void
                 + addShip(ship: Ship): void <<null は無視する>>
@@ -3040,15 +3117,15 @@ package "shooting_game" {
         class GameBalance <<Utility>> {
             - {static} component: String
             - {static} CONFIG_PATH: String <<BalanceConfig.json>>
-            - {static} unitAttackGrowth: double = 1.10
-            - {static} attackPerStar: double = 0.25
-            - {static} stageHpGrowth: double = 1.15
+            - {static} unitAttackGrowth: double = 1.06
+            - {static} rankAttackGrowth: double = 18.0
+            - {static} stageHpGrowth: double = 1.07
             - {static} endlessHpPerWave: double = 0.015
             - {static} loaded: boolean
             --
             - {static} ensureLoaded(): void
             + {static} unitAttackGrowth(): double <<機体レベルごとの火力の倍率(指数)>>
-            + {static} attackPerStar(): double <<★1つあたりの火力(足し算)>>
+            + {static} rankAttackGrowth(): double <<ランク1つごとの火力の倍率(指数)>>
             + {static} stageHpGrowth(): double
             + {static} endlessHpPerWave(): double
             + {static} stageHpRate(stageIndex: double): double <<ステージ番号に応じた敵HPの倍率>>
@@ -3138,7 +3215,7 @@ package "shooting_game" {
         }
 
         class CoinHud <<Utility>> {
-            - {static} SCENES: Set<SceneType>
+            - {static} SCENES: Set<SceneType> <<LOBBY/BAG/UPGRADE/SHOP/GACHA/ステージ選択系など>>
             - {static} icon: BufferedImage
             --
             + {static} draw(g: Graphics, scene: SceneType): void <<ゲーム以外の画面の左上に所持コインを描く>>
@@ -3521,6 +3598,15 @@ shooting_game.encyclopediaScene.EncyclopediaManager ..> shooting_game.gameScene.
 shooting_game.lobbyScene.LobbyManager ..> shooting_game.encyclopediaScene.EncyclopediaManager
 shooting_game.SceneManager --> shooting_game.encyclopediaScene.EncyclopediaManager
 shooting_game.SceneManager ..> shooting_game.ui.CoinHud
+shooting_game.SceneManager --> shooting_game.gachaScene.GachaManager
+shooting_game.gachaScene.GachaManager ..> shooting_game.domain.gacha.GachaService
+shooting_game.gachaScene.GachaManager ..> shooting_game.domain.gacha.PieceService
+shooting_game.gachaScene.GachaManager ..> shooting_game.domain.unit.UnitService
+shooting_game.domain.gacha.GachaService ..> shooting_game.gameScene.ship.ShipManager
+shooting_game.lobbyScene.LobbyManager ..> shooting_game.domain.gacha.GachaService
+shooting_game.lobbyScene.LobbyManager ..> shooting_game.domain.gacha.PieceService
+shooting_game.gachaScene.GachaManager --|> javax.swing.JPanel
+shooting_game.gachaScene.GachaManager ..|> shooting_game.interfaces.Manager
 shooting_game.ShootingGameMain ..> shooting_game.ui.LoadProgress
 shooting_game.ShootingGameMain ..> shooting_game.ui.ShooterScrollBarUI
 shooting_game.ShootingGameMain ..> shooting_game.utils.GameSettings
