@@ -1,6 +1,11 @@
 package com.game.shooting_game.stageScene.normal.subPanels;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.HashMap;
@@ -162,6 +167,59 @@ public class StageBtnPanel extends JPanel {
                 button.setVisible(true);
             }
         }
+        repaint();
+    }
+
+    /**
+     * ステージボタンの中心(ステージ選択パネルの中の座標)
+     */
+    private Vector2 buttonCenter(StageBtnData data) {
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        return new Vector2(
+                originPos.getX() + data.getPos().getX() * adj,
+                originPos.getY() - data.getPos().getY() * adj);
+    }
+
+    /**
+     * ステージボタンを番号順に線でつなぐ(ボタンより奥に描く)
+     * 次のステージに行ける区間(そのステージまでクリア済み)は水色の光る線、まだ行けない区間は暗い灰色の細い点線にする。
+     */
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        if (originPos == null || NSM.getStageBtnConfigMap() == null || DataManager.getUserData() == null)
+            return;
+
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        int cleared = DataManager.getUserData().getProgress().getClearedStage();
+        Map<Integer, StageBtnData> configs = NSM.getStageBtnConfigMap();
+
+        for (int id = 1; configs.containsKey(id) && configs.containsKey(id + 1); id++) {
+            Vector2 a = buttonCenter(configs.get(id));
+            Vector2 b = buttonCenter(configs.get(id + 1));
+            // 画面の外の区間は描かない
+            if (Math.max(a.getY(), b.getY()) < 0 || Math.min(a.getY(), b.getY()) > getHeight())
+                continue;
+
+            Line2D line = new Line2D.Double(a.getX(), a.getY(), b.getX(), b.getY());
+            if (id <= cleared) {
+                g2.setStroke(new BasicStroke((float) (7 * adj), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                g2.setColor(new Color(70, 215, 255, 40));
+                g2.draw(line);
+                g2.setStroke(new BasicStroke((float) (2.5 * adj), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                g2.setColor(new Color(70, 215, 255, 200));
+                g2.draw(line);
+            } else {
+                float dash = (float) (6 * adj);
+                g2.setStroke(new BasicStroke((float) (1.5 * adj), BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10f,
+                        new float[] { dash, dash }, 0f));
+                g2.setColor(new Color(120, 130, 150, 110));
+                g2.draw(line);
+            }
+        }
+        g2.dispose();
     }
 
     /**
