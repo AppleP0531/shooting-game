@@ -9,7 +9,7 @@ import java.util.Objects;
 import lombok.Data;
 
 import com.game.shooting_game.ResourceManager.ResourceKinds;
-import com.game.shooting_game.module.Module;
+import com.game.shooting_game.domain.module.Module;
 
 @Data
 public class StageRewards {

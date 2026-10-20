@@ -15,7 +15,7 @@ import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.gameScene.stage.EndlessWaves;
 import com.game.shooting_game.gameScene.stage.StageManager;
 import com.game.shooting_game.interfaces.Manager;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 public final class InfinityStageManager extends JPanel implements Manager {

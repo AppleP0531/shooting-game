@@ -32,12 +32,12 @@ import com.game.shooting_game.gameScene.ship.ShipManager.ShotConfig;
 import com.game.shooting_game.interfaces.Entity;
 import com.game.shooting_game.interfaces.GameObject;
 import com.game.shooting_game.interfaces.Moveable;
-import com.game.shooting_game.skill.SkillService;
+import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.utils.Anchor;
+import com.game.shooting_game.ui.Anchor;
 import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 import com.game.shooting_game.utils.animation.Animation;
 import com.game.shooting_game.utils.animation.AnimationManager;
@@ -122,8 +122,8 @@ public abstract class Ship implements Moveable, GameObject, Entity {
             ShipConfig datas = def.getDatas();
 
             maxHp = hp = datas.getHp() > 0 ? datas.getHp() : 100; // 未設定なら100
-            collisionSize = datas.getCollisionSize() * ShootingGameMain.getScreenSizeAdj();
-            imageSize.put("ship", (int) (datas.getImageSize() * ShootingGameMain.getScreenSizeAdj()));
+            collisionSize = datas.getCollisionSize() * ShootingGameMain.getScreenSizeAdj() * sizeScale();
+            imageSize.put("ship", (int) (datas.getImageSize() * ShootingGameMain.getScreenSizeAdj() * sizeScale()));
             speed = datas.getSpeed() * ShootingGameMain.getScreenSizeAdj();
             score = datas.getScore();
             coins = datas.getCoins();
@@ -580,5 +580,20 @@ public abstract class Ship implements Moveable, GameObject, Entity {
      */
     public boolean isDead() {
         return hp <= 0;
+    }
+
+    /**
+     * 体の大きさ(半径)。ブロックなどに押し出されるときの大きさで、当たり判定より大きい
+     */
+    public double bodyRadius() {
+        return Math.max(collisionSize, imageSize.getOrDefault("ship", 30) * 0.3);
+    }
+
+    /**
+     * 見た目と当たり判定の大きさの倍率(ShipConfigの大きさにかける)
+     * コンストラクタの中から呼ばれるので、フィールドは使わず固定の値を返すこと。
+     */
+    protected double sizeScale() {
+        return 1.0;
     }
 }

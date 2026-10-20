@@ -28,7 +28,7 @@ import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.stageScene.normal.subPanels.StageBtnPanel;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 public final class NormalStageManager extends JPanel implements Manager {

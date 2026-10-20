@@ -17,7 +17,7 @@ import com.game.shooting_game.bagScene.BagSceneUI.BagSceneUIData;
 import com.game.shooting_game.bagScene.subPanels.OwnedResourcesPanel;
 import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.interfaces.Manager;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 public final class BagManager extends JPanel implements Manager {

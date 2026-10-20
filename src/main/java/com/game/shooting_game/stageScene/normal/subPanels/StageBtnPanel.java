@@ -18,11 +18,11 @@ import com.game.shooting_game.gameScene.stage.StageManager;
 import com.game.shooting_game.stageScene.normal.NormalStageManager;
 import com.game.shooting_game.stageScene.normal.NormalStageManager.StageBtnData;
 import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.utils.Anchor;
-import com.game.shooting_game.utils.Anchor.H;
-import com.game.shooting_game.utils.Anchor.V;
+import com.game.shooting_game.ui.Anchor;
+import com.game.shooting_game.ui.Anchor.H;
+import com.game.shooting_game.ui.Anchor.V;
 import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 public class StageBtnPanel extends JPanel {

@@ -29,6 +29,7 @@ import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.gameScene.GameManager;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.beam.BeamManager;
+import com.game.shooting_game.gameScene.DamageCalculator;
 import com.game.shooting_game.gameScene.beam.BeamSpec;
 import com.game.shooting_game.gameScene.bullet.Bullet.Direction;
 import com.game.shooting_game.gameScene.bullet.BulletManager;
@@ -42,11 +43,11 @@ import com.game.shooting_game.gameScene.item.ResourceFactory.DropModel;
 import com.game.shooting_game.gameScene.ship.path.PathLibrary;
 import com.game.shooting_game.gameScene.ship.types.Player;
 import com.game.shooting_game.interfaces.Manager;
-import com.game.shooting_game.skill.SkillService;
+import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 public final class ShipManager implements Manager {
@@ -317,6 +318,34 @@ public final class ShipManager implements Manager {
         // 敵の更新
         updateAndClean(enemyList, dt);
         updateAndClean(bossList, dt);
+
+        // ブロックは通り抜けられない(動いたあとにめり込んでいたら外へ押し出す。ボスは対象外)
+        if (player != null)
+            pushOutOfBlocks(player, true);
+        for (Ship e : enemyList)
+            pushOutOfBlocks(e, false);
+    }
+
+    /**
+     * 船をブロックの外へ押し出す
+     * 
+     * @param ship       船
+     * @param keepScreen 画面の外へ出ないようにするか(自機)
+     */
+    private void pushOutOfBlocks(Ship ship, boolean keepScreen) {
+        double r = ship.bodyRadius();
+        // 自機は画面の外へは押し出せない。端に押し付けられたら押し潰されてダメージを受ける
+        java.awt.geom.Rectangle2D bounds = keepScreen
+                ? new java.awt.geom.Rectangle2D.Double(r, r, MAIN.getWidth() - 2 * r, MAIN.getHeight() - 2 * r)
+                : null;
+        boolean crushed = BeamManager.getInstance().pushOutOfBlocks(ship, r, bounds);
+        if (crushed && ship instanceof Player p)
+            p.addDamage(DamageCalculator.ramToPlayer(p));
+        if (keepScreen) {
+            Vector2 p2 = ship.getPos();
+            p2.setX(Math.max(r, Math.min(MAIN.getWidth() - r, p2.getX())));
+            p2.setY(Math.max(r, Math.min(MAIN.getHeight() - r, p2.getY())));
+        }
     }
 
     @Override

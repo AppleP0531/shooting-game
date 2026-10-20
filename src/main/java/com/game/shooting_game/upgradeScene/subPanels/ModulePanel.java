@@ -1,5 +1,11 @@
 package com.game.shooting_game.upgradeScene.subPanels;
 
+import java.awt.event.MouseEvent;
+import javax.swing.SwingConstants;
+import com.game.shooting_game.ui.ModuleIcons;
+import com.game.shooting_game.ui.UIStyle;
+import static com.game.shooting_game.ui.UIStyle.px;
+import com.game.shooting_game.domain.cost.CostService;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -21,13 +27,13 @@ import javax.swing.ListSelectionModel;
 
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ShootingGameMain;
-import com.game.shooting_game.module.Module;
-import com.game.shooting_game.module.ModuleInventory;
-import com.game.shooting_game.module.ModuleKind;
-import com.game.shooting_game.module.ModuleService;
-import com.game.shooting_game.skill.SkillService;
-import com.game.shooting_game.utils.CostPanel;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.domain.module.Module;
+import com.game.shooting_game.domain.module.ModuleInventory;
+import com.game.shooting_game.domain.module.ModuleKind;
+import com.game.shooting_game.domain.module.ModuleService;
+import com.game.shooting_game.domain.skill.SkillService;
+import com.game.shooting_game.ui.CostPanel;
+import com.game.shooting_game.ui.UIBuilder;
 
 /**
  * モジュールパネル
@@ -39,6 +45,7 @@ public class ModulePanel extends JPanel {
     private JList<Module> list;
     private JTextArea detailArea;
     private JButton equipBtn;
+    private JButton levelUpBtn;
     private JButton dismantleBtn;
     private JComboBox<ModuleKind> kindBox;
     private JComboBox<Rarity> rarityBox;
@@ -47,28 +54,13 @@ public class ModulePanel extends JPanel {
     private JTextArea statusArea;
     private JLabel lastLabel;
 
-    private static int px(double base) {
-        return (int) (base * ShootingGameMain.getScreenSizeAdj());
-    }
-
     private JTextArea area(double size) {
-        JTextArea a = new JTextArea();
-        a.setEditable(false);
-        a.setFocusable(false);
-        a.setLineWrap(true);
-        a.setWrapStyleWord(true);
-        a.setOpaque(false);
-        a.setForeground(Color.WHITE);
-        a.setFont(new Font("SansSerif", Font.PLAIN, Math.max(9, px(size))));
-        return a;
+        return UIStyle.textArea(size, false);
     }
 
     private JButton button(String text, int x, int y, int w, int h) {
-        JButton b = new JButton(text);
+        JButton b = UIStyle.button(text, 11);
         b.setBounds(x, y, w, h);
-        b.setMargin(new Insets(0, 0, 0, 0));
-        b.setFocusPainted(false);
-        b.setFont(new Font("SansSerif", Font.BOLD, Math.max(9, px(11))));
         add(b);
         return b;
     }
@@ -81,7 +73,7 @@ public class ModulePanel extends JPanel {
         setVisible(false);
 
         int w = px(385);
-        int h = px(552);
+        int h = px(574);
         setBounds(ShootingGameMain.getInstance().getWidth() / 2 - w / 2,
                 ShootingGameMain.getInstance().getHeight() / 2 - h / 2, w, h);
         int pad = px(8);
@@ -103,19 +95,34 @@ public class ModulePanel extends JPanel {
         }
 
         // 持っているモジュール
-        list = new JList<>(listModel);
+        // アイコンだけを並べる(レベルと装備中は絵の上に出す。名前と値はマウスを乗せると出る)
+        list = new JList<>(listModel) {
+            @Override
+            public String getToolTipText(MouseEvent ev) {
+                int i = locationToIndex(ev.getPoint());
+                if (i < 0 || !getCellBounds(i, i).contains(ev.getPoint()))
+                    return null;
+                Module m = getModel().getElementAt(i);
+                return ModuleService.title(m) + "  " + m.getKind().getMainStat().format(ModuleService.mainNow(m));
+            }
+        };
+        list.setToolTipText("");
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        list.setFont(new Font("SansSerif", Font.BOLD, Math.max(9, px(11))));
+        UIStyle.darkList(list);
+        list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+        list.setVisibleRowCount(-1);
+        list.setFixedCellWidth(px(52));
+        list.setFixedCellHeight(px(52));
         list.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> l, Object value, int index, boolean sel,
                     boolean focus) {
                 JLabel c = (JLabel) super.getListCellRendererComponent(l, value, index, sel, focus);
                 Module m = (Module) value;
-                c.setText((ModuleService.isEquipped(m) ? "[装着] " : "") + ModuleService.title(m) + "  "
-                        + m.getKind().getMainStat().format(m.getMainValue()));
-                c.setForeground(CostPanel.rarityColor(m.getRarity()).brighter());
-                c.setBackground(sel ? new Color(60, 90, 130) : new Color(20, 24, 34));
+                c.setIcon(ModuleIcons.icon(m, px(44), ModuleService.isEquipped(m)));
+                c.setText("");
+                c.setHorizontalAlignment(SwingConstants.CENTER);
+                c.setBackground(sel ? UIStyle.LIST_SELECTED : UIStyle.LIST_BG);
                 return c;
             }
         });
@@ -129,11 +136,14 @@ public class ModulePanel extends JPanel {
 
         // 選んだモジュールの能力
         detailArea = area(11);
-        detailArea.setBounds(pad, px(196), innerW, px(84));
+        detailArea.setBounds(pad, px(196), innerW, px(106));
         add(detailArea);
 
-        equipBtn = button("装着", pad, px(282), innerW / 2 - px(3), px(30));
-        dismantleBtn = button("分解(基板が戻る)", pad + innerW / 2 + px(3), px(282), innerW / 2 - px(3), px(30));
+        int bw = (innerW - 2 * px(4)) / 3;
+        int by = px(304);
+        equipBtn = button("装着", pad, by, bw, px(30));
+        levelUpBtn = button("レベルアップ", pad + bw + px(4), by, bw, px(30));
+        dismantleBtn = button("分解(基板が戻る)", pad + 2 * (bw + px(4)), by, bw, px(30));
         equipBtn.addActionListener(e -> {
             Module m = list.getSelectedValue();
             if (m == null)
@@ -146,6 +156,18 @@ public class ModulePanel extends JPanel {
             }
             refresh();
         });
+        levelUpBtn.addActionListener(e -> {
+            Module m = list.getSelectedValue();
+            if (m == null)
+                return;
+            int before = m.getSubs().size();
+            if (ModuleService.levelUp(m.getId())) {
+                refresh();
+                statusArea.setText(m.getSubs().size() > before
+                        ? "Lv" + m.getLevel() + " になり、サブ能力が増えました"
+                        : "Lv" + m.getLevel() + " になりました");
+            }
+        });
         dismantleBtn.addActionListener(e -> {
             Module m = list.getSelectedValue();
             if (m != null && ModuleService.dismantle(m.getId()))
@@ -153,10 +175,10 @@ public class ModulePanel extends JPanel {
         });
 
         // 制作
-        JLabel craftLabel = new JLabel("新しく作る(サブ能力4つはランダム)");
+        JLabel craftLabel = new JLabel("新しく作る(サブ能力はレベルが上がると増える)");
         craftLabel.setForeground(new Color(200, 230, 255));
         craftLabel.setFont(new Font("SansSerif", Font.BOLD, Math.max(9, px(11))));
-        craftLabel.setBounds(pad, px(318), innerW, px(16));
+        craftLabel.setBounds(pad, px(340), innerW, px(16));
         add(craftLabel);
 
         kindBox = new JComboBox<>(ModuleKind.values());
@@ -181,8 +203,8 @@ public class ModulePanel extends JPanel {
                 return c;
             }
         });
-        kindBox.setBounds(pad, px(336), innerW * 6 / 10 - px(2), px(26));
-        rarityBox.setBounds(pad + innerW * 6 / 10 + px(2), px(336), innerW * 4 / 10 - px(2), px(26));
+        kindBox.setBounds(pad, px(358), innerW * 6 / 10 - px(2), px(26));
+        rarityBox.setBounds(pad + innerW * 6 / 10 + px(2), px(358), innerW * 4 / 10 - px(2), px(26));
         kindBox.addActionListener(e -> refreshCraft());
         rarityBox.addActionListener(e -> refreshCraft());
         add(kindBox);
@@ -191,14 +213,14 @@ public class ModulePanel extends JPanel {
         lastLabel = new JLabel("");
         lastLabel.setForeground(Color.WHITE);
         lastLabel.setFont(new Font("SansSerif", Font.PLAIN, Math.max(9, px(10))));
-        lastLabel.setBounds(pad, px(364), innerW, px(16));
+        lastLabel.setBounds(pad, px(386), innerW, px(16));
         add(lastLabel);
 
         costPanel = new CostPanel(1);
-        costPanel.setBounds(pad, px(382), innerW, costPanel.maxHeight());
+        costPanel.setBounds(pad, px(404), innerW, costPanel.maxHeight());
         add(costPanel);
 
-        craftBtn = button("制作する", pad, px(382) + costPanel.maxHeight() + px(4), innerW, px(34));
+        craftBtn = button("制作する", pad, px(404) + costPanel.maxHeight() + px(4), innerW, px(34));
         craftBtn.addActionListener(e -> {
             Module m = ModuleService.craft((ModuleKind) kindBox.getSelectedItem(),
                     (Rarity) rarityBox.getSelectedItem());
@@ -210,7 +232,7 @@ public class ModulePanel extends JPanel {
         });
 
         statusArea = area(11);
-        statusArea.setBounds(pad, px(382) + costPanel.maxHeight() + px(40), innerW, px(30));
+        statusArea.setBounds(pad, px(404) + costPanel.maxHeight() + px(40), innerW, px(30));
         add(statusArea);
     }
 
@@ -219,10 +241,15 @@ public class ModulePanel extends JPanel {
         if (m == null) {
             detailArea.setText("持っているモジュールを選ぶと能力が見られます");
             equipBtn.setEnabled(false);
+            levelUpBtn.setEnabled(false);
             dismantleBtn.setEnabled(false);
             return;
         }
-        detailArea.setText(ModuleService.describe(m));
+        var upCost = ModuleService.levelUpCost(m);
+        detailArea.setText(ModuleService.describe(m)
+                + (upCost == null ? "【最大レベル】" : "Lv" + (m.getLevel() + 1) + "まで: コイン " + upCost.coins()
+                        + " / 基板×" + upCost.items().values().iterator().next()));
+        levelUpBtn.setEnabled(upCost != null && CostService.canAfford(upCost));
         equipBtn.setEnabled(true);
         equipBtn.setText(ModuleService.isEquipped(m) ? "外す" : "装着");
         dismantleBtn.setEnabled(!ModuleService.isEquipped(m));
@@ -236,7 +263,7 @@ public class ModulePanel extends JPanel {
             return;
         var cost = ModuleService.recipe(k, r);
         costPanel.setCost(cost);
-        boolean ok = SkillService.canAfford(cost);
+        boolean ok = CostService.canAfford(cost);
         craftBtn.setEnabled(ok);
         lastLabel.setText(k.getDetail() + "  メイン " + k.getMainStat().format(ModuleService.mainValue(k, r)));
         statusArea.setText(ok ? "制作できます" : "コインか素材が足りません(素材は変換所でレア度を上げられます)");
@@ -249,13 +276,18 @@ public class ModulePanel extends JPanel {
         Module[] slotted = ModuleService.slotted();
         for (int i = 0; i < slotBtns.length; i++) {
             Module m = slotted[i];
+            // 絵を上、能力の値を下に出す
+            slotBtns[i].setVerticalTextPosition(SwingConstants.BOTTOM);
+            slotBtns[i].setHorizontalTextPosition(SwingConstants.CENTER);
             if (m == null) {
-                slotBtns[i].setText("<html><center>空き<br>-</center></html>");
+                slotBtns[i].setIcon(null);
+                slotBtns[i].setText("空き");
+                slotBtns[i].setToolTipText(null);
                 slotBtns[i].setForeground(new Color(120, 120, 120));
             } else {
-                slotBtns[i].setText("<html><center>" + m.getKind().getShortName() + " "
-                        + ModuleService.rarityName(m.getRarity()) + "<br>"
-                        + m.getKind().getMainStat().format(m.getMainValue()) + "</center></html>");
+                slotBtns[i].setIcon(ModuleIcons.icon(m, px(36)));
+                slotBtns[i].setText(m.getKind().getMainStat().format(ModuleService.mainNow(m)));
+                slotBtns[i].setToolTipText(ModuleService.title(m) + "(押すと外す)");
                 slotBtns[i].setForeground(CostPanel.rarityColor(m.getRarity()).darker());
             }
         }
@@ -281,6 +313,6 @@ public class ModulePanel extends JPanel {
     public void showPanel() {
         refresh();
         UIBuilder.openPanel(this, "モジュール", true, null);
-        setBackground(new Color(0, 0, 0, 245));
+        setBackground(UIStyle.PANEL_BG);
     }
 }

@@ -5,18 +5,17 @@ import java.awt.Graphics2D;
 
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
-import com.game.shooting_game.gameScene.beam.BeamEmitter;
 import com.game.shooting_game.gameScene.beam.BeamManager;
 import com.game.shooting_game.gameScene.beam.BeamSpec;
-import com.game.shooting_game.skill.SkillService;
+import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.bullet.Bullet;
 import com.game.shooting_game.gameScene.bullet.BulletFactory;
 import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
 import com.game.shooting_game.gameScene.ship.Ship;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
-import com.game.shooting_game.subship.SubShipRenderer;
-import com.game.shooting_game.subship.SubShipService;
+import com.game.shooting_game.domain.subship.SubShipRenderer;
+import com.game.shooting_game.domain.subship.SubShipService;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.utils.Vector2;
@@ -35,8 +34,6 @@ public class SubShip extends Ship {
     private double time; // 経過時間(見た目の揺れ用)
     private double clock = 0; // 追従の遅れ計算用の時計
     private final java.util.LinkedList<double[]> history = new java.util.LinkedList<>(); // 自機の位置の記録(時刻, x, y)
-    private BeamEmitter beamEmitter; // ビーム(エミッターのパーツを付けているとき)
-    private int beamTier = 0; // 発射管理を作ったときのエミッターのMk
 
     public SubShip(Player player, String id, ColorMode mode, Vector2 pos) {
         super(ShipKinds.PLAYER, id, mode, 0, pos);
@@ -52,9 +49,9 @@ public class SubShip extends Ship {
         // 見た目はSubShipRendererが描く(フレームのMkの画像 + 付けているパーツ)
         imageSize.put("ship", (int) (30 * ShootingGameMain.getScreenSizeAdj()));
 
-        // 左右で少しタイミングをずらす
-        gunTimer = id.endsWith("_R") ? 0.15 : 0;
-        missileTimer = id.endsWith("_R") ? 0.5 : 0;
+        // 左右は同じタイミングで撃つ
+        gunTimer = 0;
+        missileTimer = 0;
 
         LogUtils.systemLog(
                 "[INFO]",
@@ -81,9 +78,6 @@ public class SubShip extends Ship {
             gunTimer = SubShipService.param("CANNON", "interval", 0.6) / rate;
         }
 
-        // エミッター(ビーム)。ステージ中だけ撃つ
-        updateBeam(dt);
-
         // コア(ミサイル)
         if (SubShipService.getTier("CORE") >= 1) {
             missileTimer -= dt;
@@ -94,41 +88,58 @@ public class SubShip extends Ship {
         }
     }
 
+    // ----- ビーム(左右で同じタイミングで撃つため、発射の管理は自機側(Player)が1つで行う) -----
     /**
-     * ビームの発射管理(エミッターのMkが変わったら作り直す)
+     * ビームを撃てる場面か(エミッターのパーツを付けていて、ステージ中かロビーのプレビュー)
      */
-    private void updateBeam(double dt) {
-        int tier = SubShipService.getTier("EMITTER");
-        if (tier < 1 || !(SM.getSceneName() == SceneType.GAME || SM.getSceneName() == SceneType.TEST
-                || SM.getSceneName() == SceneType.LOBBY))
-            return;
+    public boolean canBeam() {
+        return SubShipService.getTier("EMITTER") >= 1 && (SM.getSceneName() == SceneType.GAME
+                || SM.getSceneName() == SceneType.TEST || SM.getSceneName() == SceneType.LOBBY);
+    }
 
-        if (beamEmitter == null || beamTier != tier) {
-            BeamSpec spec = new BeamSpec();
-            spec.setOrigin(BeamSpec.Origin.SHIP_UP);
-            spec.setColor("PLAYER");
-            spec.setWarn(0.5);
-            spec.setFade(0.2);
-            spec.setDuration(SubShipService.param("EMITTER", "duration", 0.8));
-            spec.setWidth(SubShipService.param("EMITTER", "width", 14));
-            spec.setDamage(SubShipService.param("EMITTER", "dps", 20));
-            spec.setInterval(SubShipService.param("EMITTER", "interval", 8));
-            spec.setDelay(SubShipService.param("EMITTER", "interval", 8) * (shipId.endsWith("_R") ? 0.5 : 0.25));
-            beamEmitter = new BeamEmitter(spec);
-            beamTier = tier;
-        }
+    /**
+     * ビームの定義(エミッターのMkに応じた性能)
+     */
+    public static BeamSpec createBeamSpec() {
+        BeamSpec spec = new BeamSpec();
+        spec.setOrigin(BeamSpec.Origin.SHIP_UP);
+        spec.setColor("PLAYER");
+        spec.setWarn(0.5);
+        spec.setFade(0.2);
+        spec.setDuration(SubShipService.param("EMITTER", "duration", 0.8));
+        spec.setWidth(SubShipService.param("EMITTER", "width", 14));
+        spec.setDamage(SubShipService.param("EMITTER", "dps", 20));
+        spec.setInterval(SubShipService.param("EMITTER", "interval", 8));
+        spec.setDelay(SubShipService.param("EMITTER", "interval", 8) * 0.25);
+        return spec;
+    }
 
-        // 狙える敵が真上にいるときだけ撃つ。ロビーのプレビューでは短い間隔で繰り返し見せる
+    /**
+     * ビームの発射間隔の倍率(スキルで短くなる。ロビーのプレビューでは短い間隔で繰り返し見せる)
+     */
+    public double beamIntervalScale() {
         double scale = 1.0 / (1 + SkillService.getBonus("BEAM_RATE"));
         if (SM.getSceneName() == SceneType.LOBBY)
             scale *= 0.4;
-        boolean hasTarget = BeamManager.getInstance().hasTargetAhead(pos, 60 * ShootingGameMain.getScreenSizeAdj());
-        if (beamEmitter.update(dt, scale, hasTarget))
-            BeamManager.getInstance().firePlayer(
-                    beamEmitter.getSpec(),
-                    () -> new Vector2(pos.getX(), pos.getY() - 8 * ShootingGameMain.getScreenSizeAdj()),
-                    () -> player.getMode(),
-                    SubShipService.beamScale());
+        return scale;
+    }
+
+    /**
+     * 真上に狙える敵がいるか
+     */
+    public boolean hasTargetAhead() {
+        return BeamManager.getInstance().hasTargetAhead(pos, 60 * ShootingGameMain.getScreenSizeAdj());
+    }
+
+    /**
+     * ビームを撃つ
+     */
+    public void fireBeam(BeamSpec spec) {
+        BeamManager.getInstance().firePlayer(
+                spec,
+                () -> new Vector2(pos.getX(), pos.getY() - 8 * ShootingGameMain.getScreenSizeAdj()),
+                () -> player.getMode(),
+                SubShipService.beamScale());
     }
 
     /**
@@ -182,7 +193,7 @@ public class SubShip extends Ship {
         SubShipRenderer.draw(g2, pos.getX(), pos.getY(), shipId.endsWith("_L"),
                 SubShipService.hullTier(), SubShipService.getTier("CANNON"), SubShipService.getTier("ENGINE"),
                 SubShipService.getTier("CORE"), SubShipService.getTier("EMITTER"),
-                mode, time, alpha, 1.0);
+                mode, time, alpha, SubShipService.WORLD_SCALE);
     }
 
     @Override

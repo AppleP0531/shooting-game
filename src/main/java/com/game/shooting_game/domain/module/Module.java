@@ -1,4 +1,4 @@
-package com.game.shooting_game.module;
+package com.game.shooting_game.domain.module;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,8 +10,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 1個のモジュール(メイン能力1つ + サブ能力4つ)
- * メインは種類とレア度で決まる固定の割合。サブは制作時にランダムに決まり、メインより低い値になる。
+ * 1個のモジュール(メイン能力1つ + レベルで増えるサブ能力・最大4つ)
+ * メインは種類とレア度で決まる固定の割合。サブはレベルが5・10・15・20に上がったときに1つずつ
+ * ランダムに加わり、メインより低い値になる。
  */
 @Data
 @NoArgsConstructor
@@ -34,5 +35,6 @@ public class Module {
     private ModuleKind kind;
     private Rarity rarity;
     private double mainValue; // メイン能力の値(割合)
-    private List<Sub> subs = new ArrayList<>();
+    private int level = 1; // モジュールのレベル(レベルが上がるとサブ能力が増える)
+    private List<Sub> subs = new ArrayList<>(); // 解放済みのサブ能力(Lv5,10,15,20で1つずつ増える)
 }

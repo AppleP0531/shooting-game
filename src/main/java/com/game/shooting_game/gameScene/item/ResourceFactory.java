@@ -9,7 +9,7 @@ import com.game.shooting_game.ResourceManager.ResourceKinds.Family;
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.gameScene.item.types.Resource;
-import com.game.shooting_game.skill.SkillService;
+import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.utils.Vector2;
 
 public class ResourceFactory {

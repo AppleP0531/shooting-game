@@ -23,17 +23,17 @@ import com.game.shooting_game.gameScene.beam.BeamSpec;
 import com.game.shooting_game.gameScene.ship.Ship;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipDefinition;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
-import com.game.shooting_game.skill.SkillService;
+import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.gameScene.stage.StageModifiers;
-import com.game.shooting_game.module.ModuleService;
-import com.game.shooting_game.module.ModuleStat;
-import com.game.shooting_game.skill.UnitService;
-import com.game.shooting_game.subship.SubShipService;
+import com.game.shooting_game.domain.module.ModuleService;
+import com.game.shooting_game.domain.module.ModuleStat;
+import com.game.shooting_game.domain.unit.UnitService;
+import com.game.shooting_game.domain.subship.SubShipService;
 import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.utils.Anchor;
+import com.game.shooting_game.ui.Anchor;
 import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 import com.game.shooting_game.utils.animation.Animation;
 
@@ -64,6 +64,8 @@ public class Player extends Ship implements KeyListener {
     private double damagedTimer; // 被弾時の無敵タイマー
     private double breakawaySpeed; // 離脱速度
     private final List<BeamEmitter> beamEmitters = new ArrayList<>(); // 本体のビーム
+    private BeamEmitter subBeamEmitter; // サブ機のビーム(左右で同じタイミングで撃つので、1つで管理する)
+    private int subBeamTier = 0; // サブ機のビームを作ったときのエミッターのMk
 
     public Player(String id, ColorMode mode, Vector2 pos) {
         super(ShipKinds.PLAYER, id, mode, 0, pos);
@@ -241,6 +243,26 @@ public class Player extends Ship implements KeyListener {
         }
 
         subShip.forEach(s -> s.update(dt));
+        if ("none".equals(animationName))
+            updateSubBeams(dt);
+    }
+
+    /**
+     * サブ機のビーム(左右同時。どちらかの真上に敵がいれば撃つ。エミッターのMkが変わったら作り直す)
+     */
+    private void updateSubBeams(double dt) {
+        if (subShip.isEmpty() || !subShip.get(0).canBeam())
+            return;
+
+        int tier = SubShipService.getTier("EMITTER");
+        if (subBeamEmitter == null || subBeamTier != tier) {
+            subBeamEmitter = new BeamEmitter(SubShip.createBeamSpec());
+            subBeamTier = tier;
+        }
+
+        boolean hasTarget = subShip.stream().anyMatch(SubShip::hasTargetAhead);
+        if (subBeamEmitter.update(dt, subShip.get(0).beamIntervalScale(), hasTarget))
+            subShip.forEach(s -> s.fireBeam(subBeamEmitter.getSpec()));
     }
 
     @Override

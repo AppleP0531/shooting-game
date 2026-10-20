@@ -7,6 +7,7 @@ import java.awt.Composite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,13 +25,14 @@ import com.game.shooting_game.gameScene.bullet.barrage.BarrageSpec;
 import com.game.shooting_game.gameScene.ship.BossLibrary;
 import com.game.shooting_game.gameScene.ship.BossLibrary.BossDefinition;
 import com.game.shooting_game.gameScene.ship.BossLibrary.GaugeDefinition;
+import com.game.shooting_game.gameScene.ship.BossLook;
 import com.game.shooting_game.gameScene.ship.EntranceType;
 import com.game.shooting_game.gameScene.ship.Ship;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipDefinition;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 /**
@@ -62,7 +64,8 @@ public class Boss extends Ship {
     private final EntranceType entrance; // 入場軌道
     private final double entranceDuration; // 入場にかける時間
     private final Vector2 origin; // 入場開始位置
-    private final Vector2 anchor; // 待機位置(戦闘中の動きの中心)
+    private final Vector2 anchor; // 待機位置(最初の動きの中心。以降は、ゲージが変わった場所が動きの中心になる)
+    private final Vector2 moveBase = new Vector2(0, 0); // いまのゲージの動きの中心
     private final int gaugeCount; // ゲージ数
     private final double gaugeHp; // 1ゲージあたりのHP
 
@@ -129,6 +132,7 @@ public class Boss extends Ship {
     public void update(double dt) {
         super.update(dt);
         phaseTimer += dt;
+        bodyClock += dt;
 
         switch (phase) {
             case ENTRANCE -> {
@@ -189,8 +193,8 @@ public class Boss extends Ship {
                 double ampY = gauge.getMoveAmpY() * adj;
                 double w = gauge.getMoveSpeed();
 
-                double x = anchor.getX();
-                double y = anchor.getY();
+                double x = moveBase.getX();
+                double y = moveBase.getY();
                 switch (gauge.getMove()) {
                     // 左右に揺れる
                     case "SWAY" -> x += ampX * Math.sin(w * fightTimer);
@@ -213,10 +217,7 @@ public class Boss extends Ship {
                     requestRemoval();
             }
             case TRANSITION -> {
-                // 待機位置へ滑らかに戻る
-                double k = Math.min(1, 4 * dt);
-                pos.setX(pos.getX() + (anchor.getX() - pos.getX()) * k);
-                pos.setY(pos.getY() + (anchor.getY() - pos.getY()) * k);
+                // その場で次の形態に変わる(動かない)
             }
         }
     }
@@ -277,6 +278,12 @@ public class Boss extends Ship {
         phase = Phase.FIGHT;
         phaseTimer = 0;
         fightTimer = 0;
+
+        // ゲージが変わった場所から、そのまま次の形態の動きを始める(中央へは戻らない)。
+        // 何度も続けて離れていかないよう、待機位置からの距離には上限を付ける
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        moveBase.setX(Math.max(anchor.getX() - 90 * adj, Math.min(anchor.getX() + 90 * adj, pos.getX())));
+        moveBase.setY(Math.max(anchor.getY() - 40 * adj, Math.min(anchor.getY() + 40 * adj, pos.getY())));
 
         barrages.clear();
         for (BarrageSpec spec : def.getGauges().get(currentGauge).getBarrages())
@@ -341,8 +348,9 @@ public class Boss extends Ship {
         Graphics2D g2 = (Graphics2D) g;
         super.draw(g);
 
-        // 仮描画(画像は使わない)
-        drawPlaceholder(g2);
+        // 種類・形態ごとのPNG画像で描く。画像がなければ図形の仮描画にする
+        if (!drawBodyImage(g2))
+            drawPlaceholder(g2);
 
         switch (animationName) {
             case "death" -> {
@@ -351,47 +359,141 @@ public class Boss extends Ship {
         }
     }
 
+    // ---- PNG画像での描画 ----
+    private static final String BODY_IMAGE_PATH = "/static/img/ship/boss/%s_f%d.png";
+    private static final int BODY_IMAGE_MAX_FORM = 4; // 画像がある形態の最大(それ以降は同じ画像)
+    private static final int BODY_FRAMES = 6; // 1枚の画像のコマ数(4x2の格子)
+    private static final double BODY_FRAME_TIME = 0.1; // 1コマの時間(秒)
+    private static final double BODY_IMAGE_UNIT = 100; // 画像の中の「機体の半分の大きさ」(画素)
+    private static final double BODY_IMAGE_CX = 200; // 1コマの中の機体の中心
+    private static final double BODY_IMAGE_CY = 185;
+    private static final java.util.Map<String, BufferedImage[]> BODY_IMAGES = new java.util.HashMap<>();
+
+    private double bodyClock = 0; // アニメーション用の時計
+
+    /**
+     * 種類・形態ごとのアニメーションの各コマ(なければnull)
+     */
+    private static BufferedImage[] bodyFrames(String bossId, int form) {
+        int f = Math.min(Math.max(form, 0), BODY_IMAGE_MAX_FORM);
+        String key = bossId + "_f" + f;
+        if (!BODY_IMAGES.containsKey(key)) {
+            BufferedImage[] frames = null;
+            try {
+                BufferedImage sheet = UIBuilder.loadImage(String.format(BODY_IMAGE_PATH, bossId, f));
+                frames = UIBuilder.cutSpriteSheet(sheet, new Vector2(4, 2), BODY_FRAMES);
+            } catch (java.io.IOException e) {
+                LogUtils.systemLog("[WARN]", component, "Boss image not found: " + ANSI.YELLOW + key + ANSI.RESET
+                        + ". Using placeholder.");
+            }
+            BODY_IMAGES.put(key, frames);
+        }
+        return BODY_IMAGES.get(key);
+    }
+
+    /**
+     * 機体をPNG画像で描く。形態が変わる間は、前の形態の画像から新しい形態の画像へ切り替える(部品が現れる)。
+     * 
+     * @return 描けたらtrue(画像がなければfalse)
+     */
+    private boolean drawBodyImage(Graphics2D g2) {
+        BufferedImage[] current = bodyFrames(shipId, currentGauge);
+        if (current == null || current.length == 0)
+            return false;
+
+        double s = imageSize.getOrDefault("ship", 120) / 2.0;
+        double k = s / BODY_IMAGE_UNIT;
+        double base = Math.max(0f, Math.min(1f, alpha));
+        double grow = phase == Phase.TRANSITION ? Math.min(1, phaseTimer / Math.max(0.1, def.getTransitionTime())) : 1;
+        int frame = (int) (bodyClock / BODY_FRAME_TIME);
+
+        Composite oldComposite = g2.getComposite();
+        if (grow < 1 && currentGauge >= 1) {
+            BufferedImage[] prev = bodyFrames(shipId, currentGauge - 1);
+            if (prev != null && prev.length > 0)
+                paintBodyImage(g2, prev[frame % prev.length], k, (float) (base * (1 - grow)));
+        }
+        paintBodyImage(g2, current[frame % current.length], k, (float) (base * (currentGauge >= 1 ? grow : 1)));
+        g2.setComposite(oldComposite);
+        return true;
+    }
+
+    private void paintBodyImage(Graphics2D g2, BufferedImage img, double k, float alpha) {
+        if (alpha <= 0)
+            return;
+        BufferedImage scaled = UIBuilder.cachedResize(img, img.getWidth() * k);
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, Math.min(1f, alpha)));
+        g2.drawImage(scaled, (int) Math.round(pos.getX() - BODY_IMAGE_CX * k),
+                (int) Math.round(pos.getY() - BODY_IMAGE_CY * k), null);
+    }
+
     /**
      * ボスの仮描画
-     * 暗い機体に、今のゲージの色の縁取りと中心の光を付ける(色の概念はなく、青・赤では描かない)
+     * 暗い機体に、縁取りと中心の光を付ける。色は変わらず、ゲージを壊すたびに「形」が変わる:
+     * 部品が増えていく(2ゲージ目: 肩の双砲 / 3: 外側の翼と中央の主砲 / 4: 背中のトゲ / 5以降: 砲台ポッド)。
+     * 形態が変わる間(無敵の点滅中)は、新しい部品がせり出してくる。
      */
     private void drawPlaceholder(Graphics2D g2) {
-        double s = imageSize.getOrDefault("ship", 120) / 2.0;
-        double cx = pos.getX();
-        double cy = pos.getY();
+        // 今の形態に入った直後は、新しい部品が伸びてくる(0→1)
+        double grow = phase == Phase.TRANSITION ? Math.min(1, phaseTimer / Math.max(0.1, def.getTransitionTime())) : 1;
+        drawBody(g2, pos.getX(), pos.getY(), imageSize.getOrDefault("ship", 120) / 2.0, BossLook.of(shipId),
+                currentGauge, grow, phaseTimer, alpha);
+    }
+
+    /**
+     * ボスの機体を描く(種類ごとの形と、形態ごとに増える部品)
+     * 
+     * @param s     機体の半分の大きさ
+     * @param look  ボスの種類ごとの見た目
+     * @param form  形態(0始まり。壊したゲージの数)
+     * @param grow  今の形態で増えた部品のせり出し具合(0〜1)
+     * @param t     脈打ちの時間
+     * @param alpha 不透明度
+     */
+    static void drawBody(Graphics2D g2, double cx, double cy, double s, BossLook look, int form, double grow,
+            double t, float alpha) {
         double adj = ShootingGameMain.getScreenSizeAdj();
-        Color accent = GAUGE_COLORS[currentGauge % GAUGE_COLORS.length];
+        Color accent = look.accent(); // 本体の色は種類ごとに決まり、形態が変わっても変わらない
+        Color plate = new Color(38, 40, 56);
+        Color plateDark = new Color(26, 28, 40);
 
         AffineTransform oldTransform = g2.getTransform();
         Composite oldComposite = g2.getComposite();
         UIBuilder.applyHighQualityRenderSettings(g2);
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, Math.max(0f, Math.min(1f, alpha))));
+        g2.setStroke(new BasicStroke((float) (3 * adj), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
-        // 機体(下向き)
-        double[][] hull = {
-                { 0, 0.95 }, { -1.0, -0.1 }, { -0.85, -0.6 }, { -0.35, -0.35 },
-                { 0, -0.55 }, { 0.35, -0.35 }, { 0.85, -0.6 }, { 1.0, -0.1 }
-        };
+        // 機体の後ろに付く部品 → 機体 → 機体の前に付く部品
+        drawParts(g2, cx, cy, s, look, form, grow, false, plateDark, accent);
+
+        double[][] hull = look.hull();
         int[] xs = new int[hull.length];
         int[] ys = new int[hull.length];
         for (int i = 0; i < hull.length; i++) {
             xs[i] = (int) (cx + hull[i][0] * s);
             ys[i] = (int) (cy + hull[i][1] * s);
         }
-        g2.setColor(new Color(38, 40, 56));
+        g2.setColor(plate);
         g2.fillPolygon(xs, ys, hull.length);
-        g2.setStroke(new BasicStroke((float) (3 * adj), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         g2.setColor(accent);
         g2.drawPolygon(xs, ys, hull.length);
 
-        // 内側の模様
+        // 内側の模様(機体を一回り小さくした輪郭)
+        int[] ixs = new int[hull.length];
+        int[] iys = new int[hull.length];
+        for (int i = 0; i < hull.length; i++) {
+            ixs[i] = (int) (cx + hull[i][0] * s * 0.7);
+            iys[i] = (int) (cy + hull[i][1] * s * 0.7);
+        }
         g2.setStroke(new BasicStroke((float) (1.5 * adj)));
-        g2.setColor(new Color(accent.getRed(), accent.getGreen(), accent.getBlue(), 120));
-        g2.drawLine((int) (cx - 0.7 * s), (int) (cy - 0.15 * s), (int) cx, (int) (cy + 0.6 * s));
-        g2.drawLine((int) (cx + 0.7 * s), (int) (cy - 0.15 * s), (int) cx, (int) (cy + 0.6 * s));
+        g2.setColor(new Color(accent.getRed(), accent.getGreen(), accent.getBlue(), 110));
+        g2.drawPolygon(ixs, iys, hull.length);
+        g2.setStroke(new BasicStroke((float) (3 * adj), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+
+        drawParts(g2, cx, cy, s, look, form, grow, true, plateDark, accent);
 
         // 中心の光(ゆっくり脈打つ)
-        double pulse = 0.85 + 0.15 * Math.sin(phaseTimer * 6);
+        double pulse = 0.85 + 0.15 * Math.sin(t * 6);
         double r = 0.22 * s * pulse;
         g2.setColor(new Color(accent.getRed(), accent.getGreen(), accent.getBlue(), 90));
         g2.fillOval((int) (cx - r * 1.7), (int) (cy - r * 1.7), (int) (r * 3.4), (int) (r * 3.4));
@@ -403,6 +505,41 @@ public class Boss extends Ship {
         g2.setStroke(new BasicStroke(1));
         g2.setTransform(oldTransform);
         g2.setComposite(oldComposite);
+    }
+
+    /**
+     * 今の形態までに増えた部品を描く(今の形態で増えた部品は、せり出し具合 grow で描く)
+     */
+    private static void drawParts(Graphics2D g2, double cx, double cy, double s, BossLook look, int form,
+            double grow, boolean front, Color fill, Color edge) {
+        for (BossLook.Part p : look.parts()) {
+            if (p.front() != front || p.minForm() > form)
+                continue;
+            double g = p.minForm() == form ? grow : 1;
+            part(g2, cx, cy, s, p.pts(), p.ax(), p.ay(), g, fill, edge);
+        }
+    }
+
+    /**
+     * 部品(多角形)を描く
+     * 
+     * @param pts  頂点(ボス中心からの位置。機体の半分の大きさ s を1とする)
+     * @param ax   根もとのx(同じ単位)。せり出すとき、ここを動かさずに伸びる
+     * @param ay   根もとのy
+     * @param grow せり出し具合(0〜1)
+     */
+    private static void part(Graphics2D g2, double cx, double cy, double s, double[][] pts, double ax, double ay,
+            double grow, Color fill, Color edge) {
+        int[] px = new int[pts.length];
+        int[] py = new int[pts.length];
+        for (int i = 0; i < pts.length; i++) {
+            px[i] = (int) (cx + (ax + (pts[i][0] - ax) * grow) * s);
+            py[i] = (int) (cy + (ay + (pts[i][1] - ay) * grow) * s);
+        }
+        g2.setColor(fill);
+        g2.fillPolygon(px, py, pts.length);
+        g2.setColor(edge);
+        g2.drawPolygon(px, py, pts.length);
     }
 
     /**

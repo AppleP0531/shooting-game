@@ -26,9 +26,9 @@ import com.game.shooting_game.gameScene.stage.StageModifiers;
 import com.game.shooting_game.gameScene.stage.StageManager.ModuleReward;
 import com.game.shooting_game.gameScene.stage.StageManager.StageData;
 import com.game.shooting_game.interfaces.Manager;
-import com.game.shooting_game.module.ModuleKind;
-import com.game.shooting_game.module.ModuleService;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.domain.module.ModuleKind;
+import com.game.shooting_game.domain.module.ModuleService;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 /**

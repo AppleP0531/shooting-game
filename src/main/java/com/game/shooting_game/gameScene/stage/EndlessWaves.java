@@ -20,7 +20,8 @@ import com.game.shooting_game.utils.Vector2;
  * 無限モードのウェーブの生成
  * 
  * - 既存のステージ(1〜28)のウェーブを、進み具合に合わせて取り出して並べる。ウェーブが進むほど後ろのステージから出る。
- * - 10ウェーブごとに、コインボス(HPゲージ3本。1本壊されるか時間が経つと撤収し、ダメージを受けるたびにコインを落とす)が出る。
+ * - 10ウェーブごとにボスが出る。ふつうのボスは、すべてのゲージを削りきるまで戦う(進むほど強いボスも出る)。
+ *   低い確率でコインボスが出る。コインボスは、1ゲージ壊されるか時間が経つと撤収し、ダメージを受けるたびにコインを落とす。
  * - 28ステージ分を超えてもウェーブは続き、敵のHPとダメージが上がり続ける(StageModifiers.setEndlessScale)。
  * - ゲームオーバーまで続く。到達したウェーブに応じて報酬が出る。
  */
@@ -29,6 +30,8 @@ public final class EndlessWaves {
     public static final String BEST_WAVE_KEY = "endless:wave"; // 最高到達ウェーブ(highScoresに保存)
     private static final int MAX_SOURCE_STAGE = 28;
     private static final int BOSS_EVERY = 10;
+    private static final int NORMAL_BOSS_COUNT = 6; // Boss1〜Boss6
+    private static final double COIN_BOSS_RATE = 0.15; // ボスの出番のうち、コインボスになる確率
 
     /**
      * 1ウェーブ分(敵・ビームギミック・ビームブロック)
@@ -55,7 +58,7 @@ public final class EndlessWaves {
         StageModifiers.setEndlessScale(wave);
 
         if (wave % BOSS_EVERY == 0)
-            return new Wave(new EnemyConfig[] { coinBoss() }, null, null);
+            return new Wave(new EnemyConfig[] { pickBoss(wave) }, null, null);
 
         // 2ウェーブごとに1ステージ進む。直近の3ステージの中から選ぶ
         StageManager sm = StageManager.getInstance();
@@ -74,9 +77,21 @@ public final class EndlessWaves {
                 d.getBlocks() == null ? null : d.getBlocks().get(key));
     }
 
-    private static EnemyConfig coinBoss() {
+    /**
+     * 出すボスを選ぶ
+     * 低い確率(COIN_BOSS_RATE)でコインボス。それ以外は、ウェーブが進むほど強いボスも候補に入るふつうのボス。
+     */
+    private static EnemyConfig pickBoss(int wave) {
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        if (rnd.nextDouble() < COIN_BOSS_RATE)
+            return boss("BossCoin");
+        int available = Math.min(NORMAL_BOSS_COUNT, 1 + wave / BOSS_EVERY);
+        return boss("Boss" + (1 + rnd.nextInt(available)));
+    }
+
+    private static EnemyConfig boss(String bossId) {
         EnemyConfig c = new EnemyConfig();
-        c.setEnemyId("BossCoin");
+        c.setEnemyId(bossId);
         c.setMode(ColorMode.BLUE);
         c.setLevel(0);
         c.setSpawnPos(new Vector2(0, -120));

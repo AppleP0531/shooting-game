@@ -1,4 +1,4 @@
-package com.game.shooting_game.module;
+package com.game.shooting_game.domain.module;
 
 /**
  * モジュールの能力の種類

@@ -15,10 +15,10 @@ import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.model.StageRewards;
-import com.game.shooting_game.module.Module;
-import com.game.shooting_game.module.ModuleService;
-import com.game.shooting_game.utils.CostPanel;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.domain.module.Module;
+import com.game.shooting_game.domain.module.ModuleService;
+import com.game.shooting_game.ui.CostPanel;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 import com.game.shooting_game.utils.animation.Animation;
 import com.game.shooting_game.utils.animation.AnimationManager;
@@ -149,7 +149,7 @@ public class RewardListPanel extends JPanel {
                 Module m = rewards.getModules().get(i);
                 g.setColor(CostPanel.rarityColor(m.getRarity()).brighter());
                 g.drawString("★ " + ModuleService.title(m) + "  "
-                        + m.getKind().getMainStat().format(m.getMainValue()),
+                        + m.getKind().getMainStat().format(ModuleService.mainNow(m)),
                         getX() + (int) (10 * adj), getY() + (int) (10 * adj + scrollOffset + lineH * (i + 1) - 4 * adj));
             }
         }

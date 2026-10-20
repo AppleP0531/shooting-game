@@ -1,5 +1,6 @@
 package com.game.shooting_game.upgradeScene.subPanels;
 
+import com.game.shooting_game.domain.cost.CostService;
 import java.awt.Color;
 import java.awt.Font;
 
@@ -9,11 +10,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import com.game.shooting_game.ShootingGameMain;
-import com.game.shooting_game.skill.SkillService;
+import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.upgradeScene.UpgradeManager.SkillTreeData;
 import com.game.shooting_game.upgradeScene.UpgradeManager;
-import com.game.shooting_game.utils.CostPanel;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.CostPanel;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 public class SkillDetailPanel extends JPanel {
@@ -131,7 +132,8 @@ public class SkillDetailPanel extends JPanel {
                 && !skillName.equals("Origin")
                 && SkillService.isUnlocked(skillName)
                 && !SkillService.isMaxLevel(data)
-                && SkillService.canAfford(SkillService.getCost(data, SkillService.getLevel(skillName)));
+                && !SkillService.isResearching()
+                && CostService.canAfford(SkillService.getCost(data, SkillService.getLevel(skillName)));
         upgradeBtn.setEnabled(upgradable);
 
         // コストと状態(強化できるときだけ表示)

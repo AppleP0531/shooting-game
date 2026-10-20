@@ -1,4 +1,4 @@
-package com.game.shooting_game.subship;
+package com.game.shooting_game.domain.subship;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
@@ -16,7 +16,7 @@ import java.util.Map;
 
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 
 /**
  * サブ機の描画(ゲーム中と工房のプレビューで共通)

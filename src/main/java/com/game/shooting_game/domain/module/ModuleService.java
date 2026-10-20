@@ -1,5 +1,6 @@
-package com.game.shooting_game.module;
+package com.game.shooting_game.domain.module;
 
+import com.game.shooting_game.domain.cost.CostService;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -10,10 +11,9 @@ import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.data.DataManager;
-import com.game.shooting_game.data.DataManager.UserData;
-import com.game.shooting_game.module.Module.Sub;
-import com.game.shooting_game.skill.SkillService;
-import com.game.shooting_game.skill.SkillService.Cost;
+import com.game.shooting_game.data.UserData;
+import com.game.shooting_game.domain.module.Module.Sub;
+import com.game.shooting_game.domain.cost.Cost;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
 
@@ -23,7 +23,8 @@ import com.game.shooting_game.utils.LogUtils;
  * - 装着できるのは4枠(同じ種類を重ねてもよい)。
  * - 制作にはコインと、敵がドロップするモジュール基板、そして種類ごとに決まった素材が要る(レシピ)。
  *   レア度ごとに「そのレア度の素材」が必要で、足りなければ変換所で上げられる。
- * - メイン能力は種類とレア度で決まる固定の割合。サブ能力は4つ、メインより低い値でランダムに決まる。
+ * - メイン能力は種類とレア度で決まる固定の割合。サブ能力は最初はなく、Lv5・10・15・20で1つずつ、
+ *   メインより低い値でランダムに加わる。
  */
 public final class ModuleService {
     private static final String component = "[ModuleService]";
@@ -53,6 +54,11 @@ public final class ModuleService {
     private static final int[] COINS = { 3000, 10000, 30000, 80000, 200000 };
     private static final int[] CHIPS = { 5, 6, 8, 10, 12 };
     private static final int[] SUBS = { 3, 4, 5, 6, 8 };
+
+    // レベル。SUB_STEPごとのレベルに達するたびに、サブ能力が1つ加わる(最大SUB_COUNT個)
+    public static final int MAX_LEVEL = 20;
+    public static final int SUB_STEP = 5;
+    public static final int SUB_COUNT = MAX_LEVEL / SUB_STEP;
 
     private ModuleService() {
     }
@@ -108,12 +114,20 @@ public final class ModuleService {
             if (m == null)
                 continue;
             if (m.getKind().getMainStat() == stat)
-                sum += m.getMainValue();
+                sum += mainNow(m);
             for (Sub s : m.getSubs())
                 if (s.getStat() == stat)
                     sum += s.getValue();
         }
         return sum;
+    }
+
+    /**
+     * 今のレベルでのメイン能力の値(Lv最大のときが、保存してある値。レベルに比例して上がる)
+     */
+    public static double mainNow(Module m) {
+        int lv = Math.max(1, Math.min(m.getLevel(), MAX_LEVEL));
+        return m.getMainValue() * lv / MAX_LEVEL;
     }
 
     // ----- 装着 -----
@@ -165,9 +179,9 @@ public final class ModuleService {
     public static Module craft(ModuleKind kind, Rarity rarity) {
         UserData ud = DataManager.getUserData();
         Cost cost = recipe(kind, rarity);
-        if (ud == null || !SkillService.canAfford(cost))
+        if (ud == null || !CostService.canAfford(cost))
             return null;
-        SkillService.pay(ud, cost);
+        CostService.pay(ud, cost);
 
         Module m = addNew(kind, rarity);
         LogUtils.systemLog("[INFO]", component,
@@ -205,27 +219,72 @@ public final class ModuleService {
     }
 
     /**
-     * ランダムなモジュールを作る(メインは固定、サブは重複なしで4つ)
+     * 新しいモジュールを作る(メインは固定。サブ能力はまだなく、レベルが上がると加わる)
      */
     public static Module roll(ModuleKind kind, Rarity rarity) {
-        ThreadLocalRandom rnd = ThreadLocalRandom.current();
         Module m = new Module();
         m.setKind(kind);
         m.setRarity(rarity);
         m.setMainValue(mainValue(kind, rarity));
-
-        List<ModuleStat> pool = new ArrayList<>(SUB_TABLE.keySet());
-        pool.remove(kind.getMainStat()); // メインと同じ能力はサブに出ない
-        for (int i = 0; i < 4 && !pool.isEmpty(); i++) {
-            ModuleStat st = pool.remove(rnd.nextInt(pool.size()));
-            double base = SUB_TABLE.get(st)[rarity.ordinal()];
-            double v = base * rnd.nextDouble(SUB_MIN, SUB_MAX);
-            // メインより必ず低くする(割合は基準値の範囲内なので自然に低い。念のため)
-            if (st.isPercent())
-                v = Math.min(v, m.getMainValue() * 0.95);
-            m.getSubs().add(new Sub(st, Math.round(v * 1000) / 1000.0));
-        }
         return m;
+    }
+
+    /**
+     * サブ能力を1つ、ランダムに加える(メインや、すでにあるサブと同じ能力は出ない)
+     */
+    private static void addRandomSub(Module m) {
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        List<ModuleStat> pool = new ArrayList<>(SUB_TABLE.keySet());
+        pool.remove(m.getKind().getMainStat());
+        for (Sub s : m.getSubs())
+            pool.remove(s.getStat());
+        if (pool.isEmpty())
+            return;
+
+        ModuleStat st = pool.get(rnd.nextInt(pool.size()));
+        double base = SUB_TABLE.get(st)[m.getRarity().ordinal()];
+        double v = base * rnd.nextDouble(SUB_MIN, SUB_MAX);
+        // メインより必ず低くする(割合は基準値の範囲内なので自然に低い。念のため)
+        if (st.isPercent())
+            v = Math.min(v, m.getMainValue() * 0.95);
+        m.getSubs().add(new Sub(st, Math.round(v * 1000) / 1000.0));
+    }
+
+    // ----- レベルアップ -----
+    /**
+     * 次のレベルに上げるコスト(コインとそのレア度の基板)。最大レベルならnull
+     */
+    public static Cost levelUpCost(Module m) {
+        if (m.getLevel() >= MAX_LEVEL)
+            return null;
+        int r = m.getRarity().ordinal();
+        int coins = COINS[r] / 10 * m.getLevel();
+        Map<ResourceKinds, Integer> items = new LinkedHashMap<>();
+        items.put(new ResourceKinds(ResourceName.MODULE_CHIP, m.getRarity()), Math.max(1, CHIPS[r] / 2));
+        return new Cost(coins, items);
+    }
+
+    /**
+     * レベルアップ(Lv5・10・15・20に達したらサブ能力が1つ加わる)
+     *
+     * @return 上げられたらtrue
+     */
+    public static boolean levelUp(long id) {
+        UserData ud = DataManager.getUserData();
+        Module m = find(id);
+        Cost cost = m == null ? null : levelUpCost(m);
+        if (ud == null || cost == null || !CostService.canAfford(cost))
+            return false;
+        CostService.pay(ud, cost);
+
+        m.setLevel(m.getLevel() + 1);
+        // 以前の仕様で最初から4つ持っているモジュールは、サブ能力が増えない
+        if (m.getLevel() % SUB_STEP == 0 && m.getSubs().size() < m.getLevel() / SUB_STEP)
+            addRandomSub(m);
+        DataManager.save();
+        LogUtils.systemLog("[INFO]", component,
+                ANSI.YELLOW + m.getKind().getId() + ANSI.RESET + " reached Lv" + m.getLevel() + ".");
+        return true;
     }
 
     /**
@@ -261,12 +320,18 @@ public final class ModuleService {
 
     public static String describe(Module m) {
         StringBuilder sb = new StringBuilder();
-        sb.append(title(m)).append("\n");
-        sb.append("メイン  ").append(m.getKind().getMainStat().getLabel()).append(" ")
-                .append(m.getKind().getMainStat().format(m.getMainValue())).append("\n");
+        sb.append(title(m)).append("   Lv ").append(m.getLevel()).append(" / ").append(MAX_LEVEL).append("\n");
+        ModuleStat main = m.getKind().getMainStat();
+        sb.append("メイン  ").append(main.getLabel()).append(" ").append(main.format(mainNow(m)));
+        if (m.getLevel() < MAX_LEVEL)
+            sb.append("  (Lv").append(MAX_LEVEL).append("で ").append(main.format(m.getMainValue())).append(")");
+        sb.append("\n");
         for (Sub s : m.getSubs())
             sb.append("サブ    ").append(s.getStat().getLabel()).append(" ").append(s.getStat().format(s.getValue()))
                     .append("\n");
+        // まだ解放されていないサブ能力は、解放されるレベルを出す
+        for (int lv = (m.getSubs().size() + 1) * SUB_STEP; lv <= MAX_LEVEL; lv += SUB_STEP)
+            sb.append("サブ    ??? (Lv").append(lv).append("で解放)\n");
         return sb.toString();
     }
 }

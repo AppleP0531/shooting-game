@@ -105,6 +105,43 @@ public final class BeamManager implements Manager {
     }
 
     /**
+     * 弾がブロックに当たっているか
+     */
+    public boolean blocksBullet(Vector2 pos, double radius) {
+        for (BeamBlock b : blocks)
+            if (b.hits(pos, radius))
+                return true;
+        return false;
+    }
+
+    /**
+     * 船をブロックの外へ押し出す(ブロックは通り抜けられない。ステージ中だけ)
+     * 画面の端に押し付けられて押し出せないときは、押し潰しになる(動かさない)。
+     * 同じブロックによる押し潰しは、めり込みが解けるまで1回だけ数える。
+     * 
+     * @param ship   船
+     * @param radius 船の体の半径(画面倍率込み)
+     * @param bounds 船が動ける範囲(nullなら制限なし)
+     * @return 新しく押し潰されたらtrue(ダメージを与える)
+     */
+    public boolean pushOutOfBlocks(Ship ship, double radius, java.awt.geom.Rectangle2D bounds) {
+        if (blocks.isEmpty())
+            return false;
+        boolean crushed = false;
+        Vector2 p = ship.getPos();
+        for (BeamBlock b : blocks) {
+            BeamBlock.Push result = b.pushOut(p, radius, bounds);
+            if (result == BeamBlock.Push.SQUEEZED) {
+                if (b.beginCrush())
+                    crushed = true;
+            } else {
+                b.endCrush();
+            }
+        }
+        return crushed;
+    }
+
+    /**
      * ブロックからビームを撃つ
      * 
      * @param block 撃つブロック(ビームは位置に追従する)
@@ -258,7 +295,7 @@ public final class BeamManager implements Manager {
         // ビームブロック(流れて画面から出たら消す)
         if (playing) {
             for (BeamBlock b : new ArrayList<>(blocks))
-                b.update(dt, player.getMode(), this);
+                b.update(dt, this);
             blocks.removeIf(BeamBlock::isGone);
         }
 

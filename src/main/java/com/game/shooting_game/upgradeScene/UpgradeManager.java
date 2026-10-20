@@ -25,6 +25,7 @@ import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.interfaces.Manager;
+import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.upgradeScene.subPanels.SkillTreeBtnPanel;
 import com.game.shooting_game.upgradeScene.subPanels.ConvertPanel;
 import com.game.shooting_game.upgradeScene.subPanels.SubShipPanel;
@@ -32,7 +33,7 @@ import com.game.shooting_game.upgradeScene.subPanels.UnitPanel;
 import com.game.shooting_game.upgradeScene.subPanels.ModulePanel;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 public final class UpgradeManager extends JPanel implements Manager {
@@ -69,6 +70,8 @@ public final class UpgradeManager extends JPanel implements Manager {
         private int reqLevel = 1; // 解放に必要な親ノードのレベル
         private int coin; // 初回強化に必要なコイン
         private double coinGrowth = 1.0; // レベルごとのコイン倍率
+        private int researchSec = 30; // 初回強化の研究時間(秒)
+        private double researchGrowth = 1.5; // レベルごとの研究時間の倍率
         // レベルごとの必要素材 [レベル0→1, 1→2, ...]。素材名 → レア度 → 個数
         private List<Map<String, Map<String, Integer>>> matLevels = new ArrayList<>();
     }
@@ -276,7 +279,9 @@ public final class UpgradeManager extends JPanel implements Manager {
 
     @Override
     public void update(double dt) {
-
+        // 研究が終わったらボタンのレベル表示を更新する
+        if (SkillService.tickResearch())
+            reloadScreen();
     }
 
     @Override

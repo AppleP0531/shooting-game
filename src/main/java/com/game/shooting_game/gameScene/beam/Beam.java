@@ -19,7 +19,7 @@ import com.game.shooting_game.gameScene.ship.Ship;
 import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.gameScene.ship.types.Player;
 import com.game.shooting_game.utils.GameUtils;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 /**
@@ -38,6 +38,9 @@ public class Beam {
 
     private static final Color BLUE = new Color(70, 150, 255);
     private static final Color RED = new Color(255, 70, 85);
+    // 自機のビームは、敵・ギミックの青/赤と見分けがつくよう、緑がかった水色と琥珀色にする
+    private static final Color PLAYER_BLUE = new Color(60, 255, 190);
+    private static final Color PLAYER_RED = new Color(255, 200, 50);
     private static final double LENGTH = 3000; // 十分長い長さ(画面外まで)
     private static final double RAMP_IN = 0.12; // 照射開始から太くなりきるまでの時間
     private static final double LETHAL_RATE = 0.8; // 見た目の太さに対する当たり判定の太さ(見た目より少し甘くする)
@@ -212,7 +215,9 @@ public class Beam {
         return state == State.DEAD;
     }
 
-    private static Color base(ColorMode mode) {
+    private static Color base(Team team, ColorMode mode) {
+        if (team == Team.PLAYER)
+            return mode == ColorMode.RED ? PLAYER_RED : PLAYER_BLUE;
         return mode == ColorMode.RED ? RED : BLUE;
     }
 
@@ -244,7 +249,7 @@ public class Beam {
         var oldStroke = g2.getStroke();
         UIBuilder.applyHighQualityRenderSettings(g2);
 
-        Color col = base(mode);
+        Color col = base(team, mode);
         double len = length();
 
         g2.translate(origin.getX(), origin.getY());
@@ -270,7 +275,11 @@ public class Beam {
 
             drawBand(g2, len, w * 1.7, col, 0.30); // 外側の光
             drawBand(g2, len, w, col, 0.95); // 本体
-            drawBand(g2, len, w * 0.34, Color.WHITE, 0.95); // 芯
+            // 芯。自機のビームは真っ白、敵・ギミックのビームは色をにじませて、自機のビームと見分ける
+            Color coreColor = team == Team.PLAYER ? Color.WHITE
+                    : new Color((col.getRed() + 255 * 2) / 3, (col.getGreen() + 255 * 2) / 3,
+                            (col.getBlue() + 255 * 2) / 3);
+            drawBand(g2, len, w * 0.34, coreColor, 0.95);
             flare(g2, 0, 0, width * 1.0 * g, col, 0.9); // 発射位置の光
         }
 

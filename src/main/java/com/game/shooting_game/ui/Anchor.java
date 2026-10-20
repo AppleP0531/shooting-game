@@ -1,5 +1,6 @@
-package com.game.shooting_game.utils;
+package com.game.shooting_game.ui;
 
+import com.game.shooting_game.utils.Vector2;
 import lombok.Data;
 
 @Data

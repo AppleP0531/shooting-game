@@ -1,5 +1,6 @@
 package com.game.shooting_game.lobbyScene;
 
+import com.game.shooting_game.domain.cost.CostService;
 import java.awt.Graphics;
 import java.util.Objects;
 
@@ -14,9 +15,10 @@ import com.game.shooting_game.gameScene.bullet.BulletManager;
 import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.interfaces.Manager;
+import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.lobbyScene.LobbySceneUI.HangarSceneUIData;
 import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 public final class LobbyManager extends JPanel implements Manager {
@@ -167,14 +169,16 @@ public final class LobbyManager extends JPanel implements Manager {
             int targetShipCost = SHIP_M.getShipConfig().get(ShipKinds.PLAYER).get(ships[viewingShipInd])
                     .getDatas()
                     .getCost();
-            int ownedCoins = DataManager.getUserData().getResources().getCoins();
-            if (ownedCoins > targetShipCost) {
+            int ownedCoins = CostService.coins();
+            if (ownedCoins >= targetShipCost) {
                 DataManager.getUserData().unlockShip(ships[viewingShipInd]);
-                ownedCoins -= targetShipCost;
-                DataManager.getUserData().getResources().setCoins(ownedCoins);
+                // 管理者モードはコインを減らさない
+                if (!DataManager.isAdminMode())
+                    DataManager.getUserData().getResources().setCoins(ownedCoins - targetShipCost);
                 updateBtnStates();
             } else {
-                LogUtils.systemLog("[INFO]", component, "There is no enough mony");
+                LogUtils.systemLog("[INFO]", component, "There is no enough money");
+                lobbyUI.showMessage("コインが足りません（必要: " + targetShipCost + " / 所持: " + ownedCoins + "）");
             }
         });
         unlockShipBtn.setVisible(false); // 非表示

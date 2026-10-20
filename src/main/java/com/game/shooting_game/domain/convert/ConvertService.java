@@ -1,12 +1,13 @@
-package com.game.shooting_game.skill;
+package com.game.shooting_game.domain.convert;
 
+import com.game.shooting_game.domain.cost.CostService;
 import java.util.Map;
 
 import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.data.DataManager;
-import com.game.shooting_game.data.DataManager.UserData;
+import com.game.shooting_game.data.UserData;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
 
@@ -39,7 +40,8 @@ public final class ConvertService {
     public static int maxTimes(ResourceName name, Rarity r) {
         if (next(r) == null)
             return 0;
-        return SkillService.owned(new ResourceKinds(name, r)) / RATE;
+        // 実際に持っている数で数える(管理者モードの無制限の数では変換できない)
+        return CostService.ownedReal(new ResourceKinds(name, r)) / RATE;
     }
 
     /**

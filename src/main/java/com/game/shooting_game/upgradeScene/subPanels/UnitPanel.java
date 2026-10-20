@@ -1,5 +1,8 @@
 package com.game.shooting_game.upgradeScene.subPanels;
 
+import com.game.shooting_game.ui.UIStyle;
+import static com.game.shooting_game.ui.UIStyle.px;
+import com.game.shooting_game.domain.cost.CostService;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -15,10 +18,10 @@ import javax.swing.JTextArea;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.gameScene.ship.ShipManager;
-import com.game.shooting_game.skill.SkillService;
-import com.game.shooting_game.skill.UnitService;
-import com.game.shooting_game.utils.CostPanel;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.domain.skill.SkillService;
+import com.game.shooting_game.domain.unit.UnitService;
+import com.game.shooting_game.ui.CostPanel;
+import com.game.shooting_game.ui.UIBuilder;
 
 /**
  * 機体強化パネル
@@ -38,32 +41,17 @@ public class UnitPanel extends JPanel {
     private JButton buyBtn;
     private JButton starBtn;
 
-    private static int px(double base) {
-        return (int) (base * ShootingGameMain.getScreenSizeAdj());
-    }
-
     private static String shipId() {
         return DataManager.getUserData().getSelectedShip();
     }
 
     private JTextArea area(double size, boolean bold) {
-        JTextArea a = new JTextArea();
-        a.setEditable(false);
-        a.setFocusable(false);
-        a.setLineWrap(true);
-        a.setWrapStyleWord(true);
-        a.setOpaque(false);
-        a.setForeground(Color.WHITE);
-        a.setFont(new Font("SansSerif", bold ? Font.BOLD : Font.PLAIN, Math.max(9, px(size))));
-        return a;
+        return UIStyle.textArea(size, bold);
     }
 
     private JButton button(String text, int x, int y, int w, int h) {
-        JButton b = new JButton(text);
+        JButton b = UIStyle.button(text, 12);
         b.setBounds(x, y, w, h);
-        b.setMargin(new Insets(0, 0, 0, 0));
-        b.setFocusPainted(false);
-        b.setFont(new Font("SansSerif", Font.BOLD, Math.max(10, px(12))));
         add(b);
         return b;
     }
@@ -151,13 +139,13 @@ public class UnitPanel extends JPanel {
         boolean maxLv = lv >= UnitService.MAX_LEVEL;
         costPanel.setCost(maxLv ? null : UnitService.levelCost(lv));
         levelBtn.setText(maxLv ? "レベル最大" : "レベルアップ  Lv" + lv + " → Lv" + (lv + 1));
-        boolean canLv = !maxLv && SkillService.canAfford(UnitService.levelCost(lv));
+        boolean canLv = !maxLv && CostService.canAfford(UnitService.levelCost(lv));
         levelBtn.setEnabled(canLv);
 
         int price = UnitService.copyPrice(id);
         starArea.setText("★ " + stars + " / " + UnitService.MAX_STARS + "   予備機: " + copies + "機\n"
                 + "同じ機体の予備機を1機使うと、★が1つ上がります。\n予備機の値段: " + price + " コイン");
-        int coins = DataManager.getUserData().getResources().getCoins();
+        int coins = CostService.coins();
         boolean canBuy = stars + copies < UnitService.MAX_STARS && coins >= price;
         buyBtn.setText("予備機を買う (" + price + ")");
         buyBtn.setEnabled(canBuy);
@@ -207,6 +195,6 @@ public class UnitPanel extends JPanel {
     public void showPanel() {
         refresh();
         UIBuilder.openPanel(this, "機体強化", true, null);
-        setBackground(new Color(0, 0, 0, 245));
+        setBackground(UIStyle.PANEL_BG);
     }
 }

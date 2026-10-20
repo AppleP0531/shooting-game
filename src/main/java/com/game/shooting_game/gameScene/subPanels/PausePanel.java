@@ -13,7 +13,7 @@ import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.gameScene.GameManager;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 public class PausePanel extends JPanel {

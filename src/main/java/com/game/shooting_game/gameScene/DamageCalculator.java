@@ -7,10 +7,10 @@ import com.game.shooting_game.gameScene.ship.Ship;
 import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.gameScene.ship.types.Player;
 import com.game.shooting_game.gameScene.stage.StageModifiers;
-import com.game.shooting_game.module.ModuleService;
-import com.game.shooting_game.module.ModuleStat;
-import com.game.shooting_game.skill.SkillService;
-import com.game.shooting_game.skill.UnitService;
+import com.game.shooting_game.domain.module.ModuleService;
+import com.game.shooting_game.domain.module.ModuleStat;
+import com.game.shooting_game.domain.skill.SkillService;
+import com.game.shooting_game.domain.unit.UnitService;
 
 /**
  * ダメージ計算の専用クラス

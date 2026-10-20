@@ -1,5 +1,8 @@
 package com.game.shooting_game.upgradeScene.subPanels;
 
+import com.game.shooting_game.ui.UIStyle;
+import static com.game.shooting_game.ui.UIStyle.px;
+import com.game.shooting_game.domain.cost.CostService;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
@@ -23,11 +26,11 @@ import com.game.shooting_game.ResourceManager.ResourceKinds.Family;
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.ShootingGameMain;
-import com.game.shooting_game.skill.ConvertService;
-import com.game.shooting_game.skill.SkillService;
-import com.game.shooting_game.utils.CostPanel;
-import com.game.shooting_game.utils.ResourceIcons;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.domain.convert.ConvertService;
+import com.game.shooting_game.domain.skill.SkillService;
+import com.game.shooting_game.ui.CostPanel;
+import com.game.shooting_game.ui.ResourceIcons;
+import com.game.shooting_game.ui.UIBuilder;
 
 /**
  * 素材変換パネル
@@ -41,10 +44,6 @@ public class ConvertPanel extends JPanel {
     private final Map<ResourceName, JButton> matBtns = new LinkedHashMap<>();
     private JLabel selectedLabel;
     private Row[] rows;
-
-    private static int px(double base) {
-        return (int) (base * ShootingGameMain.getScreenSizeAdj());
-    }
 
     /**
      * 1段分(あるレア度 → 1つ上のレア度)
@@ -122,8 +121,8 @@ public class ConvertPanel extends JPanel {
             g2.fillRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 8, 8);
 
             Rarity to = ConvertService.next(from);
-            int own = selected == null ? 0 : SkillService.owned(new ResourceKinds(selected, from));
-            int ownTo = selected == null || to == null ? 0 : SkillService.owned(new ResourceKinds(selected, to));
+            int own = selected == null ? 0 : CostService.ownedReal(new ResourceKinds(selected, from));
+            int ownTo = selected == null || to == null ? 0 : CostService.ownedReal(new ResourceKinds(selected, to));
             int y = (getHeight() - px(24)) / 2;
             cell(g2, px(8), y, from, own);
 
@@ -240,6 +239,6 @@ public class ConvertPanel extends JPanel {
         refresh();
 
         UIBuilder.openPanel(this, "素材変換", true, null);
-        setBackground(new Color(0, 0, 0, 245));
+        setBackground(UIStyle.PANEL_BG);
     }
 }

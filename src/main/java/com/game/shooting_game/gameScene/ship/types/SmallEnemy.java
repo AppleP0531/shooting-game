@@ -70,6 +70,11 @@ public class SmallEnemy extends Enemy {
     }
 
     @Override
+    protected double sizeScale() {
+        return 0.7; // 小敵は、同じ機体の通常の敵より小さく描く(当たり判定も同じだけ小さい)
+    }
+
+    @Override
     protected boolean canFire() {
         // 画面内にいる間だけ撃つ
         return timer >= delay && inScreen();

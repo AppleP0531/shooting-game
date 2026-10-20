@@ -14,7 +14,7 @@ import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.command.CommandGlassPane;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 public class LoginPanel extends JPanel {
@@ -162,6 +162,6 @@ public class LoginPanel extends JPanel {
                 MAIN.getHeight() / 2 - (int) panelSize.getY() / 2,
                 (int) panelSize.getX(), (int) panelSize.getY());
 
-        UIBuilder.openPanel(this, state, true, null);
+        UIBuilder.openPanel(this, state, true, null, false); // ログインは外側を押しても閉じない
     }
 }
