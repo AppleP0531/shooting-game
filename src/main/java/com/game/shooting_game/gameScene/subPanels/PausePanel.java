@@ -61,8 +61,8 @@ public class PausePanel extends JPanel {
                 (int) panelSize.getY() - (int) resumeBtn.getHeight() - spacing,
                 (int) resumeBtn.getWidth(), (int) resumeBtn.getHeight());
         resumeBtn.addActionListener(e -> {
-            GM.setPause(false);
             UIBuilder.closePanel(this);
+            GM.resume(); // 3・2・1を数えてから再開する
             // 再開ログ
             LogUtils.systemLog(
                     "[INFO]",
@@ -82,9 +82,8 @@ public class PausePanel extends JPanel {
                 (int) panelSize.getY() - (int) quitBtn.getHeight() - spacing,
                 (int) quitBtn.getWidth(), (int) quitBtn.getHeight());
         quitBtn.addActionListener(e -> {
-            GM.setPause(false);
             UIBuilder.closePanel(this);
-            SM.changeScene(SceneType.NORMALSTAGE);
+            GM.leave(); // 画面を暗くしてから、ステージ選択へ戻る
         });
         this.add(quitBtn);
 
@@ -106,8 +105,8 @@ public class PausePanel extends JPanel {
                 ANSI.YELLOW + "Game Paused" + ANSI.RESET);
 
         UIBuilder.openPanel(this, "Pause", true, () -> {
-            GM.setPause(false);
             UIBuilder.closePanel(this);
+            GM.resume();
         });
     }
 }
