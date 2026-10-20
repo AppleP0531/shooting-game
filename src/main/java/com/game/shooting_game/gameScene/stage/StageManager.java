@@ -51,6 +51,19 @@ public final class StageManager implements Manager {
     }
 
     /**
+     * HARDのミッションの設定(省略した項目は標準値。全部達成でNIGHTMAREが解放される)
+     */
+    @Data
+    @NoArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class MissionSpec {
+        private int maxHits = 3; // 被弾回数の上限
+        private double minHpRate = 0.5; // クリア時に残っているHPの割合
+        private double secondsPerWave = 30; // 1ウェーブあたりの制限時間(秒)
+        private double maxSeconds = 0; // 制限時間を直接指定(0なら上のウェーブ数から決める)
+    }
+
+    /**
      * ステージ情報
      */
     @Data // Getter, Setterの自動生成
@@ -62,6 +75,7 @@ public final class StageManager implements Manager {
         private String category; // エクストラ画面の分類: MODULE / BOSS / MATERIAL / SPECIAL
         private int unlock; // エクストラステージの解放条件(クリア済みのステージ番号)
         private List<ModuleReward> moduleRewards; // クリアで手に入るモジュール(確率つき)
+        private MissionSpec missions; // HARDのミッション(省略で標準値)
         private StageModifiers.Spec modifiers; // ステージ条件(敵が硬い、回復なし など)
         private Map<ResourceName, Map<Rarity, String>> rewardList;
         private Map<String, EnemyConfig[]> enemyList;

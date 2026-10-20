@@ -36,6 +36,8 @@ import com.game.shooting_game.gameScene.ship.Ship;
 import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.gameScene.ship.types.Player;
+import com.game.shooting_game.gameScene.stage.Difficulty;
+import com.game.shooting_game.gameScene.stage.DifficultyService;
 import com.game.shooting_game.gameScene.stage.EndlessWaves;
 import com.game.shooting_game.gameScene.stage.StageManager;
 import com.game.shooting_game.gameScene.stage.StageModifiers;
@@ -81,6 +83,9 @@ public final class GameManager extends JPanel implements Manager {
     private int killCountSinceLastLevelUp; // 最近のレベルアップドロップからのキル数
     private int score;
     private int coin;
+    private int hitCount; // このステージで受けた被弾の回数(HARDのミッション用)
+    private double playTime; // このステージの経過時間(秒。ポーズ中は進まない)
+    private boolean skipped; // スキップで報酬だけ受け取ったか(ミッションの対象外)
     private final Map<ResourceKinds, Integer> collectedResources = new LinkedHashMap<>(); // このステージで拾った素材
 
     private final List<Manager> managers = new ArrayList<>();
@@ -158,13 +163,16 @@ public final class GameManager extends JPanel implements Manager {
 
         // ステージ条件の読み込み(敵が硬い・回復なし など。プレイヤーの生成より前に行う)
         StageData sd = STAGE_M.getStageConfig().get("stage" + STAGE_M.getStageId());
-        StageModifiers.load(sd == null ? null : sd.getModifiers());
+        StageModifiers.load(sd == null ? null : sd.getModifiers(), STAGE_M.getStage().getDifficulty());
 
         // リセット
         gameover = false;
         killCountSinceLastLevelUp = 0;
         score = 0;
         coin = 0;
+        hitCount = 0;
+        playTime = 0;
+        skipped = false;
         collectedResources.clear();
 
         // 各マネージャーのセットアップ
@@ -194,6 +202,7 @@ public final class GameManager extends JPanel implements Manager {
                     }
                 }
                 case "none" -> {
+                    playTime += dt;
                     checkCollisions();
 
                     // プレイヤーのHPがなくなったらゲームオーバーフラグを立ててリザルト画面に遷移
@@ -260,6 +269,29 @@ public final class GameManager extends JPanel implements Manager {
     }
 
     /**
+     * 被弾の記録(自機がダメージを受けたとき)
+     */
+    public void addHit() {
+        hitCount++;
+    }
+
+    /**
+     * スキップ(遊ばずに、クリア済みの難易度の報酬だけ受け取る)
+     */
+    public void skipResult() {
+        skipped = true;
+        result();
+    }
+
+    /**
+     * モジュール報酬のレア度を難易度に応じて上げる(最大はLEGENDARY)
+     */
+    private static Rarity bumpRarity(Rarity rarity, int bump) {
+        Rarity[] all = Rarity.values();
+        return all[Math.min(all.length - 1, rarity.ordinal() + bump)];
+    }
+
+    /**
      * リザルト処理
      */
     public void result() {
@@ -294,15 +326,31 @@ public final class GameManager extends JPanel implements Manager {
             data.getProgress().addExp(score / 10);
 
             // 初クリアかどうか(最高スコアの更新より前に調べる)
-            boolean firstClear = !data.getProgress().getHighScores().containsKey("stage" + STAGE_M.getStageId());
+            // (難易度ごとに別の記録。初クリアの報酬も難易度ごとに1回ずつ)
+            Difficulty diff = STAGE_M.getStage().getDifficulty();
+            String scoreKey = DifficultyService.key(STAGE_M.getStageId(), diff);
+            boolean firstClear = !data.getProgress().getHighScores().containsKey(scoreKey);
 
             // 最高スコアの更新
-            data.getProgress().updateHighScore("stage" + STAGE_M.getStageId(), score);
+            data.getProgress().updateHighScore(scoreKey, score);
+            if (!data.getProgress().getHighScores().containsKey(scoreKey))
+                data.getProgress().getHighScores().put(scoreKey, 0); // スコア0でもクリア済みとして残す
             StageRewards.getInstance().setScore(score);
+            StageRewards.getInstance().setDifficultyLabel(diff == Difficulty.NORMAL ? "" : diff.getLabel());
 
-            // コインの加算
-            data.getResources().setCoins(data.getResources().getCoins() + coin);
-            StageRewards.getInstance().getResources().put(ResourceKinds.COIN, coin);
+            // HARD のミッション(スキップでは判定しない)
+            if (diff == Difficulty.HARD && !skipped && !endless) {
+                double hpRate = SHIP_M.getPlayer().getMaxHp() > 0
+                        ? SHIP_M.getPlayer().getHp() / SHIP_M.getPlayer().getMaxHp()
+                        : 0;
+                StageRewards.getInstance().getNewMissions().addAll(
+                        DifficultyService.recordMissions(STAGE_M.getStageId(), hitCount, hpRate, playTime));
+            }
+
+            // コインの加算(難易度で増える)
+            int coinGain = (int) Math.round(coin * diff.getRewardRate());
+            data.getResources().setCoins(data.getResources().getCoins() + coinGain);
+            StageRewards.getInstance().getResources().put(ResourceKinds.COIN, coinGain);
 
             // ステージ中に拾った素材をバックパックに追加
             for (Map.Entry<ResourceKinds, Integer> e : collectedResources.entrySet()) {
@@ -321,7 +369,9 @@ public final class GameManager extends JPanel implements Manager {
                 for (Map.Entry<Rarity, String> rarityEntry : rarityMap.entrySet()) {
                     Rarity rarity = rarityEntry.getKey();
 
-                    int amount = currentStageData.getRandomResourceAmount(new ResourceKinds(resName, rarity));
+                    int amount = (int) Math.round(
+                            currentStageData.getRandomResourceAmount(new ResourceKinds(resName, rarity))
+                                    * diff.getRewardRate());
                     ResourceKinds resKind = new ResourceKinds(resName, rarity);
                     int amountOwned = data.getResources().getEquipments().getOrDefault(resKind, 0);
 
@@ -352,12 +402,12 @@ public final class GameManager extends JPanel implements Manager {
                         continue;
                     if ("DAILY".equals(r.getOnce()) && data.getProgress().getHighScores().containsKey(dailyKey))
                         continue;
-                    if (Math.random() >= r.getChance())
+                    if (Math.random() >= Math.min(1.0, r.getChance() * diff.getModuleChanceRate()))
                         continue;
                     try {
                         ModuleKind kind = r.getKind() == null ? null : ModuleKind.valueOf(r.getKind());
-                        StageRewards.getInstance().getModules()
-                                .add(ModuleService.addNew(kind, Rarity.valueOf(r.getRarity())));
+                        StageRewards.getInstance().getModules().add(ModuleService
+                                .addNew(kind, bumpRarity(Rarity.valueOf(r.getRarity()), diff.getRarityBump())));
                     } catch (IllegalArgumentException e) {
                         LogUtils.systemLog("[WARN]", component, "Invalid module reward: " + r);
                     }

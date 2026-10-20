@@ -32,6 +32,7 @@ public final class StageModifiers {
     }
 
     private static Spec current = new Spec();
+    private static Difficulty difficulty = Difficulty.NORMAL;
     private static double endlessHp = 1.0;
     private static double endlessDamage = 1.0;
 
@@ -42,7 +43,15 @@ public final class StageModifiers {
      * ステージの開始時に読み込む(nullなら条件なし)
      */
     public static void load(Spec spec) {
+        load(spec, Difficulty.NORMAL);
+    }
+
+    /**
+     * ステージの開始時に読み込む(難易度の倍率も、ステージ条件に重ねてかける)
+     */
+    public static void load(Spec spec, Difficulty diff) {
         current = spec == null ? new Spec() : spec;
+        difficulty = diff == null ? Difficulty.NORMAL : diff;
         endlessHp = 1.0;
         endlessDamage = 1.0;
     }
@@ -62,11 +71,11 @@ public final class StageModifiers {
     }
 
     public static double enemyHpRate() {
-        return active() ? current.getEnemyHpRate() * endlessHp : 1.0;
+        return active() ? current.getEnemyHpRate() * difficulty.getEnemyHpRate() * endlessHp : 1.0;
     }
 
     public static double enemyDamageRate() {
-        return active() ? current.getEnemyDamageRate() * endlessDamage : 1.0;
+        return active() ? current.getEnemyDamageRate() * difficulty.getEnemyDamageRate() * endlessDamage : 1.0;
     }
 
     public static double playerHpRate() {

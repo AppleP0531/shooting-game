@@ -22,7 +22,10 @@ public final class SelectStageManager extends JPanel implements Manager {
     private static enum StageModeButton {
         NORMAL("NORMAL MODE", "/static/img/UI/selectStageScene/normalModeImage.png", SceneType.NORMALSTAGE),
         INFINITY("INFINITY MODE", "/static/img/UI/selectStageScene/infinityModeImage.png", SceneType.INFINITYSTAGE),
-        EXTRA("EXTRA MODE", "/static/img/UI/selectStageScene/extraModeImage.png", SceneType.EXTRASTAGE);
+        EXTRA_MODULE("MODULE", "/static/img/UI/selectStageScene/extraModeImage.png", SceneType.EXTRA_MODULE),
+        EXTRA_BOSS("BOSS", "/static/img/UI/selectStageScene/extraModeImage.png", SceneType.EXTRA_BOSS),
+        EXTRA_MATERIAL("MATERIAL", "/static/img/UI/selectStageScene/extraModeImage.png", SceneType.EXTRA_MATERIAL),
+        EXTRA_SPECIAL("SPECIAL", "/static/img/UI/selectStageScene/extraModeImage.png", SceneType.EXTRA_SPECIAL);
 
         private final String label;
         private final String imagePath;

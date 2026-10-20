@@ -60,5 +60,19 @@ public class GameResultSceneUI {
         double scoreTextSize = 20 * ShootingGameMain.getScreenSizeAdj();
         UIBuilder.drawString(g, Anchor.CENTER, scoreTextPos, scoreTextSize, Color.WHITE, Font.PLAIN,
                 scoreText);
+
+        // 難易度(ノーマル以外)と、HARDで新しく達成したミッション
+        double lineY = 172 * ShootingGameMain.getScreenSizeAdj();
+        double small = 12 * ShootingGameMain.getScreenSizeAdj();
+        if (!rewards.getDifficultyLabel().isEmpty()) {
+            UIBuilder.drawString(g, Anchor.CENTER, new Vector2(MAIN.getWidth() / 2, lineY), small,
+                    new Color(255, 200, 90), Font.BOLD, "DIFFICULTY: " + rewards.getDifficultyLabel());
+            lineY += 15 * ShootingGameMain.getScreenSizeAdj();
+        }
+        for (String m : rewards.getNewMissions()) {
+            UIBuilder.drawString(g, Anchor.CENTER, new Vector2(MAIN.getWidth() / 2, lineY), small,
+                    new Color(150, 230, 255), Font.PLAIN, "ミッション達成: " + m);
+            lineY += 15 * ShootingGameMain.getScreenSizeAdj();
+        }
     }
 }

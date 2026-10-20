@@ -129,12 +129,12 @@ public class SubShipPreview extends JPanel {
         g2.fill(body);
 
         // サブ機(フレームが大きいほど外側に付く)
-        double off = (40 + 9 * SubShipService.hullSize(Math.max(1, t[0]))) * adj * 0.8;
+        double off = (24 + 6 * SubShipService.hullSize(Math.max(1, t[0]))) * adj * 0.8;
         double y = cy + 8 * adj;
         // 完成していない(必須パーツが足りない)ときも、制作済みの分は表示する
         for (boolean left : new boolean[] { true, false })
             com.game.shooting_game.domain.subship.SubShipRenderer.draw(g2,
                     left ? cx - off : cx + off, y, left,
-                    t[0], t[1], t[2], t[3], t[4], ColorMode.BLUE, time, alpha, 0.8);
+                    t[0], t[1], t[2], t[3], t[4], ColorMode.BLUE, time, alpha, 0.45);
     }
 }

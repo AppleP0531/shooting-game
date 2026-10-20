@@ -505,7 +505,7 @@ package "shooting_game" {
         }
 
         package "infinity" {
-            class ExtraStageManager <<Singleton>> {
+            class ExtraStageManager {
                 - stageBtns: List<JButton>
                 - selectedId: int
                 + initComponents(): void

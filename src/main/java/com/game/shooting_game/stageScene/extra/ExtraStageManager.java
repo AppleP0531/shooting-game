@@ -7,7 +7,6 @@ import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -20,6 +19,8 @@ import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.gameScene.stage.DailyService;
+import com.game.shooting_game.gameScene.stage.Difficulty;
+import com.game.shooting_game.gameScene.stage.DifficultyService;
 import com.game.shooting_game.gameScene.stage.EndlessWaves;
 import com.game.shooting_game.gameScene.stage.StageManager;
 import com.game.shooting_game.gameScene.stage.StageModifiers;
@@ -28,11 +29,12 @@ import com.game.shooting_game.gameScene.stage.StageManager.StageData;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.domain.module.ModuleKind;
 import com.game.shooting_game.domain.module.ModuleService;
+import com.game.shooting_game.stageScene.DifficultyPanel;
 import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 /**
- * エクストラモード
+ * エクストラ(分類ごとに1シーン: モジュール/ボス/素材/特別)
  * 通常ステージとは別の、特別なステージの一覧。番号は100以上(StageConfig.jsonの "stage101" など)。
  * クリアで素材やモジュールが手に入る。通常ステージの進行度(クリア済みステージ)には影響しない。
  * 解放条件は、通常ステージのクリア状況(StageData.unlock)。
@@ -40,7 +42,6 @@ import com.game.shooting_game.utils.Vector2;
 public final class ExtraStageManager extends JPanel implements Manager {
     private static final String component = "[ExtraStageManager]";
     private static final int EXTRA_BASE_ID = 100;
-    private static ExtraStageManager instance;
 
     private final ShootingGameMain MAIN;
     private final SceneManager SM;
@@ -51,22 +52,21 @@ public final class ExtraStageManager extends JPanel implements Manager {
     private JPanel detailPanel;
     private JTextArea detailText;
     private JButton startBtn;
+    private DifficultyPanel difficultyPanel; // ボス分類だけ、難易度を選べる
     private int selectedId = -1;
-    private final List<JButton> tabBtns = new ArrayList<>();
-    private String category = "MODULE";
+    private final String category;
+    private final String categoryTitle;
 
-    /** 分類(キー, 表示名) */
-    private static final String[][] CATEGORIES = { { "MODULE", "モジュール" }, { "BOSS", "ボス" },
+    /** 分類ごとに1つずつ作る(キー, 表示名) */
+    public static final String[][] CATEGORIES = { { "MODULE", "モジュール" }, { "BOSS", "ボス" },
             { "MATERIAL", "素材" }, { "SPECIAL", "特別" } };
 
-    private ExtraStageManager() {
+    public ExtraStageManager(String category, String categoryTitle) {
+        this.category = category;
+        this.categoryTitle = categoryTitle;
         MAIN = ShootingGameMain.getInstance();
         SM = SceneManager.getInstance();
         STAGE_M = StageManager.getInstance();
-    }
-
-    public static ExtraStageManager getInstance() {
-        return instance = Objects.requireNonNullElseGet(instance, ExtraStageManager::new);
     }
 
     private static int px(double base) {
@@ -86,29 +86,14 @@ public final class ExtraStageManager extends JPanel implements Manager {
         goBackBtn.addActionListener(e -> SM.changeToPrevScene());
         this.add(goBackBtn);
 
-        // 分類の切り替え(モジュール系統 / ボス系統 / 素材系統 / 特別)
-        int tw = px(88);
-        for (int i = 0; i < CATEGORIES.length; i++) {
-            String key = CATEGORIES[i][0];
-            JButton t = new JButton(CATEGORIES[i][1]);
-            t.setMargin(new Insets(0, 0, 0, 0));
-            t.setFocusPainted(false);
-            t.setFont(new Font("SansSerif", Font.BOLD, Math.max(10, px(13))));
-            t.setBounds(MAIN.getWidth() / 2 - px(180) + i * (tw + px(2)), px(76), tw, px(34));
-            t.addActionListener(e -> {
-                category = key;
-                rebuild();
-            });
-            this.add(t);
-            tabBtns.add(t);
-        }
-
         // ステージの詳細(押したステージの説明と、報酬の内容)
         detailPanel = new JPanel();
         detailPanel.setLayout(null);
         detailPanel.setVisible(false);
         int dw = px(350);
-        int dh = px(330);
+        boolean pickDifficulty = "BOSS".equals(category);
+        int diffH = pickDifficulty ? DifficultyPanel.height() + px(6) : 0;
+        int dh = px(330) + diffH;
         detailPanel.setBounds(MAIN.getWidth() / 2 - dw / 2, MAIN.getHeight() / 2 - dh / 2, dw, dh);
         detailText = new JTextArea();
         detailText.setEditable(false);
@@ -118,15 +103,25 @@ public final class ExtraStageManager extends JPanel implements Manager {
         detailText.setOpaque(false);
         detailText.setForeground(Color.WHITE);
         detailText.setFont(new Font("SansSerif", Font.PLAIN, Math.max(10, px(12))));
-        detailText.setBounds(px(8), px(6), dw - px(16), dh - px(66));
+        detailText.setBounds(px(8), px(6), dw - px(16), dh - px(66) - diffH);
         detailPanel.add(detailText);
+        if (pickDifficulty) {
+            difficultyPanel = new DifficultyPanel(dw - px(16), d -> {
+                STAGE_M.getStage().setDifficulty(d);
+                renderDetail(d);
+            });
+            difficultyPanel.setLocation(px(8), dh - px(62) - DifficultyPanel.height());
+            detailPanel.add(difficultyPanel);
+        }
         startBtn = UIBuilder.createImageBtn(component, "/static/img/UI/lobbyScene/startStage.png",
                 new Vector2(px(100), px(46)), "START");
         startBtn.setBounds(dw / 2 - startBtn.getWidth() / 2, dh - startBtn.getHeight() - px(8),
                 startBtn.getWidth(), startBtn.getHeight());
         startBtn.addActionListener(e -> {
             UIBuilder.closePanel(detailPanel);
+            Difficulty diff = difficultyPanel == null ? Difficulty.NORMAL : difficultyPanel.getSelected();
             STAGE_M.getStage().setStageId(selectedId);
+            STAGE_M.getStage().setDifficulty(diff);
             SM.changeScene(SceneType.GAME);
         });
         detailPanel.add(startBtn);
@@ -164,13 +159,7 @@ public final class ExtraStageManager extends JPanel implements Manager {
             this.remove(b);
         stageBtns.clear();
 
-        // 選んでいる分類を見分けられるようにする
-        for (int i = 0; i < tabBtns.size(); i++) {
-            boolean sel = CATEGORIES[i][0].equals(category);
-            tabBtns.get(i).setText(sel ? "【" + CATEGORIES[i][1] + "】" : CATEGORIES[i][1]);
-        }
-
-        int y = 122;
+        int y = 90;
         for (int id : extraIds()) {
             StageData d = STAGE_M.getStageConfig().get("stage" + id);
             boolean open = unlocked(d);
@@ -194,19 +183,33 @@ public final class ExtraStageManager extends JPanel implements Manager {
         repaint();
     }
 
-    private static String chipLine(StageData d) {
+    private static String chipLine(StageData d, Difficulty diff) {
         StringBuilder sb = new StringBuilder();
         if (d.getRewardList() == null)
             return "";
         for (Map.Entry<ResourceName, Map<Rarity, String>> e : d.getRewardList().entrySet())
             for (Map.Entry<Rarity, String> r : e.getValue().entrySet())
                 sb.append(e.getKey().getDisplayName()).append(" ").append(ModuleService.rarityName(r.getKey()))
-                        .append(" ").append(r.getValue()).append("\n");
+                        .append(" ").append(DifficultyService.scaleRange(r.getValue(), diff.getRewardRate()))
+                        .append("\n");
         return sb.toString();
     }
 
     private void showDetail(int id) {
         selectedId = id;
+        StageData d = STAGE_M.getStageConfig().get("stage" + id);
+        if (difficultyPanel != null)
+            difficultyPanel.show(id); // 選ばれた難易度で renderDetail が呼ばれる
+        else
+            renderDetail(Difficulty.NORMAL);
+        UIBuilder.openPanel(detailPanel, d.getTitle(), true, null);
+    }
+
+    /**
+     * 詳細の文章(難易度の倍率を反映した報酬を見せる)
+     */
+    private void renderDetail(Difficulty diff) {
+        int id = selectedId;
         StageData d = STAGE_M.getStageConfig().get("stage" + id);
         StringBuilder sb = new StringBuilder();
         sb.append(d.getDescription()).append("\n");
@@ -218,8 +221,11 @@ public final class ExtraStageManager extends JPanel implements Manager {
             for (ModuleReward r : d.getModuleRewards()) {
                 String kind = r.getKind() == null ? "モジュール(種類はランダム)"
                         : ModuleKind.valueOf(r.getKind()).getTitle();
-                sb.append(kind).append("  ").append(ModuleService.rarityName(Rarity.valueOf(r.getRarity())))
-                        .append("  ").append(Math.round(r.getChance() * 100)).append("%");
+                Rarity shown = Rarity.values()[Math.min(Rarity.values().length - 1,
+                        Rarity.valueOf(r.getRarity()).ordinal() + diff.getRarityBump())];
+                sb.append(kind).append("  ").append(ModuleService.rarityName(shown))
+                        .append("  ").append(Math.round(Math.min(1.0, r.getChance() * diff.getModuleChanceRate()) * 100))
+                        .append("%");
                 if ("FIRST".equals(r.getOnce()))
                     sb.append("  (初クリアのみ)");
                 if ("DAILY".equals(r.getOnce())) {
@@ -230,12 +236,10 @@ public final class ExtraStageManager extends JPanel implements Manager {
                 sb.append("\n");
             }
         }
-        sb.append(chipLine(d)).append("\n");
-        sb.append("最高スコア ").append(DataManager.getUserData().getProgress().getHighScores()
-                .getOrDefault("stage" + id, 0));
+        sb.append(chipLine(d, diff)).append("\n");
+        sb.append("最高スコア ").append(DifficultyService.highScore(id, diff));
         detailText.setText(sb.toString());
         detailText.setCaretPosition(0);
-        UIBuilder.openPanel(detailPanel, d.getTitle(), true, null);
     }
 
     @Override
@@ -252,7 +256,7 @@ public final class ExtraStageManager extends JPanel implements Manager {
     public void draw(Graphics g) {
         g.setColor(Color.WHITE);
         g.setFont(new Font("SansSerif", Font.BOLD, Math.max(12, px(18))));
-        g.drawString("EXTRA MODE", MAIN.getWidth() / 2 - px(60), px(40));
+        g.drawString(categoryTitle, MAIN.getWidth() / 2 - px(80), px(40));
         g.setFont(new Font("SansSerif", Font.PLAIN, Math.max(9, px(11))));
         g.setColor(new Color(190, 220, 255));
         g.drawString("特別なステージ(通常ステージの進行には影響しない)", px(20), px(66));

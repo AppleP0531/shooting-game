@@ -25,9 +25,11 @@ import com.game.shooting_game.utils.Vector2;
 public class Stage implements GameObject {
     private static final String component = "[Stage]";
 
-    @Setter
     @Getter
     private int stageId;
+    @Getter
+    @Setter
+    private Difficulty difficulty = Difficulty.NORMAL; // 選んだ難易度(ステージを選び直すとNORMALに戻る)
     @Getter
     private int waveId;
     private final ShootingGameMain MAIN;
@@ -42,6 +44,14 @@ public class Stage implements GameObject {
         STAGE_M = StageManager.getInstance();
 
         waveId = 0;
+    }
+
+    /**
+     * ステージIDの設定(難易度はNORMALに戻る。必要なら続けてsetDifficultyで選ぶ)
+     */
+    public void setStageId(int stageId) {
+        this.stageId = stageId;
+        this.difficulty = Difficulty.NORMAL;
     }
 
     /**

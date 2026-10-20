@@ -1,6 +1,5 @@
 package com.game.shooting_game.lobbyScene;
 
-import com.game.shooting_game.ui.ModuleIcons;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -10,6 +9,13 @@ import java.awt.image.BufferedImage;
 
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
+import com.game.shooting_game.domain.module.Module;
+import com.game.shooting_game.domain.module.ModuleService;
+import com.game.shooting_game.domain.module.ModuleStat;
+import com.game.shooting_game.domain.skill.SkillService;
+import com.game.shooting_game.domain.subship.SubShipRenderer;
+import com.game.shooting_game.domain.subship.SubShipService;
+import com.game.shooting_game.domain.unit.UnitService;
 import com.game.shooting_game.gameScene.GameManager;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.beam.BeamManager;
@@ -18,17 +24,10 @@ import com.game.shooting_game.gameScene.ship.ShipFactory;
 import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.gameScene.ship.types.Player;
-import com.game.shooting_game.domain.module.Module;
-import com.game.shooting_game.domain.module.ModuleService;
-import com.game.shooting_game.domain.module.ModuleStat;
-import com.game.shooting_game.domain.skill.SkillService;
-import com.game.shooting_game.domain.unit.UnitService;
-import com.game.shooting_game.domain.subship.SubShipRenderer;
-import com.game.shooting_game.domain.subship.SubShipService;
-import com.game.shooting_game.ui.CostPanel;
 import com.game.shooting_game.ui.Anchor;
 import com.game.shooting_game.ui.Anchor.H;
 import com.game.shooting_game.ui.Anchor.V;
+import com.game.shooting_game.ui.ModuleIcons;
 import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
