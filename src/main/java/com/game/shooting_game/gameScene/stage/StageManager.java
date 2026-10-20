@@ -177,6 +177,7 @@ public final class StageManager implements Manager {
 
             // データを読み込む
             stageConfigMap = mapper.readValue(is, TYPE_REF);
+            generateStages();
 
             // ロード成功ログ
             LogUtils.systemLog(
@@ -192,6 +193,30 @@ public final class StageManager implements Manager {
                             + ANSI.RED + "Application will terminate." + ANSI.RESET,
                     e);
         }
+    }
+
+    /**
+     * 31〜200の通常ステージを自動で作って加える(敵・ボスの種類は ShipConfig から集める)
+     */
+    private void generateStages() {
+        Map<ShipKinds, Map<String, ShipDefinition>> cfg = ShipManager.getInstance().getShipConfig();
+        List<String> enemies = new java.util.ArrayList<>();
+        Map<String, ShipDefinition> en = cfg.get(ShipKinds.ENEMY);
+        if (en != null)
+            for (Map.Entry<String, ShipDefinition> e : en.entrySet())
+                if (e.getValue().getDatas() != null)
+                    enemies.add(e.getKey());
+        List<String> bosses = new java.util.ArrayList<>();
+        Map<String, ShipDefinition> bs = cfg.get(ShipKinds.BOSS);
+        if (bs != null)
+            for (String id : bs.keySet())
+                if (id.matches("Boss\\d+"))
+                    bosses.add(id);
+        bosses.sort(java.util.Comparator.comparingInt(s -> Integer.parseInt(s.substring(4))));
+        if (enemies.isEmpty())
+            return;
+        for (int id = StageGenerator.FIRST_GENERATED; id <= StageGenerator.LAST_STAGE; id++)
+            stageConfigMap.put("stage" + id, StageGenerator.generate(id, enemies, bosses));
     }
 
     @Override
