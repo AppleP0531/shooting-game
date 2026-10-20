@@ -309,8 +309,8 @@ public final class GameManager extends JPanel implements Manager {
         // 各マネージャーの描画
         for (Manager m : managers) {
             m.draw(g);
-            // 敵の弾は、自機の弾とビームの上(船・アイテムの下)に描く
-            if (m instanceof com.game.shooting_game.gameScene.beam.BeamManager)
+            // 敵の弾は、自機の弾・ビーム・船の上(アイテムの下)に描く
+            if (m instanceof com.game.shooting_game.gameScene.ship.ShipManager)
                 BulletManager.getInstance().drawEnemyBullets(g);
         }
 
