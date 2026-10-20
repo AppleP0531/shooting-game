@@ -222,6 +222,27 @@ public class UIBuilder extends JPanel {
      * @param imageSize   画像サイズ
      * @return リサイズ後の画像
      */
+    /**
+     * 色のついた部分の色相を、指定した値(0〜1)にずらした絵を返す(白・灰・黒に近い部分と、明るさ・透明度はそのまま)
+     */
+    public static BufferedImage hueShift(BufferedImage src, float hue) {
+        BufferedImage out = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        float[] hsb = new float[3];
+        for (int y = 0; y < src.getHeight(); y++)
+            for (int x = 0; x < src.getWidth(); x++) {
+                int p = src.getRGB(x, y);
+                int a = p >>> 24;
+                if (a == 0) {
+                    out.setRGB(x, y, 0);
+                    continue;
+                }
+                Color.RGBtoHSB((p >> 16) & 255, (p >> 8) & 255, p & 255, hsb);
+                int rgb = hsb[1] > 0.12f ? Color.HSBtoRGB(hue, hsb[1], hsb[2]) : (p & 0xFFFFFF);
+                out.setRGB(x, y, (a << 24) | (rgb & 0xFFFFFF));
+            }
+        return out;
+    }
+
     public static BufferedImage resizeImage(BufferedImage originImage, double imageSize) {
         // 画像のリサイズ(再帰呼び出しにより少しづつ調整して画質を保つ)
         while (imageSize < originImage.getWidth() / 2) {

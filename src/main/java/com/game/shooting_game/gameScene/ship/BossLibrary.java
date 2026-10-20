@@ -82,6 +82,11 @@ public final class BossLibrary {
                 throw new IOException("Resource not found: " + CONFIG_PATH);
 
             bossMap = new ObjectMapper().readValue(is, TYPE_REF);
+            // 追加のボス設定(BossConfig_Extra.json)があれば、同じIDのボスを加える
+            try (InputStream ex = BossLibrary.class.getResourceAsStream("/static/configs/BossConfig_Extra.json")) {
+                if (ex != null)
+                    bossMap.putAll(new ObjectMapper().readValue(ex, TYPE_REF));
+            }
 
             LogUtils.systemLog(
                     "[DEBUG]",

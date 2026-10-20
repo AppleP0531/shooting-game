@@ -115,6 +115,7 @@ public final class ShipManager implements Manager {
         private double speed;
         private double score;
         private String coins;
+        private Double hue; // 絵の色相を、この値(0〜1)にずらす(既存の絵から色違いの敵を作る。なければ元の色)
     }
 
     /**
@@ -175,6 +176,23 @@ public final class ShipManager implements Manager {
     /**
      * config読み込み
      */
+    // 追加の船の設定(ShipConfig.json に重ねて読む。敵やボスを増やすときは、本体を触らずここに足す)
+    private static final String[] EXTRA_CONFIGS = { "/static/configs/ShipConfig_Enemy2.json",
+            "/static/configs/ShipConfig_Boss2.json" };
+
+    private void mergeExtraConfig(ObjectMapper mapper, String path) {
+        try (InputStream is = getClass().getResourceAsStream(path)) {
+            if (is == null)
+                return; // 無ければ何もしない
+            Map<ShipKinds, Map<String, ShipDefinition>> extra = mapper.readValue(is, TYPE_REF);
+            for (Map.Entry<ShipKinds, Map<String, ShipDefinition>> e : extra.entrySet())
+                shipConfigMap.computeIfAbsent(e.getKey(), k -> new java.util.LinkedHashMap<>()).putAll(e.getValue());
+            LogUtils.systemLog("[DEBUG]", component, "Extra configuration merged: " + ANSI.YELLOW + path + ANSI.RESET);
+        } catch (IOException e) {
+            LogUtils.systemLog("[ERROR]", component, "Failed to load extra configuration " + path + ": " + e.getMessage());
+        }
+    }
+
     private void loadConfig() {
         final String CONFIG_PATH = "/static/configs/ShipConfig.json";
         ObjectMapper mapper = new ObjectMapper();
@@ -192,6 +210,10 @@ public final class ShipManager implements Manager {
 
             // データを読み込む
             shipConfigMap = mapper.readValue(is, TYPE_REF);
+
+            // 追加の設定ファイル(敵・ボスを足したもの)を重ねる。あれば、同じ種類の中に同じIDで加わる
+            for (String extra : EXTRA_CONFIGS)
+                mergeExtraConfig(mapper, extra);
 
             // ロード成功ログ
             LogUtils.systemLog(
@@ -278,6 +300,11 @@ public final class ShipManager implements Manager {
                                 frames[addedCount + j] = cutSheet[adj + j];
                             }
                         }
+
+                        // 色違い: 色のついた部分の色相をずらす
+                        if (data.getHue() != null)
+                            for (int fi = 0; fi < frames.length; fi++)
+                                frames[fi] = UIBuilder.hueShift(frames[fi], data.getHue().floatValue());
 
                         // 画像をキャッシュに保存
                         shipImageCache.put(shipId + suffix, frames);
