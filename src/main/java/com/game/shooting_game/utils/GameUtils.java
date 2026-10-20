@@ -106,4 +106,54 @@ public class GameUtils {
         long s = time % 60;
         return String.format("%02d:%02d:%02d", h, m, s);
     }
+
+    // ----- ダメージ計算の式(ゲームの状態を読まない純粋な計算。値の集め方は DamageCalculator が担当する) -----
+    /** 割合の軽減率の上限 */
+    public static final double MAX_DAMAGE_REDUCTION = 0.8;
+    /** どれだけ防御を固めても、元のダメージのうちこの割合は通る */
+    public static final double MIN_DAMAGE_PASS = 0.3;
+
+    /**
+     * 攻撃側の火力
+     *
+     * @param base 基礎ダメージ
+     * @param rate 火力倍率
+     * @param flat 実数値の攻撃力(倍率のあとに足す)
+     * @return 基礎ダメージ × 火力倍率 + 実数値の攻撃力
+     */
+    public static double attackDamage(double base, double rate, double flat) {
+        return base * rate + flat;
+    }
+
+    /**
+     * 敵が受けるダメージ
+     *
+     * @param attack     攻撃側の火力
+     * @param colorRate  色による倍率
+     * @param enemyHpRate 敵が硬い条件の倍率(割って表す)
+     * @return 火力 × 色の倍率 ÷ 敵のHP倍率
+     */
+    public static double damageToEnemy(double attack, double colorRate, double enemyHpRate) {
+        return attack * colorRate / enemyHpRate;
+    }
+
+    /**
+     * 自機が受けるダメージ
+     * 割合の軽減(上限あり) → 敵が強い条件の倍率 → 実数値の防御力を引く、の順で計算する。
+     * 計算結果が小さくなりすぎても、元のダメージの {@link #MIN_DAMAGE_PASS} は通る。
+     *
+     * @param raw         軽減前のダメージ
+     * @param reduceRate  割合の軽減率(0〜{@link #MAX_DAMAGE_REDUCTION}に収める)
+     * @param damageRate  敵が強い条件の倍率(軽減のあとにかける)
+     * @param flatDefense 実数値の防御力(割合の軽減のあとに引く)
+     * @return 受けるダメージ(軽減前が0以下ならそのまま返す)
+     */
+    public static double damageToPlayer(double raw, double reduceRate, double damageRate, double flatDefense) {
+        if (raw <= 0)
+            return raw;
+        double v = raw * (1 - Math.min(MAX_DAMAGE_REDUCTION, Math.max(0, reduceRate)));
+        v *= damageRate;
+        v -= flatDefense;
+        return Math.max(raw * MIN_DAMAGE_PASS, v);
+    }
 }
