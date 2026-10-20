@@ -387,7 +387,14 @@ public class UIBuilder extends JPanel {
             // 画面全体のフォーカスを奪うシールドの生成
             JPanel shield = (JPanel) findComponentByName(parent, "globalShield");
             if (shield == null) {
-                shield = new JPanel();
+                // 背景を暗くして、開いたパネルに目が行くようにする
+                shield = new JPanel() {
+                    @Override
+                    protected void paintComponent(Graphics g) {
+                        g.setColor(new Color(0, 0, 0, 180));
+                        g.fillRect(0, 0, getWidth(), getHeight());
+                    }
+                };
                 shield.setName("globalShield");
                 shield.setBounds(0, 0, MAIN.getWidth(), MAIN.getHeight());
                 shield.setOpaque(false);
@@ -646,7 +653,7 @@ public class UIBuilder extends JPanel {
         double frameSize = size.getX();
         double inset = frameSize / 16;
         String amountText = String.format("%,d", amount);
-        double fontSize = Math.max(9, frameSize / 4.5);
+        double fontSize = Math.max(9, frameSize / 6.5);
         Font amountFont = new Font(Font.SANS_SERIF, Font.BOLD, (int) fontSize);
         FontMetrics fm = g2.getFontMetrics(amountFont);
         while (fm.stringWidth(amountText) > frameSize * 0.8 && fontSize > 8) {
@@ -665,7 +672,7 @@ public class UIBuilder extends JPanel {
         g2.drawString(amountText, textX, textY);
 
         // 名前は枠の下に小さく出す
-        double nameTextSize = size.getY() / 11;
+        double nameTextSize = size.getY() / 8;
         Vector2 nameTextPos = new Vector2(
                 pos.getX(),
                 pos.getY() + frameSize / 2 + size.getY() / 40);

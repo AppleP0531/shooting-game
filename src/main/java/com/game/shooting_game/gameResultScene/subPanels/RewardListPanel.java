@@ -81,6 +81,15 @@ public class RewardListPanel extends JPanel {
      */
     public void setup() {
         StageRewards rewards = StageRewards.getInstance();
+
+        // 難易度・ミッションの行(GameResultSceneUIが描く)にかぶらないよう、パネルの上端を下げる(下端は変えない)
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        int textLines = (rewards.getDifficultyLabel().isEmpty() ? 0 : 1) + rewards.getNewMissions().size();
+        int bottom = MAIN.getHeight() / 2 + MAIN.getHeight() / 4;
+        int top = Math.max(MAIN.getHeight() / 4, (int) (172 * adj + 15 * adj * textLines + 5 * adj));
+        panelSize = new Vector2(panelSize.getX(), Math.max(60 * adj, bottom - top));
+        setBounds(getX(), top, (int) panelSize.getX(), (int) panelSize.getY());
+
         // 最後の行が端数でも数える(切り上げ)
         int rows = (rewards.getResources().size() + col - 1) / col;
         double moduleH = moduleBlockHeight();
