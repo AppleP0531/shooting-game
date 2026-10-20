@@ -385,13 +385,20 @@ public final class GameManager extends JPanel implements Manager {
             StageRewards.getInstance().setScore(score);
             StageRewards.getInstance().setDifficultyLabel(diff == Difficulty.NORMAL ? "" : diff.getLabel());
 
-            // HARD のミッション(スキップでは判定しない)
-            if (diff == Difficulty.HARD && !skipped && !endless) {
+            // 難易度ごとのミッション(スキップ・エンドレス・難易度を選べないステージでは判定しない)
+            if (!skipped && !endless && DifficultyService.selectable(STAGE_M.getStageId())) {
+                int starsBefore = DifficultyService.totalStars();
                 double hpRate = SHIP_M.getPlayer().getMaxHp() > 0
                         ? SHIP_M.getPlayer().getHp() / SHIP_M.getPlayer().getMaxHp()
                         : 0;
-                StageRewards.getInstance().getNewMissions().addAll(
-                        DifficultyService.recordMissions(STAGE_M.getStageId(), hitCount, hpRate, playTime));
+                DifficultyService.MissionResult missionResult = DifficultyService.recordMissions(STAGE_M.getStageId(), diff,
+                        hitCount, hpRate, playTime);
+                for (int i = 0; i < missionResult.newlyEarned().length; i++)
+                    if (missionResult.newlyEarned()[i])
+                        StageRewards.getInstance().getNewMissions().add(missionResult.missions().get(i).text());
+                StageRewards.getInstance().setMissionResult(missionResult);
+                StageRewards.getInstance().setStarsBefore(starsBefore);
+                StageRewards.getInstance().setStarsAfter(DifficultyService.totalStars());
             }
 
             // コインの加算(難易度で増える)

@@ -14,6 +14,7 @@ import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.gameResultScene.GameResultSceneUI;
 import com.game.shooting_game.model.StageRewards;
 import com.game.shooting_game.domain.module.Module;
 import com.game.shooting_game.domain.module.ModuleService;
@@ -84,9 +85,8 @@ public class RewardListPanel extends JPanel {
 
         // 難易度・ミッションの行(GameResultSceneUIが描く)にかぶらないよう、パネルの上端を下げる(下端は変えない)
         double adj = ShootingGameMain.getScreenSizeAdj();
-        int textLines = (rewards.getDifficultyLabel().isEmpty() ? 0 : 1) + rewards.getNewMissions().size();
         int bottom = MAIN.getHeight() / 2 + MAIN.getHeight() / 4;
-        int top = Math.max(MAIN.getHeight() / 4, (int) (172 * adj + 15 * adj * textLines + 5 * adj));
+        int top = Math.max(MAIN.getHeight() / 4, (int) (GameResultSceneUI.textBottom() + 5 * adj));
         panelSize = new Vector2(panelSize.getX(), Math.max(60 * adj, bottom - top));
         setBounds(getX(), top, (int) panelSize.getX(), (int) panelSize.getY());
 
