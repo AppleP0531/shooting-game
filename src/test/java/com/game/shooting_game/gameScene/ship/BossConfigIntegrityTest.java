@@ -51,14 +51,11 @@ class BossConfigIntegrityTest {
     }
 
     @Test
-    @DisplayName("Boss7/8/9 の弾幕が使う弾の種類・IDが BulletConfig の BOSS にある")
+    @DisplayName("すべてのボスの弾幕が使う弾の種類・IDが BulletConfig の BOSS にある(無いIDを撃つと止まる)")
     void barrageBulletsExist() throws Exception {
         JsonNode bossBullets = readTree("BulletConfig.json").get("BOSS");
         assertNotNull(bossBullets);
         for (Map.Entry<String, BossDefinition> e : bosses().entrySet()) {
-            // Boss4/5/6 には BulletConfig に無いID(WAVE#2、CURVE#4)を指す既存の定義があるため、新ボスだけ検証する
-            if (!java.util.Set.of("Boss7", "Boss8", "Boss9").contains(e.getKey()))
-                continue;
             for (GaugeDefinition g : e.getValue().getGauges()) {
                 for (BarrageSpec b : g.getBarrages()) {
                     String where = e.getKey() + " " + b.getType() + " " + b.getBulletKind() + "#" + b.getBulletId();

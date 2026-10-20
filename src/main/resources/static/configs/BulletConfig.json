@@ -758,6 +758,18 @@
         "damage": 10,
         "diff": 0.2,
         "Normal": 3
+      },
+      "4": {
+        "imagePath": "/enemy/Normal_5.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 140,
+        "damage": 10,
+        "diff": 0.25,
+        "Normal": 3
       }
     },
     "WAVE": {
@@ -769,6 +781,17 @@
         "imageSize": 25,
         "collisionSize": 5,
         "speed": 150,
+        "damage": 10,
+        "Normal": 3
+      },
+      "2": {
+        "imagePath": "/enemy/Normal_2.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 130,
         "damage": 10,
         "Normal": 3
       }
