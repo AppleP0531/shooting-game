@@ -24,8 +24,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.SceneManager;
+import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
+import com.game.shooting_game.domain.dex.DexService;
 import com.game.shooting_game.gameScene.GameManager;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.beam.BeamManager;
@@ -320,7 +323,8 @@ public final class ShipManager implements Manager {
         updateAndClean(bossList, dt);
 
         // ブロックは通り抜けられない(動いたあとにめり込んでいたら外へ押し出す。ボスは対象外)
-        if (player != null)
+        // (クリア後に上へ飛び去る間は、画面の中へ押し戻さない)
+        if (player != null && !"breakAway".equals(player.getAnimationName()))
             pushOutOfBlocks(player, true);
         for (Ship e : enemyList)
             pushOutOfBlocks(e, false);
@@ -564,6 +568,9 @@ public final class ShipManager implements Manager {
             case BOSS -> bossList.add(ship);
             default -> throw new IllegalArgumentException("不明な機体の種類です: " + ship.getOwner());
         }
+        // 図鑑に登録(テストシーンでは登録しない)
+        if (SceneManager.getInstance().getSceneName() == SceneType.GAME)
+            DexService.markSeen(ship.getShipId());
     }
 
     /**

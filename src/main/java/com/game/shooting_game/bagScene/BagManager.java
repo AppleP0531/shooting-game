@@ -30,6 +30,7 @@ public final class BagManager extends JPanel implements Manager {
 
     private JButton goBackBtn;
     private JButton shopBtn;
+    private JButton dexBtn;
 
     @Getter
     private Map<ResourceKinds, Integer> equipments;
@@ -79,6 +80,18 @@ public final class BagManager extends JPanel implements Manager {
             SceneManager.getInstance().changeScene(SceneType.SHOP);
         });
         this.add(shopBtn);
+
+        // 図鑑ボタン(敵図鑑に遷移。ショップボタンの上)
+        Vector2 dexBtnSize = new Vector2(
+                200 * ShootingGameMain.getScreenSizeAdj(),
+                40 * ShootingGameMain.getScreenSizeAdj());
+        dexBtn = UIBuilder.createImageBtn(component, (java.awt.image.BufferedImage) null, dexBtnSize, "ENEMY LIST");
+        dexBtn.setBounds(
+                shopBtn.getX(),
+                shopBtn.getY() - (int) dexBtn.getHeight() - (int) (5 * ShootingGameMain.getScreenSizeAdj()),
+                (int) dexBtn.getWidth(), (int) dexBtn.getHeight());
+        dexBtn.addActionListener(e -> SceneManager.getInstance().changeScene(SceneType.ENCYCLOPEDIA));
+        this.add(dexBtn);
 
         ownedResourcesPanel.initComponents();
     }

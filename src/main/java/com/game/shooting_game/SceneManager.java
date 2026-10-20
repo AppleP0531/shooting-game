@@ -11,6 +11,7 @@ import java.util.Objects;
 import lombok.Getter;
 
 import com.game.shooting_game.bagScene.BagManager;
+import com.game.shooting_game.encyclopediaScene.EncyclopediaManager;
 import com.game.shooting_game.gameResultScene.GameResultManager;
 import com.game.shooting_game.gameScene.GameManager;
 import com.game.shooting_game.interfaces.Manager;
@@ -24,6 +25,7 @@ import com.game.shooting_game.stageScene.normal.NormalStageManager;
 import com.game.shooting_game.testScene.TestManager;
 import com.game.shooting_game.titleScene.TitleManager;
 import com.game.shooting_game.upgradeScene.UpgradeManager;
+import com.game.shooting_game.ui.CoinHud;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.utils.animation.AnimationManager;
@@ -41,6 +43,7 @@ public final class SceneManager implements Manager {
         BAG,
         UPGRADE,
         SHOP,
+        ENCYCLOPEDIA,
         SELECTSTAGE,
         NORMALSTAGE,
         INFINITYSTAGE,
@@ -69,6 +72,7 @@ public final class SceneManager implements Manager {
         scenes.put(SceneType.BAG, BagManager.getInstance());
         scenes.put(SceneType.UPGRADE, UpgradeManager.getInstance());
         scenes.put(SceneType.SHOP, ShopManager.getInstance());
+        scenes.put(SceneType.ENCYCLOPEDIA, EncyclopediaManager.getInstance());
         scenes.put(SceneType.SELECTSTAGE, SelectStageManager.getInstance());
         scenes.put(SceneType.NORMALSTAGE, NormalStageManager.getInstance());
         scenes.put(SceneType.INFINITYSTAGE, InfinityStageManager.getInstance());
@@ -127,6 +131,9 @@ public final class SceneManager implements Manager {
         Manager current = getCurrentManager();
         if (current != null)
             current.draw(g);
+
+        // 所持コイン(コインを使う画面の左上)
+        CoinHud.draw(g, sceneName);
     }
 
     /**

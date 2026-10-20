@@ -9,6 +9,8 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import javax.swing.AbstractAction;
@@ -35,7 +37,9 @@ import com.game.shooting_game.ui.Anchor;
 import com.game.shooting_game.ui.Anchor.H;
 import com.game.shooting_game.ui.Anchor.V;
 import com.game.shooting_game.utils.LogUtils;
+import com.game.shooting_game.ui.LoadProgress;
 import com.game.shooting_game.ui.ShooterButtonUI;
+import com.game.shooting_game.ui.ShooterScrollBarUI;
 import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
@@ -50,7 +54,6 @@ public final class ShootingGameMain extends JPanel implements Runnable {
 
     @Getter
     private static Boolean onlineMode = true;
-    private static String loadStat;
 
     private SceneType lastScene = null;
     @Getter
@@ -94,6 +97,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
     public static void setup(String[] args) {
         // すべてのボタンを、シューティングゲーム風の見た目にする(画面を作る前に登録する)
         ShooterButtonUI.install();
+        ShooterScrollBarUI.install();
 
         // ターミナルのクリア
         try {
@@ -133,7 +137,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                         "[INFO]",
                         component,
                         ANSI.GREEN + "Connecting to game server..." + ANSI.RESET);
-                loadStat = "Server connecting";
+                LoadProgress.creep("Server connecting", 0, 0.30);
 
                 // Spring Bootの起動
                 context = SpringApplication.run(ShootingGameApplication.class, args);
@@ -162,7 +166,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                     "[INFO]",
                     component,
                     ANSI.GREEN + "Initializing Game Setup..." + ANSI.RESET);
-            loadStat = "Loading game configs";
+            LoadProgress.set("Loading game configs", 0.35);
 
             if (onlineMode) {
                 // DataManagerをSpringから取得して初期化
@@ -194,10 +198,16 @@ public final class ShootingGameMain extends JPanel implements Runnable {
             });
 
             // リソース情報の読み込み
+            LoadProgress.set("Loading resources", 0.40);
             ResourceManager.getInstance();
+            LoadProgress.set("Building screens", 0.75);
 
             // UIのセットアップ
-            SceneManager.getInstance().getSceneMap().values().forEach(Manager::initComponents);
+            List<Manager> managers = new ArrayList<>(SceneManager.getInstance().getSceneMap().values());
+            for (int i = 0; i < managers.size(); i++) {
+                managers.get(i).initComponents();
+                LoadProgress.set("Building screens", 0.75 + 0.25 * (i + 1) / managers.size());
+            }
 
             // すべてのマネージャーをSceneManagerから取得しカードレイアウトに登録
             SceneManager.getInstance().getSceneMap().forEach((type, manager) -> {
@@ -206,6 +216,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                 }
             });
 
+            LoadProgress.set("Ready", 1);
             panel.setLoaded(true);
 
             if (onlineMode) {
@@ -358,13 +369,8 @@ public final class ShootingGameMain extends JPanel implements Runnable {
         if (!loaded) {
             // ロゴ表示
 
-            // ロードステータスの表示
-            double spacing = 10 * ShootingGameMain.getScreenSizeAdj();
-            double size = 14 * ShootingGameMain.getScreenSizeAdj();
-            Vector2 pos = new Vector2(
-                    getWidth() - spacing,
-                    getHeight() - spacing);
-            UIBuilder.drawString(g, new Anchor(H.RIGHT, V.BOTTOM), pos, size, Color.WHITE, Font.BOLD, loadStat + "...");
+            // 進捗バーと状況の表示
+            LoadProgress.draw(g, getWidth(), getHeight());
         } else {
             SceneManager.getInstance().draw(g);
         }
