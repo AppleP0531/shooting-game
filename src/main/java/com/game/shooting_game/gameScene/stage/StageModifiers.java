@@ -96,6 +96,18 @@ public final class StageModifiers {
         return active() ? current.getEnemyHpRate() * difficulty.getEnemyHpRate() * (bossStage ? difficulty.getBossHpRate() : 1.0) * endlessHp * stageHp : 1.0;
     }
 
+    /**
+     * 戦闘に入る前に見せる、敵HPの倍率(戦闘中の enemyHpRate と同じ掛け方。無限モードのウェーブ分は含まない)
+     *
+     * @param stageIndex ステージの番号(ノーマルはステージ番号。エクストラは解放に要るステージ番号)
+     */
+    public static double previewEnemyHpRate(Spec spec, Difficulty diff, boolean boss, int stageIndex) {
+        Spec s = spec == null ? new Spec() : spec;
+        Difficulty d = diff == null ? Difficulty.NORMAL : diff;
+        return s.getEnemyHpRate() * d.getEnemyHpRate() * (boss ? d.getBossHpRate() : 1.0)
+                * GameBalance.stageHpRate(stageIndex);
+    }
+
     public static double enemyDamageRate() {
         return active() ? current.getEnemyDamageRate() * difficulty.getEnemyDamageRate() * (bossStage ? difficulty.getBossDamageRate() : 1.0) * endlessDamage : 1.0;
     }

@@ -301,6 +301,16 @@ public final class ExtraStageManager extends JPanel implements Manager {
             if (!conds.isEmpty())
                 sb.append("\n【条件】\n").append(conds);
         }
+        // ボスのHP(難易度・ステージ条件の倍率をかけたあと)
+        int stageIndex = id < 1000 ? id : Math.max(1, d.getUnlock());
+        double hpRate = StageModifiers.previewEnemyHpRate(d.getModifiers(), diff, "BOSS".equals(d.getCategory()), stageIndex);
+        for (String bossId : bossIdsOf(d)) {
+            var def = com.game.shooting_game.gameScene.ship.BossLibrary.forFight(bossId, id);
+            double gaugeHp = def.getGaugeHp() * hpRate;
+            sb.append("\n【ボスのHP】ゲージ ").append(def.getGauges().size()).append(" 本 × ")
+                    .append(String.format("%,.0f", gaugeHp)).append("(合計 ")
+                    .append(String.format("%,.0f", gaugeHp * def.getGauges().size())).append(")\n");
+        }
         sb.append("\n【クリア報酬】\n");
         if (d.getModuleRewards() != null) {
             for (ModuleReward r : d.getModuleRewards()) {
