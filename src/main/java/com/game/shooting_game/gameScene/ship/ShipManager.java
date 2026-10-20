@@ -563,6 +563,10 @@ public final class ShipManager implements Manager {
      * @param ship 船
      */
     public void addShip(Ship ship) {
+        // 設定のない船は ShipFactory が null を返す(警告は ShipFactory が出している)
+        if (ship == null)
+            return;
+
         switch (ship.getOwner()) {
             case ENEMY -> enemyList.add(ship);
             case BOSS -> bossList.add(ship);

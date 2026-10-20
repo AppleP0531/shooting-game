@@ -280,11 +280,12 @@ public abstract class Ship implements Moveable, GameObject, Entity {
     protected void addNewBullet(int level, String id, String state) {
         // 打つ弾のデータをすべて保存
         shotData.clear();
-        for (int i = 0; i <= level; i++) {
+        // 設定のない船は弾を撃たない(毎フレーム呼ばれるので、ここで止まらないようにする)
+        ShipManager.ShipDefinition definition = SHIP_M.getShipConfig().get(owner).get(id);
+        for (int i = 0; definition != null && i <= level; i++) {
             String levelKey = "Lv" + i;
 
-            ShipManager.ShotConfig[] shotsForLevel = SHIP_M.getShipConfig().get(owner).get(id)
-                    .getLevelData(levelKey);
+            ShipManager.ShotConfig[] shotsForLevel = definition.getLevelData(levelKey);
             // 取得したデータがnullではなければ結合
             if (shotsForLevel != null)
                 shotData.addAll(Arrays.asList(shotsForLevel));

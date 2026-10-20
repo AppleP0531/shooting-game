@@ -41,6 +41,12 @@ final class PlayerDataCommands extends CommandGroup {
                 if (!isSceneValid(SceneType.GAME, SceneType.TEST))
                     return;
 
+                // 存在しない船には変えない
+                if (!SHIP_M.getShipConfig().get(ShipKinds.PLAYER).containsKey("Ship" + id)) {
+                    error("Unknown ship: Ship" + id);
+                    return;
+                }
+
                 SHIP_M.reloadPlayer(id);
             } catch (NumberFormatException ne) {
                 error("Unknown param: " + param);
