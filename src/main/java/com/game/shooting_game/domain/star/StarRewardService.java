@@ -8,6 +8,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.game.shooting_game.gameScene.item.ItemManager.ItemKinds;
 import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
@@ -29,8 +30,11 @@ public final class StarRewardService {
     private static final String CLAIMED_PREFIX = "starReward:";
     private static final int DEFAULT_INTERVAL = 12;
 
-    /** 報酬(コインと素材) */
-    public record Reward(int coins, Map<ResourceKinds, Integer> resources) {
+    /** 報酬(コインと素材、研究スキップ券) */
+    public record Reward(int coins, Map<ResourceKinds, Integer> resources, int skipTickets) {
+        public Reward(int coins, Map<ResourceKinds, Integer> resources) {
+            this(coins, resources, 0);
+        }
     }
 
     private static int interval = DEFAULT_INTERVAL;
@@ -80,7 +84,7 @@ public final class StarRewardService {
                     res.merge(new ResourceKinds(rn, Rarity.fromString(en.getKey())), count, Integer::sum);
             });
         });
-        return new Reward(coins, res);
+        return new Reward(coins, res, Math.max(0, t.path("skipTickets").asInt(0)));
     }
 
     private static List<Reward> defaultTiers() {
@@ -153,6 +157,8 @@ public final class StarRewardService {
         Map<ResourceKinds, Integer> eq = ud.getResources().getEquipments();
         for (Map.Entry<ResourceKinds, Integer> e : r.resources().entrySet())
             eq.merge(e.getKey(), e.getValue(), Integer::sum);
+        if (r.skipTickets() > 0)
+            store().merge("inv:" + ItemKinds.SKIP_TICKET.name(), r.skipTickets(), Integer::sum);
         store().put(CLAIMED_PREFIX + n, 1);
         return r;
     }
@@ -160,6 +166,7 @@ public final class StarRewardService {
     /** 受け取れるものをすべて受け取る(合計を返す。無ければ null) */
     public static Reward claimAll() {
         int coins = 0;
+        int tickets = 0;
         Map<ResourceKinds, Integer> sum = new LinkedHashMap<>();
         boolean any = false;
         for (int n = 1; n <= milestoneCount(); n++) {
@@ -168,8 +175,9 @@ public final class StarRewardService {
                 continue;
             any = true;
             coins += r.coins();
+            tickets += r.skipTickets();
             r.resources().forEach((k, v) -> sum.merge(k, v, Integer::sum));
         }
-        return any ? new Reward(coins, sum) : null;
+        return any ? new Reward(coins, sum, tickets) : null;
     }
 }

@@ -1,0 +1,10 @@
+{
+  "SHOP": 5,
+  "MODULE": 10,
+  "EXTRA_MODULE": 10,
+  "SUBSHIP": 15,
+  "INFINITY": 20,
+  "EXTRA_BOSS": 25,
+  "EXTRA_MATERIAL": 25,
+  "EXTRA_SPECIAL": 30
+}

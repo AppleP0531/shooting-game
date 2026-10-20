@@ -9,7 +9,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.game.shooting_game.data.DataManager;
+import com.game.shooting_game.domain.shop.ShopService;
 import com.game.shooting_game.domain.star.StarRewardService.Reward;
+import com.game.shooting_game.gameScene.item.ItemManager.ItemKinds;
 
 class StarRewardServiceTest {
     @BeforeEach
@@ -75,6 +77,40 @@ class StarRewardServiceTest {
         assertThat(sum.coins()).isEqualTo(expected);
         assertThat(StarRewardService.claimableCount()).isZero();
         assertThat(StarRewardService.claimAll()).isNull();
+    }
+
+    @Test
+    @DisplayName("skipTickets を含む段(3段目・6段目)の報酬を持つ")
+    void skipTicketTiers() {
+        assertThat(StarRewardService.rewardOf(1).skipTickets()).isZero();
+        assertThat(StarRewardService.rewardOf(3).skipTickets()).isEqualTo(1);
+        assertThat(StarRewardService.rewardOf(6).skipTickets()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("claim で研究スキップ券が増え、二重には受け取れない")
+    void claimGivesSkipTicket() {
+        setStars(36);
+        int before = ShopService.owned(ItemKinds.SKIP_TICKET);
+        StarRewardService.claim(1);
+        StarRewardService.claim(2);
+        assertThat(ShopService.owned(ItemKinds.SKIP_TICKET)).isEqualTo(before);
+        Reward r = StarRewardService.claim(3);
+        assertThat(r.skipTickets()).isEqualTo(1);
+        assertThat(ShopService.owned(ItemKinds.SKIP_TICKET)).isEqualTo(before + 1);
+        assertThat(StarRewardService.claim(3)).isNull();
+        assertThat(ShopService.owned(ItemKinds.SKIP_TICKET)).isEqualTo(before + 1);
+    }
+
+    @Test
+    @DisplayName("claimAll は券も合計して受け取り、二度目は増えない")
+    void claimAllGivesSkipTickets() {
+        setStars(72);
+        Reward sum = StarRewardService.claimAll();
+        assertThat(sum.skipTickets()).isEqualTo(2);
+        assertThat(ShopService.owned(ItemKinds.SKIP_TICKET)).isEqualTo(2);
+        assertThat(StarRewardService.claimAll()).isNull();
+        assertThat(ShopService.owned(ItemKinds.SKIP_TICKET)).isEqualTo(2);
     }
 
     @Test

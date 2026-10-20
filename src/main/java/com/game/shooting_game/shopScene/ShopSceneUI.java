@@ -35,8 +35,8 @@ public class ShopSceneUI {
     public static Rectangle cardRect(int index, int screenWidth) {
         double adj = ShootingGameMain.getScreenSizeAdj();
         int margin = (int) (30 * adj);
-        int h = (int) (170 * adj);
-        int gap = (int) (30 * adj);
+        int h = (int) (112 * adj);
+        int gap = (int) (14 * adj);
         return new Rectangle(margin, (int) (90 * adj) + index * (h + gap), screenWidth - margin * 2, h);
     }
 
@@ -73,9 +73,11 @@ public class ShopSceneUI {
         g.setStroke(new BasicStroke((float) (2 * adj)));
         g.drawRoundRect(r.x, r.y, r.width, r.height, (int) (16 * adj), (int) (16 * adj));
 
-        // アイコン
-        int iconSize = (int) (64 * adj);
-        Vector2 iconPos = new Vector2(r.x + 20 * adj + iconSize / 2.0, r.y + 20 * adj + iconSize / 2.0);
+        int pad = (int) (12 * adj);
+
+        // アイコン(左。カードの高さの中央)
+        int iconSize = (int) (48 * adj);
+        Vector2 iconPos = new Vector2(r.x + pad + iconSize / 2.0, r.y + r.height / 2.0);
         if (c.icon() != null) {
             UIBuilder.drawImage(g, Anchor.CENTER, iconPos, UIBuilder.cachedResize(c.icon(), iconSize));
         } else {
@@ -83,14 +85,68 @@ public class ShopSceneUI {
             g.fillOval((int) iconPos.getX() - iconSize / 2, (int) iconPos.getY() - iconSize / 2, iconSize, iconSize);
         }
 
-        double textX = r.x + 20 * adj + iconSize + 20 * adj;
-        UIBuilder.drawString(g, new Anchor(H.LEFT, V.TOP), new Vector2(textX, r.y + 18 * adj), 22 * adj,
-                Color.WHITE, Font.BOLD, c.item().name());
-        UIBuilder.drawString(g, new Anchor(H.LEFT, V.TOP), new Vector2(textX, r.y + 52 * adj), 13 * adj,
-                new Color(200, 215, 230), Font.PLAIN, c.item().description());
-        UIBuilder.drawString(g, new Anchor(H.LEFT, V.TOP), new Vector2(textX, r.y + 84 * adj), 18 * adj,
-                COIN_COLOR, Font.BOLD, String.format("%,d コイン", c.item().price()));
-        UIBuilder.drawString(g, new Anchor(H.LEFT, V.TOP), new Vector2(textX, r.y + 112 * adj), 16 * adj,
-                Color.WHITE, Font.PLAIN, "所持 " + c.owned() + "/" + c.item().maxOwned());
+        // 文字はカードの幅に収める(説明は折り返して最大2行)
+        int textX = r.x + pad + iconSize + pad;
+        int textW = r.x + r.width - pad - textX;
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("SansSerif", Font.BOLD, Math.max(12, (int) (17 * adj))));
+        g.drawString(fit(g, c.item().name(), textW), textX, r.y + (int) (26 * adj));
+
+        g.setFont(new Font("SansSerif", Font.PLAIN, Math.max(9, (int) (11 * adj))));
+        g.setColor(new Color(200, 215, 230));
+        int ly = r.y + (int) (46 * adj);
+        List<String> lines = wrap(g, c.item().description(), textW, 2);
+        for (String line : lines) {
+            g.drawString(line, textX, ly);
+            ly += (int) (14 * adj);
+        }
+
+        // 下の段: 左に価格と所持数、右下に「買う」ボタン(ShopManager が置く)
+        g.setFont(new Font("SansSerif", Font.BOLD, Math.max(11, (int) (14 * adj))));
+        g.setColor(COIN_COLOR);
+        g.drawString(String.format("%,d コイン", c.item().price()), textX, r.y + r.height - (int) (30 * adj));
+        g.setFont(new Font("SansSerif", Font.PLAIN, Math.max(10, (int) (12 * adj))));
+        g.setColor(Color.WHITE);
+        g.drawString("所持 " + c.owned() + "/" + c.item().maxOwned(), textX, r.y + r.height - (int) (12 * adj));
+    }
+
+    /** 幅に収まるように、末尾を「…」で切る */
+    private static String fit(Graphics2D g, String text, int width) {
+        java.awt.FontMetrics fm = g.getFontMetrics();
+        if (fm.stringWidth(text) <= width)
+            return text;
+        String t = text;
+        while (!t.isEmpty() && fm.stringWidth(t + "…") > width)
+            t = t.substring(0, t.length() - 1);
+        return t + "…";
+    }
+
+    /** 幅に収まるように折り返す(最大の行数を超える分は、最後の行の末尾を「…」で切る) */
+    private static List<String> wrap(Graphics2D g, String text, int width, int maxLines) {
+        java.awt.FontMetrics fm = g.getFontMetrics();
+        List<String> lines = new java.util.ArrayList<>();
+        StringBuilder cur = new StringBuilder();
+        for (int i = 0; i < text.length(); i++) {
+            char ch = text.charAt(i);
+            if (fm.stringWidth(cur.toString() + ch) > width && cur.length() > 0) {
+                lines.add(cur.toString());
+                cur = new StringBuilder();
+                if (lines.size() == maxLines)
+                    break;
+            }
+            cur.append(ch);
+        }
+        if (lines.size() < maxLines && cur.length() > 0)
+            lines.add(cur.toString());
+        else if (lines.size() == maxLines && i0(text, lines) < text.length())
+            lines.set(maxLines - 1, fit(g, lines.get(maxLines - 1) + "…", width));
+        return lines;
+    }
+
+    private static int i0(String text, List<String> lines) {
+        int n = 0;
+        for (String l : lines)
+            n += l.length();
+        return n;
     }
 }

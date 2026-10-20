@@ -62,6 +62,7 @@ public class ItemFactory {
             case BOMB -> new Bomb(pos);
             case MAGNET -> new Magnet(pos);
             case FREEZE -> new Freeze(pos);
+            case SKIP_TICKET -> null;
         };
     }
 

@@ -3,9 +3,9 @@
   "tiers": [
     { "coins": 500, "resources": { "GEAR": { "COMMON": 5 }, "SCREW": { "COMMON": 5 } } },
     { "coins": 800, "resources": { "COPPER_PLATE": { "COMMON": 5 }, "IRON_BAR": { "COMMON": 5 } } },
-    { "coins": 1200, "resources": { "GEAR": { "COMMON": 8 }, "SCREW": { "COMMON": 8 }, "ENERGY_CELL": { "COMMON": 3 } } },
+    { "coins": 1200, "skipTickets": 1, "resources": { "GEAR": { "COMMON": 8 }, "SCREW": { "COMMON": 8 }, "ENERGY_CELL": { "COMMON": 3 } } },
     { "coins": 1600, "resources": { "CIRCUIT": { "COMMON": 5 }, "LENS": { "COMMON": 5 } } },
     { "coins": 2000, "resources": { "ALLOY_PLATE": { "COMMON": 5 }, "CRYSTAL_SHARD": { "COMMON": 3 } } },
-    { "coins": 2500, "resources": { "GEAR": { "COMMON": 12 }, "SCREW": { "COMMON": 12 }, "MODULE_CHIP": { "COMMON": 2 } } }
+    { "coins": 2500, "skipTickets": 1, "resources": { "GEAR": { "COMMON": 12 }, "SCREW": { "COMMON": 12 }, "MODULE_CHIP": { "COMMON": 2 } } }
   ]
 }
