@@ -263,11 +263,18 @@ public final class BulletManager implements Manager {
 
     @Override
     public void draw(Graphics g) {
-        // 自機の弾を先に、敵の弾をあとに描く(敵の弾が自機の弾に隠れないように)
-        List<Bullet> snapshot = new ArrayList<>(bulletList);
-        snapshot.stream().filter(b -> b.getOwner() == ShipKinds.PLAYER).forEach(bullet -> bullet.draw(g));
-        snapshot.stream().filter(b -> b.getOwner() != ShipKinds.PLAYER).forEach(bullet -> bullet.draw(g));
+        // ここでは自機の弾だけを描く。敵の弾は、ビームの上に重なるよう、あとから drawEnemyBullets で描く(GameManager)
+        new ArrayList<>(bulletList).stream().filter(b -> b.getOwner() == ShipKinds.PLAYER)
+                .forEach(bullet -> bullet.draw(g));
         com.game.shooting_game.gameScene.bullet.barrage.AnchorMarkers.getInstance().draw(g);
+    }
+
+    /**
+     * 敵の弾を描く(自機の弾とビームの上に重ねる)
+     */
+    public void drawEnemyBullets(Graphics g) {
+        new ArrayList<>(bulletList).stream().filter(b -> b.getOwner() != ShipKinds.PLAYER)
+                .forEach(bullet -> bullet.draw(g));
     }
 
     /**

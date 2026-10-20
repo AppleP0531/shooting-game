@@ -63,6 +63,33 @@ public final class GameSettings {
         save();
     }
 
+    public static final int SLOW_PERCENT_MIN = 10;
+    public static final int SLOW_PERCENT_MAX = 90;
+    public static final int DEFAULT_SLOW_PERCENT = 50;
+
+    /**
+     * Shiftを押している間の移動速度の割合(%。10〜90。既定は50)
+     */
+    public static int getSlowPercent() {
+        load();
+        try {
+            int v = Integer.parseInt(props.getProperty("slowPercent", String.valueOf(DEFAULT_SLOW_PERCENT)));
+            return Math.max(SLOW_PERCENT_MIN, Math.min(SLOW_PERCENT_MAX, v));
+        } catch (NumberFormatException e) {
+            return DEFAULT_SLOW_PERCENT;
+        }
+    }
+
+    /**
+     * Shift中の移動速度の割合を保存する(範囲に丸める)
+     */
+    public static void setSlowPercent(int percent) {
+        load();
+        int v = Math.max(SLOW_PERCENT_MIN, Math.min(SLOW_PERCENT_MAX, percent));
+        props.setProperty("slowPercent", String.valueOf(v));
+        save();
+    }
+
     private static synchronized void load() {
         if (loaded)
             return;
