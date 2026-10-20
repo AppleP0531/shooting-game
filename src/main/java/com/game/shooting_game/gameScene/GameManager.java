@@ -77,6 +77,10 @@ public final class GameManager extends JPanel implements Manager {
     private boolean gameover;
     @Setter
     private boolean pause;
+    private static final double RESUME_COUNT = 3; // ポーズから再開するときの、3・2・1の長さ(秒)
+    private static final double LEAVE_FADE = 0.6; // 途中で離脱するときの、画面が暗くなる長さ(秒)
+    private double resumeTimer = -1; // 再開カウントの経過時間(負なら数えていない。数えている間もゲームは止まったまま)
+    private double leaveTimer = -1; // 離脱フェードの経過時間(負ならフェードしていない)
     // setup()が終わるまでupdate()を進めない(途中で進むと、前回の状態のまま船が動いて弾を撃ってしまう)
     private volatile boolean setupDone = false;
     @Getter
@@ -158,6 +162,7 @@ public final class GameManager extends JPanel implements Manager {
     @Override
     public void setup() {
         setupDone = false;
+        resumeTimer = leaveTimer = -1;
         LogUtils.systemLog(
                 "[INFO]",
                 component,
@@ -190,6 +195,7 @@ public final class GameManager extends JPanel implements Manager {
     public void update(double dt) {
         if (!setupDone)
             return;
+        updateResumeAndLeave(dt);
         if (!pause) {
             switch (animationName) {
                 case "start" -> {
@@ -247,8 +253,47 @@ public final class GameManager extends JPanel implements Manager {
                 animateTimer,
                 score,
                 coin,
-                effectList);
+                effectList,
+                resumeTimer >= 0 ? resumeTimer : -1,
+                leaveTimer >= 0 ? Math.min(1, leaveTimer / LEAVE_FADE) : -1);
         gameSceneUI.draw(g, uiData);
+    }
+
+    /**
+     * ポーズから再開する(パネルを閉じたあと、3・2・1を数えてからゲームを進める)
+     */
+    public void resume() {
+        if (resumeTimer < 0 && leaveTimer < 0)
+            resumeTimer = 0;
+    }
+
+    /**
+     * ステージの途中で離脱する(画面を暗くしてから、ステージ選択へ戻る)
+     */
+    public void leave() {
+        if (leaveTimer < 0)
+            leaveTimer = 0;
+    }
+
+    /**
+     * 再開カウントと離脱フェードを進める(どちらもポーズ中に動く)
+     */
+    private void updateResumeAndLeave(double dt) {
+        if (resumeTimer >= 0) {
+            resumeTimer += dt;
+            if (resumeTimer >= RESUME_COUNT) {
+                resumeTimer = -1;
+                pause = false;
+            }
+        }
+        if (leaveTimer >= 0) {
+            leaveTimer += dt;
+            if (leaveTimer >= LEAVE_FADE) {
+                leaveTimer = -1;
+                pause = false;
+                SM.changeScene(SceneType.NORMALSTAGE);
+            }
+        }
     }
 
     private void animation(String name) {

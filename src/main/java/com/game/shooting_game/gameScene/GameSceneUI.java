@@ -32,7 +32,9 @@ public class GameSceneUI {
             double animateTimer,
             int score,
             int coin,
-            Map<String, Double> effectList) {
+            Map<String, Double> effectList,
+            double resumeTimer, // 再開カウントの経過時間(負なら数えていない)
+            double leaveFade) { // 離脱フェードの進み具合(0〜1。負ならフェードしていない)
     }
 
     public GameSceneUI() {
@@ -58,6 +60,41 @@ public class GameSceneUI {
         drawActiveEffects(g, uiData.effectList);
         drawScore(g, uiData.score);
         drawCoin(g, uiData.coin);
+        drawResumeCount(g, uiData.resumeTimer);
+        drawLeaveFade(g, uiData.leaveFade);
+    }
+
+    /**
+     * 再開前の3・2・1(ゲームは止まったまま。画面は少し暗くなり、数字は大きい状態から縮みながら薄くなる)
+     */
+    private void drawResumeCount(Graphics g, double timer) {
+        if (timer < 0)
+            return;
+
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        g.setColor(new Color(0, 0, 0, 80));
+        g.fillRect(0, 0, MAIN.getWidth(), MAIN.getHeight());
+
+        int number = 3 - (int) timer;
+        double frac = timer - Math.floor(timer);
+        if (number < 1)
+            return;
+
+        double scale = 1 + 0.5 * Math.pow(1 - frac, 2); // 1.5倍から1倍へ
+        int alpha = (int) (255 * (frac < 0.7 ? 1 : (1 - frac) / 0.3));
+        Vector2 pos = new Vector2(MAIN.getWidth() / 2, MAIN.getHeight() / 2);
+        UIBuilder.drawString(g, new Anchor(Anchor.CENTER), pos, 64 * adj * scale,
+                new Color(255, 255, 255, Math.clamp(alpha, 0, 255)), Font.BOLD, String.valueOf(number));
+    }
+
+    /**
+     * 離脱するときの暗転(だんだん黒くなる)
+     */
+    private void drawLeaveFade(Graphics g, double progress) {
+        if (progress < 0)
+            return;
+        g.setColor(new Color(0, 0, 0, (int) (255 * Math.min(1, progress))));
+        g.fillRect(0, 0, MAIN.getWidth(), MAIN.getHeight());
     }
 
     /**
