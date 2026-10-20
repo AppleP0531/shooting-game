@@ -408,9 +408,12 @@ package "shooting_game" {
             - MAIN: ShootingGameMain
             - goBackBtn: JButton
             - modeBtnMap: Map<StageModeButton, JButton>
+            - starBtn: JButton <<★の合計と次の目標。受け取れるときは黄色>>
+            - starRewardPanel: StarRewardPanel
             --
             - SelectStageManager()
             + initComponents(): void
+            - refreshStarBtn(): void
             + {static} getInstance(): SelectStageManager
             + setup(): void
             + update(dt: double): void
@@ -439,6 +442,22 @@ package "shooting_game" {
             --
             + SelectStageSceneUI()
             + draw(g: Graphics): void
+        }
+
+        class StarRewardPanel {
+            - {static} UPCOMING: int <<未達成の表示数>>
+            - onChanged: Runnable <<受け取り後にボタン表記を更新>>
+            - summaryLabel: JLabel
+            - messageLabel: JLabel
+            - listPanel: JPanel
+            - claimAllBtn: JButton
+            --
+            + StarRewardPanel(onChanged: Runnable)
+            + showPanel(): void
+            - afterClaim(message: String): void
+            - refresh(): void
+            - row(n: int, total: int, iv: int): JPanel
+            ~ {static} rewardText(r: Reward): String
         }
 
         package "normal" {
@@ -499,6 +518,8 @@ package "shooting_game" {
                     - buttonMap: Map<Integer, JButton>
                     --
                     + StageBtnPanel()
+                    - createStageButton(stageId: int, image: BufferedImage, locked: boolean): JButton <<画像がなければ StageLockIcon.placeholder、ロック中は鍵を重ねる>>
+                    - lockIconImage(buttonSize: int): BufferedImage
                     + initComponents(): void
                     + setup(): void
                     + reload(): void
@@ -516,9 +537,13 @@ package "shooting_game" {
                     - enemies: List<String>
                     - cells: List<Cell>
                     - enemyChips: List<Rectangle>
+                    - missions: List<Mission> <<空なら非表示>>
+                    - missionStars: int
                     --
                     + StageInfoView(viewWidth: int)
                     + setData(highScore: int, rewards: List<Reward>, enemies: List<String>): void
+                    + setMissions(missions: List<Mission>, stars: int): void
+                    - drawStar(g2: Graphics2D, x: int, y: int, size: int, filled: boolean): void
                     - layoutItems(): void
                     - drawReward(g2: Graphics2D, c: Cell, icon: int): void
                     + getToolTipText(ev: MouseEvent): String
@@ -811,19 +836,37 @@ package "shooting_game" {
         class ShopManager <<Singleton>> {
             - {static} component: String
             - {static} instance: ShopManager
+            - shopUI: ShopSceneUI
+            - buyBtns: List<JButton>
+            - cards: List<CardData>
             - goBackBtn: JButton
+            - message: String
             --
             - ShopManager()
             + initComponents(): void
             + {static} getInstance(): ShopManager
+            - buy(kind: ItemKinds): void
+            - refresh(): void <<ShopService から所持数を読み直す>>
             + setup(): void
             + update(dt: double): void
             + draw(g: Graphics): void
         }
 
         class ShopSceneUI {
+            - {static} NEON: Color
+            - {static} COIN_COLOR: Color
+            - MAIN: ShootingGameMain
+            --
             + ShopSceneUI ()
-            + draw(g: Graphics): void
+            + {static} cardRect(index: int, screenWidth: int): Rectangle
+            + draw(g: Graphics, cards: List<CardData>, message: String): void
+            - drawCard(g: Graphics2D, r: Rectangle, c: CardData, adj: double): void
+        }
+
+        class CardData <<record>> {
+            ~ item: ShopItem
+            ~ owned: int
+            ~ icon: BufferedImage
         }
     }
 
@@ -1119,6 +1162,60 @@ package "shooting_game" {
             }
         }
 
+        package "shop" {
+            class ShopService <<Utility>> {
+                - {static} CONFIG_PATH: String <<ShopConfig.json>>
+                - {static} INV_PREFIX: String = "inv:"
+                - {static} items: List<ShopItem>
+                --
+                + {static} reload(): void
+                + {static} items(): List<ShopItem>
+                + {static} find(kind: ItemKinds): ShopItem
+                + {static} key(kind: ItemKinds): String
+                + {static} owned(kind: ItemKinds): int
+                + {static} canBuy(coins: int, price: int, owned: int, maxOwned: int, admin: boolean): boolean
+                + {static} canBuy(kind: ItemKinds): boolean
+                + {static} buy(kind: ItemKinds): boolean
+                + {static} consume(kind: ItemKinds): boolean <<ゲーム中のアイテム使用で1つ減らす>>
+                - {static} store(): Map<String,Integer> <<progress.highScores を流用>>
+            }
+
+            class ShopItem <<record>> {
+                ~ kind: ItemKinds
+                ~ price: int
+                ~ maxOwned: int
+                ~ name: String
+                ~ description: String
+            }
+        }
+
+        package "star" {
+            class StarRewardService <<Utility>> {
+                - {static} CONFIG_PATH: String <<StarRewardConfig.json>>
+                - {static} CLAIMED_PREFIX: String = "starReward:"
+                - {static} interval: int <<何★ごとに報酬か>>
+                - {static} tiers: List<Reward>
+                --
+                + {static} reload(): void
+                + {static} interval(): int
+                + {static} totalStars(): int
+                + {static} milestoneCount(): int
+                + {static} nextTarget(): int
+                + {static} rewardOf(n: int): Reward
+                + {static} isClaimed(n: int): boolean
+                + {static} canClaim(n: int): boolean
+                + {static} claimableCount(): int
+                + {static} claim(n: int): Reward
+                + {static} claimAll(): Reward
+                - {static} store(): Map<String,Integer> <<progress.highScores を流用>>
+            }
+
+            class StarReward <<record Reward>> {
+                ~ coins: int
+                ~ resources: Map<ResourceKinds,Integer>
+            }
+        }
+
         package "module" {
             enum ModuleStat {
                 ATK_PCT
@@ -1193,12 +1290,13 @@ package "shooting_game" {
             + {static} bulletAttackRate(): double
             + {static} beamAttackRate(): double
             + {static} colorRate(attackMode: ColorMode, target: Ship): double
-            + {static} bulletToEnemy(bullet: Bullet, target: Ship): double
+            + {static} bulletToEnemy(bullet: Bullet, target: Ship): double <<GameUtils.attackDamage / damageToEnemy を使う>>
             + {static} beamToEnemy(dps: double, tick: double, mode: ColorMode, bossRate: double, target: Ship): double
             + {static} defenseRate(): double
-            + {static} toPlayer(raw: double): double
+            + {static} toPlayer(raw: double): double <<GameUtils.damageToPlayer を使う>>
             + {static} ramToPlayer(p: Player): double
         }
+        DamageCalculator ..> GameUtils
         DamageCalculator ..> UnitService
         DamageCalculator ..> SkillService
         DamageCalculator ..> ModuleService
@@ -1224,6 +1322,12 @@ package "shooting_game" {
             - hitCount: int <<被弾回数(HARDミッション用)>>
             - playTime: double
             - skipped: boolean <<スキップ報酬のみ(ミッション対象外)>>
+            - {static} RESUME_COUNT: double <<ポーズから再開する3・2・1の長さ(秒)>>
+            - {static} LEAVE_FADE: double <<離脱時に暗くなる長さ(秒)>>
+            - resumeTimer: double <<負なら数えていない。数えている間もゲームは止まる>>
+            - leaveTimer: double <<負ならフェードしていない>>
+            - bombBtn: ItemSlotButton <<ショップで買ったボム(キー1)>>
+            - freezeBtn: ItemSlotButton <<ショップで買ったフリーズ(キー2)>>
             --
             - GameManager()
             + initComponents(): void
@@ -1243,6 +1347,24 @@ package "shooting_game" {
             + getGameResult(): boolean
             + gameover(state: boolean): void
             + setPause(pause: boolean): void
+            + resume(): void <<3・2・1を数えてから再開する>>
+            + leave(): void <<暗転してからステージ選択へ戻る>>
+            - updateResumeAndLeave(dt: double): void
+            - createItemSlot(kind: ItemKinds, keyHint: String, color: Color, index: int): ItemSlotButton
+            - bindItemKey(im: InputMap, am: ActionMap, key: int, numpadKey: int, kind: ItemKinds): void
+            - useItem(kind: ItemKinds): void <<ShopService.consume して効果を発動>>
+            - refreshItemSlots(): void
+        }
+
+        class ItemSlotButton {
+            - kind: ItemKinds
+            - keyHint: String
+            - color: Color
+            - count: int
+            --
+            + ItemSlotButton(kind: ItemKinds, keyHint: String, color: Color)
+            + refresh(): void <<残り数が変わったときだけ再描画>>
+            # paintComponent(g: Graphics): void
         }
 
         enum ColorMode {
@@ -1263,6 +1385,8 @@ package "shooting_game" {
             - drawActiveEffectIcon(g: Graphics, effectName: String, time: double, ind: int)
             - drawCoin(g: Graphics, coin: int): void
             - drawScore(g: Graphics, score: int): void
+            - drawResumeCount(g: Graphics, timer: double): void
+            - drawLeaveFade(g: Graphics, progress: double): void
         }
 
         class GameSceneUIData <<record>> {
@@ -1271,6 +1395,8 @@ package "shooting_game" {
             ~ score: int
             ~ coin: int
             ~ effectList: Map<String, Double>
+            ~ resumeTimer: double <<負なら数えていない>>
+            ~ leaveFade: double <<0〜1。負ならフェードしていない>>
         }
 
 
@@ -1352,7 +1478,8 @@ package "shooting_game" {
                 + reset(): void
                 + update(dt: double): void
                 + draw(g: Graphics): void
-                - createShip(enemy: EnemyConfig): Ship
+                - createShip(enemy: EnemyConfig): Ship <<NIGHTMARE の Enemy には EnemyAffix.roll で効果を付ける>>
+                - createBaseShip(enemy: EnemyConfig): Ship
                 - toScreen(pos: Vector2): Vector2
                 - newWave(id: int): void
                 + setStageId(id: int): void
@@ -1390,14 +1517,27 @@ package "shooting_game" {
                 + {static} lockReason(stageId: int, diff: Difficulty): String
                 + {static} timeLimit(stageId: int): double
                 + {static} missions(stageId: int): List<Mission>
+                + {static} missions(stageId: int, diff: Difficulty): List<Mission> <<★は難易度ごとに記録>>
+                + {static} stars(stageId: int, diff: Difficulty): int
+                + {static} totalStars(): int <<mission: キーの数=★の数>>
                 + {static} allMissionsDone(stageId: int): boolean
-                + {static} recordMissions(stageId: int, hits: int, hpRate: double, seconds: double): List<String>
+                + {static} recordMissions(stageId: int, diff: Difficulty, hits: int, hpRate: double, seconds: double): MissionResult
+                ~ {static} judge(m: MissionSpec, timeLimit: double, hits: int, hpRate: double, seconds: double): boolean[]
+                ~ {static} missionKey(stageId: int, diff: Difficulty, index: int): String
                 + {static} scaleRange(range: String, rate: double): String
             }
 
             class Mission <<record>> {
                 ~ text: String
                 ~ done: boolean
+            }
+
+            class MissionResult <<record>> {
+                ~ missions: List<Mission>
+                ~ achievedNow: boolean[]
+                ~ newlyEarned: boolean[]
+                --
+                + newStarCount(): int
             }
 
             class MissionSpec <<lombok @Data>> {
@@ -1499,6 +1639,8 @@ package "shooting_game" {
                 - MAIN: ShootingGameMain
                 - GM: GameManager
                 - IM: ItemManager
+                - {static} FREEZE_BOSS_RATE: double <<凍結中のボスの進む速さ>>
+                - freezeTimer: double <<敵が凍っている残り時間(秒)>>
                 --
                 - ShipManager()
                 + {static} getInstance(): ShipManager
@@ -1516,7 +1658,10 @@ package "shooting_game" {
                 + dropBossBonus(boss: Ship, rolls: int): void
                 + clear(target: String): void
                 + kill(target: String): void
-                + addShip(ship: Ship): void
+                + addShip(ship: Ship): void <<null は無視する>>
+                + freezeEnemies(seconds: double): void <<Freeze アイテムから呼ばれる>>
+                ~ {static} frozenStep(dt: double, owner: ShipKinds, freezeTimer: double): double <<ENEMYは0、BOSSは半分>>
+                - drawFrozenRings(g2: Graphics2D): void
                 + reloadPlayer(id: int): void
                 + getNearestTargetForPlayer(pos: Vector2): Ship
                 + findEnemy(target: Ship): boolean
@@ -1604,6 +1749,7 @@ package "shooting_game" {
                 # animationName: String
                 # animateTimer: double
                 # removeRequested: boolean
+                - affix: EnemyAffix <<ナイトメアで付くエフェクト。なければnull>>
                 - shotData: List<ShotConfig>
                 - shotBullet: Map<BulletKinds, List<Integer>>
                 --
@@ -1618,6 +1764,9 @@ package "shooting_game" {
                 - resetTimer(kinds: BulletKinds, id: int, state: String): void
                 - initializeMap(): Map<BulletKinds, Map<Integer, Double>>
                 + animation(name: String): void
+                + applyAffix(affix: EnemyAffix): void <<SWIFTは速度、ARMOREDはHPを上げる>>
+                - updateAffix(dt: double): void <<REGENは回復、RAPIDは冷却を短くする>>
+                - drawAffixRing(g2: Graphics2D): void
                 + changeMode(): void
                 + addScore(): void
                 + heal(damage: double): void
@@ -1645,7 +1794,29 @@ package "shooting_game" {
                 # sizeScale(): double
             }
 
+            enum EnemyAffix {
+                SWIFT : 高速
+                ARMORED : 装甲
+                REGEN : 再生
+                RAPID : 連射
+                --
+                + {static} CHANCE: double
+                + {static} SWIFT_SPEED_RATE: double
+                + {static} ARMORED_HP_RATE: double
+                + {static} REGEN_RATE_PER_SEC: double
+                + {static} RAPID_COOLDOWN_RATE: double
+                - label: String
+                - color: Color
+                --
+                + {static} roll(chanceRoll: double, kindRoll: double): EnemyAffix <<外れならnull>>
+                + getLabel(): String
+                + getColor(): Color
+            }
+
             class ShipFactory{
+                - {static} warned: Set<String> <<警告を出した船(同じIDで何度も出さない)>>
+                ~ {static} isDefined(config: Map<ShipKinds, Map<String, ShipDefinition>>, owner: ShipKinds, shipId: String): boolean
+                - {static} checkDefined(owner: ShipKinds, shipId: String): boolean <<未定義なら警告して false>>
                 + {static} createShip(owner: ShipKinds, shipId: String, mode: ColorMode, level: int, spawnPos: Vector2, stayPos: Vector2): Ship
                 + {static} createShip(owner: ShipKinds, shipId: String, mode: ColorMode, level: int, spawnPos: Vector2, stayPos: Vector2, entrance: EntranceType): Ship
                 + {static} createPathEnemy(shipId: String, mode: ColorMode, level: int, pathId: String, mirror: boolean, delay: double, speedScale: double): Ship
@@ -1666,6 +1837,7 @@ package "shooting_game" {
             }
 
             class BossLook <<Utility>> {
+                    - {static} LOOKS: Map<String, BossLook> <<Boss7 スナイパー・Boss8 カスケード・Boss9 プリズムを含む>>
                     - accent: Color
                     - hull: double[][]
                     - parts: List<Part>
@@ -1947,6 +2119,8 @@ package "shooting_game" {
                 BALL
                 SPIRAL
                 SPLIT
+                REDIRECT
+                ACCEL
             }
 
             class BulletConfig <<lomboc @Data>> {
@@ -1967,8 +2141,16 @@ package "shooting_game" {
                 - splitTime: double
                 - splitCount: int
                 - splitSpread: double
+                - splitDistance: double <<Split用。0ならsplitTimeで分裂>>
+                - splitShape: String <<FAN / RING / AIM>>
                 - childId: int
                 - childRate: double
+                - redirectDistance: double <<Redirect用: 直進する距離>>
+                - pauseTime: double
+                - redirectSpeed: double
+                - accelStart: double <<Accel用: 初速の倍率>>
+                - accelEnd: double
+                - accelTime: double
                 - cooldowns: Map<String, Double>
             }
 
@@ -2051,6 +2233,10 @@ package "shooting_game" {
                     - depth: double
                     - sides: int
                     - gap: double
+                    - anchor: String <<ANCHOR: player / fixed / random>>
+                    - anchorPos: Vector2
+                    - warnTime: double <<ANCHOR: 予告の時間>>
+                    - burst: Type <<ANCHOR: 爆発の形>>
                 }
 
                 enum Type {
@@ -2060,6 +2246,7 @@ package "shooting_game" {
                     FLOWER
                     POLYGON
                     CURTAIN
+                    ANCHOR
                 }
 
                 class Barrage {
@@ -2079,8 +2266,29 @@ package "shooting_game" {
                     - fireFlower(origin: Vector2, base: double): void
                     - firePolygon(origin: Vector2, base: double): void
                     - fireCurtain(origin: Vector2, t: double): void
+                    - fireAnchor(origin: Vector2, base: double, t: double): void <<予告を AnchorMarkers に登録する>>
+                    - anchorPoint(origin: Vector2): Vector2
+                    - burstAt(target: Vector2, base: double, t: double): void <<予告が終わったら burst の形で撃つ>>
                     - colorOf(index: int, total: int, segments: int): ColorMode
                     - emit(pos: Vector2, angle: double, speedScale: double, mode: ColorMode): void
+                }
+
+                class AnchorMarkers <<Singleton>> {
+                    - {static} instance: AnchorMarkers
+                    - markers: List<Marker>
+                    --
+                    - AnchorMarkers()
+                    + {static} getInstance(): AnchorMarkers
+                    + add(pos: Vector2, warnTime: double, onFire: Runnable): void
+                    + update(dt: double): void <<予告が終わると onFire で弾が出る>>
+                    + draw(g: Graphics): void
+                    + clear(): void
+                }
+
+                class Marker <<AnchorMarkers内部>> {
+                    ~ pos: Vector2
+                    ~ warnTime: double
+                    ~ onFire: Runnable
                 }
             }
 
@@ -2136,10 +2344,46 @@ package "shooting_game" {
 
                 class Split {
                     - split: boolean
+                    - startPos: Vector2 <<距離で分裂するときの基準>>
+                    - splitDistance: double <<0なら時間で分裂>>
                     --
                     + Split(owner: ShipKinds, id: int, mode: ColorMode, pos: Vector2, vec: double)
                     + update(dt: double): void
+                    - traveled(): double
+                    + {static} shouldSplit(lifeTimer: double, splitTime: double, traveled: double, distance: double): boolean
+                    + {static} childAngles(shape: String, count: int, spread: double, parentAngle: double, aimAngle: double): double[]
                     - burst(): void
+                }
+
+                class Redirect <<少し進んで停止し、自機の方へ向き直って加速>> {
+                    - {static} GO_ACCEL_TIME: double
+                    - baseSpeed: double
+                    - outDistance: double
+                    - traveled: double
+                    - pauseTimer: double
+                    - goTimer: double
+                    - turned: boolean
+                    --
+                    + Redirect(owner: ShipKinds, id: int, mode: ColorMode, pos: Vector2, vec: double)
+                    + update(dt: double): void
+                    + draw(g: Graphics): void
+                    + {static} phaseAt(traveled: double, distance: double, pauseTimer: double, pauseTime: double): Phase
+                    + {static} goSpeed(base: double, mult: double, t: double, time: double): double
+                    + {static} blinkAlpha(t: double): double
+                }
+
+                enum RedirectPhase <<Redirect.Phase>> {
+                    OUT
+                    PAUSE
+                    GO
+                }
+
+                class Accel <<遅い速度から直線的に加速>> {
+                    - baseSpeed: double
+                    --
+                    + Accel(owner: ShipKinds, id: int, mode: ColorMode, pos: Vector2, vec: double)
+                    + update(dt: double): void
+                    + {static} speedAt(base: double, start: double, end: double, time: double, t: double): double
                 }
 
                 class Laser {
@@ -2336,6 +2580,7 @@ package "shooting_game" {
                 SHIELD
                 BOMB
                 MAGNET
+                FREEZE
             }
 
             class ItemConfig <<lomboc @Data>> {
@@ -2376,7 +2621,7 @@ package "shooting_game" {
             }
 
             class ItemFactory {
-                - {static} ITEM_DROP_TABLE: Map<ItemKinds, Double>
+                - {static} ITEM_DROP_TABLE: Map<ItemKinds, Double> <<BOMB と FREEZE は含まない(ショップ専用)>>
                 --
                 + {static} createItem(pos: Vector2): Item
                 + {static} createItem(pos: Vector2, kind: ItemKinds): Item
@@ -2429,6 +2674,14 @@ package "shooting_game" {
                     + effect(): void
                 }
 
+                class Freeze {
+                    - {static} TIME: double <<敵が凍る時間(秒)>>
+                    --
+                    + Freeze(pos: Vector2)
+                    + draw(g: Graphics): void
+                    + effect(): void <<ShipManager.freezeEnemies を呼ぶ>>
+                }
+
                 class Resource {
                     - moveDir: Vector2
                     - floorY: double
@@ -2471,7 +2724,9 @@ package "shooting_game" {
             + GameResultSceneUI()
             + draw(g: Graphics): void
             - drawTitle(g: Graphics): void
-            - showRewards(g: Graphics): void
+            - showRewards(g: Graphics): void <<ミッションの★と、★の合計の増加を描く>>
+            + {static} textBottom(): double <<★ブロックの下端。RewardListPanel の位置合わせ用>>
+            - {static} starShape(x: double, y: double, r: double): Path2D
         }
 
         package "subPanels" {
@@ -2576,6 +2831,11 @@ package "shooting_game" {
             + {static} normalizeAngle(angle: double): double
             + {static} collidesWith(entity1: Entity, entity2: Entity): boolean
             + {static} calcFlashAlpha(time: double, x: double, y: double): float
+            + {static} MAX_DAMAGE_REDUCTION: double
+            + {static} MIN_DAMAGE_PASS: double
+            + {static} attackDamage(base: double, rate: double, flat: double): double
+            + {static} damageToEnemy(attack: double, colorRate: double, enemyHpRate: double): double
+            + {static} damageToPlayer(raw: double, reduceRate: double, damageRate: double, flatDefense: double): double
             + {static} tryParse(value: String): Integer
             + {static} parseTimeToSeconds(time: String): long
             + {static} formatSecondsToTime(time: long): String
@@ -2638,6 +2898,14 @@ package "shooting_game" {
             # installDefaults(b: AbstractButton): void
             + paint(g: Graphics, c: JComponent): void
             # paintText(g: Graphics, b: AbstractButton, textRect: Rectangle, text: String): void
+        }
+
+        class StageLockIcon <<Utility>> {
+            - {static} NEON: Color
+            --
+            + {static} placeholder(width: int, height: int, label: String): BufferedImage <<画像がないステージ用の番号つきの四角>>
+            + {static} padlock(size: int): BufferedImage
+            + {static} overlay(base: BufferedImage, lock: BufferedImage, width: int, height: int): BufferedImage
         }
 
         class CoinHud <<Utility>> {
@@ -2782,6 +3050,9 @@ package "shooting_game" {
             - score: int
             - difficultyLabel: String
             - newMissions: List<String>
+            - missionResult: MissionResult <<判定しなかったときは null>>
+            - starsBefore: int
+            - starsAfter: int
             --
             + {static} getInstance(): StageRewards
             + resetRewards(): void
@@ -2991,6 +3262,12 @@ shooting_game.gameScene.item.ItemManager +-- ItemConfig
 shooting_game.gameScene.item.ResourceFactory +-- DropModel
 shooting_game.domain.subship.SubShipService +-- PartData
 shooting_game.domain.subship.SubShipService +-- TierData
+shooting_game.domain.shop.ShopService +-- ShopItem
+shooting_game.domain.star.StarRewardService +-- StarReward
+shooting_game.shopScene.ShopSceneUI +-- CardData
+shooting_game.gameScene.stage.DifficultyService +-- MissionResult
+shooting_game.gameScene.bullet.barrage.AnchorMarkers +-- Marker
+shooting_game.gameScene.bullet.types.Redirect +-- RedirectPhase
 
 ' 追加した依存関係
 shooting_game.stageScene.DifficultyPanel --> shooting_game.gameScene.stage.Difficulty
@@ -3014,6 +3291,49 @@ shooting_game.ShootingGameMain ..> shooting_game.ui.LoadProgress
 shooting_game.ShootingGameMain ..> shooting_game.ui.ShooterScrollBarUI
 shooting_game.ShootingGameMain ..> shooting_game.utils.GameSettings
 shooting_game.settingScene.SettingManager ..> shooting_game.utils.GameSettings
+
+' 敵のエフェクト・フリーズ
+shooting_game.gameScene.ship.Ship --> shooting_game.gameScene.ship.EnemyAffix
+shooting_game.gameScene.stage.Stage ..> shooting_game.gameScene.ship.EnemyAffix
+shooting_game.gameScene.item.types.Freeze ..> shooting_game.gameScene.ship.ShipManager
+shooting_game.gameScene.ship.ShipFactory ..> shooting_game.gameScene.ship.ShipManager
+
+' ショップ・ゲーム中のアイテム使用
+shooting_game.shopScene.ShopManager --> shooting_game.shopScene.ShopSceneUI
+shooting_game.shopScene.ShopManager ..> shooting_game.domain.shop.ShopService
+shooting_game.shopScene.ShopSceneUI ..> shooting_game.domain.shop.ShopService
+shooting_game.domain.shop.ShopService ..> shooting_game.gameScene.item.ItemManager
+shooting_game.gameScene.GameManager --> shooting_game.gameScene.ItemSlotButton
+shooting_game.gameScene.GameManager ..> shooting_game.domain.shop.ShopService
+shooting_game.gameScene.GameManager ..> shooting_game.gameScene.item.ItemFactory
+shooting_game.gameScene.ItemSlotButton ..> shooting_game.domain.shop.ShopService
+shooting_game.gameScene.ItemSlotButton --|> javax.swing.JButton
+
+' 弾の追加挙動・照準弾幕
+shooting_game.gameScene.bullet.types.Redirect --* shooting_game.gameScene.bullet.Bullet
+shooting_game.gameScene.bullet.types.Accel --* shooting_game.gameScene.bullet.types.Straight
+shooting_game.gameScene.bullet.types.Split --* shooting_game.gameScene.bullet.types.Straight
+shooting_game.gameScene.bullet.BulletFactory ..> shooting_game.gameScene.bullet.types.Redirect
+shooting_game.gameScene.bullet.BulletFactory ..> shooting_game.gameScene.bullet.types.Accel
+shooting_game.gameScene.bullet.barrage.Barrage ..> shooting_game.gameScene.bullet.barrage.AnchorMarkers
+shooting_game.gameScene.bullet.BulletManager ..> shooting_game.gameScene.bullet.barrage.AnchorMarkers
+
+' ★(ミッションと★報酬)
+shooting_game.domain.star.StarRewardService ..> shooting_game.gameScene.stage.DifficultyService
+shooting_game.stageScene.SelectStageManager --> shooting_game.stageScene.StarRewardPanel
+shooting_game.stageScene.SelectStageManager ..> shooting_game.domain.star.StarRewardService
+shooting_game.stageScene.StarRewardPanel ..> shooting_game.domain.star.StarRewardService
+shooting_game.stageScene.StarRewardPanel --|> javax.swing.JPanel
+shooting_game.stageScene.normal.subPanels.StageInfoView ..> shooting_game.gameScene.stage.DifficultyService
+shooting_game.stageScene.normal.subPanels.StageDetailPanel ..> shooting_game.gameScene.stage.DifficultyService
+shooting_game.stageScene.normal.subPanels.StageBtnPanel ..> shooting_game.ui.StageLockIcon
+shooting_game.model.StageRewards --> shooting_game.gameScene.stage.MissionResult
+shooting_game.gameScene.GameManager ..> shooting_game.model.StageRewards
+shooting_game.gameResultScene.GameResultSceneUI ..> shooting_game.model.StageRewards
+shooting_game.gameResultScene.subPanels.RewardListPanel ..> shooting_game.gameResultScene.GameResultSceneUI
+
+' ダメージ計算の共通化
+shooting_game.gameScene.DamageCalculator ..> shooting_game.utils.GameUtils
 
 ' extends関係
 shooting_game.repository.UserRepository --|> org.springframework.data.jpa.repository.JpaRepository
