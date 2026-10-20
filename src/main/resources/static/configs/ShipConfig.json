@@ -1091,8 +1091,8 @@
         "imagePath": "/enemy/Enemy2.png",
         "sheets": [
           {
-            "grids": [1, 1],
-            "useCount": 1
+            "grids": [4, 2],
+            "useCount": 6
           }
         ],
         "frameRate": 0.1,

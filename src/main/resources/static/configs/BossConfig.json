@@ -2408,7 +2408,7 @@
     ]
   },
   "BossCoin": {
-    "gaugeHp": 600,
+    "gaugeHp": 24000,
     "entrance": "SPIRAL",
     "entranceTime": 3.6,
     "transitionTime": 2.0,

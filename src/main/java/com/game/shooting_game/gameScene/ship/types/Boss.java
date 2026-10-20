@@ -75,6 +75,7 @@ public class Boss extends Ship {
     private double phaseTimer; // 現在のフェーズに入ってからの時間
     private double fightTimer; // 現在のゲージの戦闘時間
     private double totalFight; // 戦闘に入ってからの合計時間(撤収の判定用)
+    private static final int MAX_COIN_DROPS_PER_FRAME = 4; // 1フレームに落とすコインの上限
     private double coinCarry; // まだコインにしていない受けたダメージ
     private final List<Barrage> barrages = new ArrayList<>(); // 今のゲージの弾幕
     private final List<BeamEmitter> beamEmitters = new ArrayList<>(); // 今のゲージのビーム
@@ -108,7 +109,7 @@ public class Boss extends Ship {
         rotate = Math.PI;
 
         // 戦闘定義とHP(ゲージ数 × 1ゲージ分)
-        def = BossLibrary.get(id);
+        def = BossLibrary.forFight(id, com.game.shooting_game.gameScene.stage.StageManager.getInstance().getStageId());
         gaugeCount = def.getGauges().size();
         gaugeHp = Math.max(1, def.getGaugeHp());
         maxHp = hp = gaugeHp * gaugeCount;
@@ -133,6 +134,7 @@ public class Boss extends Ship {
         super.update(dt);
         phaseTimer += dt;
         bodyClock += dt;
+        payCoins();
 
         switch (phase) {
             case ENTRANCE -> {
@@ -231,21 +233,28 @@ public class Boss extends Ship {
             return;
         super.addDamage(damage);
 
-        // ダメージを受けるたびにコインを落とすボス(1回に落とす数は少なめに抑える)
-        if (def.getCoinStep() > 0) {
+        // ダメージを受けたぶんだけコインを落とす(被弾の回数ではなく、受けたダメージの合計に比例する)
+        if (def.getCoinStep() > 0)
             coinCarry += damage;
-            int drops = 0;
-            while (coinCarry >= def.getCoinStep() && drops < 3) {
-                coinCarry -= def.getCoinStep();
-                drops++;
-                double adj = ShootingGameMain.getScreenSizeAdj();
-                Vector2 p = new Vector2(
-                        pos.getX() + (Math.random() - 0.5) * 60 * adj,
-                        pos.getY() + Math.random() * 30 * adj);
-                ItemManager.getInstance().addItem(ResourceFactory.createResource(p, ResourceKinds.COIN));
-            }
-            if (coinCarry > def.getCoinStep() * 3)
-                coinCarry = 0; // たまりすぎた分は捨てる
+    }
+
+    /**
+     * たまったダメージをコインにして落とす
+     * 1フレームに落とす数は抑え、残りは次のフレーム以降に持ち越す(捨てないので、合計はダメージに比例する)
+     */
+    private void payCoins() {
+        double step = def.getCoinStep();
+        if (step <= 0)
+            return;
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        int drops = 0;
+        while (coinCarry >= step && drops < MAX_COIN_DROPS_PER_FRAME) {
+            coinCarry -= step;
+            drops++;
+            Vector2 p = new Vector2(
+                    pos.getX() + (Math.random() - 0.5) * 60 * adj,
+                    pos.getY() + Math.random() * 30 * adj);
+            ItemManager.getInstance().addItem(ResourceFactory.createResource(p, ResourceKinds.COIN));
         }
     }
 
