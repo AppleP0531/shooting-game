@@ -36695,5 +36695,323 @@
         }
       ]
     }
+  },
+  "stage157": {
+    "title": "ボスチャレンジ Boss7 スナイパー",
+    "description": "Boss7だけと戦う高難度版。敵が硬く、攻撃も強い。",
+    "category": "BOSS",
+    "unlock": 26,
+    "modifiers": {
+      "enemyHpRate": 3.2,
+      "enemyDamageRate": 1.5,
+      "noHeal": true
+    },
+    "rewardList": {
+      "GEAR": {
+        "COMMON": "9~17",
+        "UNCOMMON": "0~2"
+      },
+      "SCREW": {
+        "COMMON": "8~16",
+        "UNCOMMON": "0~2"
+      },
+      "ENERGY_CELL": {
+        "COMMON": "18~30",
+        "UNCOMMON": "1~3"
+      },
+      "CIRCUIT": {
+        "COMMON": "17~28",
+        "UNCOMMON": "1~3",
+        "RARE": "1~1"
+      },
+      "LENS": {
+        "COMMON": "16~26",
+        "UNCOMMON": "1~3",
+        "RARE": "1~1"
+      },
+      "COPPER_PLATE": {
+        "COMMON": "2~4",
+        "RARE": "1~1"
+      },
+      "IRON_BAR": {
+        "COMMON": "4~7",
+        "UNCOMMON": "0~1",
+        "EPIC": "1~1"
+      },
+      "ALLOY_PLATE": {
+        "COMMON": "11~17",
+        "UNCOMMON": "1~2",
+        "RARE": "1~1"
+      },
+      "CRYSTAL_SHARD": {
+        "COMMON": "6~12",
+        "UNCOMMON": "0~2",
+        "RARE": "1~1"
+      },
+      "PLASMA_CORE": {
+        "COMMON": "4~8",
+        "UNCOMMON": "1~2"
+      },
+      "MODULE_CHIP": {
+        "EPIC": "4~5"
+      }
+    },
+    "moduleRewards": [
+      {
+        "rarity": "LEGENDARY",
+        "chance": 1,
+        "once": "FIRST"
+      },
+      {
+        "rarity": "EPIC",
+        "chance": 0.3
+      }
+    ],
+    "blocks": {
+      "wave1": [
+        {
+          "x": -90,
+          "y": -20,
+          "vx": 0,
+          "vy": 20,
+          "color": "BLUE",
+          "dirs": [
+            "DOWN"
+          ],
+          "pattern": "ALL",
+          "delay": 1.5,
+          "interval": 3,
+          "warn": 1,
+          "duration": 0.7,
+          "width": 32,
+          "damage": 16
+        }
+      ]
+    },
+    "enemyList": {
+      "wave1": [
+        {
+          "enemyId": "Boss7",
+          "mode": "RED",
+          "level": 0,
+          "spawnPos": [0, -120],
+          "stayPos": [0, 130]
+        }
+      ]
+    }
+  },
+  "stage158": {
+    "title": "ボスチャレンジ Boss8 カスケード",
+    "description": "Boss8だけと戦う高難度版。敵が硬く、攻撃も強い。",
+    "category": "BOSS",
+    "unlock": 28,
+    "modifiers": {
+      "enemyHpRate": 3.4,
+      "enemyDamageRate": 1.6,
+      "noHeal": true
+    },
+    "rewardList": {
+      "GEAR": {
+        "COMMON": "10~19",
+        "UNCOMMON": "0~2"
+      },
+      "SCREW": {
+        "COMMON": "9~18",
+        "UNCOMMON": "0~2"
+      },
+      "ENERGY_CELL": {
+        "COMMON": "20~32",
+        "UNCOMMON": "1~3"
+      },
+      "CIRCUIT": {
+        "COMMON": "19~30",
+        "UNCOMMON": "1~3",
+        "RARE": "1~1"
+      },
+      "LENS": {
+        "COMMON": "18~28",
+        "UNCOMMON": "1~3",
+        "RARE": "1~1"
+      },
+      "COPPER_PLATE": {
+        "COMMON": "2~4",
+        "RARE": "1~1"
+      },
+      "IRON_BAR": {
+        "COMMON": "5~8",
+        "UNCOMMON": "0~1",
+        "EPIC": "1~1"
+      },
+      "ALLOY_PLATE": {
+        "COMMON": "13~19",
+        "UNCOMMON": "1~2",
+        "RARE": "1~1"
+      },
+      "CRYSTAL_SHARD": {
+        "COMMON": "7~14",
+        "UNCOMMON": "0~2",
+        "RARE": "1~1"
+      },
+      "PLASMA_CORE": {
+        "COMMON": "5~10",
+        "UNCOMMON": "1~2"
+      },
+      "MODULE_CHIP": {
+        "EPIC": "5~6"
+      }
+    },
+    "moduleRewards": [
+      {
+        "rarity": "LEGENDARY",
+        "chance": 1,
+        "once": "FIRST"
+      },
+      {
+        "rarity": "EPIC",
+        "chance": 0.35
+      }
+    ],
+    "blocks": {
+      "wave1": [
+        {
+          "x": 240,
+          "y": 120,
+          "vx": -42,
+          "vy": 14,
+          "color": "ALT",
+          "dirs": [
+            "UP",
+            "DOWN"
+          ],
+          "pattern": "ALL",
+          "delay": 0.8,
+          "interval": 2.2,
+          "warn": 1,
+          "duration": 0.7,
+          "width": 34,
+          "damage": 19
+        }
+      ]
+    },
+    "enemyList": {
+      "wave1": [
+        {
+          "enemyId": "Boss8",
+          "mode": "BLUE",
+          "level": 0,
+          "spawnPos": [0, -120],
+          "stayPos": [0, 130]
+        }
+      ]
+    }
+  },
+  "stage159": {
+    "title": "ボスチャレンジ Boss9 プリズム",
+    "description": "Boss9だけと戦う高難度版。敵が硬く、攻撃も強い。",
+    "category": "BOSS",
+    "unlock": 30,
+    "modifiers": {
+      "enemyHpRate": 3.6,
+      "enemyDamageRate": 1.6,
+      "noHeal": true
+    },
+    "rewardList": {
+      "GEAR": {
+        "COMMON": "11~21",
+        "UNCOMMON": "0~2"
+      },
+      "SCREW": {
+        "COMMON": "10~20",
+        "UNCOMMON": "0~2"
+      },
+      "ENERGY_CELL": {
+        "COMMON": "22~34",
+        "UNCOMMON": "1~3"
+      },
+      "CIRCUIT": {
+        "COMMON": "21~32",
+        "UNCOMMON": "1~3",
+        "RARE": "1~1"
+      },
+      "LENS": {
+        "COMMON": "20~30",
+        "UNCOMMON": "1~3",
+        "RARE": "1~1"
+      },
+      "COPPER_PLATE": {
+        "COMMON": "2~4",
+        "RARE": "1~1"
+      },
+      "IRON_BAR": {
+        "COMMON": "6~9",
+        "UNCOMMON": "0~1",
+        "EPIC": "1~1"
+      },
+      "ALLOY_PLATE": {
+        "COMMON": "15~21",
+        "UNCOMMON": "1~2",
+        "RARE": "1~1"
+      },
+      "CRYSTAL_SHARD": {
+        "COMMON": "8~16",
+        "UNCOMMON": "0~2",
+        "RARE": "1~1"
+      },
+      "PLASMA_CORE": {
+        "COMMON": "6~12",
+        "UNCOMMON": "1~2"
+      },
+      "MODULE_CHIP": {
+        "EPIC": "6~7"
+      }
+    },
+    "moduleRewards": [
+      {
+        "rarity": "LEGENDARY",
+        "chance": 1,
+        "once": "FIRST"
+      },
+      {
+        "rarity": "LEGENDARY",
+        "chance": 0.1
+      },
+      {
+        "rarity": "EPIC",
+        "chance": 0.35
+      }
+    ],
+    "blocks": {
+      "wave1": [
+        {
+          "x": 240,
+          "y": 120,
+          "vx": -42,
+          "vy": 14,
+          "color": "ALT",
+          "dirs": [
+            "UP",
+            "DOWN"
+          ],
+          "pattern": "ALL",
+          "delay": 0.8,
+          "interval": 2.2,
+          "warn": 1,
+          "duration": 0.7,
+          "width": 34,
+          "damage": 20
+        }
+      ]
+    },
+    "enemyList": {
+      "wave1": [
+        {
+          "enemyId": "Boss9",
+          "mode": "RED",
+          "level": 0,
+          "spawnPos": [0, -120],
+          "stayPos": [0, 130]
+        }
+      ]
+    }
   }
 }
