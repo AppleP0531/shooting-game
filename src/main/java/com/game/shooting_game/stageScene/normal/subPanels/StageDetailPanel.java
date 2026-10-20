@@ -159,6 +159,11 @@ public class StageDetailPanel extends JPanel {
                         DifficultyService.scaleRange(rarityEntry.getValue(), diff.getRewardRate())));
         }
         infoView.setData(DifficultyService.highScore(stageId, diff), rewards, getEnemyList(stageId));
+        // ミッションは、星を集められるステージだけ見せる
+        if (DifficultyService.selectable(stageId))
+            infoView.setMissions(DifficultyService.missions(stageId, diff), DifficultyService.stars(stageId, diff));
+        else
+            infoView.setMissions(List.of(), 0);
     }
 
     /**

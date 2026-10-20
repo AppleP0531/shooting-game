@@ -101,7 +101,7 @@ public class DifficultyPanel extends JPanel {
         if (selected == Difficulty.HARD) {
             sb.append("<br><font color='#9fd8ff'>ナイトメア解放ミッション:</font>");
             for (Mission m : DifficultyService.missions(stageId))
-                sb.append("<br>").append(m.done() ? "✔ " : "・").append(m.text());
+                sb.append("<br>").append(m.done() ? "<font color='#ffd650'>★</font> " : "<font color='#999999'>☆</font> ").append(m.text());
         } else if (next != null && !DifficultyService.unlocked(stageId, next)) {
             sb.append("<br><font color='#9fd8ff'>").append(next.getLabel()).append(": ")
                     .append(DifficultyService.lockReason(stageId, next)).append("</font>");
