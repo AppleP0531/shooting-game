@@ -1,6 +1,7 @@
 package com.game.shooting_game.gameScene.ship;
 
 import java.awt.AlphaComposite;
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
@@ -78,6 +79,8 @@ public abstract class Ship implements Moveable, GameObject, Entity {
     protected double hp = 100; // Hp
     @Getter
     protected double maxHp = 100; // 最大Hp
+    @Getter
+    private EnemyAffix affix; // ナイトメアで付くエフェクト(なければnull)
     protected float alpha = 1.0f; // 透明度
     @Getter
     protected double score = 0; // 倒したときに得られるスコア量
@@ -162,6 +165,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
         if (SM.getSceneName() == SceneType.GAME || SM.getSceneName() == SceneType.TEST)
             move(dt);
         updateCooldownTimer(dt);
+        updateAffix(dt);
 
         // 無敵時間処理(タイマーが0になるまで減らす)
         shieldTimer = Math.max(0, shieldTimer - dt);
@@ -226,6 +230,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
         g2.setTransform(oldTransform);
         // 透明度を1に戻す
         g2.setComposite(AlphaComposite.SrcOver);
+        drawAffixRing(g2);
     }
 
     @Override
@@ -258,6 +263,55 @@ public abstract class Ship implements Moveable, GameObject, Entity {
      * 
      * @param dt
      */
+    /**
+     * エフェクトを付ける(出現した直後に1度だけ呼ぶ)
+     * 
+     * @param affix 付けるエフェクト(nullなら何もしない)
+     */
+    public void applyAffix(EnemyAffix affix) {
+        if (affix == null || this.affix != null)
+            return;
+        this.affix = affix;
+        switch (affix) {
+            case SWIFT -> speed *= EnemyAffix.SWIFT_SPEED_RATE;
+            case ARMORED -> {
+                maxHp *= EnemyAffix.ARMORED_HP_RATE;
+                hp *= EnemyAffix.ARMORED_HP_RATE;
+            }
+            default -> {
+            }
+        }
+    }
+
+    /**
+     * エフェクトによる毎フレームの効果(再生・連射)
+     */
+    private void updateAffix(double dt) {
+        if (affix == EnemyAffix.REGEN && hp > 0)
+            hp = Math.min(maxHp, hp + maxHp * EnemyAffix.REGEN_RATE_PER_SEC * dt);
+        else if (affix == EnemyAffix.RAPID)
+            updateCooldownTimer(dt * (1 / EnemyAffix.RAPID_COOLDOWN_RATE - 1)); // 余分に減らして、間隔を短くする
+    }
+
+    /**
+     * エフェクトの輪(機体のまわりに、種類ごとの色でうっすら光る)
+     */
+    private void drawAffixRing(Graphics2D g2) {
+        if (affix == null)
+            return;
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        double r = imageSize.getOrDefault("ship", 30) / 2.0 + 4 * adj;
+        double pulse = 0.6 + 0.4 * Math.sin(System.nanoTime() / 1.5e8);
+        Color c = affix.getColor();
+        g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setStroke(new java.awt.BasicStroke((float) (3 * adj)));
+        g2.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (60 * pulse)));
+        g2.draw(new java.awt.geom.Ellipse2D.Double(pos.getX() - r - 2 * adj, pos.getY() - r - 2 * adj, (r + 2 * adj) * 2, (r + 2 * adj) * 2));
+        g2.setStroke(new java.awt.BasicStroke((float) (1.5 * adj)));
+        g2.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (200 * pulse)));
+        g2.draw(new java.awt.geom.Ellipse2D.Double(pos.getX() - r, pos.getY() - r, r * 2, r * 2));
+    }
+
     private void updateCooldownTimer(double dt) {
         coolDownTimers.forEach((kind, idMap) -> {
             // 0より大きければdtだけ減らす、0より小さければ0にする
