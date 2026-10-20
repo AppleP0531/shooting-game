@@ -43,7 +43,7 @@ import com.game.shooting_game.utils.Vector2;
  */
 public final class ExtraStageManager extends JPanel implements Manager {
     private static final String component = "[ExtraStageManager]";
-    private static final int EXTRA_BASE_ID = 100;
+    private static final int EXTRA_BASE_ID = 1100;
 
     private final ShootingGameMain MAIN;
     private final SceneManager SM;

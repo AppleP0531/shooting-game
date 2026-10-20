@@ -26,7 +26,7 @@ import com.game.shooting_game.utils.Vector2;
  * - ゲームオーバーまで続く。到達したウェーブに応じて報酬が出る。
  */
 public final class EndlessWaves {
-    public static final int STAGE_ID = 200;
+    public static final int STAGE_ID = 1200;
     public static final String BEST_WAVE_KEY = "endless:wave"; // 最高到達ウェーブ(highScoresに保存)
     private static final int MAX_SOURCE_STAGE = 28;
     private static final int BOSS_EVERY = 10;

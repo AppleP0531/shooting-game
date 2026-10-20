@@ -127,7 +127,7 @@ public final class BossLibrary {
      * そのステージで戦うゲージの範囲を決める
      * <ul>
      * <li>無限モード: 後ろの3ゲージ(最後の3形態)</li>
-     * <li>ノーマルステージ(1〜99): 10の倍数は5ゲージ、5の倍数は3ゲージ(先頭から)</li>
+     * <li>ノーマルステージ(1〜200): 10の倍数は5ゲージ、5の倍数は3ゲージ(先頭から)</li>
      * <li>それ以外: ボスの定義のまま</li>
      * </ul>
      * 
@@ -141,7 +141,7 @@ public final class BossLibrary {
             int n = Math.min(3, total);
             return new int[] { total - n, n };
         }
-        if (stageId >= 1 && stageId < 100) {
+        if (stageId >= 1 && stageId < 1000) {
             if (stageId % 10 == 0)
                 return new int[] { 0, Math.min(5, total) };
             if (stageId % 5 == 0)

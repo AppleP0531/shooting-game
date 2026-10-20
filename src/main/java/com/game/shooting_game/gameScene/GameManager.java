@@ -231,7 +231,7 @@ public final class GameManager extends JPanel implements Manager {
         StageData sd = STAGE_M.getStageConfig().get("stage" + STAGE_M.getStageId());
         // 敵HPの強さの目安になるステージ番号(ノーマル=ステージ番号、エクストラ=解放に要るステージ番号。無限は、ウェーブごとに別に決める)
         int sid = STAGE_M.getStageId();
-        int stageIndex = sid == EndlessWaves.STAGE_ID ? 1 : sid < 100 ? sid : Math.max(1, sd == null ? 1 : sd.getUnlock());
+        int stageIndex = sid == EndlessWaves.STAGE_ID ? 1 : sid < 1000 ? sid : Math.max(1, sd == null ? 1 : sd.getUnlock());
         StageModifiers.load(sd == null ? null : sd.getModifiers(), STAGE_M.getStage().getDifficulty(), stageIndex);
 
         // リセット
@@ -423,7 +423,7 @@ public final class GameManager extends JPanel implements Manager {
 
             // 新しくクリアしたステージの場合更新
             // (エクストラステージは番号が100以上なので、通常ステージの進行度には数えない)
-            if (STAGE_M.getStageId() < 100 && STAGE_M.getStageId() > data.getProgress().getClearedStage()) {
+            if (STAGE_M.getStageId() < 1000 && STAGE_M.getStageId() > data.getProgress().getClearedStage()) {
                 data.getProgress().setClearedStage(STAGE_M.getStageId());
 
                 // クリア進捗更新ログ
