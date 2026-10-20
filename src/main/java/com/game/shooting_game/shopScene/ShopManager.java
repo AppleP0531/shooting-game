@@ -50,10 +50,10 @@ public final class ShopManager extends JPanel implements Manager {
         for (int i = 0; i < items.size(); i++) {
             ItemKinds kind = items.get(i).kind();
             JButton btn = UIBuilder.createImageBtn(component, (BufferedImage) null,
-                    new Vector2(110 * adj, 40 * adj), "買う");
+                    new Vector2(84 * adj, 32 * adj), "買う");
             Rectangle r = ShopSceneUI.cardRect(i, width);
-            btn.setBounds(r.x + r.width - btn.getWidth() - (int) (20 * adj),
-                    r.y + r.height - btn.getHeight() - (int) (20 * adj), btn.getWidth(), btn.getHeight());
+            btn.setBounds(r.x + r.width - btn.getWidth() - (int) (12 * adj),
+                    r.y + r.height - btn.getHeight() - (int) (10 * adj), btn.getWidth(), btn.getHeight());
             btn.setFocusable(false);
             btn.addActionListener(e -> buy(kind));
             buyBtns.add(btn);
@@ -61,12 +61,7 @@ public final class ShopManager extends JPanel implements Manager {
         }
 
         // 戻るボタン(一つ前の画面に遷移)
-        Vector2 goBackBtnSize = new Vector2(200 * adj, 50 * adj);
-        goBackBtn = UIBuilder.createImageBtn(component, "/static/img/UI/shopScene/goBackImage.png", goBackBtnSize,
-                "GO BACK");
-        goBackBtn.setBounds((width - goBackBtn.getWidth()) / 2, height - goBackBtn.getHeight() - (int) (5 * adj),
-                goBackBtn.getWidth(), goBackBtn.getHeight());
-        goBackBtn.addActionListener(e -> SceneManager.getInstance().changeToPrevScene());
+        goBackBtn = UIBuilder.createBackBtn(component, () -> SceneManager.getInstance().changeToPrevScene());
         this.add(goBackBtn);
     }
 
@@ -82,6 +77,17 @@ public final class ShopManager extends JPanel implements Manager {
         refresh();
     }
 
+    /** ステージのアイテム絵がない商品の絵(なければnull) */
+    private BufferedImage shopIcon(ItemKinds kind) {
+        if (kind != ItemKinds.SKIP_TICKET)
+            return null;
+        try {
+            return UIBuilder.loadImage("/static/img/UI/shopScene/skipTicket.png");
+        } catch (java.io.IOException | RuntimeException e) {
+            return null;
+        }
+    }
+
     /** 所持数・ボタンの有効/無効を作り直す */
     private void refresh() {
         cards.clear();
@@ -91,6 +97,8 @@ public final class ShopManager extends JPanel implements Manager {
             ShopItem it = items.get(i);
             BufferedImage[] frames = images == null ? null : images.get(it.kind());
             BufferedImage icon = frames != null && frames.length > 0 ? frames[0] : null;
+            if (icon == null) // ステージには出ない商品(研究スキップ券など)は、専用の絵
+                icon = shopIcon(it.kind());
             cards.add(new CardData(it, ShopService.owned(it.kind()), icon));
             if (i < buyBtns.size())
                 buyBtns.get(i).setEnabled(DataManager.getUserData() != null && ShopService.canBuy(it.kind()));

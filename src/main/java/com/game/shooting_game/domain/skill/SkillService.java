@@ -11,6 +11,8 @@ import java.util.Map;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.game.shooting_game.domain.shop.ShopService;
+import com.game.shooting_game.gameScene.item.ItemManager.ItemKinds;
 import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ResourceManager.ResourceKinds.Family;
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
@@ -193,6 +195,20 @@ public final class SkillService {
     }
 
     /**
+     * 研究スキップ券を1枚使って、研究中のスキルをすぐ完了させる
+     *
+     * @return 使えて完了したらtrue(研究中でない・券がないときはfalse。券は減らない)
+     */
+    public static synchronized boolean skipResearchWithTicket() {
+        if (!isResearching())
+            return false;
+        if (!DataManager.isAdminMode() && !ShopService.consume(ItemKinds.SKIP_TICKET)) // 管理者モードは無制限
+            return false;
+        stats().setResearchFinishAt(System.currentTimeMillis());
+        return tickResearch();
+    }
+
+    /**
      * 研究が終わっていればレベルを上げる
      *
      * @return このとき研究が完了したらtrue
@@ -281,10 +297,10 @@ public final class SkillService {
         sb.append(d.getDetail()).append("\n\n");
 
         if (d.getEffect() != null && d.getPerLevel() != 0) {
-            sb.append("効果: Lvごとに +").append(fmtEffect(d, d.getPerLevel())).append("\n");
-            sb.append("現在: +").append(fmtEffect(d, d.getPerLevel() * level));
+            sb.append("効果: Lvごとに ").append(d.isReduce() ? "-" : "+").append(fmtEffect(d, d.getPerLevel())).append("\n");
+            sb.append("現在: ").append(d.isReduce() ? "-" : "+").append(fmtEffect(d, d.getPerLevel() * level));
             if (level < d.getMaxLevel())
-                sb.append(" → 次: +").append(fmtEffect(d, d.getPerLevel() * (level + 1)));
+                sb.append(" → 次: ").append(d.isReduce() ? "-" : "+").append(fmtEffect(d, d.getPerLevel() * (level + 1)));
             sb.append("\n");
         }
         sb.append("Lv ").append(level).append(" / ").append(d.getMaxLevel()).append("\n\n");

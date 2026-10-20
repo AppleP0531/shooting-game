@@ -43,7 +43,8 @@ public final class ItemManager implements Manager {
         SHIELD,
         BOMB,
         MAGNET,
-        FREEZE
+        FREEZE,
+        SKIP_TICKET // ショップ専用(研究スキップ券。ステージには出ない)
     }
 
     // ----- データクラスの定義 -----

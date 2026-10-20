@@ -179,6 +179,8 @@ public class StarRewardPanel extends JPanel {
         StringBuilder sb = new StringBuilder();
         if (r.coins() > 0)
             sb.append("コイン×").append(r.coins());
+        if (r.skipTickets() > 0)
+            sb.append(sb.length() > 0 ? "  " : "").append("研究スキップ券×").append(r.skipTickets());
         for (Map.Entry<ResourceKinds, Integer> e : r.resources().entrySet()) {
             if (sb.length() > 0)
                 sb.append("  ");

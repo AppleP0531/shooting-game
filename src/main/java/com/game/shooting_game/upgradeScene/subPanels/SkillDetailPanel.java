@@ -1,5 +1,8 @@
 package com.game.shooting_game.upgradeScene.subPanels;
 
+import com.game.shooting_game.data.DataManager;
+import com.game.shooting_game.domain.shop.ShopService;
+import com.game.shooting_game.gameScene.item.ItemManager.ItemKinds;
 import com.game.shooting_game.domain.cost.CostService;
 import java.awt.Color;
 import java.awt.Font;
@@ -30,6 +33,7 @@ public class SkillDetailPanel extends JPanel {
     private JTextArea statusTextArea;
     private CostPanel costPanel;
     private JButton upgradeBtn;
+    private JButton skipBtn; // 研究スキップ券を使う
 
     public SkillDetailPanel() {
         UM = UpgradeManager.getInstance();
@@ -111,6 +115,23 @@ public class SkillDetailPanel extends JPanel {
             UIBuilder.closePanel(this);
         });
         this.add(upgradeBtn);
+
+        // 研究中のスキルでは、強化ボタンの代わりに「研究スキップ券を使う」ボタンを出す
+        skipBtn = UIBuilder.createImageBtn(component, (java.awt.image.BufferedImage) null,
+                new Vector2(150 * ShootingGameMain.getScreenSizeAdj(), 40 * ShootingGameMain.getScreenSizeAdj()),
+                "スキップ");
+        skipBtn.setBounds(
+                (int) panelSize.getX() / 2 - (int) skipBtn.getWidth() / 2,
+                (int) panelSize.getY() - (int) skipBtn.getHeight() - spacing,
+                (int) skipBtn.getWidth(), (int) skipBtn.getHeight());
+        skipBtn.addActionListener(e -> {
+            if (!SkillService.skipResearchWithTicket())
+                return;
+            UM.reloadScreen();
+            UIBuilder.closePanel(this);
+        });
+        skipBtn.setVisible(false);
+        this.add(skipBtn);
     }
 
     /**
@@ -135,6 +156,15 @@ public class SkillDetailPanel extends JPanel {
                 && !SkillService.isResearching()
                 && CostService.canAfford(SkillService.getCost(data, SkillService.getLevel(skillName)));
         upgradeBtn.setEnabled(upgradable);
+
+        // 研究中のスキルなら、強化ボタンの代わりにスキップ券のボタン
+        boolean researchingThis = SkillService.isResearching(skillName);
+        boolean admin = DataManager.isAdminMode(); // 管理者モードは券が無制限
+        int tickets = ShopService.owned(ItemKinds.SKIP_TICKET);
+        upgradeBtn.setVisible(!researchingThis);
+        skipBtn.setVisible(researchingThis);
+        skipBtn.setText("スキップ(券×" + (admin ? "∞" : String.valueOf(tickets)) + ")");
+        skipBtn.setEnabled(admin || tickets > 0);
 
         // コストと状態(強化できるときだけ表示)
         boolean showCost = data != null && !skillName.equals("Origin")

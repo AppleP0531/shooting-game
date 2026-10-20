@@ -69,8 +69,9 @@ public final class ShopService {
 
     private static List<ShopItem> defaultItems() {
         return List.of(
-                new ShopItem(ItemKinds.BOMB, 6000, 10, "ボム", "画面の敵弾を消し、敵全体にダメージ"),
-                new ShopItem(ItemKinds.FREEZE, 8000, 10, "フリーズ", "敵(ボス以外)を4秒止め、ボスは動きを半分にする"));
+                new ShopItem(ItemKinds.BOMB, 80000, 10, "ボム", "画面の敵弾を消し、敵全体にダメージ"),
+                new ShopItem(ItemKinds.FREEZE, 100000, 10, "フリーズ", "敵(ボス以外)を4秒止め、ボスは動きを半分にする"),
+                new ShopItem(ItemKinds.SKIP_TICKET, 150000, 10, "研究スキップ券", "スキルツリー強化の研究の待ち時間を、すぐ終わらせる"));
     }
 
     // ----- 参照 -----
