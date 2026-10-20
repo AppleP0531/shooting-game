@@ -140,7 +140,6 @@ public final class ModuleService {
         for (int i = 0; i < ModuleInventory.SLOTS; i++) {
             if (in.getSlots().get(i) == 0L || find(in.getSlots().get(i)) == null) {
                 in.getSlots().set(i, id);
-                DataManager.save();
                 return true;
             }
         }
@@ -152,7 +151,6 @@ public final class ModuleService {
         for (int i = 0; i < in.getSlots().size(); i++)
             if (in.getSlots().get(i) == id)
                 in.getSlots().set(i, 0L);
-        DataManager.save();
     }
 
     // ----- 制作 -----
@@ -207,7 +205,6 @@ public final class ModuleService {
         m.setId(in.getNextId());
         in.setNextId(in.getNextId() + 1);
         in.getOwned().add(m);
-        DataManager.save();
         return m;
     }
 
@@ -281,7 +278,6 @@ public final class ModuleService {
         // 以前の仕様で最初から4つ持っているモジュールは、サブ能力が増えない
         if (m.getLevel() % SUB_STEP == 0 && m.getSubs().size() < m.getLevel() / SUB_STEP)
             addRandomSub(m);
-        DataManager.save();
         LogUtils.systemLog("[INFO]", component,
                 ANSI.YELLOW + m.getKind().getId() + ANSI.RESET + " reached Lv" + m.getLevel() + ".");
         return true;
@@ -299,7 +295,6 @@ public final class ModuleService {
         ResourceKinds chip = new ResourceKinds(ResourceName.MODULE_CHIP, m.getRarity());
         Map<ResourceKinds, Integer> eq = ud.getResources().getEquipments();
         eq.put(chip, eq.getOrDefault(chip, 0) + dismantleRefund(m.getRarity()));
-        DataManager.save();
         return true;
     }
 

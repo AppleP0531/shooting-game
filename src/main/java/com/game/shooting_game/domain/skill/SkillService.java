@@ -207,7 +207,6 @@ public final class SkillService {
         st.setResearchSkill(null);
         st.setResearchFinishAt(0);
         invalidate();
-        DataManager.save();
 
         LogUtils.systemLog("[INFO]", component,
                 ANSI.YELLOW + name + ANSI.RESET + " research completed. Lv" + st.getUpgrades().get(name) + ".");
@@ -254,7 +253,6 @@ public final class SkillService {
         long sec = researchSeconds(d, level);
         st.setResearchSkill(name);
         st.setResearchFinishAt(System.currentTimeMillis() + sec * 1000);
-        DataManager.save();
 
         LogUtils.systemLog("[INFO]", component,
                 ANSI.YELLOW + name + ANSI.RESET + " research started (" + formatTime(sec) + ").");
