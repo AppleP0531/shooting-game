@@ -1150,8 +1150,8 @@
         "imagePath": "/small_enemy/Enemy3.png",
         "sheets": [
           {
-            "grids": [1, 1],
-            "useCount": 1
+            "grids": [4, 2],
+            "useCount": 6
           }
         ],
         "frameRate": 0.1,
@@ -1209,8 +1209,8 @@
         "imagePath": "/small_enemy/Enemy4.png",
         "sheets": [
           {
-            "grids": [1, 1],
-            "useCount": 1
+            "grids": [4, 2],
+            "useCount": 6
           }
         ],
         "frameRate": 0.1,
@@ -1268,8 +1268,8 @@
         "imagePath": "/small_enemy/Enemy5.png",
         "sheets": [
           {
-            "grids": [1, 1],
-            "useCount": 1
+            "grids": [4, 2],
+            "useCount": 6
           }
         ],
         "frameRate": 0.1,
@@ -1346,8 +1346,8 @@
         "imagePath": "/small_enemy/Enemy6.png",
         "sheets": [
           {
-            "grids": [1, 1],
-            "useCount": 1
+            "grids": [4, 2],
+            "useCount": 6
           }
         ],
         "frameRate": 0.1,
