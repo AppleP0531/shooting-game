@@ -22,6 +22,8 @@ public class BlockSpec {
     private double vx = 0; // 横の移動速度(基準サイズ/秒)。負なら右から左へ
     private double vy = 20; // 下への移動速度(基準サイズ/秒)。機体が進んでいる演出
     private double size = 30; // 四角の一辺(基準サイズ)
+    private double angle = 0; // 出現時の向き(度、時計回りが正)。撃つ方向(dirs)も一緒に回る
+    private double spin = 0; // 回転の速さ(度/秒、時計回りが正)。0なら回らない。ビームもブロックの辺に合わせて回る
     private String color = "BLUE"; // BLUE / RED。それ以外は出現時にどちらかに決まる(出現後は変わらない)
     private String[] dirs = { "DOWN" }; // 撃つ方向(全方向同時)。UP / DOWN / LEFT / RIGHT。出現後は変わらない
     private double delay = 1.0; // 最初に撃つまでの時間(秒)

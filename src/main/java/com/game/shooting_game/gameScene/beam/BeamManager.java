@@ -65,10 +65,12 @@ public final class BeamManager implements Manager {
     }
 
     /**
-     * ビームをすべて消す
+     * ビームとブロック、ギミックをすべて消す(ステージのブロックがロビーに残らないように)
      */
     public void clear() {
         beams.clear();
+        gimmicks.clear();
+        blocks.clear();
     }
 
     /**
@@ -152,10 +154,15 @@ public final class BeamManager implements Manager {
     public void fireFromBlock(BeamBlock block, BeamSpec spec, ColorMode mode, double[] dir) {
         double adj = ShootingGameMain.getScreenSizeAdj();
         double offset = (spec.getWidth() * 0.0 + 18) * adj; // ブロックの縁から出す
-        Supplier<Vector2> follow = () -> new Vector2(block.getPos().getX() + dir[0] * offset,
-                block.getPos().getY() + dir[1] * offset);
-        Beam beam = new Beam(Team.HOSTILE, spec, mode, follow.get(), Math.atan2(dir[1], dir[0]));
+        // 方向はブロックから見た向き。ブロックが回れば、ビームの位置も角度も一緒に回る
+        double local = Math.atan2(dir[1], dir[0]);
+        Supplier<Double> angle = () -> local + block.getAngle();
+        Supplier<Vector2> follow = () -> new Vector2(
+                block.getPos().getX() + Math.cos(angle.get()) * offset,
+                block.getPos().getY() + Math.sin(angle.get()) * offset);
+        Beam beam = new Beam(Team.HOSTILE, spec, mode, follow.get(), angle.get());
         beam.setOriginSupplier(follow);
+        beam.setAngleSupplier(angle);
         beams.add(beam);
     }
 

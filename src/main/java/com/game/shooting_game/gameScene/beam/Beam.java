@@ -74,6 +74,8 @@ public class Beam {
     @Setter
     private Supplier<Vector2> originSupplier; // 発射位置を撃った機体に追従させる
     @Setter
+    private Supplier<Double> angleSupplier; // 基準角を撃った物(回るブロック)に追従させる
+    @Setter
     private boolean trackPlayerX; // 予兆の間、自機のXを追う
     @Setter
     private boolean trackPlayerAim; // 予兆の間、自機の方向を向く
@@ -106,6 +108,8 @@ public class Beam {
             origin.setX(o.getX());
             origin.setY(o.getY());
         }
+        if (angleSupplier != null)
+            angle = angleSupplier.get();
 
         switch (state) {
             case WARN -> {
@@ -221,6 +225,16 @@ public class Beam {
         return mode == ColorMode.RED ? RED : BLUE;
     }
 
+    /**
+     * 2色を混ぜる(rateが1ならa、0ならb)
+     */
+    private static Color mix(Color a, Color b, double rate) {
+        return new Color(
+                (int) (a.getRed() * rate + b.getRed() * (1 - rate)),
+                (int) (a.getGreen() * rate + b.getGreen() * (1 - rate)),
+                (int) (a.getBlue() * rate + b.getBlue() * (1 - rate)));
+    }
+
     private static Color alpha(Color c, double a) {
         return new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) Math.clamp(a * 255, 0, 255));
     }
@@ -266,8 +280,14 @@ public class Beam {
             g2.drawLine(0, 0, (int) len, 0);
 
             double charge = Math.min(1, timer / warnTime);
-            double r = width * (0.25 + 0.55 * charge);
-            flare(g2, 0, 0, r, col, 0.4 + 0.5 * charge);
+            if (hostile) {
+                double r = width * (0.25 + 0.55 * charge);
+                flare(g2, 0, 0, r, col, 0.4 + 0.5 * charge, 1.0);
+            } else {
+                // 自機のビーム: 白くぼんやり光らせず、小さな色つきの光が少しずつ強まる
+                double r = width * (0.12 + 0.28 * charge);
+                flare(g2, 0, 0, r, col, 0.2 + 0.4 * charge, 0.25);
+            }
         } else {
             double g = growth();
             double flicker = 1 + 0.05 * Math.sin(timer * 70);
@@ -280,7 +300,7 @@ public class Beam {
                     : new Color((col.getRed() + 255 * 2) / 3, (col.getGreen() + 255 * 2) / 3,
                             (col.getBlue() + 255 * 2) / 3);
             drawBand(g2, len, w * 0.34, coreColor, 0.95);
-            flare(g2, 0, 0, width * 1.0 * g, col, 0.9); // 発射位置の光
+            flare(g2, 0, 0, width * 1.0 * g, col, 0.9, 1.0); // 発射位置の光
         }
 
         g2.setTransform(oldTransform);
@@ -292,13 +312,13 @@ public class Beam {
     /**
      * 発射位置の丸い光
      */
-    private static void flare(Graphics2D g2, double cx, double cy, double r, Color col, double a) {
+    private static void flare(Graphics2D g2, double cx, double cy, double r, Color col, double a, double white) {
         if (r < 1)
             return;
         g2.setPaint(new RadialGradientPaint(
                 new Point2D.Double(cx, cy), (float) r,
                 new float[] { 0f, 0.35f, 1f },
-                new Color[] { alpha(Color.WHITE, a), alpha(col, a * 0.8), alpha(col, 0) }));
+                new Color[] { alpha(mix(Color.WHITE, col, white), a), alpha(col, a * 0.8), alpha(col, 0) }));
         g2.fill(new java.awt.geom.Ellipse2D.Double(cx - r, cy - r, r * 2, r * 2));
     }
 }
