@@ -42,7 +42,6 @@ public final class ShopManager extends JPanel implements Manager {
         setOpaque(false);
         double adj = ShootingGameMain.getScreenSizeAdj();
         int width = ShootingGameMain.getInstance().getWidth();
-        int height = ShootingGameMain.getInstance().getHeight();
 
         // 商品ごとの「買う」ボタン(カードの右下)
         buyBtns.clear();
