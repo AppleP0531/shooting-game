@@ -87,7 +87,7 @@ class BossConfigIntegrityTest {
             }));
         });
 
-        for (String stage : new String[] { "stage157", "stage158", "stage159" })
+        for (String stage : new String[] { "stage1157", "stage1158", "stage1159" })
             assertEquals("BOSS", stages.get(stage).get("category").asText(), stage);
     }
 
