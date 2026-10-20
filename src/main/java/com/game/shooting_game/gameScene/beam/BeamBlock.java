@@ -31,11 +31,14 @@ public final class BeamBlock {
     private final double half; // 一辺の半分(画面倍率込み)
     private final ColorMode mode; // 出現したときに決まる色(変わらない)
     private double warnLeft = 0; // 次の発射までの予兆の光らせ用
+    @Getter
+    private double angle; // 今の向き(ラジアン、時計回りが正)。回るブロックは少しずつ変わる
 
     public BeamBlock(BlockSpec spec) {
         double adj = ShootingGameMain.getScreenSizeAdj();
         ShootingGameMain main = ShootingGameMain.getInstance();
         this.spec = spec;
+        this.angle = Math.toRadians(spec.getAngle());
         this.pos = new Vector2(main.getWidth() / 2.0 + spec.getX() * adj, spec.getY() * adj);
         this.half = spec.getSize() * adj / 2;
 
@@ -76,6 +79,7 @@ public final class BeamBlock {
         double adj = ShootingGameMain.getScreenSizeAdj();
         pos.setX(pos.getX() + spec.getVx() * adj * dt);
         pos.setY(pos.getY() + spec.getVy() * adj * dt);
+        angle += Math.toRadians(spec.getSpin()) * dt;
 
         if (!onScreen() || emitter.done())
             return;
@@ -110,15 +114,22 @@ public final class BeamBlock {
         if (!onScreen())
             return Push.NONE;
         double adj = ShootingGameMain.getScreenSizeAdj();
-        double dx = pos.getX() - this.pos.getX();
-        double dy = pos.getY() - this.pos.getY();
+        // ブロックの向きに合わせた座標(ブロックの辺がx軸・y軸になる)で考える
+        double cos = Math.cos(angle);
+        double sin = Math.sin(angle);
+        double wx = pos.getX() - this.pos.getX();
+        double wy = pos.getY() - this.pos.getY();
+        double dx = wx * cos + wy * sin;
+        double dy = -wx * sin + wy * cos;
         double ox = half + radius - Math.abs(dx);
         double oy = half + radius - Math.abs(dy);
         if (ox <= 0 || oy <= 0)
             return Push.NONE; // 重なっていない
 
-        double vx = spec.getVx() * adj;
-        double vy = spec.getVy() * adj;
+        double worldVx = spec.getVx() * adj;
+        double worldVy = spec.getVy() * adj;
+        double vx = worldVx * cos + worldVy * sin;
+        double vy = -worldVx * sin + worldVy * cos;
         boolean pushAlongMove = false;
         boolean alongY = false;
         if (Math.abs(vy) >= Math.abs(vx) && vy != 0 && Math.signum(dy) == Math.signum(vy)) {
@@ -128,15 +139,18 @@ public final class BeamBlock {
             pushAlongMove = true;
         }
 
-        double newX = pos.getX();
-        double newY = pos.getY();
+        double localX = dx;
+        double localY = dy;
         if (pushAlongMove ? alongY : oy <= ox) {
             double sign = pushAlongMove ? Math.signum(vy) : (dy >= 0 ? 1 : -1);
-            newY = this.pos.getY() + sign * (half + radius);
+            localY = sign * (half + radius);
         } else {
             double sign = pushAlongMove ? Math.signum(vx) : (dx >= 0 ? 1 : -1);
-            newX = this.pos.getX() + sign * (half + radius);
+            localX = sign * (half + radius);
         }
+        // ブロックの座標から画面の座標へ戻す
+        double newX = this.pos.getX() + localX * cos - localY * sin;
+        double newY = this.pos.getY() + localX * sin + localY * cos;
 
         // 画面の端に押し付けられて、押し出せないとき: 横にずらさず、そのまま(押し潰し)
         if (bounds != null && !bounds.contains(newX, newY))
@@ -170,10 +184,15 @@ public final class BeamBlock {
     public boolean hits(Vector2 p, double radius) {
         if (!onScreen())
             return false;
-        double cx = Math.max(pos.getX() - half, Math.min(pos.getX() + half, p.getX()));
-        double cy = Math.max(pos.getY() - half, Math.min(pos.getY() + half, p.getY()));
-        double dx = p.getX() - cx;
-        double dy = p.getY() - cy;
+        // ブロックの向きに合わせた座標で、最も近い点を求める
+        double cos = Math.cos(angle);
+        double sin = Math.sin(angle);
+        double wx = p.getX() - pos.getX();
+        double wy = p.getY() - pos.getY();
+        double lx = wx * cos + wy * sin;
+        double ly = -wx * sin + wy * cos;
+        double dx = lx - Math.max(-half, Math.min(half, lx));
+        double dy = ly - Math.max(-half, Math.min(half, ly));
         return dx * dx + dy * dy <= radius * radius;
     }
 
@@ -208,6 +227,10 @@ public final class BeamBlock {
         int s = (int) (half * 2);
         Color main = mode == ColorMode.RED ? RED : BLUE;
 
+        // ブロックの向きに合わせて回して描く
+        java.awt.geom.AffineTransform oldTransform = g2.getTransform();
+        g2.rotate(angle, pos.getX(), pos.getY());
+
         // ノズル(撃つ方向)
         g2.setColor(main.darker());
         int nz = Math.max(3, (int) (6 * adj));
@@ -231,5 +254,7 @@ public final class BeamBlock {
         g2.setColor(new Color(main.getRed(), main.getGreen(), main.getBlue(), a));
         int c = s / 3;
         g2.fillRect(cx - c / 2, cy - c / 2, c, c);
+
+        g2.setTransform(oldTransform);
     }
 }
