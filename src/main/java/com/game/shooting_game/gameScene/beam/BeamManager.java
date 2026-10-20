@@ -132,8 +132,17 @@ public final class BeamManager implements Manager {
         boolean crushed = false;
         Vector2 p = ship.getPos();
         for (BeamBlock b : blocks) {
+            // 押し潰された船は、重なりが解けるまでこのブロックの当たり判定をなくす(外へ瞬間移動させない)
+            if (b.isGhost(ship)) {
+                if (!b.overlaps(p, radius)) {
+                    b.removeGhost(ship);
+                    b.endCrush();
+                }
+                continue;
+            }
             BeamBlock.Push result = b.pushOut(p, radius, bounds);
             if (result == BeamBlock.Push.SQUEEZED) {
+                b.addGhost(ship);
                 if (b.beginCrush())
                     crushed = true;
             } else {
@@ -341,7 +350,7 @@ public final class BeamManager implements Manager {
             if (!s.inScreen() || !beam.hitsShip(s))
                 continue;
 
-            s.addDamage(DamageCalculator.beamToEnemy(
+            DamageCalculator.hitEnemy(s, DamageCalculator.beamToEnemy(
                     beam.getDamage() * beam.getDamageScale(), TICK, beam.getMode(), beam.getBossRate(), s));
         }
     }

@@ -31,6 +31,7 @@ public final class EndlessWaves {
     private static final int MAX_SOURCE_STAGE = 28;
     private static final int BOSS_EVERY = 10;
     private static final int NORMAL_BOSS_COUNT = 6; // Boss1〜Boss6
+    private static final double BLOCK_RATE = 0.25; // ブロック付きのウェーブのうち、ブロックを実際に出す確率
     private static final double COIN_BOSS_RATE = 0.15; // ボスの出番のうち、コインボスになる確率
 
     /**
@@ -72,9 +73,14 @@ public final class EndlessWaves {
                 keys.add(e.getKey());
         String key = keys.get(ThreadLocalRandom.current().nextInt(keys.size()));
 
+        // ブロックは元のステージで付いていても、一定の確率でしか出さない(出ないときはブロックなしのウェーブ)
+        BlockSpec[] blocks = d.getBlocks() == null ? null : d.getBlocks().get(key);
+        if (blocks != null && ThreadLocalRandom.current().nextDouble() >= BLOCK_RATE)
+            blocks = null;
+
         return new Wave(d.getEnemyList().get(key),
                 d.getGimmicks() == null ? null : d.getGimmicks().get(key),
-                d.getBlocks() == null ? null : d.getBlocks().get(key));
+                blocks);
     }
 
     /**

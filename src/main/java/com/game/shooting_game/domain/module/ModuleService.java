@@ -48,6 +48,8 @@ public final class ModuleService {
         SUB_TABLE.put(ModuleStat.HP_FLAT, new double[] { 5, 10, 18, 30, 50 });
         SUB_TABLE.put(ModuleStat.HEAL_PCT, scaled(2.0));
         SUB_TABLE.put(ModuleStat.HEAL_FLAT, new double[] { 1, 2, 4, 7, 12 });
+        SUB_TABLE.put(ModuleStat.CRIT_RATE, scaled(0.5));
+        SUB_TABLE.put(ModuleStat.CRIT_DMG, scaled(1.5));
     }
 
     // 制作のコスト(レア度ごと)。作り直しを前提にしているので、重めにしてある

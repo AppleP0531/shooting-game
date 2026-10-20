@@ -165,7 +165,8 @@ public final class GameManager extends JPanel implements Manager {
         double adj = ShootingGameMain.getScreenSizeAdj();
         int size = (int) (56 * adj), gap = (int) (8 * adj), margin = (int) (12 * adj);
         ItemSlotButton btn = new ItemSlotButton(kind, keyHint, color);
-        btn.setBounds(margin + index * (size + gap), ShootingGameMain.getInstance().getHeight() - margin - size,
+        // 左下に縦に並べる(index 0 が一番下)
+        btn.setBounds(margin, ShootingGameMain.getInstance().getHeight() - margin - size - index * (size + gap),
                 size, size);
         btn.addActionListener(e -> useItem(kind));
         this.add(btn);
@@ -613,7 +614,7 @@ public final class GameManager extends JPanel implements Manager {
                         // どの色の弾でもダメージを与える(同じ色の場合は減衰、ボスは色の概念がない)
                         double damage = DamageCalculator.bulletToEnemy(bullet, enemy);
 
-                        enemy.addDamage(damage);
+                        DamageCalculator.hitEnemy(enemy, damage);
 
                         // 貫通数が残っていれば通り抜ける
                         if (bullet.consumeHit()) {

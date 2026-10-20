@@ -19,7 +19,11 @@ public enum ModuleKind {
     HP("hp_mod", "体力モジュール", "体", ModuleStat.HP_PCT, 1.5, ResourceName.COPPER_PLATE,
             "最大HPが増える"),
     HEAL("heal_mod", "ヒールモジュール", "癒", ModuleStat.HEAL_PCT, 2.0, ResourceName.LENS,
-            "回復アイテムの回復量が増える");
+            "回復アイテムの回復量が増える"),
+    CRIT("crit_mod", "会心モジュール", "会", ModuleStat.CRIT_RATE, 0.5, ResourceName.GEAR,
+            "弾とビームが会心になる確率が上がる"),
+    CRITDMG("critdmg_mod", "会心威力モジュール", "威", ModuleStat.CRIT_DMG, 1.5, ResourceName.SCREW,
+            "会心が出たときのダメージ倍率が上がる");
 
     private final String id;
     private final String title;

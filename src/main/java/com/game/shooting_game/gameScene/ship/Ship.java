@@ -535,7 +535,21 @@ public abstract class Ship implements Moveable, GameObject, Entity {
         // シールドを持っていなければダメージを受ける
         if (shieldTimer <= 0) {
             hp -= damage;
-            DamagePopupManager.getInstance().add(this, damage);
+            DamagePopupManager.getInstance().add(this, damage, critHit);
+        }
+    }
+
+    private boolean critHit; // addCritDamage の処理中だけtrue
+
+    /**
+     * 会心のダメージの追加(ダメージ数字を会心表示にする)
+     */
+    public void addCritDamage(double damage) {
+        critHit = true;
+        try {
+            addDamage(damage);
+        } finally {
+            critHit = false;
         }
     }
 
