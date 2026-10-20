@@ -13,6 +13,7 @@ import com.game.shooting_game.data.UserData.ShipStats;
 import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.domain.cost.Cost;
+import com.game.shooting_game.utils.GameBalance;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
 
@@ -35,9 +36,7 @@ public final class UnitService {
     private static final double LEVEL_COIN_GROWTH = 1.185; // レベルごとのコイン倍率
     private static final double ITEM_BAND_EXTRA = 1.2; // 帯が上がるごとに素材が増える勢い(帯の2乗に比例)
 
-    private static final double ATTACK_PER_LEVEL = 0.02; // レベル1つあたりの火力(Lv50で約2倍)
     private static final double HP_PER_LEVEL = 0.03; // レベル1つあたりの耐久力(Lv50で約2.5倍)
-    private static final double ATTACK_PER_STAR = 0.05; // ★1つあたりの火力
     private static final double HP_PER_STAR = 0.06; // ★1つあたりの耐久力
 
     private UnitService() {
@@ -67,7 +66,9 @@ public final class UnitService {
      * 火力の倍率(レベルと★)
      */
     public static double attackRate(String shipId) {
-        return (1 + ATTACK_PER_LEVEL * (getLevel(shipId) - 1)) * (1 + ATTACK_PER_STAR * getStars(shipId));
+        // レベルは指数的に(最大Lvで約100倍)、★は足し算で伸びる(係数は BalanceConfig.json)
+        return Math.pow(GameBalance.unitAttackGrowth(), getLevel(shipId) - 1)
+                * (1 + GameBalance.attackPerStar() * getStars(shipId));
     }
 
     /**

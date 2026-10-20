@@ -34,11 +34,13 @@ public final class ModuleService {
     // サブ能力が取る範囲(基準値に対する割合。必ずメインより低い)
     private static final double SUB_MIN = 0.25;
     private static final double SUB_MAX = 0.75;
+    // サブ能力の値の候補の数(SUB_MIN〜SUB_MAX を等間隔に分けた値のうち、どれか)
+    public static final int SUB_CANDIDATES = 6;
     // サブ能力ごとの、レア度ごとの基準値と倍率(割合のものはMAIN_BASEにかける倍率、実数値のものはそのまま)
     private static final Map<ModuleStat, double[]> SUB_TABLE = new LinkedHashMap<>();
     static {
-        SUB_TABLE.put(ModuleStat.ATK_PCT, scaled(1.0));
-        SUB_TABLE.put(ModuleStat.ATK_FLAT, new double[] { 0.5, 1, 1.5, 2.5, 4 });
+        SUB_TABLE.put(ModuleStat.ATK_PCT, scaled(4.0));
+        SUB_TABLE.put(ModuleStat.ATK_FLAT, new double[] { 25, 50, 75, 125, 200 });
         SUB_TABLE.put(ModuleStat.DEF_PCT, scaled(0.6));
         SUB_TABLE.put(ModuleStat.DEF_FLAT, new double[] { 0.5, 1, 1.5, 2, 3 });
         SUB_TABLE.put(ModuleStat.SHIELD_PCT, scaled(2.5));
@@ -231,6 +233,16 @@ public final class ModuleService {
     /**
      * サブ能力を1つ、ランダムに加える(メインや、すでにあるサブと同じ能力は出ない)
      */
+    /**
+     * サブ能力の値の候補(基準値に対する割合)。SUB_MIN から SUB_MAX まで等間隔に SUB_CANDIDATES 個
+     *
+     * @param index 0〜SUB_CANDIDATES-1
+     */
+    public static double subRatio(int index) {
+        int i = Math.max(0, Math.min(SUB_CANDIDATES - 1, index));
+        return SUB_MIN + (SUB_MAX - SUB_MIN) * i / (SUB_CANDIDATES - 1);
+    }
+
     private static void addRandomSub(Module m) {
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
         List<ModuleStat> pool = new ArrayList<>(SUB_TABLE.keySet());
@@ -242,7 +254,8 @@ public final class ModuleService {
 
         ModuleStat st = pool.get(rnd.nextInt(pool.size()));
         double base = SUB_TABLE.get(st)[m.getRarity().ordinal()];
-        double v = base * rnd.nextDouble(SUB_MIN, SUB_MAX);
+        // 値は、完全なランダムではなく、決まった候補(SUB_CANDIDATES 個)から1つを抽選する
+        double v = base * subRatio(rnd.nextInt(SUB_CANDIDATES));
         // メインより必ず低くする(割合は基準値の範囲内なので自然に低い。念のため)
         if (st.isPercent())
             v = Math.min(v, m.getMainValue() * 0.95);
