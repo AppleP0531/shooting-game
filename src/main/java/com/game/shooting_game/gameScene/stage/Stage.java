@@ -2,6 +2,7 @@ package com.game.shooting_game.gameScene.stage;
 
 import java.awt.Graphics;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.gameScene.beam.BeamManager;
 import com.game.shooting_game.gameScene.beam.BeamSpec;
 import com.game.shooting_game.gameScene.beam.BlockSpec;
+import com.game.shooting_game.gameScene.ship.EnemyAffix;
 import com.game.shooting_game.gameScene.ship.Ship;
 import com.game.shooting_game.gameScene.ship.ShipFactory;
 import com.game.shooting_game.gameScene.ship.ShipManager;
@@ -84,6 +86,19 @@ public class Stage implements GameObject {
      * @return 船
      */
     private Ship createShip(EnemyConfig enemy) {
+        Ship ship = createBaseShip(enemy);
+        // ナイトメアでは、ボス以外の敵に、一定の確率でランダムなエフェクトが付く
+        if (difficulty == Difficulty.NIGHTMARE && ship instanceof Enemy) {
+            ThreadLocalRandom rnd = ThreadLocalRandom.current();
+            ship.applyAffix(EnemyAffix.roll(rnd.nextDouble(), rnd.nextDouble()));
+        }
+        return ship;
+    }
+
+    /**
+     * StageConfigの敵情報から、エフェクトのない船を作成
+     */
+    private Ship createBaseShip(EnemyConfig enemy) {
         // 経路が指定されている場合は経路を通る小敵
         if (enemy.getPath() != null && !enemy.getPath().isEmpty()) {
             return ShipFactory.createPathEnemy(
