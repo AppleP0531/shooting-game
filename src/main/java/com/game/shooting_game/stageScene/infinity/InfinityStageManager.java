@@ -28,9 +28,6 @@ public final class InfinityStageManager extends JPanel implements Manager {
     private JButton lobbyBtn;
     private JButton settingBtn;
     private JButton startBtn;
-    private JButton waveDownBtn; // 開始ウェーブを下げる
-    private JButton waveUpBtn; // 開始ウェーブを上げる
-    private int startWave = 1; // 選んでいる開始ウェーブ
 
     private InfinityStageManager() {
         InfinityStageManager.instance = this;
@@ -74,22 +71,10 @@ public final class InfinityStageManager extends JPanel implements Manager {
                 (int) (MAIN.getHeight() * 0.55), (int) startBtn.getWidth(), (int) startBtn.getHeight());
         startBtn.addActionListener(e -> {
             StageManager.getInstance().getStage().setStageId(EndlessWaves.STAGE_ID);
-            StageManager.getInstance().getStage().setStartWave(startWave);
+            StageManager.getInstance().getStage().setStartWave(skipTargetWave());
             SM.changeScene(SceneType.GAME);
         });
         this.add(startBtn);
-
-        // 開始ウェーブの選択(スキル「助走」で選べる範囲が広がる。矢印で上げ下げする)
-        int arrow = (int) (36 * ShootingGameMain.getScreenSizeAdj());
-        int waveY = startBtn.getY() + startBtn.getHeight() + (int) (14 * ShootingGameMain.getScreenSizeAdj());
-        waveDownBtn = UIBuilder.createImageBtn(component, "/static/img/UI/backArrow.png", new Vector2(arrow, arrow), "◀");
-        waveDownBtn.setBounds(MAIN.getWidth() / 2 - (int) (96 * ShootingGameMain.getScreenSizeAdj()) - arrow / 2, waveY, arrow, arrow);
-        waveDownBtn.addActionListener(e -> changeStartWave(-1));
-        this.add(waveDownBtn);
-        waveUpBtn = UIBuilder.createImageBtn(component, "/static/img/UI/forwardArrow.png", new Vector2(arrow, arrow), "▶");
-        waveUpBtn.setBounds(MAIN.getWidth() / 2 + (int) (96 * ShootingGameMain.getScreenSizeAdj()) - arrow / 2, waveY, arrow, arrow);
-        waveUpBtn.addActionListener(e -> changeStartWave(1));
-        this.add(waveUpBtn);
 
         // 設定ボタン(設定画面に遷移)
         Vector2 settingBtnSize = new Vector2(
@@ -107,8 +92,6 @@ public final class InfinityStageManager extends JPanel implements Manager {
 
     @Override
     public void setup() {
-        startWave = Math.max(1, Math.min(startWave, maxStartWave()));
-        refreshWaveButtons();
     }
 
     @Override
@@ -144,34 +127,23 @@ public final class InfinityStageManager extends JPanel implements Manager {
         g.setFont(new Font("SansSerif", Font.BOLD, Math.max(12, (int) (18 * adj))));
         drawCentered(g, "最高到達ウェーブ  " + best, cx, (int) (MAIN.getHeight() * 0.5));
 
-        // 開始ウェーブ(矢印の間に出す)
+        // 自動スキップの案内(スキル「助走」で、高いウェーブまで道中を飛ばして始まる)
+        int target = skipTargetWave();
         g.setColor(Color.WHITE);
         g.setFont(new Font("SansSerif", Font.BOLD, Math.max(11, (int) (16 * adj))));
-        int textY = waveDownBtn.getY() + waveDownBtn.getHeight() / 2 - (int) (2 * adj);
-        drawCentered(g, "開始ウェーブ  " + startWave, cx, textY);
+        int textY = startBtn.getY() + startBtn.getHeight() + (int) (28 * adj);
+        drawCentered(g, target > 1 ? "ウェーブ " + target + " まで自動スキップ" : "ウェーブ 1 から開始", cx, textY);
         g.setFont(new Font("SansSerif", Font.PLAIN, Math.max(9, (int) (11 * adj))));
         g.setColor(new Color(190, 220, 255));
-        drawCentered(g, "選べるのは 1〜" + maxStartWave() + "(スキル「助走」で増える)", cx, textY + (int) (18 * adj));
+        drawCentered(g, "スキル「助走」を強化すると、道中の敵を倒した扱いで飛ばせるウェーブが増える", cx, textY + (int) (18 * adj));
     }
 
     /**
-     * 選べる開始ウェーブの最大(スキル「助走」で増え、これまでに到達したウェーブを超えない)
+     * 自動スキップで飛ぶ先のウェーブ(スキル「助走」で増え、これまでに到達したウェーブを超えない)
      */
-    private int maxStartWave() {
+    private int skipTargetWave() {
         int best = DataManager.getUserData().getProgress().getHighScores().getOrDefault(EndlessWaves.BEST_WAVE_KEY, 0);
-        int skill = 1 + (int) com.game.shooting_game.domain.skill.SkillService.getBonus("ENDLESS_SKIP");
-        return Math.max(1, Math.min(skill, best + 1));
-    }
-
-    private void changeStartWave(int delta) {
-        startWave = Math.max(1, Math.min(maxStartWave(), startWave + delta));
-        refreshWaveButtons();
-        repaint();
-    }
-
-    private void refreshWaveButtons() {
-        waveDownBtn.setEnabled(startWave > 1);
-        waveUpBtn.setEnabled(startWave < maxStartWave());
+        return EndlessWaves.skipTarget(com.game.shooting_game.domain.skill.SkillService.getBonus("ENDLESS_SKIP"), best);
     }
 
     private static void drawCentered(Graphics g, String s, int cx, int y) {

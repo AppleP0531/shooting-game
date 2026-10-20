@@ -603,6 +603,7 @@ package "shooting_game" {
             - select(d: Difficulty): void
             - refreshButtons(): void
             - infoText(): String
+            - isBossStage(): boolean <<StageConfig の category が BOSS か>>
         }
 
         package "extra" {
@@ -661,9 +662,6 @@ package "shooting_game" {
                 - lobbyBtn: JButton
                 - settingBtn: JButton
                 - startBtn: JButton
-                - waveDownBtn: JButton <<開始ウェーブを下げる>>
-                - waveUpBtn: JButton <<開始ウェーブを上げる>>
-                - startWave: int = 1
                 --
                 - InfinityStageManager()
                 + {static} getInstance(): InfinityStageManager
@@ -671,9 +669,7 @@ package "shooting_game" {
                 + setup()
                 + update(dt: double)
                 + draw(g: Graphics)
-                - maxStartWave(): int <<スキル「助走」(ENDLESS_SKIP)で増える。最高到達ウェーブ+1まで>>
-                - changeStartWave(delta: int): void
-                - refreshWaveButtons(): void
+                - skipTargetWave(): int <<スキル「助走」(ENDLESS_SKIP)と最高到達ウェーブから EndlessWaves.skipTarget で決める>>
             }
 
             class InfinityStageSceneUI {
@@ -1549,6 +1545,7 @@ package "shooting_game" {
         class DamageCalculator <<Utility>> {
             + {static} BASE_CRIT_RATE: double = 0.05
             + {static} BASE_CRIT_MULT: double = 1.5
+            + {static} MAX_HIT_DAMAGE: double = 99999 <<1回の攻撃のダメージ上限>>
             --
             + {static} bulletAttackRate(): double
             + {static} beamAttackRate(): double
@@ -1733,7 +1730,9 @@ package "shooting_game" {
                 - {static} component: String
                 - stageId: int
                 - waveId: int  <<@Getter>>
-                - startWave: int = 1 <<@Getter @Setter。無限モードの開始ウェーブ。reset() が startWave-1 から数える>>
+                - startWave: int = 1 <<@Getter @Setter。無限モードで実際に戦い始めるウェーブ>>
+                - skipTarget: int = 1 <<無限モードで戦い始めるウェーブ。それまでは高速で飛ばす>>
+                - skipAccum: double <<飛ばしの経過時間>>
                 - MAIN: ShootingGameMain
                 - SM: SceneManager
                 - SHIP_M: ShipManager
@@ -1743,7 +1742,9 @@ package "shooting_game" {
                 + Stage()
                 + reset(): void
                 + update(dt: double): void
-                + draw(g: Graphics): void
+                + draw(g: Graphics): void <<飛ばし中は WAVE SKIP を表示>>
+                + isSkipping(): boolean <<無限モードで道中を飛ばしている最中か>>
+                - creditSkippedWave(wave: int): void <<飛ばしたウェーブの敵を倒した扱いにしてスコアだけ加える>>
                 - createShip(enemy: EnemyConfig): Ship <<NIGHTMARE の Enemy には EnemyAffix.roll で効果を付ける>>
                 - createBaseShip(enemy: EnemyConfig): Ship
                 - toScreen(pos: Vector2): Vector2
@@ -1767,8 +1768,11 @@ package "shooting_game" {
                 - rewardRate: double
                 - moduleChanceRate: double
                 - rarityBump: int
+                - bossHpRate: double <<ボスチャレンジだけ HP倍率にさらにかける>>
+                - bossDamageRate: double <<ボスチャレンジだけ 被ダメージ倍率にさらにかける>>
                 --
                 + describe(): String
+                + describeBoss(): String <<ボスチャレンジ用の説明。ボス用の倍率が重なる>>
             }
 
             class DifficultyService <<Utility>> {
@@ -1818,10 +1822,12 @@ package "shooting_game" {
                 - {static} difficulty: Difficulty
                 - {static} endlessHp: double
                 - {static} endlessDamage: double
+                - {static} bossStage: boolean <<ボスチャレンジか。難易度のボス用倍率をかける>>
                 - {static} stageHp: double <<ステージ番号に応じた敵HPの倍率(GameBalance)>>
                 + {static} load(spec: Spec): void
                 + {static} load(spec: Spec, diff: Difficulty): void
                 + {static} load(spec: Spec, diff: Difficulty, stageIndex: int): void <<GameManager がステージ番号を渡す>>
+                + {static} load(spec: Spec, diff: Difficulty, stageIndex: int, boss: boolean): void <<ボスチャレンジなら bossStage を立てる>>
                 + {static} setEndlessScale(wave: int): void
                 + {static} enemyHpRate(): double
                 + {static} enemyDamageRate(): double
@@ -1846,6 +1852,7 @@ package "shooting_game" {
                 + {static} BEST_WAVE_KEY: String
                 - {static} BLOCK_RATE: double = 0.25 <<ブロック付きウェーブでブロックを出す確率>>
                 + {static} generate(wave: int): Wave
+                + {static} skipTarget(skillBonus: double, bestWave: int): int <<自動スキップで飛ぶ先。最高到達ウェーブ+1まで>>
                 - {static} pickBoss(wave: int): EnemyConfig
                 - {static} boss(bossId: String): EnemyConfig
                 + {static} materialRewards(cleared: int): Map<ResourceKinds, Integer> <<モジュール基板・ランクコアなど>>
@@ -2329,7 +2336,7 @@ package "shooting_game" {
                     + update(dt: double): void
                     + draw(g: Graphics): void
                     + move(dt: double): void
-                    + addDamage(damage: double): void <<戦闘中のみ。受けたダメージを coinCarry にためる>>
+                    + addDamage(damage: double): void <<戦闘中のみ。受けたダメージを coinCarry にためる。1回で削れるのは今のゲージの残りまで>>
                     - payCoins(): void <<たまったダメージを coinStep ごとのコインにして落とす(1フレーム4つまで)>>
                     + getRamDamage(): double
                     + isTransitioning(): boolean <<形態変化中か。この間、自機の暴走のカウントは止まる>>
