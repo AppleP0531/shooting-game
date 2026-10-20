@@ -52,7 +52,8 @@ public class Player extends Ship implements KeyListener {
     private String lastHorizontal = ""; // 最後に押された左右
     private String lastVertical = ""; // 最後に押された上下
     private List<SubShip> subShip = new ArrayList<>();
-    private static final double HITBOX_RADIUS = 2; // 弾の当たり判定の半径(白いドット)
+    private static final double HITBOX_RADIUS = 4; // 弾の当たり判定の半径(白いドット)の初期値
+    private static final double HITBOX_RADIUS_MIN = 2; // 「小型化」を最大まで強化したときの半径
     private static final double GLOW_RADIUS = 12; // ドットの後ろの、モードの色のぼかしの半径
     private double pickupSize; // アイテムを拾う範囲の半径(機体ごとの元の判定の大きさ)
     private double OOCTime = 10; // 暴走状態持続時間
@@ -152,9 +153,11 @@ public class Player extends Ship implements KeyListener {
             maxShield = 0;
         shieldPoints = maxShield;
         speed *= 1 + SkillService.getBonus("MOVE_SPEED");
-        // 弾の当たり判定は、中心の白いドットだけ(半径2px)。アイテムを拾う範囲は、これまでの判定の大きさのまま
+        // 弾の当たり判定は、中心の白いドットだけ(半径4px、強化で2px)。アイテムを拾う範囲は、これまでの判定の大きさのまま
         pickupSize = collisionSize;
-        collisionSize = HITBOX_RADIUS * ShootingGameMain.getScreenSizeAdj() * (1 - Math.min(0.15, SkillService.getBonus("HITBOX")));
+        // 「小型化」(最大-15%)を最大まで強化すると、半径が初期値(4px)から最小(2px)まで小さくなる
+        double shrink = Math.min(1.0, SkillService.getBonus("HITBOX") / 0.15);
+        collisionSize = (HITBOX_RADIUS - (HITBOX_RADIUS - HITBOX_RADIUS_MIN) * shrink) * ShootingGameMain.getScreenSizeAdj();
         OOCTime = 10 + SkillService.getBonus("OOC_TIME");
 
         mouseHandler = new MouseAdapter() {
@@ -345,7 +348,7 @@ public class Player extends Ship implements KeyListener {
         g2.fill(new java.awt.geom.Ellipse2D.Double(pos.getX() - glow, pos.getY() - glow, glow * 2, glow * 2));
         g2.setPaint(oldPaint);
 
-        double r = Math.max(2, HITBOX_RADIUS * adj);
+        double r = Math.max(2, collisionSize); // 見た目も、実際の判定の大きさに合わせる
         g2.setColor(Color.WHITE);
         g2.fill(new java.awt.geom.Ellipse2D.Double(pos.getX() - r, pos.getY() - r, r * 2, r * 2));
     }
