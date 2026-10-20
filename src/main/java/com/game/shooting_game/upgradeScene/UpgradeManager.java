@@ -21,6 +21,8 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import com.game.shooting_game.domain.unlock.UnlockService;
+import com.game.shooting_game.domain.unlock.UnlockService.Feature;
 import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
@@ -67,6 +69,7 @@ public final class UpgradeManager extends JPanel implements Manager {
         private double perLevel; // 1レベルあたりの効果量
         private int maxLevel = 1; // 最大レベル
         private String unit = ""; // 表示単位("%"は100倍して表示)
+        private boolean reduce = false; // 効果が「減る」ものか(表示を「-」にする。値そのものは正の数のまま)
         private int reqLevel = 1; // 解放に必要な親ノードのレベル
         private int coin; // 初回強化に必要なコイン
         private double coinGrowth = 1.0; // レベルごとのコイン倍率
@@ -145,6 +148,7 @@ public final class UpgradeManager extends JPanel implements Manager {
                 (int) subShipBtn.getWidth(), (int) subShipBtn.getHeight());
         subShipBtn.addActionListener(e -> subShipPanel.showPanel());
         this.add(subShipBtn);
+        UnlockService.guard(subShipBtn, Feature.SUBSHIP);
 
         // 素材変換ボタン(5個 → 1つ上のレア度)。下のボタン2つの上に並べる
         Vector2 convertBtnSize = new Vector2(
@@ -178,6 +182,7 @@ public final class UpgradeManager extends JPanel implements Manager {
                 (int) moduleBtn.getWidth(), (int) moduleBtn.getHeight());
         moduleBtn.addActionListener(e -> modulePanel.showPanel());
         this.add(moduleBtn);
+        UnlockService.guard(moduleBtn, Feature.MODULE);
 
         this.add(subShipPanel);
         this.add(convertPanel);
@@ -273,6 +278,7 @@ public final class UpgradeManager extends JPanel implements Manager {
 
     @Override
     public void setup() {
+        UnlockService.refreshAll();
         skillTreeBtnPanel.setup();
         skillTreeBtnPanel.addHandler();
     }
