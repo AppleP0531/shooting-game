@@ -607,6 +607,21 @@ package "shooting_game" {
         }
 
         package "extra" {
+            class ExtraDetailView <<詳細の中身。文字の羅列をやめ、アイコンと札で見せる>> {
+                - viewWidth: int
+                - description: String
+                - conditions: List<Condition> <<回復・シールド不可はアイテムの絵に斜線>>
+                - bosses: List<BossInfo> <<絵とゲージの帯と、倍率後のHP>>
+                - rewards: List<Reward> <<素材・モジュールのアイコン(レア度の枠)>>
+                - highScore: int
+                --
+                + ExtraDetailView(viewWidth: int)
+                + iconSize(): int
+                + setData(description: String, conditions: List<Condition>, bosses: List<BossInfo>, rewards: List<Reward>, highScore: int): void
+                - layoutItems(): void
+                # paintComponent(g: Graphics): void
+            }
+
             class ExtraStageManager <<カテゴリごとに1つ生成>> {
                 - {static} component: String
                 - {static} EXTRA_BASE_ID: int
@@ -619,7 +634,7 @@ package "shooting_game" {
                 - stageBtns: List<JButton>
                 - goBackBtn: JButton
                 - detailPanel: JPanel
-                - detailText: JTextArea
+                - detailView: ExtraDetailView <<アイコン中心の詳細(スクロール内)>>
                 - startBtn: JButton
                 - difficultyPanel: DifficultyPanel <<BOSS分類のみ>>
                 - selectedId: int
@@ -3591,6 +3606,7 @@ shooting_game.gameScene.bullet.types.Redirect +-- RedirectPhase
 shooting_game.stageScene.DifficultyPanel --> shooting_game.gameScene.stage.Difficulty
 shooting_game.stageScene.DifficultyPanel ..> shooting_game.gameScene.stage.DifficultyService
 shooting_game.stageScene.extra.ExtraStageManager --> shooting_game.stageScene.DifficultyPanel
+shooting_game.stageScene.extra.ExtraStageManager --> shooting_game.stageScene.extra.ExtraDetailView
 shooting_game.stageScene.normal.subPanels.StageDetailPanel --> shooting_game.stageScene.DifficultyPanel
 shooting_game.gameScene.stage.Stage --> shooting_game.gameScene.stage.Difficulty
 shooting_game.gameScene.stage.StageModifiers ..> shooting_game.gameScene.stage.Difficulty
