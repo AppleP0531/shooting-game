@@ -117,4 +117,51 @@ public final class BossLibrary {
         fallback.getGauges().add(new GaugeDefinition());
         return fallback;
     }
+
+    /**
+     * そのステージで戦うゲージの範囲を決める
+     * <ul>
+     * <li>無限モード: 後ろの3ゲージ(最後の3形態)</li>
+     * <li>ノーマルステージ(1〜99): 10の倍数は5ゲージ、5の倍数は3ゲージ(先頭から)</li>
+     * <li>それ以外: ボスの定義のまま</li>
+     * </ul>
+     * 
+
+     * @param total   ボスのゲージ数
+     * @param stageId ステージID
+     * @return {開始のゲージ番号, ゲージ数}
+     */
+    public static int[] gaugeWindow(int total, int stageId) {
+        if (stageId == com.game.shooting_game.gameScene.stage.EndlessWaves.STAGE_ID) {
+            int n = Math.min(3, total);
+            return new int[] { total - n, n };
+        }
+        if (stageId >= 1 && stageId < 100) {
+            if (stageId % 10 == 0)
+                return new int[] { 0, Math.min(5, total) };
+            if (stageId % 5 == 0)
+                return new int[] { 0, Math.min(3, total) };
+        }
+        return new int[] { 0, total };
+    }
+
+    /**
+     * そのステージで戦うゲージだけに絞ったボス定義(元の定義は変えない)
+     */
+    public static BossDefinition forFight(String bossId, int stageId) {
+        BossDefinition src = get(bossId);
+        int[] w = gaugeWindow(src.getGauges().size(), stageId);
+        if (w[0] == 0 && w[1] == src.getGauges().size())
+            return src;
+        BossDefinition d = new BossDefinition();
+        d.setGaugeHp(src.getGaugeHp());
+        d.setEntrance(src.getEntrance());
+        d.setEntranceTime(src.getEntranceTime());
+        d.setTransitionTime(src.getTransitionTime());
+        d.setGauges(new ArrayList<>(src.getGauges().subList(w[0], w[0] + w[1])));
+        d.setRetreatAfterGauges(src.getRetreatAfterGauges() > 0 ? Math.min(src.getRetreatAfterGauges(), w[1]) : 0);
+        d.setRetreatTime(src.getRetreatTime());
+        d.setCoinStep(src.getCoinStep());
+        return d;
+    }
 }

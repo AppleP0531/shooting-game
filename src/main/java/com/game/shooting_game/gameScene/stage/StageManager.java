@@ -44,7 +44,7 @@ public final class StageManager implements Manager {
     @NoArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ModuleReward {
-        private String kind; // ATC / DEF / SHIELD / REPAIR / HP / HEAL(nullならランダム)
+        private String kind; // ATC / DEF / SHIELD / REPAIR / HP / HEAL / CRIT / CRITDMG(nullならランダム)
         private String rarity; // COMMON 〜 LEGENDARY
         private double chance = 1.0; // 手に入る確率(0〜1)
         private String once; // FIRST: そのステージの初クリアだけ / DAILY: 1日1回 / 省略: 毎回
