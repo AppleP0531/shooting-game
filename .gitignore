@@ -15,3 +15,6 @@ sampleImages/
 .VSCodeCounter/
 out/
 *.pem
+
+# 端末ごとの設定
+settings.properties

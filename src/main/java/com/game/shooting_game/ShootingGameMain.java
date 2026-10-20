@@ -36,6 +36,7 @@ import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.ui.Anchor;
 import com.game.shooting_game.ui.Anchor.H;
 import com.game.shooting_game.ui.Anchor.V;
+import com.game.shooting_game.utils.GameSettings;
 import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.ui.LoadProgress;
 import com.game.shooting_game.ui.ShooterButtonUI;
@@ -60,7 +61,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
     private static double screenSizeAdj = 1;
     @Getter
     @Setter
-    private int fps = 120; // FPS
+    private int fps = GameSettings.getFps(); // FPS(端末の設定。なければ既定値)
     private Thread gameThread;
     @Setter
     private boolean loaded = false; // 初期設定が完了したかどうか

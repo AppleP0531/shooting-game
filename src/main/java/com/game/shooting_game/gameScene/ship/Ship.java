@@ -19,6 +19,7 @@ import lombok.Setter;
 import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.gameScene.damage.DamagePopupManager;
 import com.game.shooting_game.gameScene.GameManager;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.bullet.BulletFactory;
@@ -477,8 +478,10 @@ public abstract class Ship implements Moveable, GameObject, Entity {
      */
     public void addDamage(double damage) {
         // シールドを持っていなければダメージを受ける
-        if (shieldTimer <= 0)
+        if (shieldTimer <= 0) {
             hp -= damage;
+            DamagePopupManager.getInstance().add(this, damage);
+        }
     }
 
     /**
