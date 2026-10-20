@@ -23,6 +23,8 @@ package "shooting_game" {
         + {static} setup(args: String[]): void
         - start(): void
         + run(): void
+        - {static} waitUntil(targetNanos: long): void
+        - {static} keepTimerResolution(): void
         - update(dt: double): void
         + paintComponent(g: Graphics): void
         + getScreenSizeAdj(): double
@@ -76,7 +78,7 @@ package "shooting_game" {
             - mouseHandler: MouseAdapter
             - keyHandler: KeyAdapter
             - adminMode: boolean
-            - rootCommands:  Map<String, CommandNode>
+            ~ rootCommands: Map<String, CommandNode>
             - commandField: JTextField
             - logText: String
             - spacing: double
@@ -126,16 +128,15 @@ package "shooting_game" {
             - addSuggestion(display: String, completion: String, matchEnd: int): void
             - cycleSuggestion(dir: int): void
             - registCommandSuggestions(): void
-            - register(root: Map<String,CommandNode>, name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
-            - register(root: CommandNode, name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
-            - isSceneValid(allowedTypes: SceneType...): boolean
-            - parseNBT(arg: String): Map<String, String>
             - registCommands(): void
-            - showHelp(): void
-            - reload(): void
-            - unknownCommand(text: String): void
+            ~ showHelp(): void
+            ~ reload(): void
+            ~ unknownCommand(text: String): void
             - addHandler(): void
             - removeHandler(): void
+            + setAdminMode(enabled: boolean): void
+            ~ isAdminMode(): boolean
+            ~ logHistory(): ChatBoxContext
         }
 
         interface CommandAction <<functional>> {
@@ -176,6 +177,39 @@ package "shooting_game" {
             --
             + addElement(text: String): void
         }
+
+        abstract class CommandGroup {
+            # {static} component: String
+            # pane: CommandGlassPane
+            # rootCommands: Map<String, CommandNode>
+            # logText: String
+            --
+            ~ CommandGroup(pane: CommandGlassPane)
+            ~ {abstract} registerAll(): void
+            # log(): ChatBoxContext
+            # register(root: Map<String,CommandNode>, name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
+            # register(root: CommandNode, name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
+            # isSceneValid(allowedTypes: SceneType...): boolean
+            # parseNBT(arg: String): Map<String, String>
+        }
+
+        class SystemCommands <<Commands>> {
+            ~ registerAll(): void
+        }
+
+        class GameCommands <<Commands>> {
+            ~ registerAll(): void
+        }
+
+        class PlayerDataCommands <<Commands>> {
+            ~ registerAll(): void
+        }
+
+        CommandGroup <|-- SystemCommands
+        CommandGroup <|-- GameCommands
+        CommandGroup <|-- PlayerDataCommands
+        CommandGroup --> CommandGlassPane
+        CommandGlassPane ..> CommandGroup
     }
 
     class ResourceManager <<Singleton>> {
@@ -424,6 +458,29 @@ package "shooting_game" {
                     - drawBtn(): void
                 }
 
+                class StageInfoView {
+                    - viewWidth: int
+                    - highScore: int
+                    - rewards: List<Reward>
+                    - enemies: List<String>
+                    - cells: List<Cell>
+                    - enemyChips: List<Rectangle>
+                    --
+                    + StageInfoView(viewWidth: int)
+                    + setData(highScore: int, rewards: List<Reward>, enemies: List<String>): void
+                    - layoutItems(): void
+                    - drawReward(g2: Graphics2D, c: Cell, icon: int): void
+                    + getToolTipText(ev: MouseEvent): String
+                }
+
+                class Reward <<record>> {
+                    ~ kind: ResourceKinds
+                    ~ range: String
+                }
+
+                StageInfoView +-- Reward
+                StageDetailPanel --> StageInfoView
+
                 class StageDetailPanel {
                     - {static} component: String
                     - SM: SceneManager
@@ -433,7 +490,7 @@ package "shooting_game" {
                     - panelSize: Vector2
                     - spacing: int
                     - stageId: int
-                    - detailTextArea: JTextArea
+                    - infoView: StageInfoView
                     - startStageBtn: JButton
                     - skipStageBtn: JButton
                     --
@@ -667,6 +724,8 @@ package "shooting_game" {
             - reqLevel: int
             - coin: int
             - coinGrowth: double
+            - researchSec: int
+            - researchGrowth: double
             - matLevels: List<Map<String,Map<String,Integer>>>
         }
 
@@ -702,6 +761,10 @@ package "shooting_game" {
             }
 
             class ModulePanel {
+                - equipBtn: JButton
+                - levelUpBtn: JButton
+                - dismantleBtn: JButton
+                --
                 + initComponents(): void
                 - refresh(): void
                 + showPanel(): void
@@ -772,7 +835,137 @@ package "shooting_game" {
         }
     }
 
-    package "subship" {
+    package "domain" {
+        package "cost" {
+            class Cost <<record>> {
+                coins: int
+                items: Map<ResourceKinds,Integer>
+            }
+
+            class CostService <<Utility>> {
+                + {static} UNLIMITED: int
+                --
+                + {static} owned(kind: ResourceKinds): int
+                + {static} ownedReal(kind: ResourceKinds): int
+                + {static} coins(): int
+                + {static} canAfford(cost: Cost): boolean
+                + {static} pay(ud: UserData, cost: Cost): void
+            }
+            CostService ..> Cost
+        }
+
+        package "skill" {
+            class SkillService <<Utility>> {
+                - {static} config: List<SkillTreeData>
+                - {static} bonusCache: Map<String,Double>
+                --
+                + {static} getConfig(): List<SkillTreeData>
+                + {static} find(name: String): SkillTreeData
+                + {static} getLevel(name: String): int
+                + {static} isUnlocked(name: String): boolean
+                + {static} getBonus(effect: String): double
+                + {static} getCost(d: SkillTreeData, level: int): Cost
+                + {static} researchSeconds(d: SkillTreeData, level: int): long
+                + {static} isResearching(): boolean
+                + {static} isResearching(name: String): boolean
+                + {static} researchingSkill(): String
+                + {static} researchRemaining(): long
+                + {static} tickResearch(): boolean
+                + {static} formatTime(sec: long): String
+                + {static} purchase(name: String): boolean
+                + {static} describe(d: SkillTreeData): String
+                + {static} status(d: SkillTreeData): String
+            }
+        }
+
+        package "unit" {
+            class UnitService <<Utility>> {
+                + {static} MAX_LEVEL: int
+                + {static} MAX_STARS: int
+                --
+                + {static} getLevel(shipId: String): int
+                + {static} getStars(shipId: String): int
+                + {static} getCopies(shipId: String): int
+                + {static} attackRate(shipId: String): double
+                + {static} hpRate(shipId: String): double
+                + {static} baseHp(shipId: String): double
+                + {static} levelCost(level: int): Cost
+                + {static} levelUp(shipId: String): boolean
+                + {static} addCopy(shipId: String): void
+                + {static} buyCopy(shipId: String): boolean
+                + {static} copyPrice(shipId: String): int
+                + {static} starUp(shipId: String): boolean
+                + {static} starText(shipId: String): String
+            }
+        }
+
+        package "convert" {
+            class ConvertService <<Utility>> {
+                + {static} RATE: int
+                --
+                + {static} next(r: Rarity): Rarity
+                + {static} maxTimes(name: ResourceName, r: Rarity): int
+                + {static} convert(name: ResourceName, from: Rarity, times: int): int
+            }
+        }
+
+        package "subship" {
+            class SubShipService <<Utility>> {
+                + {static} BASE_DAMAGE_SCALE: double
+                + {static} WORLD_SCALE: double
+                - {static} config: Map<String,PartData>
+                --
+                + {static} getConfig(): Map<String,PartData>
+                + {static} getTier(kind: String): int
+                + {static} maxTier(kind: String): int
+                + {static} isAssembled(): boolean
+                + {static} isEquipped(): boolean
+                + {static} getHullChoice(): int
+                + {static} hullTier(): int
+                + {static} cycleHull(delta: int): void
+                + {static} hullLabel(): String
+                + {static} setEquipped(on: boolean): void
+                + {static} param(kind: String, key: String, def: double): double
+                + {static} tierParam(kind: String, tier: int, key: String, def: double): double
+                + {static} hullSize(tier: int): double
+                + {static} sideOffset(): double
+                + {static} damageScale(): double
+                + {static} rateScale(): double
+                + {static} getCost(kind: String): Cost
+                + {static} canAfford(cost: Cost): boolean
+                + {static} craft(kind: String): boolean
+                + {static} effectText(kind: String, t: TierData): String
+                + {static} describe(kind: String): String
+                + {static} status(kind: String): String
+                + {static} summary(): String
+            }
+
+            class SubShipRenderer <<Utility>> {
+                - {static} originals: Map<String,BufferedImage>
+                - {static} scaled: Map<String,BufferedImage>
+                --
+                + {static} draw(g2: Graphics2D, cx: double, cy: double, left: boolean, hull: int, cannon: int, engine: int, core: int, emitter: int, mode: ColorMode, time: double, alpha: float, scale: double): void
+                - {static} drawFlame(...): void
+                - {static} drawCannon(...): void
+                - {static} drawEmitter(...): void
+                - {static} drawCore(...): void
+            }
+
+            class PartData <<lombok @Data>> {
+                - title: String
+                - required: boolean
+                - detail: String
+                - tiers: List<TierData>
+            }
+
+            class TierData <<lombok @Data>> {
+                - label: String
+                - coin: int
+                - mats: Map<String,Map<String,Integer>>
+                - params: Map<String,Double>
+            }
+        }
+
         package "module" {
             enum ModuleStat {
                 ATK_PCT
@@ -800,6 +993,7 @@ package "shooting_game" {
                 - kind: ModuleKind
                 - rarity: Rarity
                 - mainValue: double
+                - level: int
                 - subs: List<Sub>
             }
             class ModuleInventory <<lombok @Data>> {
@@ -808,8 +1002,13 @@ package "shooting_game" {
                 - slots: List<Long>
             }
             class ModuleService <<Utility>> {
+                + {static} MAX_LEVEL: int
+                + {static} SUB_STEP: int
+                + {static} SUB_COUNT: int
+                --
                 + {static} owned(): List<Module>
                 + {static} slotted(): Module[]
+                + {static} mainNow(m: Module): double
                 + {static} stat(stat: ModuleStat): double
                 + {static} equip(id: long): boolean
                 + {static} unequip(id: long): void
@@ -818,6 +1017,9 @@ package "shooting_game" {
                 + {static} addNew(kind: ModuleKind, rarity: Rarity): Module
                 + {static} dismantleRefund(rarity: Rarity): int
                 + {static} roll(kind: ModuleKind, rarity: Rarity): Module
+                - {static} addRandomSub(m: Module): void
+                + {static} levelUpCost(m: Module): Cost
+                + {static} levelUp(id: long): boolean
                 + {static} dismantle(id: long): boolean
             }
             Module --> ModuleKind
@@ -826,25 +1028,14 @@ package "shooting_game" {
             ModuleService ..> ModuleInventory
         }
 
-        class UnitService <<Utility>> {
-            + {static} MAX_LEVEL: int
-            + {static} MAX_STARS: int
-            --
-            + {static} getLevel(shipId: String): int
-            + {static} getStars(shipId: String): int
-            + {static} getCopies(shipId: String): int
-            + {static} attackRate(shipId: String): double
-            + {static} hpRate(shipId: String): double
-            + {static} baseHp(shipId: String): double
-            + {static} levelCost(level: int): Cost
-            + {static} levelUp(shipId: String): boolean
-            + {static} addCopy(shipId: String): void
-            + {static} buyCopy(shipId: String): boolean
-            + {static} copyPrice(shipId: String): int
-            + {static} starUp(shipId: String): boolean
-            + {static} starText(shipId: String): String
-        }
+        SkillService ..> CostService
+        UnitService ..> CostService
+        ConvertService ..> CostService
+        SubShipService ..> CostService
+        ModuleService ..> CostService
+    }
 
+    package "gameScene" {
         class DamageCalculator <<Utility>> {
             + {static} bulletAttackRate(): double
             + {static} beamAttackRate(): double
@@ -859,95 +1050,6 @@ package "shooting_game" {
         DamageCalculator ..> SkillService
         DamageCalculator ..> ModuleService
 
-        class SubShipService <<Utility>> {
-            + {static} BASE_DAMAGE_SCALE: double
-            - {static} config: Map<String,PartData>
-            --
-            + {static} getConfig(): Map<String,PartData>
-            + {static} getTier(kind: String): int
-            + {static} maxTier(kind: String): int
-            + {static} isAssembled(): boolean
-            + {static} isEquipped(): boolean
-            + {static} getHullChoice(): int
-            + {static} hullTier(): int
-            + {static} cycleHull(delta: int): void
-            + {static} hullLabel(): String
-            + {static} setEquipped(on: boolean): void
-            + {static} param(kind: String, key: String, def: double): double
-            + {static} tierParam(kind: String, tier: int, key: String, def: double): double
-            + {static} hullSize(tier: int): double
-            + {static} sideOffset(): double
-            + {static} damageScale(): double
-            + {static} rateScale(): double
-            + {static} getCost(kind: String): Cost
-            + {static} canAfford(cost: Cost): boolean
-            + {static} craft(kind: String): boolean
-            + {static} effectText(kind: String, t: TierData): String
-            + {static} describe(kind: String): String
-            + {static} status(kind: String): String
-            + {static} summary(): String
-        }
-
-        class SubShipRenderer <<Utility>> {
-            - {static} originals: Map<String,BufferedImage>
-            - {static} scaled: Map<String,BufferedImage>
-            --
-            + {static} draw(g2: Graphics2D, cx: double, cy: double, left: boolean, hull: int, cannon: int, engine: int, core: int, emitter: int, mode: ColorMode, time: double, alpha: float, scale: double): void
-            - {static} drawFlame(...): void
-            - {static} drawCannon(...): void
-            - {static} drawEmitter(...): void
-            - {static} drawCore(...): void
-        }
-
-        class PartData <<lombok @Data>> {
-            - title: String
-            - required: boolean
-            - detail: String
-            - tiers: List<TierData>
-        }
-
-        class TierData <<lombok @Data>> {
-            - label: String
-            - coin: int
-            - mats: Map<String,Map<String,Integer>>
-            - params: Map<String,Double>
-        }
-    }
-
-    package "skill" {
-        class SkillService <<Utility>> {
-            - {static} config: List<SkillTreeData>
-            - {static} bonusCache: Map<String,Double>
-            --
-            + {static} getConfig(): List<SkillTreeData>
-            + {static} find(name: String): SkillTreeData
-            + {static} getLevel(name: String): int
-            + {static} isUnlocked(name: String): boolean
-            + {static} getBonus(effect: String): double
-            + {static} getCost(d: SkillTreeData, level: int): Cost
-            + {static} owned(kind: ResourceKinds): int
-            + {static} canAfford(cost: Cost): boolean
-            + {static} pay(ud: UserData, cost: Cost): void
-            + {static} purchase(name: String): boolean
-            + {static} describe(d: SkillTreeData): String
-            + {static} status(d: SkillTreeData): String
-        }
-
-        class Cost <<record>> {
-            coins: int
-            items: Map<ResourceKinds,Integer>
-        }
-
-        class ConvertService <<Utility>> {
-            + {static} RATE: int
-            --
-            + {static} next(r: Rarity): Rarity
-            + {static} maxTimes(name: ResourceName, r: Rarity): int
-            + {static} convert(name: ResourceName, from: Rarity, times: int): int
-        }
-    }
-
-    package "gameScene" {
         class GameManager <<Singleton>> {
             - {static} component: String
             - {static} instance: GameManager
@@ -1070,7 +1172,7 @@ package "shooting_game" {
                 + getStageId(): int
             }
 
-            class StageModifiers <<static>> {
+            class StageModifiers <<Utility>> {
                 - {static} current: Spec
                 - {static} endlessHp: double
                 - {static} endlessDamage: double
@@ -1085,7 +1187,7 @@ package "shooting_game" {
                 + {static} describe(spec: Spec): String
             }
 
-            class "StageModifiers.Spec" <<lombok @Data>> {
+            class StageModifiersSpec <<lombok @Data>> {
                 - enemyHpRate: double
                 - enemyDamageRate: double
                 - playerHpRate: double
@@ -1094,16 +1196,17 @@ package "shooting_game" {
                 - noShield: boolean
             }
 
-            class EndlessWaves <<static>> {
+            class EndlessWaves <<Utility>> {
                 + {static} STAGE_ID: int = 200
                 + {static} BEST_WAVE_KEY: String
                 + {static} generate(wave: int): Wave
-                - {static} coinBoss(): EnemyConfig
+                - {static} pickBoss(wave: int): EnemyConfig
+                - {static} boss(bossId: String): EnemyConfig
                 + {static} materialRewards(cleared: int): Map<ResourceKinds, Integer>
                 + {static} moduleRewards(cleared: int): List<Rarity>
             }
 
-            class DailyService <<static>> {
+            class DailyService <<Utility>> {
                 + {static} STAGE_ID: int = 141
                 + {static} refresh(): void  <<日付から条件とウェーブを決め putStage する>>
             }
@@ -1124,7 +1227,7 @@ package "shooting_game" {
                 - category: String  <<MODULE/BOSS/MATERIAL/SPECIAL>>
                 - unlock: int
                 - moduleRewards: List<ModuleReward>
-                - modifiers: StageModifiers.Spec
+                - modifiers: StageModifiersSpec
                 - gimmicks: Map<String, BeamSpec[]>
                 --
                 + getRandomResourceAmount(resKind: ResourceKinds): int
@@ -1300,6 +1403,8 @@ package "shooting_game" {
                 + getDropCoinAmount(): int
                 + setShieldTimer(time: double): void
                 + getShieldTimer(): double
+                + bodyRadius(): double
+                # sizeScale(): double
             }
 
             class ShipFactory{
@@ -1322,7 +1427,27 @@ package "shooting_game" {
                 + evaluate(from: Vector2, to: Vector2, t: double): Vector2
             }
 
-            class BossLibrary <<static>> {
+            class BossLook <<Utility>> {
+                    - accent: Color
+                    - hull: double[][]
+                    - parts: List<Part>
+                    --
+                    + {static} of(bossId: String): BossLook
+                    + accent(): Color
+                    + hull(): double[][]
+                    + parts(): List<Part>
+                }
+
+                class BossLookPart <<record>> {
+                    ~ minForm: int
+                    ~ front: boolean
+                    ~ pts: double[][]
+                    ~ ax: double
+                    ~ ay: double
+                }
+
+                BossLook --> BossLookPart
+                class BossLibrary <<Utility>> {
                 - {static} component: String
                 - {static} CONFIG_PATH: String
                 - {static} bossMap: Map<String, BossDefinition>
@@ -1368,7 +1493,7 @@ package "shooting_game" {
                     - {static} catmullRom(p0: Vector2, p1: Vector2, p2: Vector2, p3: Vector2, t: double): Vector2
                 }
 
-                class PathLibrary <<static>> {
+                class PathLibrary <<Utility>> {
                     - {static} component: String
                     - {static} CONFIG_PATH: String
                     - {static} pathMap: Map<String, PathData>
@@ -1406,11 +1531,14 @@ package "shooting_game" {
                     - OOCTime: double
                     - OOCTimer: double
                     - beamEmitters: List<BeamEmitter>
+                    - subBeamEmitter: BeamEmitter
+                    - subBeamTier: int
                     - damagedTimer: double
                     - breakawaySpeed: double
                     --
                     + Player(id: String, mode: ColorMode, pos: Vector2)
                     + update(dt: double): void
+                    - updateSubBeams(dt: double): void
                     + draw(g: Graphics): void
                     + move(dt: double): void
                     + drawHpBar(g: Graphics): void
@@ -1440,14 +1568,16 @@ package "shooting_game" {
                     - time: double
                     - clock: double
                     - history: LinkedList<double[]>
-                    - beamEmitter: BeamEmitter
-                    - beamTier: int
                     --
                     + SubShip(player: Player, id: String, mode: ColorMode, pos: Vector2)
                     + update(dt: double): void
                     - fireCannon(): void
                     - fireMissiles(): void
-                    - updateBeam(dt: double): void
+                    + canBeam(): boolean
+                    + {static} createBeamSpec(): BeamSpec
+                    + beamIntervalScale(): double
+                    + hasTargetAhead(): boolean
+                    + fireBeam(spec: BeamSpec): void
                     - shoot(kind: BulletKinds, bulletId: int, deg: double, dmgRate: double): void
                     + draw(g: Graphics): void
                     + move(dt: double): void
@@ -1486,6 +1616,7 @@ package "shooting_game" {
                     + SmallEnemy(id: String, mode: ColorMode, level: int, pathId: String, mirror: boolean, delay: double, speedScale: double)
                     + move(dt: double): void
                     # canFire(): boolean
+                # sizeScale(): double
                 }
 
                 class Boss {
@@ -1496,6 +1627,9 @@ package "shooting_game" {
                     - entranceDuration: double
                     - origin: Vector2
                     - anchor: Vector2
+                    - moveBase: Vector2
+                    - {static} BODY_IMAGES: Map<String,BufferedImage[]>
+                    - bodyClock: double
                     - gaugeCount: int
                     - gaugeHp: double
                     - beamEmitters: List<BeamEmitter>
@@ -1518,6 +1652,11 @@ package "shooting_game" {
                     - startTransition(clearedGauge: int): void
                     - startRetreat(): void  <<Phase.RETREAT。撤収。弾とビームを消す>>
                     + drawHpBar(g: Graphics): void
+                    - {static} bodyFrames(bossId: String, form: int): BufferedImage[]
+                    - drawBodyImage(g2: Graphics2D): boolean
+                    - paintBodyImage(g2: Graphics2D, img: BufferedImage, k: double, alpha: float): void
+                    - drawPlaceholder(g2: Graphics2D): void
+                    ~ {static} drawBody(g2: Graphics2D, cx: double, cy: double, s: double, look: BossLook, form: int, grow: double, t: double, alpha: float): void
                 }
 
                 enum Phase {
@@ -1622,6 +1761,8 @@ package "shooting_game" {
                 + draw(g: Graphics): void
                 + inScreen(): boolean
                 + isLife(): boolean
+                + isPiercing(): boolean
+                + getKind(): BulletKinds
                 + destroySelf(): void
                 + registerHit(target: Object): boolean
                 + consumeHit(): boolean
@@ -1810,7 +1951,6 @@ package "shooting_game" {
                 - size: double
                 - color: String
                 - dirs: String[]
-                - pattern: String
                 - delay: double
                 - interval: double
                 - count: int
@@ -1824,12 +1964,22 @@ package "shooting_game" {
                 - spec: BlockSpec
                 - emitter: BeamEmitter
                 - pos: Vector2
+                - mode: ColorMode
                 --
                 + BeamBlock(spec: BlockSpec)
-                + update(dt: double, playerMode: ColorMode, shooter: BeamManager): void
+                + update(dt: double, shooter: BeamManager): void
+                + pushOut(pos: Vector2, radius: double, bounds: Rectangle2D): Push
+                + beginCrush(): boolean
+                + endCrush(): void
+                + hits(p: Vector2, radius: double): boolean
                 + onScreen(): boolean
                 + isGone(): boolean
                 + draw(g2: Graphics2D): void
+            }
+            enum Push {
+                NONE
+                PUSHED
+                SQUEEZED
             }
             BeamManager o-- BeamBlock
             BeamBlock --> BlockSpec
@@ -1895,6 +2045,8 @@ package "shooting_game" {
                 + clearHostile(): void
                 + setGimmicks(specs: BeamSpec[]): void
                 + setBlocks(specs: BlockSpec[]): void
+                + pushOutOfBlocks(ship: Ship, radius: double, bounds: Rectangle2D): boolean
+                + blocksBullet(pos: Vector2, radius: double): boolean
                 + fireFromBlock(block: BeamBlock, spec: BeamSpec, mode: ColorMode, dir: double[]): void
                 + hasTargetAhead(origin: Vector2, halfWidth: double): boolean
                 + fireHostile(spec: BeamSpec, source: Ship, mode: ColorMode): void
@@ -2197,6 +2349,56 @@ package "shooting_game" {
             + isEnabled(): boolean
         }
 
+        class ANSI {
+            + {static} CYAN: String
+            + {static} GREEN: String
+            + {static} YELLOW: String
+            + {static} RED: String
+            + {static} BOLD: String
+            + {static} RESET: String
+        }
+
+        class Vector2 {
+            - x: double
+            - y: double
+            --
+            + Vector2(vec: Vector2)
+        }
+    }
+
+    package "ui" {
+        class ShooterButtonUI <<Utility>> {
+            + {static} createUI(c: JComponent): ComponentUI
+            + {static} install(): void
+            # installDefaults(b: AbstractButton): void
+            + paint(g: Graphics, c: JComponent): void
+            # paintText(g: Graphics, b: AbstractButton, textRect: Rectangle, text: String): void
+        }
+
+        class ModuleIcons <<Utility>> {
+            - {static} cache: Map<String,BufferedImage>
+            --
+            + {static} get(kind: ModuleKind, size: int): BufferedImage
+            + {static} draw(g: Graphics2D, m: Module, x: int, y: int, size: int): void
+            + {static} draw(g: Graphics2D, m: Module, x: int, y: int, size: int, equipped: boolean): void
+            + {static} icon(m: Module, size: int): ImageIcon
+            + {static} icon(m: Module, size: int, equipped: boolean): ImageIcon
+        }
+
+        class UIStyle <<Utility>> {
+            + {static} PANEL_BG: Color
+            + {static} TEXT: Color
+            + {static} HEADING: Color
+            + {static} LIST_BG: Color
+            + {static} LIST_SELECTED: Color
+            --
+            + {static} px(base: double): int
+            + {static} font(size: double, bold: boolean): Font
+            + {static} textArea(size: double, bold: boolean): JTextArea
+            + {static} button(text: String, fontSize: double): JButton
+            + {static} darkList(list: JList): void
+        }
+
         class ResourceIcons <<Utility>> {
             - {static} cache: Map<String,BufferedImage>
             --
@@ -2229,32 +2431,18 @@ package "shooting_game" {
             + {static} drawString(g: Graphics, anchor: Anchor, pos: Vector2, size: double, color: Color, style: int, text: String): void
             + {static} drawImage(g: Graphics, anchor: Anchor, pos: Vector2, image: BufferedImage): void
             + {static} openPanel(p: JPanel, title: String, focus: Boolean, closeAction: CloseBtnAction): void
+            + {static} openPanel(p: JPanel, title: String, focus: Boolean, closeAction: CloseBtnAction, closeOnOutsideClick: boolean): void
             + {static} closePanel(p: JPanel): void
             - {static} findComponentByName(panel: JPanel, name: String): Component
             - {static} mouseFocus(p: JPanel): void
             + {static} sortItemList(resources: Map<ResourceKinds, Integer>): LinkedHashMap<ResourceKinds, Integer>
             + {static} drawEquipmentsIcon(c: Component,g: Graphics, pos: Vector2, size: Vector2, resKind: ResourceKinds, amount: int): void
+            + {static} cachedResize(originImage: BufferedImage, imageSize: double): BufferedImage
             + {static} createPathWithSuffix(path: String, suffix: String): String
         }
 
         interface CloseBtnAction <<functional>>{
             ~ onClick(): void
-        }
-
-        class ANSI {
-            + {static} CYAN: String
-            + {static} GREEN: String
-            + {static} YELLOW: String
-            + {static} RED: String
-            + {static} BOLD: String
-            + {static} RESET: String
-        }
-
-        class Vector2 {
-            - x: double
-            - y: double
-            --
-            + Vector2(vec: Vector2)
         }
 
         class Anchor {
@@ -2307,14 +2495,13 @@ package "shooting_game" {
             - {static} instance: DataManager
             - {static} userRepository: UserRepository
             - {static} userData: UserData
+            - {static} adminMode: boolean
             - {static} expData: List<Integer>
             - {static} sessionStartTime: LocalDateTime
             --
             - DataManager()
             + {static} getInstance(): DataManager
             + setUserRepository(repo: UserRepository): void
-            + {static} convertToUserData(entity: UserEntity): UserData
-            + {static} syncUserDataToEntity(entity: UserEntity): void
             + {static} load(username: String, mode: String): void
             + {static} save(): void
             + {static} create(username: String): void
@@ -2327,6 +2514,8 @@ package "shooting_game" {
             - {static} printWelcomeMessage(): void
             + {static} saveSessionPlayTime(): void
             + {static} getUserData(): UserData
+            + {static} isAdminMode(): boolean
+            + {static} setAdminMode(enabled: boolean): void
             + setup(): void
             + update(dt: double): void
             + draw(g: Graphics): void
@@ -2342,6 +2531,7 @@ package "shooting_game" {
             - selectedShip: String
             - subShip: String
             - subShipParts: Map<String,Integer>
+            - modules: ModuleInventory
             - progress: Progress
             - resources: Resources
             - ships: Map<String, ShipStats>
@@ -2369,12 +2559,23 @@ package "shooting_game" {
             - level: int
             - stars: int
             - copies: int
+            - researchSkill: String
+            - researchFinishAt: long
+        }
+
+        class UserDataMapper <<Utility>> {
+            + {static} toUserData(entity: UserEntity): UserData
+            + {static} copyToEntity(userData: UserData, entity: UserEntity): void
         }
 
         class UserLevelResult <<record>> {
             ~ level: int
             ~ exp: int
         }
+
+        DataManager ..> UserData
+        DataManager ..> UserDataMapper
+        UserDataMapper ..> UserData
 
         class LoginPanel {
             - {static} component: String
@@ -2434,13 +2635,14 @@ package "shooting_game" {
 }
 
 ' 内部構造
+shooting_game.gameScene.beam.BeamBlock +-- Push
 shooting_game.utils.LogUtils +-- LogLevel
 shooting_game.SceneManager +-- SceneType
 shooting_game.command.CommandGlassPane +-- CommandAction
 shooting_game.command.CommandGlassPane +-- MoveOption
 shooting_game.utils.animation.Animation +-- AnimationLogic
-shooting_game.utils.Anchor +-- H
-shooting_game.utils.Anchor +-- V
+shooting_game.ui.Anchor +-- H
+shooting_game.ui.Anchor +-- V
 shooting_game.ResourceManager +-- ResourceKinds
 ResourceKinds +-- ResourceName
 ResourceKinds +-- Rarity
@@ -2450,7 +2652,6 @@ shooting_game.ResourceManager +-- ImageType
 shooting_game.ResourceManager +-- ResourceData
 shooting_game.ResourceManager +-- ResourceConfig
 ResourceConfig +-- ResourceData
-shooting_game.data.DataManager +-- UserData
 shooting_game.data.DataManager +-- UserLevelResult
 shooting_game.data.UserData +-- Progress
 shooting_game.data.UserData +-- Resources
@@ -2462,6 +2663,7 @@ shooting_game.lobbyScene.LobbySceneUI +-- LobbySceneUIData
 shooting_game.gameScene.GameManager +-- ColorMode
 shooting_game.gameScene.GameSceneUI +-- GameSceneUIData
 shooting_game.gameScene.stage.StageManager +-- StageData
+shooting_game.gameScene.stage.StageModifiers +-- StageModifiersSpec
 StageData +-- EnemyConfig
 shooting_game.gameScene.ship.ShipManager +-- ShipKinds
 shooting_game.gameScene.ship.ShipManager +-- ShipDefinition
@@ -2482,9 +2684,8 @@ shooting_game.gameScene.beam.Beam +-- Team
 shooting_game.gameScene.beam.Beam +-- State
 shooting_game.gameScene.item.ItemManager +-- ItemConfig
 shooting_game.gameScene.item.ResourceFactory +-- DropModel
-shooting_game.skill.SkillService +-- Cost
-shooting_game.subship.SubShipService +-- PartData
-shooting_game.subship.SubShipService +-- TierData
+shooting_game.domain.subship.SubShipService +-- PartData
+shooting_game.domain.subship.SubShipService +-- TierData
 
 ' extends関係
 shooting_game.repository.UserRepository --|> org.springframework.data.jpa.repository.JpaRepository
