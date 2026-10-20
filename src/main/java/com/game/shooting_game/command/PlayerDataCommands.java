@@ -9,13 +9,15 @@ import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.bagScene.BagManager;
 import com.game.shooting_game.data.DataManager;
+import com.game.shooting_game.data.UserData;
 import com.game.shooting_game.data.UserData.Resources;
+import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.lobbyScene.LobbyManager;
 import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.LogUtils;
 
 /**
- * プレイヤーデータ系のコマンド(/setship /unlockship /get /deleteuser /changepassword)
+ * プレイヤーデータ系のコマンド(/setship /unlockship /exp /give /deleteuser /changepassword)
  */
 final class PlayerDataCommands extends CommandGroup {
     PlayerDataCommands(CommandGlassPane pane) {
@@ -28,9 +30,7 @@ final class PlayerDataCommands extends CommandGroup {
         register(rootCommands, "/setship", "Set now ship.", true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 1) {
-                logText = node.getUseage();
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                usage(node);
                 return;
             }
 
@@ -43,9 +43,7 @@ final class PlayerDataCommands extends CommandGroup {
 
                 SHIP_M.reloadPlayer(id);
             } catch (NumberFormatException ne) {
-                logText = "Unknnown param: " + param;
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                error("Unknown param: " + param);
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
@@ -55,37 +53,73 @@ final class PlayerDataCommands extends CommandGroup {
         register(rootCommands, "/unlockship", "Unlock ship.", true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 1) {
-                logText = node.getUseage();
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                usage(node);
                 return;
             }
 
             String param = args[0].toLowerCase().replace("ship", "");
             try {
-                Integer id = GameUtils.tryParse(args[0].toLowerCase().replace("ship", ""));
+                Map<String, ?> playerShips = SHIP_M.getShipConfig().get(ShipKinds.PLAYER);
+
+                // all: 未所持の船をすべて解放する(予備機は増やさない)
+                if (args[0].equalsIgnoreCase("all")) {
+                    int unlocked = 0;
+                    for (String shipId : playerShips.keySet()) {
+                        if (DataManager.getUserData().getShips().containsKey(shipId))
+                            continue;
+                        DataManager.getUserData().unlockShip(shipId);
+                        unlocked++;
+                    }
+                    LobbyManager.getInstance().updateBtnStates();
+                    success("Unlocked " + unlocked + " ship(s).");
+                    return;
+                }
+
+                Integer id = GameUtils.tryParse(param);
 
                 String sid = "Ship" + id;
+                // 存在しない船は解放しない
+                if (!playerShips.containsKey(sid)) {
+                    error("Unknown ship: " + sid);
+                    return;
+                }
                 if (DataManager.getUserData().getShips().containsKey(sid))
                     com.game.shooting_game.domain.unit.UnitService.addCopy(sid); // 所持済みなら予備機が増える
                 DataManager.getUserData().unlockShip(sid);
                 LobbyManager.getInstance().updateBtnStates();
             } catch (NumberFormatException ne) {
-                logText = "Unknnown param: " + param;
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                error("Unknown param: " + param);
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
-        }).setSyntax("<shipId>");
+        }).setSyntax("<shipId|all>");
+
+        // 経験値の加算・設定 /exp
+        register(rootCommands, "/exp", "Add or set exp.", true, (node, args) -> {
+            // 引数が不適切な場合
+            if (args.length != 2 || !(args[0].equalsIgnoreCase("add") || args[0].equalsIgnoreCase("set"))) {
+                usage(node);
+                return;
+            }
+
+            try {
+                int amount = GameUtils.tryParse(args[1]);
+                UserData.Progress progress = DataManager.getUserData().getProgress();
+                // 累計の経験値は0未満にしない
+                int newExp = args[0].equalsIgnoreCase("add") ? progress.getExp() + amount : amount;
+                progress.setExp(Math.max(0, newExp));
+
+                success("Exp is now " + progress.getExp() + " (Lv " + DataManager.getUserLevel().level() + ").");
+            } catch (NumberFormatException ne) {
+                error("Unknown param: '" + args[1] + "'");
+            }
+        }).setSyntax("<add|set>", "<amount>");
 
         // 資源入手 /give
-        register(rootCommands, "/get", "get resource", true, (node, args) -> {
+        register(rootCommands, "/give", "Give resources.", true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 2) {
-                logText = node.getUseage();
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                usage(node);
                 return;
             }
 
@@ -107,9 +141,7 @@ final class PlayerDataCommands extends CommandGroup {
                             }
                             default -> {
                                 // NBTが不適切な場合
-                                logText = node.getUseage();
-                                log().addElement(logText);
-                                LogUtils.debugLog(logText);
+                                usage(node);
                                 return;
                             }
                         }
@@ -123,9 +155,7 @@ final class PlayerDataCommands extends CommandGroup {
                     int amountOwned = resData.getCoins();
                     resData.setCoins(amountOwned + amount);
 
-                    logText = "Added " + amount + " coins. Current coins: " + resData.getCoins() + ".";
-                    log().addElement(logText);
-                    LogUtils.systemLog("[INFO]", component, logText);
+                    success("Added " + amount + " coins. Current coins: " + resData.getCoins() + ".");
                     return;
                 } else {
                     int amountOwned = resData.getEquipments().getOrDefault(resKind, 0);
@@ -139,13 +169,9 @@ final class PlayerDataCommands extends CommandGroup {
                 BagManager.getInstance().setup();
 
             } catch (NumberFormatException ne) {
-                logText = "Unknown param: '" + args[1] + "'";
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                error("Unknown param: '" + args[1] + "'");
             } catch (IllegalArgumentException iae) {
-                logText = "Unknown resName: '" + args[0] + "'";
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                error("Unknown resName: '" + args[0] + "'");
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
@@ -155,17 +181,13 @@ final class PlayerDataCommands extends CommandGroup {
         register(rootCommands, "/deleteuser", "Reset data.", true, (node, args) -> {
             // オフラインモードの場合
             if (!ShootingGameMain.getOnlineMode()) {
-                logText = "This command is unavailable in offline mode.";
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                error("This command is unavailable in offline mode.");
                 return;
             }
 
             // 引数が不適切な場合
             if (args.length != 2) {
-                logText = node.getUseage();
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                usage(node);
                 return;
             }
 
@@ -174,31 +196,23 @@ final class PlayerDataCommands extends CommandGroup {
 
             // adminアカウントの削除防止
             if (username.equals("admin")) {
-                logText = "Can't delete admin account.";
-                log().addElement(logText);
-                LogUtils.systemLog("[WARN]", component, logText);
+                error("Can't delete admin account.");
                 return;
             }
 
             // forceオプションが渡された場合強制削除
             if (password.equals("force")) {
                 if (DataManager.forceDelete(username)) {
-                    logText = "Delete successful.";
-                    log().addElement(logText);
-                    LogUtils.systemLog("[INFO]", component, logText);
+                    success("Delete successful.");
                     return;
                 }
             }
 
             // 通常モードでデータ削除
             if (DataManager.delete(username, password)) {
-                logText = "Delete successfull.";
-                log().addElement(logText);
-                LogUtils.systemLog("[INFO]", component, logText);
+                success("Delete successful.");
             } else {
-                logText = "Deletion failed.";
-                log().addElement(logText);
-                LogUtils.systemLog("[WARN]", component, logText);
+                error("Deletion failed.");
             }
         }).setSyntax("<username>", "<password>");
 
@@ -206,17 +220,13 @@ final class PlayerDataCommands extends CommandGroup {
         register(rootCommands, "/changepassword", "Change user password", true, (node, args) -> {
             // オフラインモードの場合
             if (!ShootingGameMain.getOnlineMode()) {
-                logText = "This command is unavailable in offline mode.";
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                error("This command is unavailable in offline mode.");
                 return;
             }
 
             // 引数が不適切な場合
             if (args.length != 3) {
-                logText = node.getUseage();
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                usage(node);
                 return;
             }
 
@@ -227,22 +237,16 @@ final class PlayerDataCommands extends CommandGroup {
             // forceオプションが渡された場合パスワード強制変更
             if (oldPassword.equals("force")) {
                 if (DataManager.forceChangePassword(username, newPassword)) {
-                    logText = "Change password successful.";
-                    log().addElement(logText);
-                    LogUtils.systemLog("[INFO]", component, logText);
+                    success("Change password successful.");
                     return;
                 }
             }
 
             // 通常モードでパスワード変更
             if (DataManager.changePassword(username, oldPassword, newPassword)) {
-                logText = "Change password successful.";
-                log().addElement(logText);
-                LogUtils.systemLog("[INFO]", component, logText);
+                success("Change password successful.");
             } else {
-                logText = "Change password failed.";
-                log().addElement(logText);
-                LogUtils.systemLog("[INFO]", component, logText);
+                error("Change password failed.");
             }
         }).setSyntax("<username>", "<oldPassword>", "<newPassword>");
     }

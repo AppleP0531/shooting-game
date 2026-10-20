@@ -3,12 +3,11 @@ package com.game.shooting_game.command;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
-import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.LogUtils;
 
 /**
- * システム系のコマンド(/fps /admin /help /loadscene /reload)
+ * システム系のコマンド(/fps /admin /help /scene /reload)
  */
 final class SystemCommands extends CommandGroup {
     SystemCommands(CommandGlassPane pane) {
@@ -21,9 +20,7 @@ final class SystemCommands extends CommandGroup {
         register(rootCommands, "/fps", "Change fps.", false, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 1) {
-                logText = node.getUseage();
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                usage(node);
                 return;
             }
 
@@ -32,21 +29,15 @@ final class SystemCommands extends CommandGroup {
 
                 // fpsが0以下の場合はエラー
                 if (fps == 0) {
-                    logText = "FPS must be greater than 0.";
-                    log().addElement(logText);
-                    LogUtils.debugLog(logText);
+                    error("FPS must be greater than 0.");
                     return;
                 }
 
                 MAIN.setFps(fps);
 
-                logText = "Current fps set to " + fps + ".";
-                log().addElement(logText);
-                LogUtils.systemLog("[INFO]", component, logText);
+                success("Current fps set to " + fps + ".");
             } catch (NumberFormatException ne) {
-                logText = "Unknown param: '" + args[0] + "'";
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                error("Unknown param: '" + args[0] + "'");
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
@@ -57,56 +48,44 @@ final class SystemCommands extends CommandGroup {
             if (ShootingGameMain.getOnlineMode()) {
                 // 引数が不適切な場合
                 if (args.length != 1) {
-                    logText = node.getUseage();
-                    log().addElement(logText);
-                    LogUtils.debugLog(logText);
+                    usage(node);
                     return;
                 }
 
                 String password = args[0];
                 if (!DataManager.authenticate("admin", password)) {
-                    logText = "password is not true.";
-                    log().addElement(logText);
-                    LogUtils.systemLog("[INFO]", component, logText);
+                    info("password is not true.");
                     return;
                 }
             } else {
                 // 引数が不適切な場合
                 if (args.length != 0) {
-                    logText = node.getUseage();
-                    log().addElement(logText);
-                    LogUtils.debugLog(logText);
+                    usage(node);
                     return;
                 }
             }
 
             pane.setAdminMode(!pane.isAdminMode());
 
-            logText = "AdminMode " + (pane.isAdminMode() ? "enabled." : "disabled.");
-            log().addElement(logText);
-            LogUtils.systemLog("[INFO]", component, ANSI.YELLOW + logText + ANSI.RESET);
+            success("AdminMode " + (pane.isAdminMode() ? "enabled." : "disabled."));
         }).setSyntax(ShootingGameMain.getOnlineMode() ? "<password>" : "");
 
         // ヘルプ /help
         register(rootCommands, "/help", "Show available commands.", false, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 0) {
-                logText = node.getUseage();
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                usage(node);
                 return;
             }
 
             pane.showHelp();
         });
 
-        // シーン読み込み /loadscene <sceneName> /loadscene game <stageId>
-        CommandNode loadscene = register(rootCommands, "/loadscene", "Change scene.", false, (node, args) -> {
+        // シーン読み込み /scene <sceneName> /scene game <stageId>
+        CommandNode loadscene = register(rootCommands, "/scene", "Change scene.", false, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 1) {
-                logText = node.getUseage();
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                usage(node);
                 return;
             }
 
@@ -116,18 +95,14 @@ final class SystemCommands extends CommandGroup {
 
                 SM.changeScene(SceneType.valueOf(args[0].toUpperCase()));
             } catch (Exception e) {
-                logText = "Unknown scene: '" + args[0] + "'";
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                error("Unknown scene: '" + args[0] + "'");
             }
         });
         loadscene.setSyntax("<sceneName>");
         register(loadscene, "game", "Load game stage.", false, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 1) {
-                logText = node.getUseage();
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                usage(node);
                 return;
             }
 
@@ -139,9 +114,7 @@ final class SystemCommands extends CommandGroup {
                     // ロックされていた場合は遷移しない
                     int clearedStage = DataManager.getUserData().getProgress().getClearedStage() + 1;
                     if (id > clearedStage) {
-                        logText = "Can't play locked stage.";
-                        log().addElement(logText);
-                        LogUtils.debugLog(logText);
+                        error("Can't play locked stage.");
                         return;
                     }
                 }
@@ -149,9 +122,7 @@ final class SystemCommands extends CommandGroup {
                 STAGE_M.getStage().setStageId(id);
                 SM.changeScene(SceneType.GAME);
             } catch (NumberFormatException ne) {
-                logText = "Unknnown param: " + param;
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                error("Unknown param: " + param);
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
@@ -159,9 +130,7 @@ final class SystemCommands extends CommandGroup {
         register(loadscene, "test", "Load test stage.", true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 0) {
-                logText = node.getUseage();
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                usage(node);
                 return;
             }
 
@@ -172,9 +141,7 @@ final class SystemCommands extends CommandGroup {
         register(rootCommands, "/reload", "Reload resource", false, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 0) {
-                logText = node.getUseage();
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                usage(node);
                 return;
             }
 
