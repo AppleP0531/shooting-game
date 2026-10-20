@@ -9,6 +9,9 @@ import lombok.Data;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
@@ -46,6 +49,7 @@ public class UserEntity {
     private String moduleData;
 
     // --- サブ機パーツ(パーツ名 → Mk) ---
+    @Fetch(FetchMode.SELECT)
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_sub_ship_parts", joinColumns = @JoinColumn(name = "user_id"))
     @MapKeyColumn(name = "part_kind")
@@ -57,6 +61,7 @@ public class UserEntity {
     private int clearedStage;
 
     // --- ステージごとのハイスコア ---
+    @Fetch(FetchMode.SELECT)
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_high_scores", joinColumns = @JoinColumn(name = "user_id"))
     @MapKeyColumn(name = "stage_key")
@@ -67,6 +72,7 @@ public class UserEntity {
     private int coins;
 
     // --- 所有資源 ---
+    @Fetch(FetchMode.SELECT)
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_equipments", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "amount")
