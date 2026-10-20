@@ -27,6 +27,7 @@ import com.game.shooting_game.ui.Anchor;
 import com.game.shooting_game.ui.Anchor.H;
 import com.game.shooting_game.ui.Anchor.V;
 import com.game.shooting_game.utils.LogUtils;
+import com.game.shooting_game.ui.StageLockIcon;
 import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
@@ -230,62 +231,60 @@ public class StageBtnPanel extends JPanel {
 
         buttonMap = new HashMap<>();
 
+        // 現在のクリア状況の取得
+        int clearedStage = DataManager.getUserData().getProgress().getClearedStage();
+
         for (Map.Entry<Integer, BufferedImage> entry : NSM.getStageBtnImageCache().entrySet()) {
             int stageId = entry.getKey();
-            BufferedImage image = entry.getValue();
+            // 解放されていないステージはロックする
+            boolean isLocked = stageId > (clearedStage + 1);
 
-            // ステージボタン
-            Vector2 stageBtnSize = new Vector2(
-                    50 * ShootingGameMain.getScreenSizeAdj(),
-                    50 * ShootingGameMain.getScreenSizeAdj());
-            JButton button = UIBuilder.createImageBtn(
-                    component, image, stageBtnSize, String.valueOf(stageId));
-            button.addActionListener(e -> {
-                STAGE_M.getStage().setStageId(stageId);
-                stageDetailPanel.showStageDaetail(stageId);
-            });
-            button.setRolloverEnabled(false);
-
+            JButton button = createStageButton(stageId, entry.getValue(), isLocked);
             this.add(button);
             button.setVisible(false); // 非表示
-
-            // 現在のクリア状況の取得
-            int clearedStage = DataManager.getUserData().getProgress().getClearedStage();
-            // 解放されているかどうか
-            boolean isLocked = stageId > (clearedStage + 1);
-            // 解放されていないステージの場合ロックする
-            if (isLocked) {
-                button.setEnabled(false);
-                // ロックアイコンが存在する場合
-                if (lockImage != null) {
-                    // ボタンアイコンが存在する場合はロックアイコンと合成する
-                    if (button.getIcon() != null) {
-                        BufferedImage combined = new BufferedImage(button.getWidth(), button.getHeight(),
-                                BufferedImage.TYPE_INT_ARGB);
-                        Graphics2D g2 = combined.createGraphics();
-                        UIBuilder.drawImage(g2, new Anchor(H.LEFT, V.TOP), new Vector2(0, 0), image);
-                        UIBuilder.drawImage(g2, Anchor.CENTER, new Vector2(button.getWidth(), button.getHeight()),
-                                lockImage);
-                        g2.dispose();
-                        button.setIcon(new ImageIcon(combined));
-                        button.setDisabledIcon(new ImageIcon(combined));
-
-                        button.setBorderPainted(false);
-                        button.setContentAreaFilled(false);
-                        button.setText("");
-                    } else {
-                        button.setText("");
-                        button.setIcon(new ImageIcon(lockImage));
-                        button.setDisabledIcon(new ImageIcon(lockImage));
-                    }
-                } else
-                    button.setText("Locked");
-            } else
-                button.setEnabled(true);
-
             buttonMap.put(stageId, button);
         }
 
         this.add(stageDetailPanel);
+    }
+
+    /**
+     * ステージボタンの作成(アイコンと、押したときの動き。ロック中は押せないボタンにする)
+     * 
+     * @param stageId ステージID
+     * @param image   ステージのアイコン画像(なければnull)
+     * @param locked  ロック中かどうか
+     */
+    private JButton createStageButton(int stageId, BufferedImage image, boolean locked) {
+        int w = (int) (50 * ShootingGameMain.getScreenSizeAdj());
+        int h = (int) (50 * ShootingGameMain.getScreenSizeAdj());
+
+        // アイコン(画像がなければコードで描いた番号つきの四角)。ロック中は鍵を重ねる
+        BufferedImage icon = image != null ? image : StageLockIcon.placeholder(w, h, String.valueOf(stageId));
+        if (locked)
+            icon = StageLockIcon.overlay(icon, lockIconImage(w), w, h);
+
+        JButton button = UIBuilder.createImageBtn(component, icon, new Vector2(w, h), String.valueOf(stageId));
+        button.setRolloverEnabled(false);
+        button.setEnabled(!locked);
+        if (locked) {
+            // 押せないボタンを、灰色に塗り替えず、同じアイコンのまま出す
+            button.setDisabledIcon(button.getIcon());
+        } else {
+            button.addActionListener(e -> {
+                STAGE_M.getStage().setStageId(stageId);
+                stageDetailPanel.showStageDaetail(stageId);
+            });
+        }
+        return button;
+    }
+
+    /**
+     * ロックの鍵の画像(鍵の画像ファイルがなければ、コードで描いた南京錠)
+     * 
+     * @param buttonSize ボタンの一辺(px)
+     */
+    private BufferedImage lockIconImage(int buttonSize) {
+        return lockImage != null ? lockImage : StageLockIcon.padlock((int) (buttonSize * 0.55));
     }
 }
