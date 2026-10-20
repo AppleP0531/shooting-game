@@ -1,5 +1,6 @@
 package com.game.shooting_game.gameScene.ship;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -23,10 +25,18 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.SceneManager;
+import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
+import com.game.shooting_game.domain.dex.DexService;
 import com.game.shooting_game.gameScene.GameManager;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
+import com.game.shooting_game.gameScene.beam.BeamManager;
+import com.game.shooting_game.gameScene.DamageCalculator;
+import com.game.shooting_game.gameScene.beam.BeamSpec;
+import com.game.shooting_game.gameScene.bullet.Bullet.Direction;
+import com.game.shooting_game.gameScene.bullet.BulletManager;
 import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
 import com.game.shooting_game.gameScene.item.Item;
 import com.game.shooting_game.gameScene.item.ItemFactory;
@@ -34,13 +44,14 @@ import com.game.shooting_game.gameScene.item.ItemManager;
 import com.game.shooting_game.gameScene.item.ItemManager.ItemKinds;
 import com.game.shooting_game.gameScene.item.ResourceFactory;
 import com.game.shooting_game.gameScene.item.ResourceFactory.DropModel;
+import com.game.shooting_game.gameScene.ship.path.PathLibrary;
 import com.game.shooting_game.gameScene.ship.types.Player;
 import com.game.shooting_game.interfaces.Manager;
-import com.game.shooting_game.model.StageRewards;
+import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 public final class ShipManager implements Manager {
@@ -73,6 +84,7 @@ public final class ShipManager implements Manager {
     public static class ShipDefinition {
         private ShipConfig datas;
         private Map<String, ShotConfig[]> levels = new HashMap<>();
+        private BeamSpec[] beams; // この機体が撃つビーム(敵: 到着後に撃つ / 自機: minLevel以上で撃つ)
 
         @JsonAnySetter
         public void addLevelData(String key, ShotConfig[] configs) {
@@ -96,7 +108,6 @@ public final class ShipManager implements Manager {
         private SheetConfig[] sheets;
         private double frameRate;
         private int imageSize;
-        private ColorMode mode;
         private double collisionSize;
         private double hp;
         private double speed;
@@ -127,6 +138,8 @@ public final class ShipManager implements Manager {
         private Vector2 pos;
         private String bulletVecRef;
         private int vecAdj;
+        private Direction direction;
+        private double cooldown; // この弾を撃った後の発射間隔(秒)。0なら弾設定のクールタイムを使う
     }
 
     private Map<ShipKinds, Map<String, ShipDefinition>> shipConfigMap; // 船データが格納された呼び出し用のマップ
@@ -185,14 +198,12 @@ public final class ShipManager implements Manager {
                     "Configuration loaded successfully");
         } catch (IOException e) {
             // ロードエラーログ
-            LogUtils.systemLog(
+            LogUtils.error(
                     "[FATAL]",
                     component,
-                    "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + "." + ANSI.RESET);
-            LogUtils.systemLog(
-                    "[FATAL]",
-                    component,
-                    ANSI.RED + "Application will terminate." + ANSI.RESET,
+                    "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + "." + ANSI.RESET + "\n"
+                            +
+                            ANSI.RED + "Application will terminate." + ANSI.RESET,
                     e);
         }
     }
@@ -294,6 +305,7 @@ public final class ShipManager implements Manager {
     @Override
     public void setup() {
         clear("all");
+        freezeTimer = 0;
 
         // プレイヤー生成
         player = new Player(
@@ -304,6 +316,8 @@ public final class ShipManager implements Manager {
 
     @Override
     public void update(double dt) {
+        freezeTimer = Math.max(0, freezeTimer - dt);
+
         // プレイヤーの更新
         if (player != null)
             player.update(dt);
@@ -311,12 +325,91 @@ public final class ShipManager implements Manager {
         // 敵の更新
         updateAndClean(enemyList, dt);
         updateAndClean(bossList, dt);
+
+        // ブロックは通り抜けられない(動いたあとにめり込んでいたら外へ押し出す。ボスは対象外)
+        // (クリア後に上へ飛び去る間は、画面の中へ押し戻さない)
+        if (player != null && !"breakAway".equals(player.getAnimationName()))
+            pushOutOfBlocks(player, true);
+        for (Ship e : enemyList)
+            pushOutOfBlocks(e, false);
+    }
+
+    private static final double FREEZE_BOSS_RATE = 0.5; // 凍結中のボスの進む速さ(動きと弾の間隔)
+    private double freezeTimer = 0; // 敵が凍っている残り時間(秒)
+
+    /**
+     * 敵を一定時間凍らせる(ボス以外は止まり、ボスは半分の速さになる)
+     * 
+     * @param seconds 凍る時間(秒。いま凍っているなら、長い方になる)
+     */
+    public void freezeEnemies(double seconds) {
+        freezeTimer = Math.max(freezeTimer, seconds);
+    }
+
+    /**
+     * 凍結中に、船の更新へ渡す経過時間(状態を読まない純粋な計算)
+     * 
+     * @param dt          実際の経過時間
+     * @param owner       船の種類
+     * @param freezeTimer 凍結の残り時間(0以下なら凍っていない)
+     * @return 更新に使う経過時間(敵は0、ボスは半分、それ以外はそのまま)
+     */
+    static double frozenStep(double dt, ShipKinds owner, double freezeTimer) {
+        if (freezeTimer <= 0)
+            return dt;
+        return switch (owner) {
+            case ENEMY -> 0;
+            case BOSS -> dt * FREEZE_BOSS_RATE;
+            default -> dt;
+        };
+    }
+
+    /**
+     * 凍っている敵に、氷の輪を重ねて描く(終わりが近いと点滅する)
+     */
+    private void drawFrozenRings(java.awt.Graphics2D g2) {
+        if (freezeTimer <= 0)
+            return;
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        float blink = freezeTimer < 1 ? (float) (0.5 + 0.5 * Math.sin(freezeTimer * 24)) : 1f;
+        g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+        for (Ship e : getAllEnemies()) {
+            double r = e.bodyRadius() + 5 * adj;
+            g2.setColor(new Color(150, 230, 255, (int) (50 * blink)));
+            g2.fill(new java.awt.geom.Ellipse2D.Double(e.getPos().getX() - r, e.getPos().getY() - r, r * 2, r * 2));
+            g2.setStroke(new java.awt.BasicStroke((float) (2 * adj)));
+            g2.setColor(new Color(190, 240, 255, (int) (210 * blink)));
+            g2.draw(new java.awt.geom.Ellipse2D.Double(e.getPos().getX() - r, e.getPos().getY() - r, r * 2, r * 2));
+        }
+    }
+
+    /**
+     * 船をブロックの外へ押し出す
+     * 
+     * @param ship       船
+     * @param keepScreen 画面の外へ出ないようにするか(自機)
+     */
+    private void pushOutOfBlocks(Ship ship, boolean keepScreen) {
+        double r = ship.bodyRadius();
+        // 自機は画面の外へは押し出せない。端に押し付けられたら押し潰されてダメージを受ける
+        java.awt.geom.Rectangle2D bounds = keepScreen
+                ? new java.awt.geom.Rectangle2D.Double(r, r, MAIN.getWidth() - 2 * r, MAIN.getHeight() - 2 * r)
+                : null;
+        boolean crushed = BeamManager.getInstance().pushOutOfBlocks(ship, r, bounds);
+        if (crushed && ship instanceof Player p)
+            p.addDamage(DamageCalculator.ramToPlayer(p));
+        if (keepScreen) {
+            Vector2 p2 = ship.getPos();
+            p2.setX(Math.max(r, Math.min(MAIN.getWidth() - r, p2.getX())));
+            p2.setY(Math.max(r, Math.min(MAIN.getHeight() - r, p2.getY())));
+        }
     }
 
     @Override
     public void draw(Graphics g) {
         player.draw(g);
         getAllEnemies().forEach(e -> e.draw(g));
+        drawFrozenRings((java.awt.Graphics2D) g);
     }
 
     /**
@@ -325,6 +418,8 @@ public final class ShipManager implements Manager {
     public void reload() {
         loadConfig();
         loadImages();
+        BossLibrary.reload();
+        PathLibrary.reload();
     }
 
     /**
@@ -334,12 +429,20 @@ public final class ShipManager implements Manager {
      * @param dt
      */
     private void updateAndClean(List<Ship> ships, double dt) {
-        ships.forEach(s -> s.update(dt));
-
-        // 死亡処理
         Iterator<Ship> iterator = ships.iterator();
         while (iterator.hasNext()) {
             Ship s = iterator.next();
+            double step = frozenStep(dt, s.getOwner(), freezeTimer);
+            if (step > 0)
+                s.update(step); // 更新(凍結中の敵は動かない)
+
+            // 除去要求(画面外へ離脱した敵など)はドロップ等なしで取り除く
+            if (s.isRemoveRequested()) {
+                iterator.remove();
+                continue;
+            }
+
+            // 死亡処理
             if (s.isDead()) {
                 // キル数カウントアップ
                 GM.setKillCountSinceLastLevelUp(GM.getKillCountSinceLastLevelUp() + 1);
@@ -351,6 +454,12 @@ public final class ShipManager implements Manager {
                 s.addScore(); // スコア加算
                 s.animation("death"); // 削除
                 iterator.remove(); // リストから削除
+
+                // ボス撃破時は残っている敵弾を消す
+                if (s.getOwner() == ShipKinds.BOSS) {
+                    BulletManager.getInstance().clearEnemyBullets();
+                    BeamManager.getInstance().clearHostile();
+                }
             }
         }
     }
@@ -364,7 +473,8 @@ public final class ShipManager implements Manager {
         Item newItem;
         // アイテムを生成
         // 連続20体強化アイテムを落とさなかった場合は強制ドロップ
-        if (GM.getKillCountSinceLastLevelUp() >= 20)
+        // (スキルで必要撃破数を最大5減らせる)
+        if (GM.getKillCountSinceLastLevelUp() >= 20 - (int) SkillService.getBonus("LEVELUP_DROP"))
             newItem = ItemFactory.createItem(new Vector2(ship.getPos()), ItemKinds.LEVEL_UP);
         else
             newItem = ItemFactory.createItem(new Vector2(ship.getPos()));
@@ -380,15 +490,61 @@ public final class ShipManager implements Manager {
      * @param ship 参照する船
      */
     private void dropResource(Ship ship) {
-        Item newItem = ResourceFactory.createResource(DropModel.ENEMY_DEFEAT, new Vector2(ship.getPos()));
+        dropResource(new Vector2(ship.getPos()));
+    }
 
-        if (newItem != null && newItem.getKind() instanceof ResourceKinds resKind) {
+    /**
+     * リソースドロップ(位置指定)
+     * 
+     * @param pos 生成位置
+     */
+    private void dropResource(Vector2 pos) {
+        dropResource(pos, DropModel.ENEMY_DEFEAT);
+    }
+
+    /**
+     * リソースドロップ(位置・抽選モデル指定)
+     * 
+     * @param pos   生成位置
+     * @param model 抽選モデル
+     */
+    private void dropResource(Vector2 pos, DropModel model) {
+        Item newItem = ResourceFactory.createResource(model, pos);
+
+        // 拾った時点でステージの獲得素材として記録される(Resource.effect)
+        if (newItem != null)
             IM.addItem(newItem);
+    }
 
-            StageRewards SR = StageRewards.getInstance();
+    /**
+     * ボスのゲージ破壊ボーナスドロップ
+     * アイテムとリソースの抽選を指定回数回し、コインも落とす
+     * 
+     * @param boss  ボス
+     * @param rolls 抽選回数
+     */
+    public void dropBossBonus(Ship boss, int rolls) {
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
 
-            int ownedAmount = SR.getResources().getOrDefault(resKind, 0);
-            SR.getResources().put(resKind, ownedAmount + 1);
+        rolls += (int) Math.floor(SkillService.getBonus("BOSS_ROLLS"));
+        for (int i = 0; i < rolls; i++) {
+            // 少しばらけた位置に落とす
+            Vector2 pos = new Vector2(
+                    boss.getPos().getX() + rnd.nextDouble(-50, 50) * adj,
+                    boss.getPos().getY() + rnd.nextDouble(-20, 40) * adj);
+
+            Item item = ItemFactory.createItem(new Vector2(pos));
+            if (item != null)
+                IM.addItem(item);
+
+            dropResource(new Vector2(pos), DropModel.BOSS_BONUS);
+        }
+
+        // コインドロップ
+        int coinAmount = boss.getDropCoinAmount();
+        for (int i = 0; i < coinAmount; i++) {
+            IM.addItem(ResourceFactory.createResource(new Vector2(boss.getPos()), ResourceKinds.COIN));
         }
     }
 
@@ -463,11 +619,18 @@ public final class ShipManager implements Manager {
      * @param ship 船
      */
     public void addShip(Ship ship) {
+        // 設定のない船は ShipFactory が null を返す(警告は ShipFactory が出している)
+        if (ship == null)
+            return;
+
         switch (ship.getOwner()) {
             case ENEMY -> enemyList.add(ship);
             case BOSS -> bossList.add(ship);
             default -> throw new IllegalArgumentException("不明な機体の種類です: " + ship.getOwner());
         }
+        // 図鑑に登録(テストシーンでは登録しない)
+        if (SceneManager.getInstance().getSceneName() == SceneType.GAME)
+            DexService.markSeen(ship.getShipId());
     }
 
     /**

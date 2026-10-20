@@ -10,10 +10,11 @@ src/main/resources/application.properties
 ### VS Code ###
 .vscode/
 
-### saveData ###
-mysql_data/
-
 ### Others ###
 sampleImages/
 .VSCodeCounter/
 out/
+*.pem
+
+# 端末ごとの設定
+settings.properties

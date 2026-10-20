@@ -16,6 +16,10 @@ public class Straight extends Bullet {
         super(owner, BulletKinds.STRAIGHT, id, mode, pos, vec);
     }
 
+    public Straight(ShipKinds owner, BulletKinds kind, int id, ColorMode mode, Vector2 pos, double vec) {
+        super(owner, kind, id, mode, pos, vec);
+    }
+
     @Override
     public void draw(Graphics g) {
         alpha = Math.min((float) lifeTimer * 4, 0.9f);

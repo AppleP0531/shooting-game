@@ -80,7 +80,9 @@ public final class AnimationManager implements Manager {
      * @return
      */
     public BufferedImage getCurrentImage(String id) {
-        return animationCache.get(id).getCurrentImage();
+        // 描画スレッドと更新スレッドが別なので、削除済みの場合はnullを返す
+        Animation animation = animationCache.get(id);
+        return animation == null ? null : animation.getCurrentImage();
     }
 
     /**

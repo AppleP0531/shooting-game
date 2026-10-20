@@ -1,6 +1,7 @@
 package com.game.shooting_game.gameResultScene.subPanels;
 
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -14,13 +15,20 @@ import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.gameResultScene.GameResultSceneUI;
 import com.game.shooting_game.model.StageRewards;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.domain.module.Module;
+import com.game.shooting_game.ui.ModuleIcons;
+import com.game.shooting_game.domain.module.ModuleService;
+import com.game.shooting_game.ui.CostPanel;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 import com.game.shooting_game.utils.animation.Animation;
 import com.game.shooting_game.utils.animation.AnimationManager;
 
 public class RewardListPanel extends JPanel {
+    private static final double MODULE_ICON = 56; // モジュールのアイコンの大きさ(画面倍率なし)
+    private static final double MODULE_CELL_H = 80; // モジュール1つ分の高さ(アイコン + 能力値)
     private final ShootingGameMain MAIN;
     private final AnimationManager AM;
     private final ResourceManager RM;
@@ -49,10 +57,28 @@ public class RewardListPanel extends JPanel {
                 MAIN.getHeight() / 2 - (int) panelSize.getY() / 2,
                 (int) panelSize.getX(), (int) panelSize.getY());
 
+        // スクロールは負の値(上にずらす)。ホイールとドラッグの両方で動かせる
         addMouseWheelListener(e -> {
-            scrollOffset = Math.clamp(scrollOffset - e.getPreciseWheelRotation() * 20, 0, maxScrollOffset);
+            scrollOffset = Math.clamp(scrollOffset - e.getPreciseWheelRotation() * 30, -maxScrollOffset, 0);
             repaint();
         });
+        java.awt.event.MouseAdapter drag = new java.awt.event.MouseAdapter() {
+            private int lastY;
+
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                lastY = e.getY();
+            }
+
+            @Override
+            public void mouseDragged(java.awt.event.MouseEvent e) {
+                scrollOffset = Math.clamp(scrollOffset + (e.getY() - lastY), -maxScrollOffset, 0);
+                lastY = e.getY();
+                repaint();
+            }
+        };
+        addMouseListener(drag);
+        addMouseMotionListener(drag);
     }
 
     /**
@@ -60,20 +86,36 @@ public class RewardListPanel extends JPanel {
      */
     public void setup() {
         StageRewards rewards = StageRewards.getInstance();
-        int rows = rewards.getResources().size() / col;
-        // スクロール制限
+
+        // 難易度・ミッションの行(GameResultSceneUIが描く)にかぶらないよう、パネルの上端を下げる(下端は変えない)
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        int bottom = MAIN.getHeight() / 2 + MAIN.getHeight() / 4;
+        int top = Math.max(MAIN.getHeight() / 4, (int) (GameResultSceneUI.textBottom() + 5 * adj));
+        panelSize = new Vector2(panelSize.getX(), Math.max(60 * adj, bottom - top));
+        setBounds(getX(), top, (int) panelSize.getX(), (int) panelSize.getY());
+
+        // 最後の行が端数でも数える(切り上げ)
+        int rows = (rewards.getResources().size() + col - 1) / col;
+        double moduleH = moduleBlockHeight();
+        // スクロール制限(全行の高さ - パネルの高さ。名前と個数の文字の分も足す)
         maxScrollOffset = Math.max(0,
-                20 * ShootingGameMain.getScreenSizeAdj() +
+                20 * ShootingGameMain.getScreenSizeAdj() + moduleH +
                         rows * (100 * ShootingGameMain.getScreenSizeAdj() + 10 * ShootingGameMain.getScreenSizeAdj())
+                        + 30 * ShootingGameMain.getScreenSizeAdj()
                         - panelSize.getY());
+        scrollOffset = 0;
 
         for (ResourceKinds resKind : rewards.getResources().keySet()) {
             BufferedImage[] imageFrames = null;
-            // 画像情報の取得
-            Map<ResourceName, Map<Rarity, BufferedImage[]>> viewCache = RM.getResourceImage();
-            if (viewCache != null) {
-                ResourceName resName = resKind.getResName();
-                Map<Rarity, BufferedImage[]> rarityMap = viewCache.get(resName);
+            boolean useView = false;
+            // 画像情報の取得(表示用画像があればそちらを優先)
+            ResourceName resName = resKind.getResName();
+            Map<Rarity, BufferedImage[]> viewMap = RM.getResourceView().get(resName);
+            if (viewMap != null && viewMap.get(resKind.getRarity()) != null) {
+                imageFrames = viewMap.get(resKind.getRarity());
+                useView = true;
+            } else {
+                Map<Rarity, BufferedImage[]> rarityMap = RM.getResourceImage().get(resName);
                 if (rarityMap != null)
                     imageFrames = rarityMap.get(resKind.getRarity());
             }
@@ -84,11 +126,22 @@ public class RewardListPanel extends JPanel {
                     .get(resKind.getRarity());
 
             if (resData != null) {
-                double frameRate = resData.getFrameRate();
+                double frameRate = useView && resData.getViewFrameRate() > 0
+                        ? resData.getViewFrameRate()
+                        : resData.getFrameRate();
                 double imageSize = 100 * ShootingGameMain.getScreenSizeAdj(); // 描画時に再調整入るためそれより大きめに設定
                 animationId.put(resKind, AM.addAnimation(new Animation(imageFrames, imageSize, frameRate)));
             }
         }
+    }
+
+    /**
+     * モジュールの表示に使う高さ
+     */
+    private double moduleBlockHeight() {
+        int n = StageRewards.getInstance().getModules().size();
+        int rows = (n + col - 1) / col;
+        return n == 0 ? 0 : (rows * MODULE_CELL_H + 8) * ShootingGameMain.getScreenSizeAdj();
     }
 
     /**
@@ -99,12 +152,31 @@ public class RewardListPanel extends JPanel {
     public void drawPanel(Graphics g) {
         g.setClip(getX(), getY(), getWidth(), getHeight());
 
+        StageRewards rewards = StageRewards.getInstance();
+        double adj = ShootingGameMain.getScreenSizeAdj();
+
+        // 手に入ったモジュール(素材の一覧の上に、アイコンで並べる。レア度の枠とレベルの札つき、下に能力値)
+        if (!rewards.getModules().isEmpty()) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, Math.max(10, (int) (11 * adj))));
+            java.awt.FontMetrics fm = g2.getFontMetrics();
+            int icon = (int) (MODULE_ICON * adj);
+            for (int i = 0; i < rewards.getModules().size(); i++) {
+                Module m = rewards.getModules().get(i);
+                int cx = getX() + (int) ((10 + 40 + 90 * (i % col)) * adj); // 素材の並びと同じ間隔
+                int top = getY() + (int) (10 * adj + scrollOffset + MODULE_CELL_H * adj * (i / col));
+                ModuleIcons.draw(g2, m, cx - icon / 2, top, icon);
+                String v = m.getKind().getMainStat().format(ModuleService.mainNow(m));
+                g2.setColor(CostPanel.rarityColor(m.getRarity()).brighter());
+                g2.drawString(v, cx - fm.stringWidth(v) / 2, top + icon + fm.getAscent() + (int) (2 * adj));
+            }
+            g2.dispose();
+        }
+
         // 基準点
         originPos = new Vector2(
-                10 * ShootingGameMain.getScreenSizeAdj(),
-                10 * ShootingGameMain.getScreenSizeAdj() + scrollOffset);
-
-        StageRewards rewards = StageRewards.getInstance();
+                10 * adj,
+                10 * adj + scrollOffset + moduleBlockHeight());
 
         int index = 0;
         LinkedHashMap<ResourceKinds, Integer> sortedRewards = UIBuilder.sortItemList(rewards.getResources());

@@ -1,7 +1,7 @@
 package com.game.shooting_game.stageScene.normal.subPanels;
 
-import java.awt.Color;
-import java.awt.Font;
+import static com.game.shooting_game.ui.UIStyle.px;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -10,22 +10,24 @@ import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 
+import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
-import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.gameScene.GameManager;
+import com.game.shooting_game.gameScene.stage.Difficulty;
+import com.game.shooting_game.gameScene.stage.DifficultyService;
 import com.game.shooting_game.gameScene.stage.StageManager;
 import com.game.shooting_game.gameScene.stage.StageManager.EnemyConfig;
 import com.game.shooting_game.gameScene.stage.StageManager.StageData;
+import com.game.shooting_game.stageScene.DifficultyPanel;
 import com.game.shooting_game.stageScene.normal.NormalStageManager;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 public class StageDetailPanel extends JPanel {
@@ -39,9 +41,11 @@ public class StageDetailPanel extends JPanel {
     private Vector2 panelSize; // ステージ詳細パネルの大きさ
     private int spacing; // 外周のスペース
 
-    private JTextArea detailTextArea;
+    private StageInfoView infoView;
     private JButton startStageBtn;
     private JButton skipStageBtn;
+    private DifficultyPanel difficultyPanel;
+    private int currentStageId;
 
     public StageDetailPanel() {
         SM = SceneManager.getInstance();
@@ -57,35 +61,41 @@ public class StageDetailPanel extends JPanel {
         setLayout(null);
         setVisible(false);
 
+        // 高さは、タイトルバー(25px)と上下の余白を含めて画面内に収まる範囲に抑える
+        int titleBar = (int) (25 * ShootingGameMain.getScreenSizeAdj());
+        int margin = (int) (5 * ShootingGameMain.getScreenSizeAdj());
+        double maxHeight = NSM.getStageBtnPanel().getHeight() - titleBar - 2 * margin;
         panelSize = new Vector2(350 * ShootingGameMain.getScreenSizeAdj(),
-                480 * ShootingGameMain.getScreenSizeAdj());
+                Math.min(580 * ShootingGameMain.getScreenSizeAdj(), maxHeight));
+        int panelY = Math.max(titleBar + margin,
+                NSM.getStageBtnPanel().getHeight() / 2 - (int) panelSize.getY() / 2);
         setBounds(
                 NSM.getStageBtnPanel().getWidth() / 2 - (int) panelSize.getX() / 2,
-                NSM.getStageBtnPanel().getHeight() / 2 - (int) panelSize.getY() / 2,
+                panelY,
                 (int) panelSize.getX(), (int) panelSize.getY());
         spacing = (int) (5 * ShootingGameMain.getScreenSizeAdj());
 
-        // スクロール可能な詳細テキストエリアの追加
-        detailTextArea = new JTextArea();
-        detailTextArea.setEditable(false);
-        detailTextArea.setLineWrap(true); // 自動改行
-        detailTextArea.setWrapStyleWord(true); // 単語単位で改行
-        detailTextArea.setOpaque(false);
-        detailTextArea.setForeground(Color.WHITE);
-        detailTextArea.setCaretColor(new Color(0, 0, 0, 0)); // カーソルの色を透明にする
-        // 文字サイズの指定
-        double fontSize = 14 * ShootingGameMain.getScreenSizeAdj();
-        detailTextArea.setFont(new Font("SansSerif", Font.PLAIN, (int) fontSize));
-        JScrollPane scrollPane = new JScrollPane(detailTextArea);
+        // スクロール可能な詳細(ハイスコア・報酬・出現する敵)
+        int innerWidth = (int) panelSize.getX() - 2 * spacing;
+        infoView = new StageInfoView(innerWidth - px(8));
+        JScrollPane scrollPane = new JScrollPane(infoView);
         scrollPane.setBorder(null); // 境界線を消す
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(px(16));
         scrollPane.setOpaque(false);
         scrollPane.getViewport().setOpaque(false);
         scrollPane.setBounds(
                 spacing, spacing,
-                (int) panelSize.getX() - 2 * spacing,
-                (int) (panelSize.getY() - 3 * spacing - 50 * ShootingGameMain.getScreenSizeAdj()));
+                innerWidth,
+                (int) (panelSize.getY() - 4 * spacing - 50 * ShootingGameMain.getScreenSizeAdj()
+                        - DifficultyPanel.height()));
         this.add(scrollPane);
+
+        // 難易度の選択(スクロールの下、ボタンの上)
+        difficultyPanel = new DifficultyPanel(innerWidth, this::onDifficultyChanged);
+        difficultyPanel.setLocation(spacing, scrollPane.getY() + scrollPane.getHeight() + spacing);
+        this.add(difficultyPanel);
 
         // スタートボタン(ゲーム画面に遷移)
         Vector2 startStageBtnSize = new Vector2(
@@ -114,7 +124,7 @@ public class StageDetailPanel extends JPanel {
                 (int) skipStageBtn.getWidth(), (int) skipStageBtn.getHeight());
         skipStageBtn.addActionListener(e -> {
             SM.changeScene(SceneType.GAME);
-            GM.result();
+            GM.skipResult();
             UIBuilder.closePanel(this);
         });
         this.add(skipStageBtn);
@@ -126,37 +136,34 @@ public class StageDetailPanel extends JPanel {
      * @param isCleared クリア済みステージかどうか
      */
     public void showStageDaetail(int stageId) {
-        drawBtn(stageId);
-
-        // 詳細情報の設定
-        String detailText = "";
-        // 報酬内容
-        detailText += "Rewards\n";
-        for (Map.Entry<ResourceName, Map<Rarity, String>> list : getRewardList(stageId).entrySet()) {
-            ResourceName resName = list.getKey();
-            Map<Rarity, String> rarityMap = list.getValue();
-
-            for (Map.Entry<Rarity, String> rarityEntry : rarityMap.entrySet()) {
-                Rarity rarity = rarityEntry.getKey();
-                String amount = rarityEntry.getValue();
-                detailText += resName + " " + rarity + ": " + amount + "\n";
-            }
-        }
-        detailText += "\n";
-        // 出現する敵
-        detailText += "Enemies\n";
-        for (String enemyId : getEnemyList(stageId)) {
-            detailText += enemyId + " , ";
-        }
-        detailText += "\n\n";
-        // 最高スコア
-        detailText += "High Score\n";
-        detailText += DataManager.getUserData().getProgress().getHighScores().getOrDefault("stage" + stageId, 0);
-
-        detailTextArea.setText(detailText);
-        detailTextArea.setCaretPosition(0); // テキストエリアのスクロール位置を先頭にする
+        currentStageId = stageId;
+        // 難易度を選ぶと、onDifficultyChangedで報酬・ハイスコア・ボタンが更新される
+        difficultyPanel.show(stageId);
 
         UIBuilder.openPanel(this, "Stage" + stageId, true, null);
+    }
+
+    /**
+     * 難易度が選ばれたときの更新(報酬は難易度の倍率を反映して見せる)
+     */
+    private void onDifficultyChanged(Difficulty diff) {
+        int stageId = currentStageId;
+        STAGE_M.getStage().setDifficulty(diff);
+        drawBtn(stageId, diff);
+
+        // 詳細情報の設定(報酬は素材名→レア度の順に並べる)
+        List<StageInfoView.Reward> rewards = new ArrayList<>();
+        for (Map.Entry<ResourceName, Map<Rarity, String>> list : getRewardList(stageId).entrySet()) {
+            for (Map.Entry<Rarity, String> rarityEntry : list.getValue().entrySet())
+                rewards.add(new StageInfoView.Reward(new ResourceKinds(list.getKey(), rarityEntry.getKey()),
+                        DifficultyService.scaleRange(rarityEntry.getValue(), diff.getRewardRate())));
+        }
+        infoView.setData(DifficultyService.highScore(stageId, diff), rewards, getEnemyList(stageId));
+        // ミッションは、星を集められるステージだけ見せる
+        if (DifficultyService.selectable(stageId))
+            infoView.setMissions(DifficultyService.missions(stageId, diff), DifficultyService.stars(stageId, diff));
+        else
+            infoView.setMissions(List.of(), 0);
     }
 
     /**
@@ -164,11 +171,9 @@ public class StageDetailPanel extends JPanel {
      * 
      * @param stageId ステージID
      */
-    private void drawBtn(int stageId) {
-        // 現在のクリア状況の取得
-        int clearedStage = DataManager.getUserData().getProgress().getClearedStage();
-        // 選択ステージがクリア済みかどうか
-        boolean isCleared = stageId <= clearedStage;
+    private void drawBtn(int stageId, Difficulty diff) {
+        // 選択ステージが、選んだ難易度でクリア済みかどうか
+        boolean isCleared = DifficultyService.cleared(stageId, diff);
         // ステージをクリアしている場合はSTARTとSKIPを並べる、そうでなければSTARTを中央下に置く
         if (isCleared) {
             // スタートボタン

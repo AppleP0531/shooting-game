@@ -4,6 +4,7 @@ import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.KeyAdapter;
@@ -11,44 +12,41 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import lombok.Setter;
-
 import com.game.shooting_game.ResourceManager;
-import com.game.shooting_game.ResourceManager.ResourceKinds;
-import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
-import com.game.shooting_game.bagScene.BagManager;
 import com.game.shooting_game.data.DataManager;
-import com.game.shooting_game.data.DataManager.UserData;
-import com.game.shooting_game.data.DataManager.UserData.Resources;
-import com.game.shooting_game.gameScene.GameManager;
 import com.game.shooting_game.gameScene.bullet.BulletManager;
 import com.game.shooting_game.gameScene.item.ItemManager;
 import com.game.shooting_game.gameScene.ship.ShipManager;
+import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.gameScene.stage.StageManager;
-import com.game.shooting_game.lobbyScene.LobbyManager;
 import com.game.shooting_game.stageScene.normal.NormalStageManager;
 import com.game.shooting_game.upgradeScene.UpgradeManager;
 import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.utils.Vector2;
 
@@ -60,7 +58,6 @@ public final class CommandGlassPane extends JPanel {
     private final ResourceManager RM;
     private final NormalStageManager NSM;
     private final UpgradeManager UM;
-    private final GameManager GM;
     private final ItemManager IM;
     private final ShipManager SHIP_M;
     private final BulletManager BM;
@@ -81,14 +78,44 @@ public final class CommandGlassPane extends JPanel {
         void execute(CommandNode node, String[] args);
     }
 
-    @Setter
     private boolean adminMode = false;
 
-    private Map<String, CommandNode> rootCommands = new HashMap<>();
+    /**
+     * 管理者モードの設定(コインと素材の無制限化はDataManager側のフラグで判定する)
+     */
+    boolean isAdminMode() {
+        return adminMode;
+    }
+
+    /**
+     * ログ欄に1行足す(コマンドクラスは CommandGroup の info / success / error / usage 経由で呼ぶ)
+     * 入力欄を閉じている間は、追加された行を一定時間だけ表示し直す
+     */
+    void addLog(LogLine.Kind kind, String text) {
+        LogLine line = new LogLine(text, kind);
+        runOnEdt(() -> {
+            logHistoryData.addElement(line);
+            if (!commandField.isVisible())
+                showRecentLog();
+        });
+    }
+
+    /** EDTで実行する(すでにEDTならそのまま) */
+    private static void runOnEdt(Runnable task) {
+        if (SwingUtilities.isEventDispatchThread())
+            task.run();
+        else
+            SwingUtilities.invokeLater(task);
+    }
+
+    public void setAdminMode(boolean enabled) {
+        adminMode = enabled;
+        DataManager.setAdminMode(enabled);
+    }
+
+    final Map<String, CommandNode> rootCommands = new HashMap<>(); // 各コマンドクラスが登録する先
 
     private final JTextField commandField; // コマンド入力テキストフィールド
-    private String logText;
-
     private double spacing;
 
     // 入力履歴
@@ -100,18 +127,24 @@ public final class CommandGlassPane extends JPanel {
     private String currentInput = ""; // 現在の入力内容
     private int inputHistoryIndex = -1; // 入力履歴参照用インデックス
     private int inputHistoryDiff = 0; // 入力履歴リストの表示差分(表示最大数以上の回数さかのぼった時用)
-    private ChatBoxContext inputHistoryData;
+    private ChatBoxContext<String> inputHistoryData;
 
     // ログ
-    private final List<String> COMMAND_LOG_HISTORY = new LinkedList<>(); // コマンドログ履歴リスト
-    private final DefaultListModel<String> LOG_HISTORY_MODEL; // コマンドログ表示用モデル
-    private final JList<String> LOG_HISTORY_LIST; // コマンドログ表示用リスト
+    private final List<LogLine> COMMAND_LOG_HISTORY = new LinkedList<>(); // コマンドログ履歴リスト
+    private final DefaultListModel<LogLine> LOG_HISTORY_MODEL; // コマンドログ表示用モデル
+    private final JList<LogLine> LOG_HISTORY_LIST; // コマンドログ表示用リスト
     private final int MAX_LOG_HISTORY = 30; // コマンドログの最大保持数
     private final int DEFAULT_LOG_HISTORY_DISPLAY = 10; // コマンドログのデフォルト表示数
     private final int MAX_LOG_HISTORY_DISPLAY = 20; // コマンドログの最大表示数
     private int logHistoryIndex = -1; // コマンドログ参照用インデックス
     private int logHistoryDiff = 0; // コマンドログリストの表示差分(表示最大数以上の回数さかのぼった時用)
-    private ChatBoxContext logHistoryData;
+    private ChatBoxContext<LogLine> logHistoryData;
+
+    // 入力欄を閉じている間のログ表示
+    private static final int CLOSED_LOG_MAX_LINES = 5; // 表示する最大行数
+    private static final long CLOSED_LOG_VISIBLE_MS = 6000; // 追加されてから消えるまでの時間
+    private static final long CLOSED_LOG_FADE_MS = 1000; // 消えるまでのうち、薄くなっていく時間
+    private final Timer recentLogTimer; // 表示更新用(表示する行がなくなったら止める)
 
     private float chatOpacity = 0.8f; // デフォルト透明度
 
@@ -123,9 +156,22 @@ public final class CommandGlassPane extends JPanel {
     private final int MAX_SUGGEST_DISPLAY = 20; // 予測変換の最大表示数
     private int suggestIndex = -1; // 予測変換参照用インデックス
     private int suggestDiff = 0; // 予測変換リストの表示差分(表示最大数以上の回数さかのぼった時用)
-    private ChatBoxContext suggestData;
+    private ChatBoxContext<String> suggestData;
 
     private boolean isAutoComplete = false;
+
+    /**
+     * 予測変換の1行分
+     * 
+     * @param display    表示する文字列
+     * @param completion Tabで選んだときに入力欄へ入れる文字列
+     * @param matchEnd   表示のうち入力済み(強調する)部分の終わり位置
+     */
+    private record Suggestion(String display, String completion, int matchEnd) {
+    }
+
+    private final List<Suggestion> suggestions = new ArrayList<>(); // 今表示している予測変換
+    private final Map<String, Supplier<List<String>>> argCandidates = new HashMap<>(); // 引数ごとの候補
 
     public CommandGlassPane(Runnable onEnter) {
         MAIN = ShootingGameMain.getInstance();
@@ -133,7 +179,6 @@ public final class CommandGlassPane extends JPanel {
         RM = ResourceManager.getInstance();
         NSM = NormalStageManager.getInstance();
         UM = UpgradeManager.getInstance();
-        GM = GameManager.getInstance();
         IM = ItemManager.getInstance();
         SHIP_M = ShipManager.getInstance();
         BM = BulletManager.getInstance();
@@ -156,6 +201,7 @@ public final class CommandGlassPane extends JPanel {
         commandField.setFont(new Font("Monospaced", Font.BOLD, (int) (16 * ShootingGameMain.getScreenSizeAdj()))); // 文字設定
         commandField.setBorder(BorderFactory.createLineBorder(Color.CYAN)); // 枠線
         commandField.setVisible(false);
+        commandField.setFocusTraversalKeysEnabled(false); // Tabキーを予測変換の選択に使う
 
         // テキストフィールドが更新された時に予測変換も更新する
         commandField.getDocument().addDocumentListener(new DocumentListener() {
@@ -201,6 +247,11 @@ public final class CommandGlassPane extends JPanel {
                     case KeyEvent.VK_DOWN -> {
                         moveHistory(inputHistoryData, MoveOption.ONE_LINE_DOWN);
                         showChatBoxList(inputHistoryData);
+                    }
+                    case KeyEvent.VK_TAB -> {
+                        // Tabで予測変換を順に選ぶ(Shift+Tabで逆順)
+                        e.consume();
+                        cycleSuggestion(e.isShiftDown() ? -1 : 1);
                     }
                     case KeyEvent.VK_ENTER -> executeCommand();
                     case KeyEvent.VK_ESCAPE -> {
@@ -272,7 +323,7 @@ public final class CommandGlassPane extends JPanel {
             }
         });
         add(INPUT_HISTORY_LIST);
-        inputHistoryData = new ChatBoxContext(
+        inputHistoryData = new ChatBoxContext<>(
                 COMMAND_INPUT_HISTORY,
                 INPUT_HISTORY_MODEL,
                 INPUT_HISTORY_LIST,
@@ -297,25 +348,18 @@ public final class CommandGlassPane extends JPanel {
         };
         LOG_HISTORY_LIST.setBackground(new Color(0, 0, 0, chatOpacity)); // 背景色
         LOG_HISTORY_LIST.setForeground(Color.LIGHT_GRAY); // 文字色
-        LOG_HISTORY_LIST.setFont(new Font("Monospaced", Font.PLAIN, (int) (10 * ShootingGameMain.getScreenSizeAdj()))); // 文字設定
+        LOG_HISTORY_LIST.setFont(new Font("Monospaced", Font.PLAIN, (int) (12 * ShootingGameMain.getScreenSizeAdj()))); // 文字設定
         LOG_HISTORY_LIST.setBorder(null);
         LOG_HISTORY_LIST.setVisible(false);
         LOG_HISTORY_LIST.setFocusable(false); // フォーカスを当てない
-        // 文字装飾なしで描画
-        LOG_HISTORY_LIST.setCellRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-                    boolean isSelected, boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                setBackground(list.getBackground());
-                setFont(list.getFont().deriveFont(Font.PLAIN));
-                setForeground(Color.LIGHT_GRAY);
-
-                return this;
-            }
-        });
+        // 種別ごとの色・記号で描画
+        LOG_HISTORY_LIST.setCellRenderer(new LogCellRenderer());
         add(LOG_HISTORY_LIST);
-        logHistoryData = new ChatBoxContext(
+
+        // 入力欄を閉じている間のログ表示の更新(薄くなる動きと消去)
+        recentLogTimer = new Timer(50, e -> showRecentLog());
+
+        logHistoryData = new ChatBoxContext<>(
                 COMMAND_LOG_HISTORY,
                 LOG_HISTORY_MODEL,
                 LOG_HISTORY_LIST,
@@ -341,47 +385,30 @@ public final class CommandGlassPane extends JPanel {
                 setBackground(list.getBackground());
 
                 if (value != null) {
-                    String fullText = value.toString();
-                    String inputText = commandField.getText();
-
-                    String[] args = inputText.split(" ");
-                    String[] tokens = fullText.split(" ");
-
-                    String matchText = "";
-                    String remainText = "";
-
-                    for (int i = 0; i < args.length - 1; i++) {
-                        matchText += tokens[i] + " ";
-                    }
-
-                    String comparingToken = tokens[args.length - 1];
-                    Boolean isSyntax = comparingToken.startsWith("<");
-                    if (isSyntax) {
-                        matchText += comparingToken + " ";
-                        for (int i = args.length; i < tokens.length; i++) {
-                            remainText += tokens[i] + " ";
-                        }
-                    } else {
-                        matchText += fullText.substring(matchText.length(), inputText.length());
-                        remainText = fullText.substring(inputText.length());
-                    }
+                    String text = value.toString();
+                    int matchEnd = (index >= 0 && index < suggestions.size()) ? suggestions.get(index).matchEnd() : 0;
+                    matchEnd = Math.max(0, Math.min(text.length(), matchEnd));
 
                     // エスケープ文字に変換
-                    matchText = matchText.replace("<", "&lt;").replace(">", "&gt;");
-                    remainText = remainText.replace("<", "&lt;").replace(">", "&gt;");
+                    String matchText = text.substring(0, matchEnd).replace("<", "&lt;").replace(">", "&gt;");
+                    String remainText = text.substring(matchEnd).replace("<", "&lt;").replace(">", "&gt;");
 
                     String htmlText = "<html><font face='Monospaced'>" +
                             "<b><font color='white'>" + matchText + "</font></b>" +
                             "<font color='#808080'>" + remainText + "</font>" +
                             "</font></html>";
                     setText(htmlText);
+
+                    // Tabで選んでいる行は背景を明るくする
+                    if (isSelected)
+                        setBackground(new Color(70, 70, 70));
                 }
 
                 return this;
             }
         });
         add(SUGGEST_LIST);
-        suggestData = new ChatBoxContext(
+        suggestData = new ChatBoxContext<>(
                 COMMAND_SUGGEST,
                 SUGGEST_MODEL,
                 SUGGEST_LIST,
@@ -390,6 +417,7 @@ public final class CommandGlassPane extends JPanel {
                 suggestIndex,
                 suggestDiff);
 
+        registArgCandidates();
         registCommands();
     }
 
@@ -400,7 +428,7 @@ public final class CommandGlassPane extends JPanel {
      * @param diff    移動量
      * @return 次の参照インデックス
      */
-    private void moveHistory(ChatBoxContext context, MoveOption diff) {
+    private void moveHistory(ChatBoxContext<?> context, MoveOption diff) {
         if (context.getElements().isEmpty())
             return;
 
@@ -454,7 +482,7 @@ public final class CommandGlassPane extends JPanel {
         // コマンド履歴をさかのぼっているときに限り、テキストボックスを上書き
         if (context == inputHistoryData)
             commandField.setText(context.getIndex() == -1 ? currentInput
-                    : context.getElements().get(context.getElements().size() - 1
+                    : (String) context.getElements().get(context.getElements().size() - 1
                             - (displayListSize - 1 - context.getIndex()) - context.getDiff()));
     }
 
@@ -464,8 +492,13 @@ public final class CommandGlassPane extends JPanel {
      * @param text デフォルト挿入文字
      */
     public void showCommandBar(String text) {
+        // ログイン前(ユーザーデータがない間)は、コマンドもチャットも使えない
+        if (DataManager.getUserData() == null)
+            return;
+
         addHandler();
 
+        recentLogTimer.stop(); // 閉じている間の簡易表示は終わり
         setVisible(true);
         commandField.setVisible(true);
         commandField.requestFocusInWindow();
@@ -482,22 +515,99 @@ public final class CommandGlassPane extends JPanel {
         commandField.setVisible(false);
 
         hideAllChatBox();
-        showChatBoxList(logHistoryData);
 
         LOG_HISTORY_LIST.setOpaque(false);
 
         logHistoryData.setIndex(-1);
         logHistoryData.setMaxDisplay(DEFAULT_LOG_HISTORY_DISPLAY);
         suggestData.setIndex(-1);
-        setVisible(false);
+
+        // 閉じたあとも、最近のログだけ一定時間表示する
+        showRecentLog();
+    }
+
+    /**
+     * グラスペインがマウスを受け取るのは入力欄を開いている間だけ
+     * (閉じている間のログ表示はゲームの操作を邪魔しない)
+     */
+    @Override
+    public boolean contains(int x, int y) {
+        return commandField.isVisible() && super.contains(x, y);
+    }
+
+    /**
+     * 入力欄を閉じている間のログ表示(最近の数行を、時間とともに薄くして消す)
+     * 表示する行がなければタイマーを止めてグラスペインを隠す
+     */
+    private void showRecentLog() {
+        if (commandField.isVisible()) {
+            recentLogTimer.stop();
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        List<LogLine> recent = new ArrayList<>();
+        List<LogLine> all = logHistoryData.getElements();
+        for (int i = all.size() - 1; i >= 0 && recent.size() < CLOSED_LOG_MAX_LINES; i--) {
+            LogLine line = all.get(i);
+            if (now - line.createdAt() >= CLOSED_LOG_VISIBLE_MS)
+                break; // 古い行より前はさらに古い
+            recent.addFirst(line);
+        }
+
+        if (recent.isEmpty()) {
+            recentLogTimer.stop();
+            LOG_HISTORY_LIST.setVisible(false);
+            LOG_HISTORY_MODEL.clear();
+            setVisible(false);
+            return;
+        }
+
+        // 行が変わったときだけモデルと配置を作り直す(薄くなる動きは再描画のみ)
+        boolean changed = recent.size() != LOG_HISTORY_MODEL.size();
+        for (int i = 0; !changed && i < recent.size(); i++) {
+            changed = !recent.get(i).equals(LOG_HISTORY_MODEL.get(i));
+        }
+        if (changed || !LOG_HISTORY_LIST.isVisible()) {
+            LOG_HISTORY_MODEL.clear();
+            LOG_HISTORY_MODEL.addAll(recent);
+            placeLogList();
+            LOG_HISTORY_LIST.setVisible(true);
+        }
+
+        setVisible(true);
+        LOG_HISTORY_LIST.repaint();
+        if (!recentLogTimer.isRunning())
+            recentLogTimer.start();
+    }
+
+    /**
+     * ログ1行あたりの高さ
+     */
+    private int logRowHeight() {
+        return (int) Math.round(18 * ShootingGameMain.getScreenSizeAdj());
+    }
+
+    /**
+     * ログリストを入力欄の真上に配置する(開閉どちらでも同じ位置)
+     */
+    private void placeLogList() {
+        int rowHeight = logRowHeight();
+        LOG_HISTORY_LIST.setFixedCellHeight(rowHeight);
+        int listHeight = LOG_HISTORY_MODEL.size() * rowHeight;
+        LOG_HISTORY_LIST.setBounds(
+                commandField.getX(),
+                commandField.getY() - listHeight - 1,
+                commandField.getWidth(),
+                listHeight);
     }
 
     /**
      * 履歴リストの表示
-     * 
+     *
      * @param context チャットボックス情報
      */
-    private void showChatBoxList(ChatBoxContext context) {
+    private <T> void showChatBoxList(ChatBoxContext<T> context) {
         int savedIndex = context.getIndex();
         hideAllChatBox();
 
@@ -512,23 +622,17 @@ public final class CommandGlassPane extends JPanel {
             context.getModel().addElement(context.getElements().get(i));
         }
 
-        // リスト全体の高さを計算
-        int rowHeight = 20; // 1行あたりの高さ
-        context.getList().setFixedCellHeight(rowHeight);
-
-        // 配置の計算と設定
+        // 配置の計算と設定(入力欄の真上)
         repaint();
-        int listHeight = (context.getModel().size() * rowHeight);
-        if (commandField.isVisible()) {
+        if (context == logHistoryData) {
+            placeLogList();
+        } else {
+            int rowHeight = 20; // 1行あたりの高さ
+            context.getList().setFixedCellHeight(rowHeight);
+            int listHeight = context.getModel().size() * rowHeight;
             context.getList().setBounds(
                     commandField.getX(),
                     commandField.getY() - listHeight - 1,
-                    commandField.getWidth(),
-                    listHeight);
-        } else {
-            context.getList().setBounds(
-                    (int) spacing,
-                    (int) (MAIN.getHeight() - spacing - listHeight - 1),
                     commandField.getWidth(),
                     listHeight);
         }
@@ -542,7 +646,7 @@ public final class CommandGlassPane extends JPanel {
      * 
      * @param context チャットボックス情報
      */
-    private void hideChatBoxList(ChatBoxContext context) {
+    private void hideChatBoxList(ChatBoxContext<?> context) {
         context.getList().setVisible(false);
     }
 
@@ -584,13 +688,13 @@ public final class CommandGlassPane extends JPanel {
     private void processCommand(String text) {
         // "/"から始まっていなかったらログにそのまま出力して終了
         if (!text.startsWith("/")) {
-            logHistoryData.addElement(text);
+            addLog(LogLine.Kind.CHAT, chatUserName() + " " + text);
             LogUtils.debugLog(text);
             return;
         }
 
         String[] args = text.split(" ", -1);
-        CommandNode node = rootCommands.get(args[0]);
+        CommandNode node = findCommand(rootCommands, args[0]);
 
         // コマンドリストになかった場合
         if (node == null) {
@@ -608,8 +712,9 @@ public final class CommandGlassPane extends JPanel {
 
             // 与えられえたサブ引数が存在する場合は一つ階層を潜る、なければ処理
             args = Arrays.copyOfRange(args, 1, args.length);
-            if (args.length > 0 && node.getSubCommands().containsKey(args[0])) {
-                node = node.getSubCommands().get(args[0]);
+            CommandNode subNode = args.length > 0 ? findCommand(node.getSubCommands(), args[0]) : null;
+            if (subNode != null) {
+                node = subNode;
             } else if (node.getAction() != null) {
                 node.getAction().execute(node, args);
                 break;
@@ -621,6 +726,97 @@ public final class CommandGlassPane extends JPanel {
     }
 
     /**
+     * チャットに表示する自分の名前(ログイン前などで取れなければ guest)
+     */
+    private String chatUserName() {
+        var user = DataManager.getUserData();
+        String name = user == null ? null : user.getUsername();
+        return (name == null || name.isBlank()) ? "guest" : name.replaceAll("\\s+", "_");
+    }
+
+    /**
+     * 大文字小文字を区別せずにコマンド(サブコマンド)を探す
+     * 
+     * @param nodes 探す対象
+     * @param token 入力されたコマンド名
+     * @return 見つかったノード、なければnull
+     */
+    private CommandNode findCommand(Map<String, CommandNode> nodes, String token) {
+        CommandNode exact = nodes.get(token);
+        if (exact != null)
+            return exact;
+
+        for (Map.Entry<String, CommandNode> entry : nodes.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase(token))
+                return entry.getValue();
+        }
+        return null;
+    }
+
+    /**
+     * 引数の候補の登録
+     * キーはsyntaxの<>や[]を除いた名前
+     */
+    private void registArgCandidates() {
+        // 敵・ボス(データのあるもの)
+        argCandidates.put("enemyId", () -> {
+            List<String> ids = new ArrayList<>();
+            for (ShipKinds kind : new ShipKinds[] { ShipKinds.ENEMY, ShipKinds.BOSS }) {
+                SHIP_M.getShipConfig().get(kind).forEach((id, def) -> {
+                    if (def != null && def.getDatas() != null)
+                        ids.add(id);
+                });
+            }
+            ids.sort(String.CASE_INSENSITIVE_ORDER);
+            return ids;
+        });
+        argCandidates.put("mode", () -> List.of("blue", "red"));
+        argCandidates.put("target", () -> List.of("player", "enemy", "boss", "all"));
+        argCandidates.put("shipId", () -> SHIP_M.getShipConfig().get(ShipKinds.PLAYER).keySet().stream()
+                .map(String::toLowerCase).sorted().toList());
+        argCandidates.put("sceneName", () -> Arrays.stream(SceneType.values())
+                .map(type -> type.name().toLowerCase()).toList());
+        argCandidates.put("resourceName", () -> Arrays.stream(ResourceName.values())
+                .map(name -> name.name().toLowerCase()).toList());
+    }
+
+    /**
+     * 予測変換の追加
+     */
+    private void addSuggestion(String display, String completion, int matchEnd) {
+        if (suggestions.size() >= MAX_SUGGEST_DISPLAY)
+            return;
+        for (Suggestion s : suggestions) {
+            if (s.display().equals(display))
+                return;
+        }
+        suggestions.add(new Suggestion(display, completion, matchEnd));
+        suggestData.addElement(display);
+    }
+
+    /**
+     * Tabによる予測変換の選択(選んだものを入力欄に反映する)
+     * 
+     * @param dir 1で次、-1で前
+     */
+    private void cycleSuggestion(int dir) {
+        if (suggestions.isEmpty())
+            return;
+
+        int size = suggestions.size();
+        int index = suggestData.getIndex();
+        index = index < 0 ? (dir > 0 ? 0 : size - 1) : Math.floorMod(index + dir, size);
+        suggestData.setIndex(index);
+
+        // 入力欄を更新しても予測変換は作り直さない
+        isAutoComplete = true;
+        commandField.setText(suggestions.get(index).completion());
+        isAutoComplete = false;
+
+        showChatBoxList(suggestData);
+    }
+
+    /**
      * 予測変換リストの作成
      */
     private void registCommandSuggestions() {
@@ -628,797 +824,128 @@ public final class CommandGlassPane extends JPanel {
 
         // リストのクリア
         suggestData.getElements().clear();
+        suggestions.clear();
+        suggestData.setIndex(-1);
 
         // 入力情報の取得
         String command = commandField.getText();
-        String[] args = command.split(" ", -1);
-
         if (command.isEmpty()) {
             showChatBoxList(logHistoryData);
             return;
         }
-
         hideChatBoxList(logHistoryData);
 
-        Map<String, CommandNode> subCommands = rootCommands; // 再外層ノードから探索
-        CommandNode currentNode = null; // 参照中ノード
-        // 引数と一致する子ノードを見つけて階層を移動
-        for (int i = 0; i < args.length - 1; i++) {
-            CommandNode node = subCommands.get(args[i]);
+        String[] tokens = command.split(" ", -1);
+        String partial = tokens[tokens.length - 1]; // 入力中の単語
 
-            if (node != null) {
-                // 権限不足の場合は潜らない
-                if (node.isAdminOnly() && !adminMode)
-                    return;
-
-                subCommands = node.getSubCommands(); // 階層移動
-                currentNode = node; // 参照中ノードの更新
-            } else
+        // 入力済みのコマンド名をたどる(大文字小文字は区別しない)
+        Map<String, CommandNode> level = rootCommands;
+        CommandNode current = null;
+        int consumed = 0; // コマンド名として使われた単語の数
+        for (int i = 0; i < tokens.length - 1; i++) {
+            CommandNode next = findCommand(level, tokens[i]);
+            if (next == null)
+                break;
+            // 権限不足の場合は出さない
+            if (next.isAdminOnly() && !adminMode)
                 return;
-        }
-        String currentToken = args[args.length - 1];
 
-        // 入力中文字と比較
-        for (CommandNode node : subCommands.values()) {
-            if (node.getName().startsWith(currentToken)) {
-                for (String suggests : node.getAllNodes(adminMode)) {
-                    suggestData.addElement(suggests);
+            current = next;
+            level = next.getSubCommands();
+            consumed = i + 1;
+        }
+        // 最初の単語がコマンドではない
+        if (tokens.length > 1 && current == null)
+            return;
+
+        int argPos = tokens.length - 1 - consumed; // 入力中の引数の番号(0始まり)
+        String prefix = String.join(" ", Arrays.copyOfRange(tokens, 0, tokens.length - 1));
+        String prefixSp = prefix.isEmpty() ? "" : prefix + " ";
+        String lowerPartial = partial.toLowerCase();
+
+        // コマンド名の候補(コマンドの直後の単語を入力中のときだけ)
+        boolean hasSubMatch = false;
+        if (argPos == 0) {
+            for (CommandNode node : level.values()) {
+                if (!node.getName().toLowerCase().startsWith(lowerPartial))
+                    continue;
+
+                for (String usage : node.getAllNodes(adminMode)) {
+                    hasSubMatch = true;
+                    // コマンド名の部分(最初の<や[の手前まで)を補完内容にする
+                    String[] words = usage.split(" ");
+                    List<String> path = new ArrayList<>();
+                    for (String word : words) {
+                        if (word.startsWith("<") || word.startsWith("["))
+                            break;
+                        path.add(word);
+                    }
+                    String completion = String.join(" ", path) + (path.size() < words.length ? " " : "");
+                    int matchEnd = usage.toLowerCase().startsWith(prefixSp.toLowerCase() + lowerPartial)
+                            ? (prefixSp + partial).length()
+                            : 0;
+                    addSuggestion(usage, completion, matchEnd);
                 }
             }
         }
 
-        // syntax比較
-        if (currentNode != null) {
-            if (currentNode.getSyntax() != null) {
-                if (currentNode.compersionSyntax(currentToken))
-                    suggestData.addElement(currentNode.getUseage());
+        // 引数の候補(入力中の引数に対応するsyntax)
+        if (current != null && current.getSyntax() != null) {
+            List<String> syntax = current.getSyntax().stream().filter(s -> !s.isBlank()).toList();
+            if (argPos < syntax.size()) {
+                String placeholder = syntax.get(argPos);
+                String key = placeholder.replaceAll("[<>\\[\\]]", "");
+                String rest = String.join(" ", syntax.subList(argPos + 1, syntax.size()));
+                Supplier<List<String>> provider = argCandidates.get(key);
+
+                if (provider != null) {
+                    // 入力に合う候補を出す
+                    for (String candidate : provider.get()) {
+                        if (!candidate.toLowerCase().startsWith(lowerPartial))
+                            continue;
+                        // サブコマンドと同名のものは重複するので出さない
+                        if (argPos == 0 && findCommand(level, candidate) != null)
+                            continue;
+
+                        String head = prefixSp + candidate;
+                        addSuggestion(rest.isEmpty() ? head : head + " " + rest,
+                                rest.isEmpty() ? head : head + " ",
+                                (prefixSp + partial).length()); // 入力済みの文字までを強調
+                    }
+                } else if (!(argPos == 0 && hasSubMatch && !partial.isEmpty())) {
+                    // 自由入力: 入力済みの値を入れた使い方を表示する
+                    String shown = partial.isEmpty() ? placeholder : partial;
+                    String head = prefixSp + shown;
+                    addSuggestion(rest.isEmpty() ? head : head + " " + rest, command,
+                            (prefixSp + partial).length()); // 入力済みの文字までを強調(未入力なら強調なし)
+                }
             }
         }
 
-        if (!suggestData.getElements().isEmpty()) {
+        if (!suggestions.isEmpty())
             showChatBoxList(suggestData);
-        }
     }
 
     /**
-     * 第一コマンド登録
-     * 
-     * @param root   親要素
-     * @param name   コマンド名
-     * @param desc   説明
-     * @param admin  管理者権限が必要かどうか
-     * @param action 処理
-     * @return コマンドノード
-     */
-    private CommandNode register(Map<String, CommandNode> root, String name, String desc, boolean admin,
-            CommandAction action) {
-        CommandNode node = new CommandNode(null, name, desc, admin, action);
-        root.put(name, node);
-        return node;
-    }
-
-    /**
-     * サブコマンド登録
-     * 
-     * @param root   親要素
-     * @param name   コマンド名
-     * @param desc   説明
-     * @param admin  管理者権限が必要かどうか
-     * @param action 処理
-     * @return コマンドノード
-     */
-    private CommandNode register(CommandNode root, String name, String desc, boolean admin,
-            CommandAction action) {
-        CommandNode node = new CommandNode(root, name, desc, admin, action);
-        root.getSubCommands().put(name, node);
-        return node;
-    }
-
-    /**
-     * 現在のシーンで利用できるかどうかのチェック
-     * 
-     * @param allowedTypes シーンタイプ
-     * @return 許可されていればtrue、されていなければfalse
-     */
-    private boolean isSceneValid(SceneType... allowedTypes) {
-        SceneType current = SM.getSceneName();
-        for (SceneType type : allowedTypes) {
-            if (current == type)
-                return true;
-        }
-        logText = "Command not available in the current scene.";
-        logHistoryData.addElement(logText);
-        LogUtils.debugLog(logText);
-        return false;
-    }
-
-    /**
-     * {}の中身の要素を切り分けてマップにして返す
-     * <p>
-     * 例: key1=value1,key2=value2 → (key1,value1),(key2,value2)
-     * 
-     * @param arg {}の中身
-     * @return 切り分けたもの
-     */
-    private Map<String, String> parseNBT(String arg) {
-        Map<String, String> NBT = new HashMap<>();
-
-        String[] parts = arg.split(",", -1);
-        for (String part : parts) {
-            String[] pair = part.split("=", -1);
-            String key = pair[0];
-            String value = pair[1];
-
-            NBT.put(key, value);
-        }
-
-        return NBT;
-    }
-
-    /**
-     * コマンドの登録
+     * コマンドの登録(種類ごとのクラスに分けてある)
      */
     private void registCommands() {
-        // fps変更 /fps <num>
-        register(rootCommands, "/fps", "Change fps.", false, (node, args) -> {
-            // 引数が不適切な場合
-            if (args.length != 1) {
-                logText = node.getUseage();
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-
-            try {
-                Integer fps = GameUtils.tryParse(args[0]);
-
-                // fpsが0以下の場合はエラー
-                if (fps == 0) {
-                    logText = "FPS must be greater than 0.";
-                    logHistoryData.addElement(logText);
-                    LogUtils.debugLog(logText);
-                    return;
-                }
-
-                MAIN.setFps(fps);
-
-                logText = "Current fps set to " + fps + ".";
-                logHistoryData.addElement(logText);
-                LogUtils.systemLog("[INFO]", component, logText);
-            } catch (NumberFormatException ne) {
-                logText = "Unknown param: '" + args[0] + "'";
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-            } catch (Exception e) {
-                LogUtils.systemLog("[WARN]", component, "Command Error");
-            }
-        }).setSyntax("<number>");
-
-        // 管理者権限切替 /admin
-        register(rootCommands, "/admin", "Toggle admin mode.", false, (node, args) -> {
-            if (ShootingGameMain.getOnlineMode()) {
-                // 引数が不適切な場合
-                if (args.length != 1) {
-                    logText = node.getUseage();
-                    logHistoryData.addElement(logText);
-                    LogUtils.debugLog(logText);
-                    return;
-                }
-
-                String password = args[0];
-                if (!DataManager.authenticate("admin", password)) {
-                    logText = "password is not true.";
-                    logHistoryData.addElement(logText);
-                    LogUtils.systemLog("[INFO]", component, logText);
-                    return;
-                }
-            } else {
-                // 引数が不適切な場合
-                if (args.length != 0) {
-                    logText = node.getUseage();
-                    logHistoryData.addElement(logText);
-                    LogUtils.debugLog(logText);
-                    return;
-                }
-            }
-
-            adminMode = !adminMode;
-
-            logText = "AdminMode " + (adminMode ? "enabled." : "disabled.");
-            logHistoryData.addElement(logText);
-            LogUtils.systemLog("[INFO]", component, ANSI.YELLOW + logText + ANSI.RESET);
-        }).setSyntax(ShootingGameMain.getOnlineMode() ? "<password>" : "");
-
-        // ヘルプ /help
-        register(rootCommands, "/help", "Show available commands.", false, (node, args) -> {
-            // 引数が不適切な場合
-            if (args.length != 0) {
-                logText = node.getUseage();
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-
-            showHelp();
-        });
-
-        // シーン読み込み /loadscene <sceneName> /loadscene game <stageId>
-        CommandNode loadscene = register(rootCommands, "/loadscene", "Change scene.", false, (node, args) -> {
-            // 引数が不適切な場合
-            if (args.length != 1) {
-                logText = node.getUseage();
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-
-            try {
-                if (SHIP_M.getPlayer() != null)
-                    SHIP_M.getPlayer().removeHandler();
-
-                SM.changeScene(SceneType.valueOf(args[0].toUpperCase()));
-            } catch (Exception e) {
-                logText = "Unknown scene: '" + args[0] + "'";
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-            }
-        });
-        loadscene.setSyntax("<sceneName>");
-        register(loadscene, "game", "Load game stage.", false, (node, args) -> {
-            // 引数が不適切な場合
-            if (args.length != 1) {
-                logText = node.getUseage();
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-
-            String param = args[0].replace("stage", "");
-            try {
-                Integer id = GameUtils.tryParse(param);
-
-                if (!adminMode) {
-                    // ロックされていた場合は遷移しない
-                    int clearedStage = DataManager.getUserData().getProgress().getClearedStage() + 1;
-                    if (id > clearedStage) {
-                        logText = "Can't play locked stage.";
-                        logHistoryData.addElement(logText);
-                        LogUtils.debugLog(logText);
-                        return;
-                    }
-                }
-
-                STAGE_M.getStage().setStageId(id);
-                SM.changeScene(SceneType.GAME);
-            } catch (NumberFormatException ne) {
-                logText = "Unknnown param: " + param;
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-            } catch (Exception e) {
-                LogUtils.systemLog("[WARN]", component, "Command Error");
-            }
-        }).setSyntax("<stageId>");
-        register(loadscene, "test", "Load test stage.", true, (node, args) -> {
-            // 引数が不適切な場合
-            if (args.length != 0) {
-                logText = node.getUseage();
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-
-            SM.changeScene(SceneType.TEST);
-        });
-
-        // リソースの読み込み直し /reload
-        register(rootCommands, "/reload", "Reload resource", false, (node, args) -> {
-            // 引数が不適切な場合
-            if (args.length != 0) {
-                logText = node.getUseage();
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-
-            reload();
-        });
-
-        // 殺害 /kill <target>
-        register(rootCommands, "/kill", "Kill targets.", true, (node, args) -> {
-            // 引数が不適切な場合
-            if (args.length != 1) {
-                logText = node.getUseage();
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-            // シーンが不適切な場合
-            if (!isSceneValid(SceneType.GAME, SceneType.TEST))
-                return;
-
-            SHIP_M.kill(args[0]);
-
-            logText = args[0] + " killed.";
-            logHistoryData.addElement(logText);
-            LogUtils.systemLog("[INFO]", component, logText);
-        }).setSyntax("<target>");
-
-        // 消去 /clear <target>
-        register(rootCommands, "/clear", "Kill targets.", true, (node, args) -> {
-            // 引数が不適切な場合
-            if (args.length != 1) {
-                logText = node.getUseage();
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-            // シーンが不適切な場合
-            if (!isSceneValid(SceneType.GAME, SceneType.TEST))
-                return;
-
-            SHIP_M.clear(args[0]);
-
-            logText = args[0] + " cleared.";
-            logHistoryData.addElement(logText);
-            LogUtils.systemLog("[INFO]", component, logText);
-        }).setSyntax("<target>");
-
-        // 船タイプの変更 /setship
-        register(rootCommands, "/setship", "Set now ship.", true, (node, args) -> {
-            // 引数が不適切な場合
-            if (args.length != 1) {
-                logText = node.getUseage();
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-
-            String param = args[0].replace("ship", "");
-            try {
-                Integer id = GameUtils.tryParse(param);
-
-                if (!isSceneValid(SceneType.GAME, SceneType.TEST))
-                    return;
-
-                SHIP_M.reloadPlayer(id);
-            } catch (NumberFormatException ne) {
-                logText = "Unknnown param: " + param;
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-            } catch (Exception e) {
-                LogUtils.systemLog("[WARN]", component, "Command Error");
-            }
-        }).setSyntax("<shipId>");
-
-        // 船の解法 /unlockship
-        register(rootCommands, "/unlockship", "Unlock ship.", true, (node, args) -> {
-            // 引数が不適切な場合
-            if (args.length != 1) {
-                logText = node.getUseage();
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-
-            String param = args[0].replace("ship", "");
-            try {
-                Integer id = GameUtils.tryParse(args[0].replace("ship", ""));
-
-                DataManager.getUserData().unlockShip("Ship" + id);
-                LobbyManager.getInstance().updateBtnStates();
-            } catch (NumberFormatException ne) {
-                logText = "Unknnown param: " + param;
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-            } catch (Exception e) {
-                LogUtils.systemLog("[WARN]", component, "Command Error");
-            }
-        }).setSyntax("<shipId>");
-
-        // 効果付与 /effect
-        CommandNode effect = register(rootCommands, "/effect", "Apply effect.", true, (node, args) -> {
-            // 引数が不適切な場合
-            if (args.length == 0) {
-                logText = node.getUseage();
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-        });
-        effect.setSyntax("<effectName>", "<seconds>");
-        // 回復
-        register(effect, "heal", null, true, (node, args) -> {
-            // 引数が不適切な場合
-            if (args.length != 1) {
-                logText = node.getUseage();
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-            // シーンが不適切な場合
-            if (!isSceneValid(SceneType.GAME, SceneType.TEST))
-                return;
-
-            try {
-                Integer num = args.length > 0 ? GameUtils.tryParse(args[0]) : null;
-
-                SHIP_M.getPlayer().heal(num);
-
-                logText = "Healed " + num + "HP.";
-                logHistoryData.addElement(logText);
-                LogUtils.systemLog("[INFO]", component, logText);
-            } catch (NumberFormatException ne) {
-                logText = "Unknnown param: " + args[0];
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-            } catch (Exception e) {
-                LogUtils.systemLog("[WARN]", component, "Command Error");
-            }
-        }).setSyntax("<seconds>");
-        // レベルアップ
-        register(effect, "levelup", null, true, (node, args) -> {
-            // 引数が不適切な場合
-            if (args.length > 2) {
-                logText = node.getUseage();
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-            // シーンが不適切な場合
-            if (!isSceneValid(SceneType.GAME, SceneType.TEST))
-                return;
-
-            // 指定がなければ1レベル上げる、指定があればその回数レベルアップ
-            int amount = 1;
-            try {
-                Integer num = GameUtils.tryParse(args[0]);
-                amount = num > 0 ? num : 1;
-            } catch (NumberFormatException ne) {
-                logText = "Unknnown param: " + args[0];
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-            }
-            // レベルアップ処理
-            for (int i = 0; i < amount; i++) {
-                SHIP_M.getPlayer().levelUp();
-            }
-
-            logText = "Ship leveled up to level " + SHIP_M.getPlayer().getShipLevel() + ".";
-            logHistoryData.addElement(logText);
-            LogUtils.systemLog("[INFO]", component, logText);
-        });
-        // レベル設定
-        register(effect, "setlevel", null, true, (node, args) -> {
-            // 引数が不適切な場合
-            if (args.length != 1) {
-                logText = node.getUseage();
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-            // シーンが不適切な場合
-            if (!isSceneValid(SceneType.GAME, SceneType.TEST))
-                return;
-
-            try {
-                Integer num = GameUtils.tryParse(args[0]);
-
-                if (num >= 5) {
-                    SHIP_M.getPlayer().setShipLevel(4);
-                    SHIP_M.getPlayer().levelUp();
-                } else
-                    SHIP_M.getPlayer().setShipLevel(num);
-
-                logText = "Ship level set to " + SHIP_M.getPlayer().getShipLevel() + ".";
-                logHistoryData.addElement(logText);
-                LogUtils.systemLog("[INFO]", component, logText);
-            } catch (NumberFormatException ne) {
-                logText = "Unknnown param: " + args[0];
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-            } catch (Exception e) {
-                LogUtils.systemLog("[WARN]", component, "Command Error");
-            }
-        }).setSyntax("<amount>");
-        // 暴走
-        register(effect, "ooc", null, true, (node, args) -> {
-            // 引数が不適切な場合
-            if (args.length > 2) {
-                logText = node.getUseage();
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-            // シーンが不適切な場合
-            if (!isSceneValid(SceneType.GAME, SceneType.TEST))
-                return;
-
-            boolean isInfinityOOC = SHIP_M.getPlayer().getOOCTimer() == Double.POSITIVE_INFINITY;
-            // 指定がなければ暴走モードのトグル、指定があれば暴走時間を設定
-            if (args.length == 0) {
-                double time = isInfinityOOC ? 0 : Double.POSITIVE_INFINITY;
-                int level = isInfinityOOC ? 4 : 5;
-                isInfinityOOC = !isInfinityOOC;
-
-                SHIP_M.getPlayer().setOOCTimer(time);
-                SHIP_M.getPlayer().setShipLevel(level);
-
-                logText = "OOC " + (isInfinityOOC ? "enabled." : "disabled.");
-                logHistoryData.addElement(logText);
-                LogUtils.systemLog("[INFO]", component, logText);
-            } else {
-                try {
-                    Integer time = GameUtils.tryParse(args[0]);
-
-                    if (isInfinityOOC) {
-                        logText = "The ship is already OOC.";
-                        logHistoryData.addElement(logText);
-                        LogUtils.systemLog("[INFO]", component, logText);
-                    } else {
-                        SHIP_M.getPlayer().setShipLevel(5);
-                        SHIP_M.getPlayer().setOOCTimer(time);
-
-                        logText = "The ship became OOC.";
-                        logHistoryData.addElement(logText);
-                        LogUtils.systemLog("[INFO]", component, logText);
-                    }
-                } catch (NumberFormatException ne) {
-                    logText = "Unknnown param: " + args[0];
-                    logHistoryData.addElement(logText);
-                    LogUtils.debugLog(logText);
-                } catch (Exception e) {
-                    LogUtils.systemLog("[WARN]", component, "Command Error");
-                }
-            }
-        }).setSyntax("<seconds>");
-
-        // 資源入手 /give
-        register(rootCommands, "/get", "get resource", true, (node, args) -> {
-            // 引数が不適切な場合
-            if (args.length != 2) {
-                logText = node.getUseage();
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-
-            try {
-                String nameStr = args[0];
-                Rarity rarity = Rarity.COMMON; // デフォルトはコモン
-
-                // 指定値の設定
-                int openBraceIdx = args[0].indexOf("{");
-                int closeBraceIdx = args[0].indexOf("}");
-                if (openBraceIdx != -1 && closeBraceIdx != -1 && openBraceIdx < closeBraceIdx) {
-                    nameStr = args[0].substring(0, openBraceIdx);
-
-                    Map<String, String> NBT = parseNBT(args[0].substring(openBraceIdx + 1, closeBraceIdx));
-                    for (Map.Entry<String, String> entry : NBT.entrySet()) {
-                        switch (entry.getKey()) {
-                            case "rarity" -> {
-                                rarity = Rarity.fromString(entry.getValue());
-                            }
-                            default -> {
-                                // NBTが不適切な場合
-                                logText = node.getUseage();
-                                logHistoryData.addElement(logText);
-                                LogUtils.debugLog(logText);
-                                return;
-                            }
-                        }
-                    }
-                }
-
-                ResourceKinds resKind = new ResourceKinds(ResourceName.fromString(nameStr), rarity);
-                Integer amount = GameUtils.tryParse(args[1]);
-                Resources resData = DataManager.getUserData().getResources();
-                if (resKind == ResourceKinds.COIN) {
-                    int amountOwned = resData.getCoins();
-                    resData.setCoins(amountOwned + amount);
-
-                    logText = "Added " + amount + " coins. Current coins: " + resData.getCoins() + ".";
-                    logHistoryData.addElement(logText);
-                    LogUtils.systemLog("[INFO]", component, logText);
-                    return;
-                } else {
-                    int amountOwned = resData.getEquipments().getOrDefault(resKind, 0);
-                    int newAmount = amountOwned + amount;
-                    if (newAmount <= 0) {
-                        resData.getEquipments().remove(resKind);
-                    } else {
-                        resData.getEquipments().put(resKind, newAmount);
-                    }
-                }
-                BagManager.getInstance().setup();
-
-            } catch (NumberFormatException ne) {
-                logText = "Unknown param: '" + args[1] + "'";
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-            } catch (IllegalArgumentException iae) {
-                logText = "Unknown resName: '" + args[0] + "'";
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-            } catch (Exception e) {
-                LogUtils.systemLog("[WARN]", component, "Command Error");
-            }
-        }).setSyntax("<resourceName>", "<amount>");
-
-        // ゲームクリア/ゲームオーバー /gameclear /gameover
-        register(rootCommands, "/gameclear", "Instantly clear.", true, (node, args) -> {
-            // 引数が不適切な場合
-            if (args.length != 0) {
-                logText = node.getUseage();
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-            // シーンが不適切な場合
-            if (!isSceneValid(SceneType.GAME))
-                return;
-
-            GM.gameover(false);
-            GM.result();
-        });
-        register(rootCommands, "/gameover", "Instantly gameover.", true, (node, args) -> {
-            // 引数が不適切な場合
-            if (args.length != 0) {
-                logText = node.getUseage();
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-            // シーンが不適切な場合
-            if (!isSceneValid(SceneType.GAME))
-                return;
-
-            GM.gameover(true);
-            GM.result();
-        });
-        register(rootCommands, "/clearstage", "Force clear a specific stage.", true, (node, args) -> {
-            // 引数が不適切な場合
-            if (args.length != 1) {
-                logText = node.getUseage();
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-
-            try {
-                Integer stageId = GameUtils.tryParse(args[0]);
-
-                UserData data = DataManager.getUserData();
-                // 与えられたステージがクリア済みかどうか
-                boolean isCleared = stageId <= data.getProgress().getClearedStage();
-                if (!isCleared) {
-                    data.getProgress().setClearedStage(stageId);
-                    NSM.getStageBtnPanel().setup();
-
-                    // クリア進捗更新ログ
-                    logText = "Progress reached " + ANSI.YELLOW + "Stage" + stageId + ANSI.RESET + ".";
-                    logHistoryData.addElement(logText);
-                    LogUtils.systemLog("[INFO]", component, logText);
-                } else {
-                    logText = "Specified stage has already been completed.";
-                    logHistoryData.addElement(logText);
-                    LogUtils.systemLog("[INFO]", component, logText);
-                }
-            } catch (NumberFormatException ne) {
-                logText = "Unknnown param: " + args[0];
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-            } catch (Exception e) {
-                LogUtils.systemLog("[WARN]", component, "Command Error");
-            }
-        }).setSyntax("<stageId>");
-
-        // データリセット /deleteuser
-        register(rootCommands, "/deleteuser", "Reset data.", true, (node, args) -> {
-            // オフラインモードの場合
-            if (!ShootingGameMain.getOnlineMode()) {
-                logText = "This command is unavailable in offline mode.";
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-
-            // 引数が不適切な場合
-            if (args.length != 2) {
-                logText = node.getUseage();
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-
-            String username = args[0];
-            String password = args[1];
-
-            // adminアカウントの削除防止
-            if (username.equals("admin")) {
-                logText = "Can't delete admin account.";
-                logHistoryData.addElement(logText);
-                LogUtils.systemLog("[WARN]", component, logText);
-                return;
-            }
-
-            // forceオプションが渡された場合強制削除
-            if (password.equals("force")) {
-                if (DataManager.forceDelete(username)) {
-                    logText = "Delete successful.";
-                    logHistoryData.addElement(logText);
-                    LogUtils.systemLog("[INFO]", component, logText);
-                    return;
-                }
-            }
-
-            // 通常モードでデータ削除
-            if (DataManager.delete(username, password)) {
-                logText = "Delete successfull.";
-                logHistoryData.addElement(logText);
-                LogUtils.systemLog("[INFO]", component, logText);
-            } else {
-                logText = "Deletion failed.";
-                logHistoryData.addElement(logText);
-                LogUtils.systemLog("[WARN]", component, logText);
-            }
-        }).setSyntax("<username>", "<password>");
-
-        // パスワード変更 /changepassword
-        register(rootCommands, "/changepassword", "Change user password", true, (node, args) -> {
-            // オフラインモードの場合
-            if (!ShootingGameMain.getOnlineMode()) {
-                logText = "This command is unavailable in offline mode.";
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-
-            // 引数が不適切な場合
-            if (args.length != 3) {
-                logText = node.getUseage();
-                logHistoryData.addElement(logText);
-                LogUtils.debugLog(logText);
-                return;
-            }
-
-            String username = args[0];
-            String oldPassword = args[1];
-            String newPassword = args[2];
-
-            // forceオプションが渡された場合パスワード強制変更
-            if (oldPassword.equals("force")) {
-                if (DataManager.forceChangePassword(username, newPassword)) {
-                    logText = "Change password successful.";
-                    logHistoryData.addElement(logText);
-                    LogUtils.systemLog("[INFO]", component, logText);
-                    return;
-                }
-            }
-
-            // 通常モードでパスワード変更
-            if (DataManager.changePassword(username, oldPassword, newPassword)) {
-                logText = "Change password successful.";
-                logHistoryData.addElement(logText);
-                LogUtils.systemLog("[INFO]", component, logText);
-            } else {
-                logText = "Change password failed.";
-                logHistoryData.addElement(logText);
-                LogUtils.systemLog("[INFO]", component, logText);
-            }
-        }).setSyntax("<username>", "<oldPassword>", "<newPassword>");
+        new SystemCommands(this).registerAll();
+        new GameCommands(this).registerAll();
+        new PlayerDataCommands(this).registerAll();
     }
 
     /**
      * ヘルプコマンドによる出力
      */
-    private void showHelp() {
+    void showHelp() {
         LogUtils.debugLog("");
 
-        logHistoryData.addElement("----------------- Available Commands -----------------");
+        addLog(LogLine.Kind.HELP, "----------------- Available Commands -----------------");
         rootCommands.entrySet().stream()
                 .filter(e -> !e.getValue().isAdminOnly() || adminMode) // 権限があるもの
                 .sorted(Map.Entry.comparingByKey())
-                .forEach(e -> logHistoryData.addElement(e.getKey() + " : " + e.getValue().getDescription()));
+                .forEach(e -> addLog(LogLine.Kind.HELP, e.getKey() + " : " + e.getValue().getDescription()));
         LogUtils.debugLog(ANSI.YELLOW + "----------------- Available Commands -----------------" + ANSI.RESET);
         rootCommands.entrySet().stream()
                 .filter(e -> !e.getValue().isAdminOnly() || adminMode) // 権限があるもの
@@ -1431,10 +958,10 @@ public final class CommandGlassPane extends JPanel {
     /**
      * リソースの再読み込み
      */
-    private void reload() {
+    void reload() {
         // リロード開始ログ
-        logText = "Attempting to reload resources...";
-        logHistoryData.addElement(logText);
+        String logText = "Attempting to reload resources...";
+        addLog(LogLine.Kind.INFO, logText);
         LogUtils.systemLog("[INFO]", component, logText);
 
         RM.reload();
@@ -1446,13 +973,14 @@ public final class CommandGlassPane extends JPanel {
         UM.reload();
         SM.getCurrentManager().setup();
 
-        // テストシーンの場合敵をクリアして再生成
-        if (SM.getSceneName() == SceneType.TEST)
-            SHIP_M.clear("all");
+        // テストシーンの場合画面ごとリログ
+        if (SM.getSceneName() == SceneType.TEST) {
+            SM.changeScene(SceneType.TEST);
+        }
 
         // リロード完了ログ
         logText = "Reload complete.";
-        logHistoryData.addElement(logText);
+        addLog(LogLine.Kind.SUCCESS, logText);
         LogUtils.systemLog("[INFO]", component, logText);
     }
 
@@ -1461,13 +989,119 @@ public final class CommandGlassPane extends JPanel {
      * 
      * @param text 未知コマンド内容
      */
-    private void unknownCommand(String text) {
-        logText = "Unknown command '" + text + "'";
-        logHistoryData.addElement(logText);
+    void unknownCommand(String text) {
+        String logText = "Unknown command '" + text + "'";
+        addLog(LogLine.Kind.ERROR, logText);
         LogUtils.debugLog(logText);
         logText = "Type '/help' for help.";
-        logHistoryData.addElement(logText);
+        addLog(LogLine.Kind.HELP, logText);
         LogUtils.debugLog(logText);
+    }
+
+    /**
+     * ログ1行の描画(種別ごとの色と行頭の記号、はみ出す行は末尾を … で省略)
+     * 入力欄を閉じている間は、消える直前の1秒で行ごとに薄くする
+     */
+    private final class LogCellRenderer extends JComponent implements ListCellRenderer<LogLine> {
+        private static final Color COLOR_INFO = new Color(220, 220, 220);
+        private static final Color COLOR_SUCCESS = new Color(0x5C, 0xE0, 0x8A);
+        private static final Color COLOR_ERROR = new Color(0xFF, 0x6B, 0x6B);
+        private static final Color COLOR_HELP = new Color(0x7F, 0xD8, 0xFF);
+        private static final Color COLOR_CHAT = Color.WHITE;
+        private static final Color COLOR_CHAT_NAME = new Color(0xFF, 0xDF, 0x80); // チャットの名前部分
+
+        private LogLine line;
+        private Color background = Color.BLACK;
+
+        @Override
+        public Component getListCellRendererComponent(JList<? extends LogLine> list, LogLine value, int index,
+                boolean isSelected, boolean cellHasFocus) {
+            line = value;
+            background = list.getBackground();
+            setFont(list.getFont().deriveFont(Font.PLAIN));
+            return this;
+        }
+
+        /** 行頭の記号(フォントが対応していなければ ASCII にする) */
+        private String prefixOf(LogLine.Kind kind, Font font) {
+            boolean unicode = font.canDisplayUpTo("✓✖") == -1;
+            return switch (kind) {
+                case SUCCESS -> unicode ? "✓ " : "+ ";
+                case ERROR -> unicode ? "✖ " : "! ";
+                case HELP -> "? ";
+                default -> "";
+            };
+        }
+
+        private Color colorOf(LogLine.Kind kind) {
+            return switch (kind) {
+                case SUCCESS -> COLOR_SUCCESS;
+                case ERROR -> COLOR_ERROR;
+                case HELP -> COLOR_HELP;
+                case CHAT -> COLOR_CHAT;
+                default -> COLOR_INFO;
+            };
+        }
+
+        /** 閉じている間の透明度(消える直前の1秒で 1 から 0 へ) */
+        private float fadeOf(LogLine target) {
+            if (commandField.isVisible())
+                return 1f;
+            long remain = CLOSED_LOG_VISIBLE_MS - (System.currentTimeMillis() - target.createdAt());
+            return Math.max(0f, Math.min(1f, remain / (float) CLOSED_LOG_FADE_MS));
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            if (line == null)
+                return;
+            Graphics2D g2 = (Graphics2D) g.create();
+
+            // リスト側の透明度に、行ごとの薄くなる分を掛ける
+            float base = g2.getComposite() instanceof AlphaComposite ac ? ac.getAlpha() : 1f;
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, base * fadeOf(line)));
+
+            g2.setColor(background);
+            g2.fillRect(0, 0, getWidth(), getHeight());
+
+            Font font = getFont();
+            g2.setFont(font);
+            FontMetrics fm = g2.getFontMetrics();
+
+            String prefix = prefixOf(line.kind(), font);
+            String full = prefix + line.text();
+
+            // はみ出す場合は末尾を省略
+            int pad = (int) (4 * ShootingGameMain.getScreenSizeAdj());
+            int avail = getWidth() - pad * 2;
+            if (fm.stringWidth(full) > avail) {
+                int end = full.length();
+                while (end > 0 && fm.stringWidth(full.substring(0, end) + "…") > avail)
+                    end--;
+                full = full.substring(0, end) + "…";
+            }
+
+            // 色の境目: [記号][チャットの名前][本文]
+            int prefixEnd = Math.min(prefix.length(), full.length());
+            int nameEnd = prefixEnd;
+            if (line.kind() == LogLine.Kind.CHAT) {
+                int space = line.text().indexOf(' ');
+                nameEnd = Math.min(full.length(), prefix.length() + Math.max(0, space));
+            }
+
+            int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
+            int x = pad;
+            Color main = colorOf(line.kind());
+            String[] parts = { full.substring(0, prefixEnd), full.substring(prefixEnd, nameEnd),
+                    full.substring(nameEnd) };
+            Color[] colors = { main, COLOR_CHAT_NAME, main };
+            for (int i = 0; i < parts.length; i++) {
+                g2.setColor(colors[i]);
+                g2.drawString(parts[i], x, y);
+                x += fm.stringWidth(parts[i]);
+            }
+            g2.dispose();
+        }
     }
 
     /**

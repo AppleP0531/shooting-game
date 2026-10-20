@@ -16,16 +16,24 @@ import lombok.Setter;
 
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
-import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
+import com.game.shooting_game.gameScene.beam.BeamEmitter;
+import com.game.shooting_game.gameScene.beam.BeamManager;
+import com.game.shooting_game.gameScene.beam.BeamSpec;
 import com.game.shooting_game.gameScene.ship.Ship;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipDefinition;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
+import com.game.shooting_game.domain.skill.SkillService;
+import com.game.shooting_game.gameScene.stage.StageModifiers;
+import com.game.shooting_game.domain.module.ModuleService;
+import com.game.shooting_game.domain.module.ModuleStat;
+import com.game.shooting_game.domain.unit.UnitService;
+import com.game.shooting_game.domain.subship.SubShipService;
 import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.utils.Anchor;
+import com.game.shooting_game.ui.Anchor;
 import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 import com.game.shooting_game.utils.animation.Animation;
 
@@ -46,9 +54,18 @@ public class Player extends Ship implements KeyListener {
     @Setter
     @Getter
     private double OOCTimer; // 暴走状態タイマー
+    private static final double BASE_SHIELD_RATE = 0.15; // 最大HPに対する基本のシールド量
+    private static final double SHIELD_REGEN_DELAY = 3.0; // 被弾してから回復が始まるまで(秒)
+    private static final double SHIELD_REGEN_RATE = 0.08; // 1秒あたりに回復するシールド量(最大値に対する割合)
+    private double shieldPoints; // 今のシールド量
+    private double maxShield; // シールドの最大量
+    private double shieldRegenWait; // 回復が始まるまでの待ち時間
     @Getter
     private double damagedTimer; // 被弾時の無敵タイマー
     private double breakawaySpeed; // 離脱速度
+    private final List<BeamEmitter> beamEmitters = new ArrayList<>(); // 本体のビーム
+    private BeamEmitter subBeamEmitter; // サブ機のビーム(左右で同じタイミングで撃つので、1つで管理する)
+    private int subBeamTier = 0; // サブ機のビームを作ったときのエミッターのMk
 
     public Player(String id, ColorMode mode, Vector2 pos) {
         super(ShipKinds.PLAYER, id, mode, 0, pos);
@@ -112,6 +129,27 @@ public class Player extends Ship implements KeyListener {
 
         rotate = 0;
 
+        // 本体のビーム(機体ごとの設定)
+        if (def != null && def.getBeams() != null)
+            for (BeamSpec spec : def.getBeams())
+                beamEmitters.add(new BeamEmitter(spec));
+
+        // スキルツリーによる強化の反映
+        maxHp *= 1 + SkillService.getBonus("MAX_HP");
+        maxHp *= UnitService.hpRate(shipId); // 機体レベル・★による耐久力の底上げ
+        maxHp = maxHp * (1 + ModuleService.stat(ModuleStat.HP_PCT)) + ModuleService.stat(ModuleStat.HP_FLAT); // モジュール
+        maxHp *= StageModifiers.playerHpRate(); // ステージ条件
+        hp = maxHp;
+        // シールド(HPの前にダメージを受け、被弾から少し経つと回復する。モジュールで増やせる)
+        maxShield = maxHp * BASE_SHIELD_RATE * (1 + ModuleService.stat(ModuleStat.SHIELD_PCT))
+                + ModuleService.stat(ModuleStat.SHIELD_FLAT);
+        if (StageModifiers.noShield())
+            maxShield = 0;
+        shieldPoints = maxShield;
+        speed *= 1 + SkillService.getBonus("MOVE_SPEED");
+        collisionSize *= 1 - Math.min(0.15, SkillService.getBonus("HITBOX"));
+        OOCTime = 10 + SkillService.getBonus("OOC_TIME");
+
         mouseHandler = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -138,15 +176,14 @@ public class Player extends Ship implements KeyListener {
                 component,
                 "Current shipId set to " + ANSI.YELLOW + shipId + "." + ANSI.RESET);
 
-        // サブ機の生成
-        String subShipId = DataManager.getUserData().getSubShip();
-        double shipDist = 40 * ShootingGameMain.getScreenSizeAdj();
-        double yDiff = 5 * ShootingGameMain.getScreenSizeAdj();
-        if (subShipId != null) {
+        // サブ機の生成(必須パーツが揃っていて、装備中のときだけ両端に付く)
+        double shipDist = SubShipService.sideOffset() * ShootingGameMain.getScreenSizeAdj(); // 大きいフレームほど外側
+        double yDiff = 14 * ShootingGameMain.getScreenSizeAdj(); // 自機より少し後ろに付く
+        if (SubShipService.isEquipped()) {
             subShip.add(
-                    new SubShip(this, subShipId + "_L", mode, new Vector2(pos.getX() - shipDist, pos.getY() + yDiff)));
+                    new SubShip(this, "SubShip1_L", mode, new Vector2(pos.getX() - shipDist, pos.getY() + yDiff)));
             subShip.add(
-                    new SubShip(this, subShipId + "_R", mode, new Vector2(pos.getX() + shipDist, pos.getY() + yDiff)));
+                    new SubShip(this, "SubShip1_R", mode, new Vector2(pos.getX() + shipDist, pos.getY() + yDiff)));
         }
 
         MAIN.addKeyListener(this);
@@ -174,10 +211,58 @@ public class Player extends Ship implements KeyListener {
 
                 // 被弾無敵時間処理(タイマーが0になるまで減らす)
                 damagedTimer = Math.max(0, damagedTimer - dt);
+
+                // シールドの回復(被弾から少し経ったら、モジュールの回復速度ぶん速く回復する)
+                shieldRegenWait = Math.max(0, shieldRegenWait - dt);
+                if (shieldRegenWait <= 0 && shieldPoints < maxShield)
+                    shieldPoints = Math.min(maxShield, shieldPoints
+                            + maxShield * SHIELD_REGEN_RATE * (1 + ModuleService.stat(ModuleStat.REPAIR_PCT)) * dt);
+
+                // 本体のビーム(必要な機体レベルに達していれば自動で撃つ。暴走中は間隔が短くなる)
+                double beamIntervalScale = (shipLevel >= 5 ? 0.6 : 1.0) / (1 + SkillService.getBonus("BEAM_RATE"));
+                boolean inLobby = SM.getSceneName() == SceneType.LOBBY;
+                // ロビーのプレビューでは、短い間隔で繰り返し見せる
+                if (inLobby)
+                    beamIntervalScale *= 0.4;
+                boolean inBattle = SM.getSceneName() == SceneType.GAME || SM.getSceneName() == SceneType.TEST
+                        || inLobby; // ロビーのプレビューでも撃つ
+                // 狙える敵が真上にいるときだけ撃つ(撃ちっぱなしで画面がうるさくならないように)
+                boolean hasTarget = BeamManager.getInstance().hasTargetAhead(pos,
+                        60 * ShootingGameMain.getScreenSizeAdj());
+                for (BeamEmitter emitter : beamEmitters) {
+                    if (!inBattle || shipLevel < emitter.getSpec().getMinLevel())
+                        continue;
+                    if (emitter.update(dt, beamIntervalScale, hasTarget))
+                        BeamManager.getInstance().firePlayer(
+                                emitter.getSpec(),
+                                () -> new Vector2(pos.getX(), pos.getY() - 10 * ShootingGameMain.getScreenSizeAdj()),
+                                () -> mode,
+                                1 + SkillService.getBonus("BEAM_POWER"));
+                }
             }
         }
 
         subShip.forEach(s -> s.update(dt));
+        if ("none".equals(animationName))
+            updateSubBeams(dt);
+    }
+
+    /**
+     * サブ機のビーム(左右同時。どちらかの真上に敵がいれば撃つ。エミッターのMkが変わったら作り直す)
+     */
+    private void updateSubBeams(double dt) {
+        if (subShip.isEmpty() || !subShip.get(0).canBeam())
+            return;
+
+        int tier = java.util.Objects.hash(SubShipService.beam()); // ビームの設定(レベル)が変わったら作り直す
+        if (subBeamEmitter == null || subBeamTier != tier) {
+            subBeamEmitter = new BeamEmitter(SubShip.createBeamSpec());
+            subBeamTier = tier;
+        }
+
+        boolean hasTarget = subShip.stream().anyMatch(SubShip::hasTargetAhead);
+        if (subBeamEmitter.update(dt, subShip.get(0).beamIntervalScale(), hasTarget))
+            subShip.forEach(s -> s.fireBeam(subBeamEmitter.getSpec()));
     }
 
     @Override
@@ -271,16 +356,14 @@ public class Player extends Ship implements KeyListener {
                 }
 
                 // 画面内に収まるように移動
-                pos.setX(Math.clamp(pos.getX(), imageSize.get("ship") / 2,
-                        MAIN.getWidth() - imageSize.get("ship") / 2));
-                pos.setY(Math.clamp(pos.getY(), imageSize.get("ship") / 2,
-                        MAIN.getHeight() - imageSize.get("ship") / 2));
+                pos.setX(Math.clamp(pos.getX(), 0, MAIN.getWidth()));
+                pos.setY(Math.clamp(pos.getY(), 0, MAIN.getHeight()));
             }
             case "breakAway" -> {
                 animateTimer += dt;
-                // 1秒経過後に上に飛び始める
-                if (animateTimer > 1) {
-                    double acceleration = 500 * ShootingGameMain.getScreenSizeAdj();
+                // 0.3秒経過後に上に飛び始める
+                if (animateTimer > 0.3) {
+                    double acceleration = 1500 * ShootingGameMain.getScreenSizeAdj();
                     breakawaySpeed += acceleration * dt;
                     pos.setY(pos.getY() - breakawaySpeed * dt);
 
@@ -291,6 +374,14 @@ public class Player extends Ship implements KeyListener {
         }
 
         subShip.forEach(s -> s.move(dt));
+    }
+
+    public double getShieldPoints() {
+        return shieldPoints;
+    }
+
+    public double getMaxShield() {
+        return maxShield;
     }
 
     @Override
@@ -343,6 +434,16 @@ public class Player extends Ship implements KeyListener {
                         (int) barPos.getY() + (int) barSize.getY()
                 },
                 4);
+
+        // シールドのバー(HPバーの下に細く)
+        if (maxShield > 0) {
+            int sh = Math.max(3, (int) (4 * ShootingGameMain.getScreenSizeAdj()));
+            int sy = (int) barPos.getY() + (int) barSize.getY() + 2;
+            g2.setColor(new Color(50, 50, 50, 150));
+            g2.fillRect((int) barPos.getX() + skewX / 2, sy, (int) barSize.getX(), sh);
+            g2.setColor(new Color(90, 200, 255));
+            g2.fillRect((int) barPos.getX() + skewX / 2, sy, (int) (barSize.getX() * (shieldPoints / maxShield)), sh);
+        }
     }
 
     /*
@@ -371,12 +472,7 @@ public class Player extends Ship implements KeyListener {
                 lastHorizontal = "right";
             }
             case KeyEvent.VK_SPACE -> {
-                // モード切替
-                if (mode == ColorMode.BLUE) {
-                    mode = ColorMode.RED;
-                } else {
-                    mode = ColorMode.BLUE;
-                }
+                changeMode();
             }
         }
     }
@@ -418,8 +514,18 @@ public class Player extends Ship implements KeyListener {
     public void addDamage(double damage) {
         // シールドを持っていなかった場合はダメージを負って、1秒のダメージクールタイムを設ける
         if (shieldTimer <= 0) {
-            super.addDamage(damage);
-            shieldTimer = damagedTimer = 1;
+            // シールドが先にダメージを受け、残りがHPに入る
+            double rest = damage;
+            if (shieldPoints > 0) {
+                double absorbed = Math.min(shieldPoints, rest);
+                shieldPoints -= absorbed;
+                rest -= absorbed;
+            }
+            shieldRegenWait = SHIELD_REGEN_DELAY;
+            GM.addHit();
+            if (rest > 0)
+                super.addDamage(rest);
+            shieldTimer = damagedTimer = 1 + SkillService.getBonus("INVINCIBLE");
         }
     }
 
