@@ -32,7 +32,8 @@ public class BarrageSpec {
         FAN, // 扇状(spread度の範囲にcount発)。aimとsweepで狙い・振りを付ける
         FLOWER, // 花形(petals枚の花びら)。角度ごとに速度を変えて広がる花を描く
         POLYGON, // 多角形(sides角形)。広がる多角形を描く
-        CURTAIN // 画面幅いっぱいの弾の幕(gap幅の隙間がsweepSpeedで左右に動く)
+        CURTAIN, // 画面幅いっぱいの弾の幕(gap幅の隙間がsweepSpeedで左右に動く)
+        ANCHOR // 照準点を予告してから、そこを中心にburstの形で弾を爆発させる
     }
 
     private Type type = Type.RING;
@@ -57,4 +58,8 @@ public class BarrageSpec {
     private double depth = 0.5; // FLOWER: 花びらの深さ(0~1)
     private int sides = 4; // POLYGON: 辺の数
     private double gap = 0.25; // CURTAIN: 隙間の幅(画面幅に対する割合)
+    private String anchor = "player"; // ANCHOR: 照準する点("player"=発射時の自機の位置、"fixed"=anchorPosの位置、"random"=画面の上半分のランダムな点)
+    private Vector2 anchorPos = new Vector2(0, 200); // ANCHOR(fixed): 画面中央からの横ずれ、画面上端からの縦の位置(基準サイズ)
+    private double warnTime = 1.0; // ANCHOR: 予告の時間(秒)
+    private Type burst = Type.RING; // ANCHOR: 爆発の形(RING/FLOWER/POLYGON/FAN)
 }
