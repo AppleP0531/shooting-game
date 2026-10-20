@@ -3,9 +3,12 @@ package com.game.shooting_game.lobbyScene;
 import java.awt.Graphics;
 import java.util.Objects;
 
+import javax.swing.SwingUtilities;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+import com.game.shooting_game.domain.unlock.UnlockService;
+import com.game.shooting_game.domain.unlock.UnlockService.Feature;
 import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
@@ -31,7 +34,9 @@ public final class LobbyManager extends JPanel implements Manager {
     private final BulletManager BM;
 
     private JButton upgradeBtn;
+    private JButton shopBtn;
     private JButton settingBtn;
+    private JButton dexBtn;
     private JButton backpackBtn;
     private JButton nextShipBtn;
     private JButton prevShipBtn;
@@ -64,25 +69,31 @@ public final class LobbyManager extends JPanel implements Manager {
         setOpaque(false);
 
         // 強化ボタン(強化画面に遷移)
-        Vector2 upgradeBtnSize = new Vector2(
-                150 * ShootingGameMain.getScreenSizeAdj(),
-                30 * ShootingGameMain.getScreenSizeAdj());
-        String upgradeImagePath = "/static/img/UI/lobbyScene/upgrade.png";
+        // 下の列は、左から「鞄」「強化」(四角いアイコン)と、残りを使う「ステージ選択」
+        double adj0 = ShootingGameMain.getScreenSizeAdj();
+        int iconSize = (int) (44 * adj0), iconGap = (int) (6 * adj0), edge = (int) (8 * adj0);
+        int rowY = MAIN.getHeight() - (int) (5 * adj0) - iconSize;
+        Vector2 upgradeBtnSize = new Vector2(iconSize, iconSize);
+        String upgradeImagePath = "/static/img/UI/lobbyScene/upgradeIcon.png";
         upgradeBtn = UIBuilder.createImageBtn(component, upgradeImagePath, upgradeBtnSize, "UPGRADE");
-        upgradeBtn.setBounds(
-                MAIN.getWidth() / 2 - (int) upgradeBtn.getWidth() / 2,
-                MAIN.getHeight() - (int) upgradeBtn.getHeight()
-                        - (int) (50 * ShootingGameMain.getScreenSizeAdj()),
-                (int) upgradeBtn.getWidth(), (int) upgradeBtn.getHeight());
+        upgradeBtn.setBounds(edge + iconSize + iconGap, rowY, iconSize, iconSize);
         upgradeBtn.addActionListener(e -> SM.changeScene(SceneType.UPGRADE));
         upgradeBtn.setVisible(false); // 非表示
         this.add(upgradeBtn);
 
+        // ショップボタン(ショップ画面に遷移。強化の右の四角いアイコン。解放前はグレーアウト)
+        shopBtn = UIBuilder.createImageBtn(component, "/static/img/UI/lobbyScene/shopIcon.png", upgradeBtnSize, "SHOP");
+        shopBtn.setBounds(edge + (iconSize + iconGap) * 2, rowY, iconSize, iconSize);
+        shopBtn.addActionListener(e -> SM.changeScene(SceneType.SHOP));
+        shopBtn.setVisible(false); // 非表示
+        this.add(shopBtn);
+        UnlockService.guard(shopBtn, Feature.SHOP);
+
         // 設定ボタン(設定画面に遷移)
         Vector2 settingBtnSize = new Vector2(
-                30 * ShootingGameMain.getScreenSizeAdj(),
-                30 * ShootingGameMain.getScreenSizeAdj());
-        String settingImagePath = "/static/img/UI/lobbyScene/settingImage.png";
+                36 * ShootingGameMain.getScreenSizeAdj(),
+                36 * ShootingGameMain.getScreenSizeAdj());
+        String settingImagePath = "/static/img/UI/lobbyScene/SettingImage.png";
         settingBtn = UIBuilder.createImageBtn(component, settingImagePath, settingBtnSize, "SETTING");
         settingBtn.setBounds(
                 MAIN.getWidth() - 10 - (int) settingBtn.getWidth(),
@@ -92,11 +103,24 @@ public final class LobbyManager extends JPanel implements Manager {
         settingBtn.setVisible(false); // 非表示
         this.add(settingBtn);
 
+        // 図鑑ボタン(敵図鑑に遷移。設定ボタンの下)
+        Vector2 dexBtnSize = new Vector2(
+                36 * ShootingGameMain.getScreenSizeAdj(),
+                36 * ShootingGameMain.getScreenSizeAdj());
+        dexBtn = UIBuilder.createImageBtn(component, "/static/img/UI/lobbyScene/dexIcon.png", dexBtnSize, "図鑑");
+        dexBtn.setBounds(
+                MAIN.getWidth() - 10 - (int) dexBtn.getWidth(),
+                settingBtn.getY() + (int) settingBtn.getHeight() + (int) (5 * ShootingGameMain.getScreenSizeAdj()),
+                (int) dexBtn.getWidth(), (int) dexBtn.getHeight());
+        dexBtn.addActionListener(e -> SM.changeScene(SceneType.ENCYCLOPEDIA));
+        dexBtn.setVisible(false); // 非表示
+        this.add(dexBtn);
+
         // ネクストシップボタン(次の船にシフト)
         Vector2 nextShipBtnSize = new Vector2(
-                30 * ShootingGameMain.getScreenSizeAdj(),
-                30 * ShootingGameMain.getScreenSizeAdj());
-        String nextShipImagePath = "/static/img/UI/lobbyScene/nextShip.png";
+                40 * ShootingGameMain.getScreenSizeAdj(),
+                40 * ShootingGameMain.getScreenSizeAdj());
+        String nextShipImagePath = "/static/img/UI/forwardArrow.png";
         nextShipBtn = UIBuilder.createImageBtn(component, nextShipImagePath, nextShipBtnSize, ">");
         nextShipBtn.setBounds(
                 MAIN.getWidth() / 2
@@ -114,9 +138,9 @@ public final class LobbyManager extends JPanel implements Manager {
 
         // プレビオスボタン(前の船にシフト)
         Vector2 prevShipBtnSize = new Vector2(
-                30 * ShootingGameMain.getScreenSizeAdj(),
-                30 * ShootingGameMain.getScreenSizeAdj());
-        String prevShipImagePath = "/static/img/UI/lobbyScene/prevShip.png";
+                40 * ShootingGameMain.getScreenSizeAdj(),
+                40 * ShootingGameMain.getScreenSizeAdj());
+        String prevShipImagePath = "/static/img/UI/backArrow.png";
         prevShipBtn = UIBuilder.createImageBtn(component, prevShipImagePath,
                 prevShipBtnSize, "<");
         prevShipBtn.setBounds(
@@ -185,14 +209,14 @@ public final class LobbyManager extends JPanel implements Manager {
 
         // モード変更ボタン(モードを変更)
         Vector2 changeModeBtnSize = new Vector2(
-                100 * ShootingGameMain.getScreenSizeAdj(),
-                20 * ShootingGameMain.getScreenSizeAdj());
-        String changeModeImagePath = "/static/img/UI/lobbyScene/changeMode.png";
+                40 * ShootingGameMain.getScreenSizeAdj(),
+                40 * ShootingGameMain.getScreenSizeAdj());
+        String changeModeImagePath = "/static/img/UI/lobbyScene/modeIcon.png";
         changeModeBtn = UIBuilder.createImageBtn(component, changeModeImagePath, changeModeBtnSize,
                 "CHANGE_MODE");
         changeModeBtn.setBounds(
                 MAIN.getWidth() - (int) changeModeBtn.getWidth() - (int) (10 * ShootingGameMain.getScreenSizeAdj()),
-                MAIN.getHeight() - (int) changeModeBtn.getHeight() / 2
+                MAIN.getHeight() - (int) changeModeBtn.getHeight()
                         - (int) (100 * ShootingGameMain.getScreenSizeAdj()),
                 (int) changeModeBtn.getWidth(), (int) changeModeBtn.getHeight());
         changeModeBtn.addActionListener(e -> {
@@ -202,32 +226,23 @@ public final class LobbyManager extends JPanel implements Manager {
         this.add(changeModeBtn);
 
         // 鞄ボタン(バックパック画面に遷移)
-        Vector2 backpackBtnSize = new Vector2(
-                200 * ShootingGameMain.getScreenSizeAdj(),
-                40 * ShootingGameMain.getScreenSizeAdj());
-        String backpackImagePath = "/static/img/UI/lobbyScene/backpackImage.png";
+        Vector2 backpackBtnSize = new Vector2(iconSize, iconSize);
+        String backpackImagePath = "/static/img/UI/lobbyScene/bagIcon.png";
         backpackBtn = UIBuilder.createImageBtn(component, backpackImagePath, backpackBtnSize, "Bag");
-        backpackBtn.setBounds(
-                MAIN.getWidth() / 2 - (int) backpackBtn.getWidth(),
-                MAIN.getHeight() - (int) backpackBtn.getHeight()
-                        - (int) (5 * ShootingGameMain.getScreenSizeAdj()),
-                (int) backpackBtn.getWidth(), (int) backpackBtn.getHeight());
+        backpackBtn.setBounds(edge, rowY, iconSize, iconSize);
         backpackBtn.addActionListener(e -> SM.changeScene(SceneType.BAG));
         backpackBtn.setVisible(false); // 非表示
         this.add(backpackBtn);
 
         // ステージ選択ボタン(ステージ選択画面に遷移)
+        int stageX = edge + (iconSize + iconGap) * 3;
         Vector2 selectStageBtnSize = new Vector2(
-                200 * ShootingGameMain.getScreenSizeAdj(),
-                40 * ShootingGameMain.getScreenSizeAdj());
+                MAIN.getWidth() - stageX - edge,
+                iconSize);
         String selectStageImagePath = "/static/img/UI/lobbyScene/selectStage.png";
         selectStageBtn = UIBuilder.createImageBtn(component, selectStageImagePath,
                 selectStageBtnSize, "SELECT STAGE");
-        selectStageBtn.setBounds(
-                MAIN.getWidth() / 2,
-                MAIN.getHeight() - (int) selectStageBtn.getHeight()
-                        - (int) (5 * ShootingGameMain.getScreenSizeAdj()),
-                (int) selectStageBtn.getWidth(), (int) selectStageBtn.getHeight());
+        selectStageBtn.setBounds(stageX, rowY, (int) selectStageBtnSize.getX(), iconSize);
         selectStageBtn
                 .addActionListener(e -> SM.changeScene(SceneType.SELECTSTAGE));
         selectStageBtn.setVisible(false); // 非表示
@@ -246,6 +261,8 @@ public final class LobbyManager extends JPanel implements Manager {
 
     @Override
     public void setup() {
+        UnlockService.refreshAll();
+        SwingUtilities.invokeLater(UnlockService::announceNewlyUnlocked);
         if (viewingShipInd == -1) {
             viewingShipInd = 0;
             setDefaultViewingShip(DataManager.getUserData().getSelectedShip());
@@ -267,6 +284,39 @@ public final class LobbyManager extends JPanel implements Manager {
                 ships,
                 viewingShipInd);
         lobbyUI.draw(g, uiData);
+        drawModeIndicator(g);
+    }
+
+    /**
+     * いまの色(青 / 赤)を、色の切り替えボタンのまわりに出す(ボタンの枠の光と、下の文字)
+     */
+    private void drawModeIndicator(Graphics g) {
+        if (changeModeBtn == null || !changeModeBtn.isVisible() || SHIP_M.getPlayer() == null)
+            return;
+        boolean red = SHIP_M.getPlayer().getMode() == com.game.shooting_game.gameScene.GameManager.ColorMode.RED;
+        java.awt.Color c = red ? new java.awt.Color(255, 90, 100) : new java.awt.Color(90, 150, 255);
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+        g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+        int pad = (int) (5 * adj);
+        int x = changeModeBtn.getX() - pad, y = changeModeBtn.getY() - pad;
+        int w = changeModeBtn.getWidth() + pad * 2, h = changeModeBtn.getHeight() + pad * 2;
+        // 外側へ薄くなる光 + はっきりした枠
+        for (int i = 3; i >= 1; i--) {
+            g2.setColor(new java.awt.Color(c.getRed(), c.getGreen(), c.getBlue(), 40));
+            g2.setStroke(new java.awt.BasicStroke((float) (i * 3 * adj)));
+            g2.drawRoundRect(x, y, w, h, (int) (16 * adj), (int) (16 * adj));
+        }
+        g2.setColor(c);
+        g2.setStroke(new java.awt.BasicStroke((float) (2.5 * adj)));
+        g2.drawRoundRect(x, y, w, h, (int) (16 * adj), (int) (16 * adj));
+        // 下に、いまの色の名前
+        g2.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, Math.max(10, (int) (13 * adj))));
+        String text = red ? "RED" : "BLUE";
+        java.awt.FontMetrics fm = g2.getFontMetrics();
+        g2.drawString(text, changeModeBtn.getX() + (changeModeBtn.getWidth() - fm.stringWidth(text)) / 2,
+                y + h + fm.getAscent() + (int) (2 * adj));
+        g2.dispose();
     }
 
     /**
@@ -287,6 +337,8 @@ public final class LobbyManager extends JPanel implements Manager {
      */
     public void updateBtnStates() {
         settingBtn.setVisible(true);
+        shopBtn.setVisible(true);
+        dexBtn.setVisible(true);
         nextShipBtn.setVisible(true);
         prevShipBtn.setVisible(true);
         backpackBtn.setVisible(true);

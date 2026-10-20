@@ -53,6 +53,10 @@ public final class EncyclopediaManager extends JPanel implements Manager {
     private JButton goBackBtn;
     private JButton enemyTabBtn;
     private JButton bossTabBtn;
+    private javax.swing.Icon enemyTabOn; // 選ばれているタブの絵
+    private javax.swing.Icon enemyTabOff;
+    private javax.swing.Icon bossTabOn;
+    private javax.swing.Icon bossTabOff;
 
     private ShipKinds currentKind = ShipKinds.ENEMY; // 表示中のタブ
     private List<String> ids = new ArrayList<>(); // 表示中のタブの機体Id(設定ファイルの順)
@@ -87,29 +91,24 @@ public final class EncyclopediaManager extends JPanel implements Manager {
         // タブボタン(タイトルの下に並べる)
         Vector2 tabSize = new Vector2(120 * adj, 30 * adj);
         int tabY = (int) (45 * adj);
-        enemyTabBtn = UIBuilder.createImageBtn(component, (BufferedImage) null, tabSize, "ENEMY");
+        enemyTabBtn = UIBuilder.createImageBtn(component, "/static/img/UI/encyclopediaScene/enemyTab.png", tabSize, "ENEMY");
+        enemyTabOn = UIBuilder.createImageBtn(component, "/static/img/UI/encyclopediaScene/enemyTab_on.png", tabSize, "ENEMY").getIcon();
+        enemyTabOff = enemyTabBtn.getIcon();
         enemyTabBtn.setBounds(MAIN.getWidth() / 2 - (int) tabSize.getX() - (int) (5 * adj), tabY,
                 (int) tabSize.getX(), (int) tabSize.getY());
         enemyTabBtn.addActionListener(e -> changeTab(ShipKinds.ENEMY));
         this.add(enemyTabBtn);
 
-        bossTabBtn = UIBuilder.createImageBtn(component, (BufferedImage) null, tabSize, "BOSS");
+        bossTabBtn = UIBuilder.createImageBtn(component, "/static/img/UI/encyclopediaScene/bossTab.png", tabSize, "BOSS");
+        bossTabOn = UIBuilder.createImageBtn(component, "/static/img/UI/encyclopediaScene/bossTab_on.png", tabSize, "BOSS").getIcon();
+        bossTabOff = bossTabBtn.getIcon();
         bossTabBtn.setBounds(MAIN.getWidth() / 2 + (int) (5 * adj), tabY,
                 (int) tabSize.getX(), (int) tabSize.getY());
         bossTabBtn.addActionListener(e -> changeTab(ShipKinds.BOSS));
         this.add(bossTabBtn);
 
         // 戻るボタン(一つ前の画面に遷移)
-        Vector2 goBackBtnSize = new Vector2(200 * adj, 50 * adj);
-        String goBackImagePath = "/static/img/UI/bagScene/goBackImage.png";
-        goBackBtn = UIBuilder.createImageBtn(component, goBackImagePath, goBackBtnSize, "GO BACK");
-        goBackBtn.setBounds(
-                MAIN.getWidth() / 2 - (int) goBackBtn.getWidth() / 2,
-                MAIN.getHeight() - (int) goBackBtn.getHeight() - (int) (5 * adj),
-                (int) goBackBtn.getWidth(), (int) goBackBtn.getHeight());
-        goBackBtn.addActionListener(e -> {
-            SceneManager.getInstance().changeToPrevScene();
-        });
+        goBackBtn = UIBuilder.createBackBtn(component, () -> SceneManager.getInstance().changeToPrevScene());
         this.add(goBackBtn);
 
         // マウスホイールでスクロール(グリッドの上でだけ)
@@ -190,11 +189,15 @@ public final class EncyclopediaManager extends JPanel implements Manager {
         int rows = (ids.size() + col - 1) / col;
         maxScrollOffset = Math.max(0, rows * pitchY() + 10 * adj - gridArea().height);
 
-        // 選択中のタブが分かるようにする
-        enemyTabBtn.setText(currentKind == ShipKinds.ENEMY ? "[ ENEMY ]" : "ENEMY");
-        bossTabBtn.setText(currentKind == ShipKinds.BOSS ? "[ BOSS ]" : "BOSS");
-        enemyTabBtn.setFont(enemyTabBtn.getFont().deriveFont(currentKind == ShipKinds.ENEMY ? Font.BOLD : Font.PLAIN));
-        bossTabBtn.setFont(bossTabBtn.getFont().deriveFont(currentKind == ShipKinds.BOSS ? Font.BOLD : Font.PLAIN));
+        // 選択中のタブが分かるようにする(明るい絵に切り替える。画像がなければ文字で示す)
+        boolean enemySel = currentKind == ShipKinds.ENEMY;
+        if (enemyTabOn != null && enemyTabOff != null) {
+            enemyTabBtn.setIcon(enemySel ? enemyTabOn : enemyTabOff);
+            bossTabBtn.setIcon(enemySel ? bossTabOff : bossTabOn);
+        } else {
+            enemyTabBtn.setText(enemySel ? "[ ENEMY ]" : "ENEMY");
+            bossTabBtn.setText(enemySel ? "BOSS" : "[ BOSS ]");
+        }
         repaint();
     }
 

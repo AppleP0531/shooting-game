@@ -180,6 +180,23 @@ public class UIBuilder extends JPanel {
         return button;
     }
 
+    /**
+     * 戻るボタン(正方形の矢印。画面の左下の隅に置く)
+     *
+     * @param component 呼び出しクラス名
+     * @param action    押したときの処理
+     * @return 位置と大きさを設定済みのボタン(親に add するだけでよい)
+     */
+    public static JButton createBackBtn(String component, Runnable action) {
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        int size = (int) (40 * adj);
+        int margin = (int) (8 * adj);
+        JButton btn = createImageBtn(component, "/static/img/UI/backArrow.png", new Vector2(size, size), "◀");
+        btn.setBounds(margin, ShootingGameMain.getInstance().getHeight() - margin - size, size, size);
+        btn.addActionListener(e -> action.run());
+        return btn;
+    }
+
     private record Resized(BufferedImage origin, BufferedImage image) {
     }
 

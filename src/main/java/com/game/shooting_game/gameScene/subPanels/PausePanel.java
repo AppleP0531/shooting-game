@@ -7,8 +7,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
-import com.game.shooting_game.SceneManager;
-import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.gameScene.GameManager;
 import com.game.shooting_game.utils.ANSI;
@@ -20,7 +18,6 @@ public class PausePanel extends JPanel {
     private static final String component = "[pausePanel]";
 
     private final ShootingGameMain MAIN;
-    private final SceneManager SM;
     private final GameManager GM;
 
     private Vector2 panelSize; // ステージ詳細パネルの大きさ
@@ -31,7 +28,6 @@ public class PausePanel extends JPanel {
 
     public PausePanel() {
         MAIN = ShootingGameMain.getInstance();
-        SM = SceneManager.getInstance();
         GM = GameManager.getInstance();
     }
 
