@@ -495,7 +495,7 @@
     "reqLevel": 1,
     "coin": 8000,
     "coinGrowth": 1.4,
-    "detail": "自機の当たり判定が小さくなる(最大-15%)。",
+    "detail": "自機の当たり判定(白いドット)が小さくなる(半径4px→最大強化で2px)。",
     "matLevels": [
       {
         "SCREW": {
