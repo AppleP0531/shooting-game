@@ -53,7 +53,7 @@ JAVA_HOME は JDK 25(README 参照)。Windows では `.\mvnw.cmd`、Git Bash で
 
 ### 開発メモの置き場
 
-`todo_list.md`(完了は行頭の「〇」)、`UML.puml`(クラス図。構成を変えたら更新)、`command.md`、`shootingGame.md`(環境メモ)。
+`todo_list.md`(完了したら行頭に「〇」を表記)、`UML.puml`(クラス図。構成を変えたら更新)、`command.md`、`shootingGame.md`(環境メモ)。
 
 ## 作業上の注意
 
