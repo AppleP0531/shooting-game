@@ -3,7 +3,6 @@ package com.game.shooting_game;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -33,16 +32,11 @@ import com.game.shooting_game.data.UserService;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.titleScene.TitleManager;
 import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.ui.Anchor;
-import com.game.shooting_game.ui.Anchor.H;
-import com.game.shooting_game.ui.Anchor.V;
 import com.game.shooting_game.utils.GameSettings;
 import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.ui.LoadProgress;
 import com.game.shooting_game.ui.ShooterButtonUI;
 import com.game.shooting_game.ui.ShooterScrollBarUI;
-import com.game.shooting_game.ui.UIBuilder;
-import com.game.shooting_game.utils.Vector2;
 
 public final class ShootingGameMain extends JPanel implements Runnable {
     private static final double MAX_DELTA = 0.05; // 1フレームで進める時間の上限(秒)
@@ -141,7 +135,14 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                 LoadProgress.creep("Server connecting", 0, 0.30);
 
                 // Spring Bootの起動
-                context = SpringApplication.run(ShootingGameApplication.class, args);
+                SpringApplication app = new SpringApplication(ShootingGameApplication.class);
+                // 保存を速くする既定値(application.properties に書けばそちらが優先される)。
+                // まとめて送る(バッチ)ことで、DBまでの往復の回数を減らす
+                app.setDefaultProperties(java.util.Map.of(
+                        "spring.jpa.properties.hibernate.jdbc.batch_size", "50",
+                        "spring.jpa.properties.hibernate.order_inserts", "true",
+                        "spring.jpa.properties.hibernate.order_updates", "true"));
+                context = app.run(args);
                 DataManager.setContext(context);
 
                 // サーバー接続成功ログ
@@ -245,6 +246,8 @@ public final class ShootingGameMain extends JPanel implements Runnable {
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
+                // 保存のあいだ画面が固まって見えないよう、先にウィンドウを隠す(保存と終了はそのあと)
+                e.getWindow().setVisible(false);
                 // データセーブ開始ログ
                 LogUtils.systemLog(
                         "[INFO]",

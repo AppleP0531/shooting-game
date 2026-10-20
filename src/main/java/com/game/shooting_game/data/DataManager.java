@@ -111,6 +111,7 @@ public final class DataManager implements Manager {
             return;
         }
 
+        long startedAt = System.currentTimeMillis();
         try {
             // 総プレイ時間の更新
             saveSessionPlayTime();
@@ -133,7 +134,7 @@ public final class DataManager implements Manager {
             LogUtils.systemLog(
                     "[INFO]",
                     component,
-                    "User data saved successfully.");
+                    "User data saved successfully. (" + (System.currentTimeMillis() - startedAt) + " ms)");
         } catch (Exception e) {
             // セーブ失敗ログ
             LogUtils.systemLog(
