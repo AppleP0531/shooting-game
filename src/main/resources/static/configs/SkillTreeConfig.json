@@ -491,6 +491,7 @@
     "perLevel": 0.03,
     "maxLevel": 5,
     "unit": "%",
+    "reduce": true,
     "reqLevel": 1,
     "coin": 8000,
     "coinGrowth": 1.4,
@@ -1139,6 +1140,7 @@
     "perLevel": 1,
     "maxLevel": 5,
     "unit": "キル",
+    "reduce": true,
     "reqLevel": 1,
     "coin": 8000,
     "coinGrowth": 1.4,
@@ -1671,4 +1673,61 @@
       }
     ]
   }
+,
+  {
+    "name": "Critical",
+    "title": "会心",
+    "rootNode": "Rapid",
+    "pos": 0,
+    "dist": 95,
+    "effect": "CRIT_RATE",
+    "perLevel": 0.01,
+    "maxLevel": 10,
+    "unit": "%",
+    "reqLevel": 1,
+    "coin": 5000,
+    "coinGrowth": 1.4,
+    "detail": "自機の弾とビームが会心になる確率が上がる。",
+    "matLevels": [
+      { "GEAR": { "COMMON": 5 }, "LENS": { "COMMON": 3 } },
+      { "GEAR": { "COMMON": 6 }, "LENS": { "COMMON": 4 } },
+      { "GEAR": { "COMMON": 7 }, "LENS": { "COMMON": 4 } },
+      { "GEAR": { "COMMON": 8 }, "LENS": { "COMMON": 5 } },
+      { "GEAR": { "COMMON": 9 }, "LENS": { "COMMON": 5 } },
+      { "GEAR": { "COMMON": 10 }, "LENS": { "COMMON": 6 } },
+      { "GEAR": { "COMMON": 7, "UNCOMMON": 2 }, "LENS": { "COMMON": 5, "UNCOMMON": 1 } },
+      { "GEAR": { "COMMON": 8, "UNCOMMON": 3 }, "LENS": { "COMMON": 6, "UNCOMMON": 1 } },
+      { "GEAR": { "COMMON": 9, "UNCOMMON": 4 }, "LENS": { "COMMON": 6, "UNCOMMON": 1 } },
+      { "GEAR": { "COMMON": 10, "UNCOMMON": 5 }, "LENS": { "COMMON": 7, "UNCOMMON": 1 } }
+    ]
+  }
+  ,
+  {
+    "name": "Fatal",
+    "title": "会心威力",
+    "rootNode": "Critical",
+    "pos": 0,
+    "dist": 95,
+    "effect": "CRIT_DMG",
+    "perLevel": 0.05,
+    "maxLevel": 10,
+    "unit": "%",
+    "reqLevel": 2,
+    "coin": 12000,
+    "coinGrowth": 1.4,
+    "detail": "会心が出たときのダメージ倍率が上がる。",
+    "matLevels": [
+      { "SCREW": { "COMMON": 5 }, "LENS": { "COMMON": 3 } },
+      { "SCREW": { "COMMON": 6 }, "LENS": { "COMMON": 4 } },
+      { "SCREW": { "COMMON": 7 }, "LENS": { "COMMON": 4 } },
+      { "SCREW": { "COMMON": 8 }, "LENS": { "COMMON": 5 } },
+      { "SCREW": { "COMMON": 9 }, "LENS": { "COMMON": 5 } },
+      { "SCREW": { "COMMON": 10 }, "LENS": { "COMMON": 6 } },
+      { "SCREW": { "COMMON": 7, "UNCOMMON": 2 }, "LENS": { "COMMON": 5, "UNCOMMON": 1 } },
+      { "SCREW": { "COMMON": 8, "UNCOMMON": 3 }, "LENS": { "COMMON": 6, "UNCOMMON": 1 } },
+      { "SCREW": { "COMMON": 9, "UNCOMMON": 4 }, "LENS": { "COMMON": 6, "UNCOMMON": 1 } },
+      { "SCREW": { "COMMON": 10, "UNCOMMON": 5 }, "LENS": { "COMMON": 7, "UNCOMMON": 1 } }
+    ]
+  }
+
 ]
