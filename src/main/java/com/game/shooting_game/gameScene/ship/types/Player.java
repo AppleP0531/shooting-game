@@ -254,7 +254,7 @@ public class Player extends Ship implements KeyListener {
         if (subShip.isEmpty() || !subShip.get(0).canBeam())
             return;
 
-        int tier = SubShipService.getTier("EMITTER");
+        int tier = java.util.Objects.hash(SubShipService.beam()); // ビームの設定(レベル)が変わったら作り直す
         if (subBeamEmitter == null || subBeamTier != tier) {
             subBeamEmitter = new BeamEmitter(SubShip.createBeamSpec());
             subBeamTier = tier;

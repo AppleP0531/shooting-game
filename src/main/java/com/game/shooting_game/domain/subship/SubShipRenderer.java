@@ -38,6 +38,40 @@ public final class SubShipRenderer {
     /**
      * 機体画像の取得(読めなければnull)
      */
+    // タイプごとの色(色相。標準は元の絵のまま)。0=標準 1=ガンナー 2=ランサー 3=シーカー
+    private static final float[] TYPE_HUE = { -1f, 0.02f, 0.52f, 0.76f };
+    private static final Color[] TYPE_ACCENT = { new Color(255, 214, 80), new Color(255, 120, 70),
+            new Color(110, 220, 255), new Color(190, 140, 255) };
+
+    /** 絵の色相を、タイプの色にずらす(明るさと濃さは保つ) */
+    private static BufferedImage tint(BufferedImage src, float hue) {
+        BufferedImage out = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        float[] hsb = new float[3];
+        for (int y = 0; y < src.getHeight(); y++)
+            for (int x = 0; x < src.getWidth(); x++) {
+                int p = src.getRGB(x, y);
+                int a = p >>> 24;
+                if (a == 0) {
+                    out.setRGB(x, y, 0);
+                    continue;
+                }
+                Color.RGBtoHSB((p >> 16) & 255, (p >> 8) & 255, p & 255, hsb);
+                // 色のついた部分だけ染める(白や灰色の部分はそのまま)
+                float s = hsb[1] > 0.12f ? Math.min(1f, hsb[1] * 1.1f) : hsb[1];
+                int rgb = hsb[1] > 0.12f ? Color.HSBtoRGB(hue, s, hsb[2]) : (p & 0xFFFFFF);
+                out.setRGB(x, y, (a << 24) | (rgb & 0xFFFFFF));
+            }
+        return out;
+    }
+
+    private static BufferedImage image(int hull, boolean left, int px, int type) {
+        BufferedImage base = image(hull, left, px);
+        if (base == null || type <= 0 || type >= TYPE_HUE.length)
+            return base;
+        String key = hull + (left ? "_L" : "_R") + "@" + px + "#" + type;
+        return scaled.computeIfAbsent(key, k -> tint(base, TYPE_HUE[type]));
+    }
+
     private static BufferedImage image(int hull, boolean left, int px) {
         String base = hull + (left ? "_L" : "_R");
         if (!originals.containsKey(base)) {
@@ -76,6 +110,17 @@ public final class SubShipRenderer {
     public static void draw(Graphics2D g2, double cx, double cy, boolean left,
             int hull, int cannon, int engine, int core, int emitter,
             ColorMode mode, double time, float alpha, double scale) {
+        draw(g2, cx, cy, left, hull, cannon, engine, core, emitter, 0, mode, time, alpha, scale);
+    }
+
+    /**
+     * タイプ(何番目のサブ機か)を指定して描く。タイプごとに機体の色が変わり、下にタイプの番号の数だけ光点が並ぶ
+     * 
+     * @param type タイプの番号(0=標準、1=2番目、…)
+     */
+    public static void draw(Graphics2D g2, double cx, double cy, boolean left,
+            int hull, int cannon, int engine, int core, int emitter, int type,
+            ColorMode mode, double time, float alpha, double scale) {
         double adj = ShootingGameMain.getScreenSizeAdj();
         boolean ghost = hull < 1;
         int hullTier = Math.max(1, Math.min(5, hull));
@@ -102,12 +147,24 @@ public final class SubShipRenderer {
             drawFlame(g2, cx, cy + px * 0.42, px, engine, col, time, phase);
 
         // 機体
-        BufferedImage img = image(hullTier, left, (int) Math.round(px));
+        BufferedImage img = image(hullTier, left, (int) Math.round(px), type);
         if (img != null) {
             g2.drawImage(img, (int) Math.round(cx - img.getWidth() / 2.0), (int) Math.round(cy - img.getHeight() / 2.0),
                     null);
         } else {
             drawFallback(g2, cx, cy, px, col);
+        }
+
+        // 何番目のサブ機かが分かる光点(機体の下。番号の数だけ並ぶ)
+        if (!ghost) {
+            Color ac = TYPE_ACCENT[Math.max(0, Math.min(TYPE_ACCENT.length - 1, type))];
+            double dot = Math.max(1.5, px * 0.05);
+            double gap = dot * 2.6;
+            for (int i = 0; i <= type; i++) {
+                double x = cx + (i - type / 2.0) * gap;
+                g2.setColor(withAlpha(ac, 230));
+                g2.fill(new Ellipse2D.Double(x - dot / 2, cy + px * 0.5, dot, dot));
+            }
         }
 
         if (!ghost) {

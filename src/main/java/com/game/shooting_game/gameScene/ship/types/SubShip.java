@@ -16,6 +16,9 @@ import com.game.shooting_game.gameScene.ship.Ship;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.domain.subship.SubShipRenderer;
 import com.game.shooting_game.domain.subship.SubShipService;
+import com.game.shooting_game.domain.subship.SubShipTypeService;
+import com.game.shooting_game.domain.subship.SubShipTypeService.BeamDef;
+import com.game.shooting_game.domain.subship.SubShipTypeService.LevelDef;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.utils.Vector2;
@@ -69,21 +72,24 @@ public class SubShip extends Ship {
             return;
 
         // 暴走状態(Lv5)の自機に合わせて連射が速くなる
-        double rate = SubShipService.rateScale() * (player.getShipLevel() >= 5 ? 1.5 : 1.0);
+        double rate = (player.getShipLevel() >= 5 ? 1.5 : 1.0) / SubShipService.rateScale();
+        LevelDef def = SubShipService.def();
 
-        // 主砲
-        gunTimer -= dt;
-        if (gunTimer <= 0) {
-            fireCannon();
-            gunTimer = SubShipService.param("CANNON", "interval", 0.6) / rate;
+        // 通常弾
+        if (def.straight() > 0) {
+            gunTimer -= dt;
+            if (gunTimer <= 0) {
+                fireCannon(def);
+                gunTimer = def.interval() / rate;
+            }
         }
 
-        // コア(ミサイル)
-        if (SubShipService.getTier("CORE") >= 1) {
+        // 追尾弾
+        if (def.tracking() > 0) {
             missileTimer -= dt;
             if (missileTimer <= 0) {
-                fireMissiles();
-                missileTimer = SubShipService.param("CORE", "interval", 2.0) / rate;
+                fireMissiles(def);
+                missileTimer = def.trackInterval() / rate;
             }
         }
     }
@@ -93,7 +99,7 @@ public class SubShip extends Ship {
      * ビームを撃てる場面か(エミッターのパーツを付けていて、ステージ中かロビーのプレビュー)
      */
     public boolean canBeam() {
-        return SubShipService.getTier("EMITTER") >= 1 && (SM.getSceneName() == SceneType.GAME
+        return SubShipService.beam() != null && (SM.getSceneName() == SceneType.GAME
                 || SM.getSceneName() == SceneType.TEST || SM.getSceneName() == SceneType.LOBBY);
     }
 
@@ -106,11 +112,14 @@ public class SubShip extends Ship {
         spec.setColor("PLAYER");
         spec.setWarn(0.5);
         spec.setFade(0.2);
-        spec.setDuration(SubShipService.param("EMITTER", "duration", 0.8));
-        spec.setWidth(SubShipService.param("EMITTER", "width", 14));
-        spec.setDamage(SubShipService.param("EMITTER", "dps", 20));
-        spec.setInterval(SubShipService.param("EMITTER", "interval", 8));
-        spec.setDelay(SubShipService.param("EMITTER", "interval", 8) * 0.25);
+        BeamDef b = SubShipService.beam();
+        if (b == null) // 撃てないレベルでは呼ばれない(念のため)
+            b = new BeamDef(20, 14, 0.8, 8);
+        spec.setDuration(b.duration());
+        spec.setWidth(b.width());
+        spec.setDamage(b.dps());
+        spec.setInterval(b.interval());
+        spec.setDelay(b.interval() * 0.25);
         return spec;
     }
 
@@ -143,29 +152,27 @@ public class SubShip extends Ship {
     }
 
     /**
-     * 主砲を撃つ(弾数に応じて扇状に広がる)
+     * 通常弾を撃つ(弾数に応じて扇状に広がる)
      */
-    private void fireCannon() {
-        int shots = (int) SubShipService.param("CANNON", "shots", 1);
-        double spread = SubShipService.param("CANNON", "spread", 0);
-        int bulletId = (int) SubShipService.param("CANNON", "bulletId", 2);
+    private void fireCannon(LevelDef def) {
+        int shots = def.straight();
+        int bulletId = 2;
 
         for (int i = 0; i < shots; i++) {
-            double adj = (i - (shots - 1) / 2.0) * spread;
+            double adj = (i - (shots - 1) / 2.0) * def.spread();
             shoot(BulletKinds.STRAIGHT, bulletId, -90 + adj, 1.0);
         }
     }
 
     /**
-     * 追尾ミサイルを撃つ
+     * 追尾弾を撃つ(数に応じて扇状に広がる。あとは敵を追う)
      */
-    private void fireMissiles() {
-        int count = (int) SubShipService.param("CORE", "count", 1);
-        double dmg = SubShipService.param("CORE", "damage", 1.0);
+    private void fireMissiles(LevelDef def) {
+        int count = def.tracking();
 
         for (int i = 0; i < count; i++) {
-            double adj = (i - (count - 1) / 2.0) * 40;
-            shoot(BulletKinds.TRACKING, 1, -90 + adj, dmg);
+            double adj = (i - (count - 1) / 2.0) * 24;
+            shoot(BulletKinds.TRACKING, 1, -90 + adj, 1.0);
         }
     }
 
@@ -190,9 +197,10 @@ public class SubShip extends Ship {
         Graphics2D g2 = (Graphics2D) g;
         float alpha = player.getDamagedTimer() > 0 ? 0.6f : 1f;
 
+        int[] look = SubShipService.look(SubShipTypeService.current(), SubShipService.level());
         SubShipRenderer.draw(g2, pos.getX(), pos.getY(), shipId.endsWith("_L"),
-                SubShipService.hullTier(), SubShipService.getTier("CANNON"), SubShipService.getTier("ENGINE"),
-                SubShipService.getTier("CORE"), SubShipService.getTier("EMITTER"),
+                look[0], look[1], look[2], look[3], look[4],
+                SubShipService.typeIndex(SubShipTypeService.current()),
                 mode, time, alpha, SubShipService.WORLD_SCALE);
     }
 
@@ -202,7 +210,7 @@ public class SubShip extends Ship {
 
         // 自機の位置を記録し、少し前の位置を目標にする(自機の動きから遅れてついてくる)
         history.addLast(new double[] { clock, player.getPos().getX(), player.getPos().getY() });
-        double delay = SubShipService.param("ENGINE", "delay", 0.3);
+        double delay = SubShipService.followDelay();
         double want = clock - delay;
         // 目標時刻より前の記録は、直前の1件だけ残して捨てる
         while (history.size() > 2 && history.get(1)[0] <= want)
