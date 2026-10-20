@@ -1,6 +1,6 @@
 {
-  "unitAttackGrowth": 1.03,
-  "rankAttackGrowth": 4.5,
+  "unitAttackGrowth": 1.028,
+  "rankAttackGrowth": 4.0,
   "stageHpGrowth": 1.034,
   "endlessHpPerWave": 0.015
 }

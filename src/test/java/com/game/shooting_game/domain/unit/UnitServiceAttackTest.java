@@ -69,10 +69,12 @@ class UnitServiceAttackTest {
     }
 
     @Test
-    @DisplayName("最大強化(Lv50・ランク5)の火力は 99,999 未満(ダメージ表示の上限内)")
-    void maxedAttackBelowCap() {
+    @DisplayName("最大強化(Lv50・ランク5)の火力倍率は約4,000(基礎ダメージ10 × 火力スキル最大2倍で、1撃が約8万)")
+    void maxedAttackAboutEightyThousandPerHit() {
         stats.setLevel(50);
         stats.setStars(5);
-        assertThat(UnitService.attackRate(shipId)).isLessThan(99_999);
+        double rate = UnitService.attackRate(shipId);
+        assertThat(rate).isBetween(3_800.0, 4_200.0);
+        assertThat(10 * 2.0 * rate).isBetween(76_000.0, 84_000.0);
     }
 }
