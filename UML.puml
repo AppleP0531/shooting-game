@@ -10,10 +10,9 @@ package "shooting_game" {
         - {static} instance: ShootingGameMain
         - {static} glassPane: CommandGlassPane
         - cardLayout: CardLayout
-        - loadStat: String
         - lastScene: SceneType
         - {static} screenSizeAdj: double
-        - fps: int
+        - fps: int <<GameSettings.getFps()>>
         - gameThread: Thread
         - loaded: boolean
         - running: boolean
@@ -29,6 +28,7 @@ package "shooting_game" {
         + paintComponent(g: Graphics): void
         + getScreenSizeAdj(): double
         + setFps(fps: int): void
+        + getFps(): int
     }
 
     class SceneManager <<Singleton>> {
@@ -41,7 +41,7 @@ package "shooting_game" {
         + {static} getInstance(): SceneManager
         + setup(): void
         + update(dt: double): void
-        + draw(g: Graphics): void
+        + draw(g: Graphics): void <<最後に CoinHud.draw を呼ぶ>>
         + changeScene(target: SceneType): void
         + changeToPrevScene(): void
         + getCurrentManager(): Manager
@@ -54,9 +54,14 @@ package "shooting_game" {
         BAG
         UPGRADE
         SHOP
+        ENCYCLOPEDIA
         SELECTSTAGE
         NORMALSTAGE
         INFINITYSTAGE
+        EXTRA_MODULE
+        EXTRA_BOSS
+        EXTRA_MATERIAL
+        EXTRA_SPECIAL
         SETTING
         GAME
         GAMERESULT
@@ -70,7 +75,7 @@ package "shooting_game" {
             - SM: SceneManager
             - RM: ResourceManager
             - NSM: NormalStageManager
-            - GM: GameManager
+            - UM: UpgradeManager
             - IM: ItemManager
             - SHIP_M: ShipManager
             - BM: BulletManager
@@ -80,7 +85,6 @@ package "shooting_game" {
             - adminMode: boolean
             ~ rootCommands: Map<String, CommandNode>
             - commandField: JTextField
-            - logText: String
             - spacing: double
             - COMMAND_INPUT_HISTORY: List<String>
             - INPUT_HISTORY_MODEL: DefaultListModel<String>
@@ -90,16 +94,20 @@ package "shooting_game" {
             - currentInput: String
             - inputHistoryIndex: int
             - inputHistoryDiff: int
-            - inputHistoryData: ChatBoxContext
-            - COMMAND_LOG_HISTORY: List<String>
-            - LOG_HISTORY_MODEL: DefaultListModel<String>
-            - LOG_HISTORY_LIST: JList<String>
+            - inputHistoryData: ChatBoxContext<String>
+            - COMMAND_LOG_HISTORY: List<LogLine>
+            - LOG_HISTORY_MODEL: DefaultListModel<LogLine>
+            - LOG_HISTORY_LIST: JList<LogLine>
             - MAX_LOG_HISTORY: int
             - DEFAULT_LOG_HISTORY_DISPLAY: int
             - MAX_LOG_HISTORY_DISPLAY: int
             - logHistoryIndex: int
             - logHistoryDiff: int
-            - logHistoryData: ChatBoxContext
+            - logHistoryData: ChatBoxContext<LogLine>
+            - {static} CLOSED_LOG_MAX_LINES: int
+            - {static} CLOSED_LOG_VISIBLE_MS: long
+            - {static} CLOSED_LOG_FADE_MS: long
+            - recentLogTimer: Timer
             - chatOpacity: float
             - COMMAND_SUGGEST: List<String>
             - SUGGEST_MODEL: DefaultListModel<String>
@@ -108,17 +116,21 @@ package "shooting_game" {
             - MAX_SUGGEST_DISPLAY: int
             - suggestIndex: int
             - suggestDiff: int
-            - suggestData: ChatBoxContext
+            - suggestData: ChatBoxContext<String>
             - isAutoComplete: boolean
             - suggestions: List<Suggestion>
             - argCandidates: Map<String, Supplier<List<String>>>
             --
             + CommandGlassPane(onEnter: Runnable)
-            - moveHistory(context: ChatBoxContext, diff: MoveOption): void
+            - moveHistory(context: ChatBoxContext<?>, diff: MoveOption): void
             + showCommandBar(text: String): void
             + hideCommandBar(): void
-            - showChatBoxList(context: ChatBoxContext): void
-            - hideChatBoxList(context: ChatBoxContext): void
+            - showChatBoxList(context: ChatBoxContext<T>): void
+            - hideChatBoxList(context: ChatBoxContext<?>): void
+            ~ addLog(kind: LogLine.Kind, text: String): void
+            - showRecentLog(): void <<入力欄を閉じたあと新しい行だけ薄く消えながら表示>>
+            - placeLogList(): void
+            - chatUserName(): String
             - hideAllChatBox(): void
             - initFadeTimer(): void
             + executeCommand(): void
@@ -136,7 +148,6 @@ package "shooting_game" {
             - removeHandler(): void
             + setAdminMode(enabled: boolean): void
             ~ isAdminMode(): boolean
-            ~ logHistory(): ChatBoxContext
         }
 
         interface CommandAction <<functional>> {
@@ -166,16 +177,43 @@ package "shooting_game" {
             + compersionSyntax(token: String): boolean
         }
 
-        class ChatBoxContext <<lombok @Data>> {
-            - elements: List<String>
-            - model: DefaultListModel<String>
-            - list: JList<String>
+        class ChatBoxContext<T> <<lombok @Data>> {
+            - elements: List<T>
+            - model: DefaultListModel<T>
+            - list: JList<T>
             - maxSavelength: int
             - maxDisplay: int
             - index: int
             - diff: int
             --
-            + addElement(text: String): void
+            + addElement(element: T): void
+        }
+
+        class LogLine <<record>> {
+            ~ text: String
+            ~ kind: Kind
+            ~ createdAt: long <<エポックミリ秒>>
+            --
+            ~ LogLine(text: String, kind: Kind)
+        }
+
+        enum Kind {
+            INFO
+            SUCCESS
+            ERROR
+            HELP
+            CHAT
+        }
+
+        class LogCellRenderer <<CommandGlassPane内部>> {
+            - line: LogLine
+            - background: Color
+            --
+            + getListCellRendererComponent(list: JList, value: LogLine, index: int, ...): Component
+            - prefixOf(kind: LogLine.Kind, font: Font): String
+            - colorOf(kind: LogLine.Kind): Color
+            - fadeOf(target: LogLine): float
+            # paintComponent(g: Graphics): void
         }
 
         abstract class CommandGroup {
@@ -186,7 +224,10 @@ package "shooting_game" {
             --
             ~ CommandGroup(pane: CommandGlassPane)
             ~ {abstract} registerAll(): void
-            # log(): ChatBoxContext
+            # info(text: String): void
+            # success(text: String): void
+            # error(text: String): void
+            # usage(node: CommandNode): void
             # register(root: Map<String,CommandNode>, name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
             # register(root: CommandNode, name: String, desc: String, admin: boolean, action: CommandAction): CommandNode
             # isSceneValid(allowedTypes: SceneType...): boolean
@@ -210,6 +251,10 @@ package "shooting_game" {
         CommandGroup <|-- PlayerDataCommands
         CommandGroup --> CommandGlassPane
         CommandGlassPane ..> CommandGroup
+        LogLine --> Kind
+        ChatBoxContext o-- LogLine
+        CommandGlassPane ..> LogLine
+        CommandGroup ..> LogLine
     }
 
     class ResourceManager <<Singleton>> {
@@ -375,6 +420,10 @@ package "shooting_game" {
         enum StageModeButton {
             NORMAL
             INFINITY
+            EXTRA_MODULE
+            EXTRA_BOSS
+            EXTRA_MATERIAL
+            EXTRA_SPECIAL
             --
             - label: String
             - imagePath: String
@@ -456,6 +505,8 @@ package "shooting_game" {
                     - loadImages(): void
                     - drawPanel(): void
                     - drawBtn(): void
+                    - buttonCenter(data: StageBtnData): Vector2
+                    # paintComponent(g: Graphics): void <<ステージ間を線でつなぐ>>
                 }
 
                 class StageInfoView {
@@ -491,30 +542,72 @@ package "shooting_game" {
                     - spacing: int
                     - stageId: int
                     - infoView: StageInfoView
+                    - difficultyPanel: DifficultyPanel
+                    - currentStageId: int
                     - startStageBtn: JButton
                     - skipStageBtn: JButton
                     --
                     + StageDetailPanel()
                     + initComponents(): void
                     + showStageDetail(stageId: int): void
-                    - drawBtn(stageId: int): void
+                    - onDifficultyChanged(diff: Difficulty): void
+                    - drawBtn(stageId: int, diff: Difficulty): void
                     - getRewardList(stageId: int): Map<ResourceName, Map<Rarity, String>>
                     - getEnemyList(stageId: int): List<String>
                 }
             }
         }
 
-        package "infinity" {
-            class ExtraStageManager {
+        class DifficultyPanel {
+            - {static} SELECTED: Color
+            - buttons: Map<Difficulty, JButton>
+            - info: JLabel
+            - onChange: Consumer<Difficulty>
+            - stageId: int
+            - selected: Difficulty
+            --
+            + DifficultyPanel(width: int, onChange: Consumer<Difficulty>)
+            + {static} height(): int
+            + getSelected(): Difficulty
+            + show(stageId: int): void
+            - select(d: Difficulty): void
+            - refreshButtons(): void
+            - infoText(): String
+        }
+
+        package "extra" {
+            class ExtraStageManager <<カテゴリごとに1つ生成>> {
+                - {static} component: String
+                - {static} EXTRA_BASE_ID: int
+                + {static} CATEGORIES: String[][] <<MODULE/BOSS/MATERIAL/SPECIAL>>
+                - MAIN: ShootingGameMain
+                - SM: SceneManager
+                - STAGE_M: StageManager
+                - category: String
+                - categoryTitle: String
                 - stageBtns: List<JButton>
+                - goBackBtn: JButton
+                - detailPanel: JPanel
+                - detailText: JTextArea
+                - startBtn: JButton
+                - difficultyPanel: DifficultyPanel <<BOSS分類のみ>>
                 - selectedId: int
+                --
+                + ExtraStageManager(category: String, categoryTitle: String)
                 + initComponents(): void
                 - extraIds(): List<Integer>
+                - unlocked(d: StageData): boolean
                 - rebuild(): void
+                - {static} chipLine(d: StageData, diff: Difficulty): String
                 - showDetail(id: int): void
+                - renderDetail(diff: Difficulty): void
                 + setup(): void
+                + update(dt: double): void
+                + draw(g: Graphics): void
             }
+        }
 
+        package "infinity" {
             class InfinityStageManager <<Singleton>> {
                 - {static} component: String
                 - {static} instance: InfinityStageManager
@@ -546,6 +639,9 @@ package "shooting_game" {
             - {static} instance: SettingManager
             - settingUI: SettingSceneUI
             - goBackBtn: JButton
+            - quitBtn: JButton
+            - fpsBtns: Map<Integer, JButton>
+            - damageTextBtns: Map<Boolean, JButton>
             --
             - SettingManager()
             + initComponents(): void
@@ -553,6 +649,11 @@ package "shooting_game" {
             + setup(): void
             + update(dt: double): void
             + draw(g: Graphics): void
+            - createFpsRow(): JPanel
+            - createDamageTextRow(): JPanel
+            - updateFpsButtons(): void
+            - updateDamageTextButtons(): void
+            - confirmQuit(): void
         }
         
         class SettingSceneUI {
@@ -626,6 +727,7 @@ package "shooting_game" {
             - ownedResourcesPanel: OwnedResourcesPanel
             - goBackBtn: JButton
             - shopBtn: JButton
+            - dexBtn: JButton <<ENEMY LIST。ENCYCLOPEDIA へ遷移>>
             --
             - BagManager()
             + initComponents(): void
@@ -661,7 +763,47 @@ package "shooting_game" {
                 + initComponents(): void
                 + setup(): void
                 + drawPanel(g: Graphics): void
+                - itemCount(): int
+                - drawEmptySlot(g: Graphics, pos: Vector2): void
             }
+        }
+    }
+
+    package "encyclopediaScene" {
+        class EncyclopediaManager <<Singleton>> {
+            - {static} component: String
+            - {static} instance: EncyclopediaManager
+            - MAIN: ShootingGameMain
+            - goBackBtn: JButton
+            - enemyTabBtn: JButton
+            - bossTabBtn: JButton
+            - currentKind: ShipKinds <<ENEMY / BOSS タブ>>
+            - ids: List<String>
+            - seenCount: int
+            - selectedId: String
+            - scrollOffset: double
+            - maxScrollOffset: double
+            - col: int
+            - bossImageCache: Map<String,BufferedImage>
+            - bossImageMissing: Set<String>
+            --
+            - EncyclopediaManager()
+            + initComponents(): void
+            + {static} getInstance(): EncyclopediaManager
+            + setup(): void
+            + update(dt: double): void
+            + draw(g: Graphics): void
+            - changeTab(kind: ShipKinds): void
+            - refresh(): void
+            - gridArea(): Rectangle
+            - detailArea(): Rectangle
+            - cardAt(p: Point): String
+            - drawCards(g2: Graphics2D): void
+            - drawFrame(g2: Graphics2D, center: Vector2, size: double, seen: boolean, selected: boolean): void
+            - drawSprite(g2: Graphics2D, id: String, center: Vector2, frameSize: double): void
+            - getSprite(id: String): BufferedImage
+            - drawDetail(g2: Graphics2D): void
+            - buildStats(id: String): List<String>
         }
     }
 
@@ -909,6 +1051,17 @@ package "shooting_game" {
             }
         }
 
+        package "dex" {
+            class DexService <<Utility>> {
+                - {static} SEEN_PREFIX: String = "seen:"
+                --
+                + {static} isSeen(shipId: String): boolean
+                + {static} markSeen(shipId: String): void
+                + {static} seenCount(shipIds: Collection<String>): int
+                - {static} records(): Map<String,Integer> <<progress.highScores を流用>>
+            }
+        }
+
         package "subship" {
             class SubShipService <<Utility>> {
                 + {static} BASE_DAMAGE_SCALE: double
@@ -1066,8 +1219,11 @@ package "shooting_game" {
             - pause: boolean
             - score: int
             - coin: int
-            - managers: List<Manager>
+            - managers: List<Manager> <<DamagePopupManager を最前面に含む>>
             - effectList: Map<String, Double>
+            - hitCount: int <<被弾回数(HARDミッション用)>>
+            - playTime: double
+            - skipped: boolean <<スキップ報酬のみ(ミッション対象外)>>
             --
             - GameManager()
             + initComponents(): void
@@ -1081,6 +1237,9 @@ package "shooting_game" {
             + checkCollisions(): void
             + addScore(value: double): void
             + addCoin(value: int): void
+            + addHit(): void
+            + skipResult(): void
+            - {static} bumpRarity(rarity: Rarity, bump: int): Rarity
             + getGameResult(): boolean
             + gameover(state: boolean): void
             + setPause(pause: boolean): void
@@ -1132,6 +1291,33 @@ package "shooting_game" {
             }
         }
 
+        package "damage" {
+            class DamagePopupManager <<Singleton>> {
+                - {static} LIFETIME: double
+                - {static} FADE_START: double
+                - {static} MERGE_WINDOW: double
+                - {static} MAX_POPUPS: int
+                - {static} instance: DamagePopupManager
+                - popups: List<Popup>
+                --
+                - DamagePopupManager()
+                + {static} getInstance(): DamagePopupManager
+                + add(target: Ship, amount: double): void <<短時間の連続ダメージは1つにまとめる>>
+                + setup(): void
+                + update(dt: double): void
+                + draw(g: Graphics): void
+            }
+
+            class Popup <<DamagePopupManager内部>> {
+                ~ target: Ship
+                ~ x: double
+                ~ y: double
+                ~ owner: ShipKinds
+                ~ amount: double
+                ~ age: double
+            }
+        }
+
         package "stage" {
             class StageManager <<Singleton>> {
                 - {static} component: String
@@ -1160,6 +1346,7 @@ package "shooting_game" {
                 - SM: SceneManager
                 - SHIP_M: ShipManager
                 - STAGE_M: StageManager
+                - difficulty: Difficulty <<setStageId で NORMAL に戻る>>
                 --
                 + Stage()
                 + reset(): void
@@ -1170,13 +1357,63 @@ package "shooting_game" {
                 - newWave(id: int): void
                 + setStageId(id: int): void
                 + getStageId(): int
+                + getDifficulty(): Difficulty
+                + setDifficulty(d: Difficulty): void
+            }
+
+            enum Difficulty {
+                EASY
+                NORMAL
+                HARD
+                NIGHTMARE
+                --
+                - label: String
+                - title: String
+                - enemyHpRate: double
+                - enemyDamageRate: double
+                - rewardRate: double
+                - moduleChanceRate: double
+                - rarityBump: int
+                --
+                + describe(): String
+            }
+
+            class DifficultyService <<Utility>> {
+                - {static} NORMAL_STAGE_LIMIT: int
+                - {static} BOSS_TIME_LIMIT: double
+                --
+                + {static} selectable(stageId: int): boolean
+                + {static} key(stageId: int, diff: Difficulty): String
+                + {static} highScore(stageId: int, diff: Difficulty): int
+                + {static} cleared(stageId: int, diff: Difficulty): boolean
+                + {static} unlocked(stageId: int, diff: Difficulty): boolean
+                + {static} lockReason(stageId: int, diff: Difficulty): String
+                + {static} timeLimit(stageId: int): double
+                + {static} missions(stageId: int): List<Mission>
+                + {static} allMissionsDone(stageId: int): boolean
+                + {static} recordMissions(stageId: int, hits: int, hpRate: double, seconds: double): List<String>
+                + {static} scaleRange(range: String, rate: double): String
+            }
+
+            class Mission <<record>> {
+                ~ text: String
+                ~ done: boolean
+            }
+
+            class MissionSpec <<lombok @Data>> {
+                - maxHits: int
+                - minHpRate: double
+                - secondsPerWave: double
+                - maxSeconds: double
             }
 
             class StageModifiers <<Utility>> {
                 - {static} current: Spec
+                - {static} difficulty: Difficulty
                 - {static} endlessHp: double
                 - {static} endlessDamage: double
                 + {static} load(spec: Spec): void
+                + {static} load(spec: Spec, diff: Difficulty): void
                 + {static} setEndlessScale(wave: int): void
                 + {static} enemyHpRate(): double
                 + {static} enemyDamageRate(): double
@@ -1228,6 +1465,7 @@ package "shooting_game" {
                 - unlock: int
                 - moduleRewards: List<ModuleReward>
                 - modifiers: StageModifiersSpec
+                - missions: MissionSpec <<HARDのミッション>>
                 - gimmicks: Map<String, BeamSpec[]>
                 --
                 + getRandomResourceAmount(resKind: ResourceKinds): int
@@ -1383,7 +1621,7 @@ package "shooting_game" {
                 + changeMode(): void
                 + addScore(): void
                 + heal(damage: double): void
-                + addDamage(damage: double): void
+                + addDamage(damage: double): void <<DamagePopupManager.add を呼ぶ>>
                 + isColorless(): boolean
                 + collidesWithCircle(center: Vector2, radius: double): boolean
                 + getRamDamage(): double
@@ -1651,6 +1889,12 @@ package "shooting_game" {
                     - checkGaugeBreak(): void
                     - startTransition(clearedGauge: int): void
                     - startRetreat(): void  <<Phase.RETREAT。撤収。弾とビームを消す>>
+                    - {static} BURST_AT: double
+                    - transitionProgress(): double
+                    - formBlend(): double
+                    - applyTransitionTransform(g2: Graphics2D): void <<ため→弾けの揺れと拡縮>>
+                    - drawTransitionEffect(g2: Graphics2D): void
+                    - {static} fillGlow(g2: Graphics2D, cx: double, cy: double, radius: double, c: Color, a: double): void
                     + drawHpBar(g: Graphics): void
                     - {static} bodyFrames(bossId: String, form: int): BufferedImage[]
                     - drawBodyImage(g2: Graphics2D): boolean
@@ -1949,6 +2193,8 @@ package "shooting_game" {
                 - vx: double
                 - vy: double
                 - size: double
+                - angle: double <<出現時の向き(度)>>
+                - spin: double <<回転の速さ(度/秒)>>
                 - color: String
                 - dirs: String[]
                 - delay: double
@@ -1965,6 +2211,7 @@ package "shooting_game" {
                 - emitter: BeamEmitter
                 - pos: Vector2
                 - mode: ColorMode
+                - angle: double <<今の向き(ラジアン)。spinで回る>>
                 --
                 + BeamBlock(spec: BlockSpec)
                 + update(dt: double, shooter: BeamManager): void
@@ -1974,7 +2221,8 @@ package "shooting_game" {
                 + hits(p: Vector2, radius: double): boolean
                 + onScreen(): boolean
                 + isGone(): boolean
-                + draw(g2: Graphics2D): void
+                + getAngle(): double
+                + draw(g2: Graphics2D): void <<angle で回転して描画>>
             }
             enum Push {
                 NONE
@@ -2009,6 +2257,7 @@ package "shooting_game" {
                 - angle: double
                 - sweep: double
                 - width: double
+                - angleSupplier: Supplier<Double> <<回るブロックに追従>>
                 --
                 + Beam(team: Team, spec: BeamSpec, mode: ColorMode, origin: Vector2, angle: double)
                 + update(dt: double): void
@@ -2305,6 +2554,22 @@ package "shooting_game" {
             }
         }
 
+        class GameSettings <<Utility>> {
+            - {static} component: String
+            - {static} FILE: Path <<settings.properties>>
+            + {static} FPS_CHOICES: int[]
+            + {static} DEFAULT_FPS: int
+            - {static} props: Properties
+            - {static} loaded: boolean
+            --
+            + {static} getFps(): int
+            + {static} setFps(fps: int): void
+            + {static} isDamageTextEnabled(): boolean
+            + {static} setDamageTextEnabled(enabled: boolean): void
+            - {static} load(): void
+            - {static} save(): void
+        }
+
         class GameUtils {
             + {static} distance(target1: Vector2, target2: Vector2): double
             + {static} targetVec(target1: Vector2, target2: Vector2): double
@@ -2373,6 +2638,39 @@ package "shooting_game" {
             # installDefaults(b: AbstractButton): void
             + paint(g: Graphics, c: JComponent): void
             # paintText(g: Graphics, b: AbstractButton, textRect: Rectangle, text: String): void
+        }
+
+        class CoinHud <<Utility>> {
+            - {static} SCENES: Set<SceneType>
+            - {static} icon: BufferedImage
+            --
+            + {static} draw(g: Graphics, scene: SceneType): void <<ゲーム以外の画面の左上に所持コインを描く>>
+        }
+
+        class LoadProgress <<Utility>> {
+            - {static} status: String
+            - {static} target: double
+            - {static} shown: double
+            - {static} lastNanos: long
+            --
+            + {static} set(text: String, amount: double): void
+            + {static} creep(text: String, amount: double, cap: double): void
+            + {static} draw(g: Graphics, width: int, height: int): void <<起動時の進捗バー>>
+        }
+
+        class ShooterScrollBarUI <<Utility>> {
+            - {static} TRACK: Color
+            - {static} THUMB: Color
+            - {static} THUMB_HOVER: Color
+            - {static} THUMB_DRAG: Color
+            --
+            + {static} createUI(c: JComponent): ComponentUI
+            + {static} install(): void
+            + getPreferredSize(c: JComponent): Dimension
+            # createDecreaseButton(orientation: int): JButton
+            # createIncreaseButton(orientation: int): JButton
+            # paintTrack(g: Graphics, c: JComponent, r: Rectangle): void
+            # paintThumb(g: Graphics, c: JComponent, r: Rectangle): void
         }
 
         class ModuleIcons <<Utility>> {
@@ -2482,6 +2780,8 @@ package "shooting_game" {
             - resources: Map<ResourceKinds, Integer>
             - modules: List<Module>
             - score: int
+            - difficultyLabel: String
+            - newMissions: List<String>
             --
             + {static} getInstance(): StageRewards
             + resetRewards(): void
@@ -2640,6 +2940,8 @@ shooting_game.utils.LogUtils +-- LogLevel
 shooting_game.SceneManager +-- SceneType
 shooting_game.command.CommandGlassPane +-- CommandAction
 shooting_game.command.CommandGlassPane +-- MoveOption
+shooting_game.command.CommandGlassPane +-- LogCellRenderer
+shooting_game.command.LogLine +-- Kind
 shooting_game.utils.animation.Animation +-- AnimationLogic
 shooting_game.ui.Anchor +-- H
 shooting_game.ui.Anchor +-- V
@@ -2659,6 +2961,9 @@ shooting_game.data.UserData +-- ShipStats
 shooting_game.stageScene.SelectStageManager +-- StageModeButton
 shooting_game.stageScene.normal.NormalStageManager +-- StageBtnData
 shooting_game.stageScene.normal.NormalStageManager +-- StageDetailData
+shooting_game.gameScene.stage.DifficultyService +-- Mission
+shooting_game.gameScene.stage.StageManager +-- MissionSpec
+shooting_game.gameScene.damage.DamagePopupManager +-- Popup
 shooting_game.lobbyScene.LobbySceneUI +-- LobbySceneUIData
 shooting_game.gameScene.GameManager +-- ColorMode
 shooting_game.gameScene.GameSceneUI +-- GameSceneUIData
@@ -2686,6 +2991,29 @@ shooting_game.gameScene.item.ItemManager +-- ItemConfig
 shooting_game.gameScene.item.ResourceFactory +-- DropModel
 shooting_game.domain.subship.SubShipService +-- PartData
 shooting_game.domain.subship.SubShipService +-- TierData
+
+' 追加した依存関係
+shooting_game.stageScene.DifficultyPanel --> shooting_game.gameScene.stage.Difficulty
+shooting_game.stageScene.DifficultyPanel ..> shooting_game.gameScene.stage.DifficultyService
+shooting_game.stageScene.extra.ExtraStageManager --> shooting_game.stageScene.DifficultyPanel
+shooting_game.stageScene.normal.subPanels.StageDetailPanel --> shooting_game.stageScene.DifficultyPanel
+shooting_game.gameScene.stage.Stage --> shooting_game.gameScene.stage.Difficulty
+shooting_game.gameScene.stage.StageModifiers ..> shooting_game.gameScene.stage.Difficulty
+shooting_game.gameScene.stage.DifficultyService ..> shooting_game.gameScene.stage.Difficulty
+shooting_game.gameScene.GameManager ..> shooting_game.gameScene.stage.DifficultyService
+shooting_game.gameScene.GameManager --> shooting_game.gameScene.damage.DamagePopupManager
+shooting_game.gameScene.ship.Ship ..> shooting_game.gameScene.damage.DamagePopupManager
+shooting_game.gameScene.damage.DamagePopupManager ..> shooting_game.utils.GameSettings
+shooting_game.gameScene.ship.ShipManager ..> shooting_game.domain.dex.DexService
+shooting_game.encyclopediaScene.EncyclopediaManager ..> shooting_game.domain.dex.DexService
+shooting_game.encyclopediaScene.EncyclopediaManager ..> shooting_game.gameScene.ship.ShipManager
+shooting_game.bagScene.BagManager ..> shooting_game.encyclopediaScene.EncyclopediaManager
+shooting_game.SceneManager --> shooting_game.encyclopediaScene.EncyclopediaManager
+shooting_game.SceneManager ..> shooting_game.ui.CoinHud
+shooting_game.ShootingGameMain ..> shooting_game.ui.LoadProgress
+shooting_game.ShootingGameMain ..> shooting_game.ui.ShooterScrollBarUI
+shooting_game.ShootingGameMain ..> shooting_game.utils.GameSettings
+shooting_game.settingScene.SettingManager ..> shooting_game.utils.GameSettings
 
 ' extends関係
 shooting_game.repository.UserRepository --|> org.springframework.data.jpa.repository.JpaRepository
@@ -2723,6 +3051,10 @@ shooting_game.gameResultScene.GameResultManager --|> javax.swing.JPanel
 shooting_game.gameResultScene.subPanels.RewardListPanel --|> javax.swing.JPanel
 shooting_game.testScene.TestManager --|> javax.swing.JPanel
 shooting_game.bagScene.BagManager --|> javax.swing.JPanel
+shooting_game.encyclopediaScene.EncyclopediaManager --|> javax.swing.JPanel
+shooting_game.stageScene.DifficultyPanel --|> javax.swing.JPanel
+shooting_game.stageScene.extra.ExtraStageManager --|> javax.swing.JPanel
+shooting_game.ui.ShooterScrollBarUI --|> javax.swing.plaf.basic.BasicScrollBarUI
 
 ' implements関係
 shooting_game.ShootingGameMain ..|> Runnable
@@ -2757,6 +3089,9 @@ shooting_game.gameResultScene.GameResultManager ..|> shooting_game.interfaces.Ma
 shooting_game.testScene.TestManager ..|> shooting_game.interfaces.Manager
 shooting_game.data.DataManager ..|> shooting_game.interfaces.Manager
 shooting_game.bagScene.BagManager ..|> shooting_game.interfaces.Manager
+shooting_game.encyclopediaScene.EncyclopediaManager ..|> shooting_game.interfaces.Manager
+shooting_game.stageScene.extra.ExtraStageManager ..|> shooting_game.interfaces.Manager
+shooting_game.gameScene.damage.DamagePopupManager ..|> shooting_game.interfaces.Manager
 shooting_game.shopScene.ShopManager ..|> shooting_game.interfaces.Manager
 shooting_game.gameScene.ship.types.Player ..|> java.awt.event.KeyListener
 shooting_game.utils.animation.AnimationManager ..|> shooting_game.interfaces.Manager
