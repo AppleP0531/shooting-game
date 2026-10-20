@@ -17,6 +17,8 @@ public class StageRewards {
 
     private int score; // ステージクリアスコア
     private Map<ResourceKinds, Integer> resources = new HashMap<>(); // ステージクリア報酬
+    private String difficultyLabel = ""; // 遊んだ難易度の表示(ノーマルは空)
+    private List<String> newMissions = new ArrayList<>(); // 今回新しく達成したミッション
     private List<Module> modules = new ArrayList<>(); // クリアで手に入ったモジュール
 
     /**
@@ -36,5 +38,7 @@ public class StageRewards {
         resources.clear();
         modules.clear();
         score = 0;
+        difficultyLabel = "";
+        newMissions.clear();
     }
 }

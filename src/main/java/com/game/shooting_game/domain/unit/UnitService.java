@@ -30,8 +30,10 @@ public final class UnitService {
     public static final int MAX_LEVEL = 50;
     public static final int MAX_STARS = 5;
 
-    private static final double LEVEL_COIN_BASE = 150; // Lv1→2に必要なコイン
-    private static final double LEVEL_COIN_GROWTH = 1.15; // レベルごとのコイン倍率(Lv49→50で約12万)
+    // 序盤は軽く(Lv1→2で60、Lv10→11で約280)、Lv30あたりから以前より重くなる(Lv49→50で約20万)
+    private static final double LEVEL_COIN_BASE = 60; // Lv1→2に必要なコイン
+    private static final double LEVEL_COIN_GROWTH = 1.185; // レベルごとのコイン倍率
+    private static final double ITEM_BAND_EXTRA = 1.2; // 帯が上がるごとに素材が増える勢い(帯の2乗に比例)
 
     private static final double ATTACK_PER_LEVEL = 0.02; // レベル1つあたりの火力(Lv50で約2倍)
     private static final double HP_PER_LEVEL = 0.03; // レベル1つあたりの耐久力(Lv50で約2.5倍)
@@ -109,7 +111,8 @@ public final class UnitService {
             case 3 -> Rarity.RARE;
             default -> Rarity.EPIC;
         };
-        int count = 2 + step + band * 2; // 帯が上がるほど、帯の中で進むほど多い
+        // 序盤の帯は軽く、後半の帯ほど急に重くなる
+        int count = (int) Math.round(2 + step * (0.6 + 0.2 * band) + ITEM_BAND_EXTRA * band * band);
         Map<ResourceKinds, Integer> items = new LinkedHashMap<>();
         items.put(new ResourceKinds(name, rarity), count);
         return new Cost(coins, items);

@@ -522,6 +522,7 @@ public class Player extends Ship implements KeyListener {
                 rest -= absorbed;
             }
             shieldRegenWait = SHIELD_REGEN_DELAY;
+            GM.addHit();
             if (rest > 0)
                 super.addDamage(rest);
             shieldTimer = damagedTimer = 1 + SkillService.getBonus("INVINCIBLE");

@@ -1,16 +1,11 @@
 package com.game.shooting_game.command;
 
-import com.game.shooting_game.ResourceManager;
-import com.game.shooting_game.ResourceManager.ResourceKinds;
-import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.data.UserData;
-import com.game.shooting_game.gameScene.GameManager;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.ship.ShipFactory;
-import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.GameUtils;
@@ -18,7 +13,8 @@ import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.utils.Vector2;
 
 /**
- * ゲーム操作・デバッグ系のコマンド(/kill /summon /beam /clear /effect /gameclear /gameover /clearstage)
+ * ゲーム操作・デバッグ系のコマンド(/kill /summon /beam /clear /effect /gameclear /gameover
+ * /clearstage)
  */
 final class GameCommands extends CommandGroup {
     GameCommands(CommandGlassPane pane) {
@@ -91,7 +87,8 @@ final class GameCommands extends CommandGroup {
                                 MAIN.getWidth() / 2.0 + x * adj,
                                 MAIN.getHeight() / 2.0 + y * adj);
 
-                        SHIP_M.addShip(ShipFactory.createShip(owner, enemyId, mode, level, pos, new Vector2(pos), null));
+                        SHIP_M.addShip(
+                                ShipFactory.createShip(owner, enemyId, mode, level, pos, new Vector2(pos), null));
 
                         logText = enemyId + " summoned at (" + x + ", " + y + ").";
                         log().addElement(logText);
@@ -109,8 +106,9 @@ final class GameCommands extends CommandGroup {
                     }
                 }).setSyntax("<enemyId>", "<x>", "<y>", "[mode]", "[level]");
 
-        // ビームの試射 /beam <origin> [color]  (SHIP_UPだけは自機のビームを撃つ)
-        register(rootCommands, "/beam", "Fire a test beam. Origins: TOP_PLAYER, TOP_X, TOP_RANDOM, WALL_LEFT, WALL_RIGHT, WALL_RANDOM, SHIP_UP.",
+        // ビームの試射 /beam <origin> [color] (SHIP_UPだけは自機のビームを撃つ)
+        register(rootCommands, "/beam",
+                "Fire a test beam. Origins: TOP_PLAYER, TOP_X, TOP_RANDOM, WALL_LEFT, WALL_RIGHT, WALL_RANDOM, SHIP_UP.",
                 true, (node, args) -> {
                     // 引数が不適切な場合
                     if (args.length < 1 || args.length > 2) {
@@ -125,7 +123,8 @@ final class GameCommands extends CommandGroup {
 
                     try {
                         com.game.shooting_game.gameScene.beam.BeamSpec spec = new com.game.shooting_game.gameScene.beam.BeamSpec();
-                        spec.setOrigin(com.game.shooting_game.gameScene.beam.BeamSpec.Origin.valueOf(args[0].toUpperCase()));
+                        spec.setOrigin(
+                                com.game.shooting_game.gameScene.beam.BeamSpec.Origin.valueOf(args[0].toUpperCase()));
                         ColorMode mode = args.length == 2 ? ColorMode.valueOf(args[1].toUpperCase()) : ColorMode.RED;
                         var player = SHIP_M.getPlayer();
 
@@ -145,7 +144,8 @@ final class GameCommands extends CommandGroup {
                             // 敵のビーム(予兆1.2秒 → 照射1秒)
                             spec.setDuration(1.0);
                             spec.setX(0);
-                            com.game.shooting_game.gameScene.beam.BeamManager.getInstance().fireHostile(spec, null, mode);
+                            com.game.shooting_game.gameScene.beam.BeamManager.getInstance().fireHostile(spec, null,
+                                    mode);
                         }
 
                         logText = "Beam fired: " + spec.getOrigin() + " " + mode;

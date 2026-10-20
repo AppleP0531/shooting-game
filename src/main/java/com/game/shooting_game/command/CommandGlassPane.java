@@ -28,16 +28,12 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-
 import com.game.shooting_game.ResourceManager;
-import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
-import com.game.shooting_game.data.UserData;
-import com.game.shooting_game.gameScene.GameManager;
 import com.game.shooting_game.gameScene.bullet.BulletManager;
 import com.game.shooting_game.gameScene.item.ItemManager;
 import com.game.shooting_game.gameScene.ship.ShipManager;
@@ -57,7 +53,6 @@ public final class CommandGlassPane extends JPanel {
     private final ResourceManager RM;
     private final NormalStageManager NSM;
     private final UpgradeManager UM;
-    private final GameManager GM;
     private final ItemManager IM;
     private final ShipManager SHIP_M;
     private final BulletManager BM;
@@ -161,7 +156,6 @@ public final class CommandGlassPane extends JPanel {
         RM = ResourceManager.getInstance();
         NSM = NormalStageManager.getInstance();
         UM = UpgradeManager.getInstance();
-        GM = GameManager.getInstance();
         IM = ItemManager.getInstance();
         SHIP_M = ShipManager.getInstance();
         BM = BulletManager.getInstance();

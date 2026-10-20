@@ -44,7 +44,10 @@ public final class SceneManager implements Manager {
         SELECTSTAGE,
         NORMALSTAGE,
         INFINITYSTAGE,
-        EXTRASTAGE,
+        EXTRA_MODULE,
+        EXTRA_BOSS,
+        EXTRA_MATERIAL,
+        EXTRA_SPECIAL,
         SETTING,
         GAME,
         GAMERESULT,
@@ -69,7 +72,8 @@ public final class SceneManager implements Manager {
         scenes.put(SceneType.SELECTSTAGE, SelectStageManager.getInstance());
         scenes.put(SceneType.NORMALSTAGE, NormalStageManager.getInstance());
         scenes.put(SceneType.INFINITYSTAGE, InfinityStageManager.getInstance());
-        scenes.put(SceneType.EXTRASTAGE, ExtraStageManager.getInstance());
+        for (String[] c : ExtraStageManager.CATEGORIES)
+            scenes.put(SceneType.valueOf("EXTRA_" + c[0]), new ExtraStageManager(c[0], c[1]));
         scenes.put(SceneType.SETTING, SettingManager.getInstance());
         scenes.put(SceneType.GAME, GameManager.getInstance());
         scenes.put(SceneType.GAMERESULT, GameResultManager.getInstance());
