@@ -120,12 +120,21 @@ public final class StageModifiers {
      * 条件の説明(表示用。条件がなければ空)
      */
     public static String describe(Spec s) {
+        return describe(s, true);
+    }
+
+    /**
+     * 条件の説明(表示用)
+     *
+     * @param withEnemyRates 敵のHP・受けるダメージの倍率も出すか(難易度の表示と重なるときは出さない)
+     */
+    public static String describe(Spec s, boolean withEnemyRates) {
         if (s == null)
             return "";
         StringBuilder sb = new StringBuilder();
-        if (s.getEnemyHpRate() != 1.0)
+        if (withEnemyRates && s.getEnemyHpRate() != 1.0)
             sb.append("・敵のHP ×").append(fmt(s.getEnemyHpRate())).append("\n");
-        if (s.getEnemyDamageRate() != 1.0)
+        if (withEnemyRates && s.getEnemyDamageRate() != 1.0)
             sb.append("・敵から受けるダメージ ×").append(fmt(s.getEnemyDamageRate())).append("\n");
         if (s.getPlayerHpRate() != 1.0)
             sb.append("・自機の最大HP ×").append(fmt(s.getPlayerHpRate())).append("\n");

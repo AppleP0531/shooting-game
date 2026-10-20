@@ -99,7 +99,8 @@ public class DifficultyPanel extends JPanel {
     }
 
     private String infoText() {
-        StringBuilder sb = new StringBuilder("<html>").append(isBossStage() ? selected.describeBoss() : selected.describe());
+        var sd = com.game.shooting_game.gameScene.stage.StageManager.getInstance().getStageConfig().get("stage" + stageId);
+        StringBuilder sb = new StringBuilder("<html>").append(selected.describe(sd == null ? null : sd.getModifiers(), isBossStage()));
         // 次の難易度が解放されていない間は、その条件を見せる
         Difficulty next = selected == Difficulty.NORMAL ? Difficulty.HARD
                 : selected == Difficulty.HARD ? Difficulty.NIGHTMARE : null;
