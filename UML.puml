@@ -765,7 +765,6 @@ package "shooting_game" {
         class BagManager <<Singleton>> {
             - {static} component: String
             - {static} instance: BagManager
-            - MAIN: ShootingGameMain
             - bagUI: BagSceneUI
             - ownedResourcesPanel: OwnedResourcesPanel
             - goBackBtn: JButton
