@@ -61,11 +61,17 @@ public class StageDetailPanel extends JPanel {
         setLayout(null);
         setVisible(false);
 
+        // 高さは、タイトルバー(25px)と上下の余白を含めて画面内に収まる範囲に抑える
+        int titleBar = (int) (25 * ShootingGameMain.getScreenSizeAdj());
+        int margin = (int) (5 * ShootingGameMain.getScreenSizeAdj());
+        double maxHeight = NSM.getStageBtnPanel().getHeight() - titleBar - 2 * margin;
         panelSize = new Vector2(350 * ShootingGameMain.getScreenSizeAdj(),
-                580 * ShootingGameMain.getScreenSizeAdj());
+                Math.min(580 * ShootingGameMain.getScreenSizeAdj(), maxHeight));
+        int panelY = Math.max(titleBar + margin,
+                NSM.getStageBtnPanel().getHeight() / 2 - (int) panelSize.getY() / 2);
         setBounds(
                 NSM.getStageBtnPanel().getWidth() / 2 - (int) panelSize.getX() / 2,
-                NSM.getStageBtnPanel().getHeight() / 2 - (int) panelSize.getY() / 2,
+                panelY,
                 (int) panelSize.getX(), (int) panelSize.getY());
         spacing = (int) (5 * ShootingGameMain.getScreenSizeAdj());
 
