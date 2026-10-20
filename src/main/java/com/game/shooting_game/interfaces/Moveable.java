@@ -4,7 +4,7 @@ public interface Moveable {
     /**
      * 移動
      * 
-     * @param speed 速度
+     * @param dt
      */
-    void move(double speed);
+    void move(double dt);
 }

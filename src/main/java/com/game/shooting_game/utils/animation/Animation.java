@@ -5,7 +5,7 @@ import java.awt.image.BufferedImage;
 import lombok.Getter;
 import lombok.Setter;
 
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.UIBuilder;
 
 public class Animation {
     private AnimationLogic customLogic = null;
@@ -80,7 +80,7 @@ public class Animation {
     }
 
     /**
-     * 現在のフレーム画像の取得
+     * 現在のフレーム番号の取得
      * 
      * @return
      */

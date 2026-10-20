@@ -1,12 +1,16 @@
 package com.game.shooting_game.stageScene.normal.subPanels;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
@@ -18,11 +22,9 @@ import com.game.shooting_game.gameScene.stage.StageManager;
 import com.game.shooting_game.stageScene.normal.NormalStageManager;
 import com.game.shooting_game.stageScene.normal.NormalStageManager.StageBtnData;
 import com.game.shooting_game.utils.ANSI;
-import com.game.shooting_game.utils.Anchor;
-import com.game.shooting_game.utils.Anchor.H;
-import com.game.shooting_game.utils.Anchor.V;
 import com.game.shooting_game.utils.LogUtils;
-import com.game.shooting_game.utils.UIBuilder;
+import com.game.shooting_game.ui.StageLockIcon;
+import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
 public class StageBtnPanel extends JPanel {
@@ -162,6 +164,59 @@ public class StageBtnPanel extends JPanel {
                 button.setVisible(true);
             }
         }
+        repaint();
+    }
+
+    /**
+     * ステージボタンの中心(ステージ選択パネルの中の座標)
+     */
+    private Vector2 buttonCenter(StageBtnData data) {
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        return new Vector2(
+                originPos.getX() + data.getPos().getX() * adj,
+                originPos.getY() - data.getPos().getY() * adj);
+    }
+
+    /**
+     * ステージボタンを番号順に線でつなぐ(ボタンより奥に描く)
+     * 次のステージに行ける区間(そのステージまでクリア済み)は水色の光る線、まだ行けない区間は暗い灰色の細い点線にする。
+     */
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        if (originPos == null || NSM.getStageBtnConfigMap() == null || DataManager.getUserData() == null)
+            return;
+
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        int cleared = DataManager.getUserData().getProgress().getClearedStage();
+        Map<Integer, StageBtnData> configs = NSM.getStageBtnConfigMap();
+
+        for (int id = 1; configs.containsKey(id) && configs.containsKey(id + 1); id++) {
+            Vector2 a = buttonCenter(configs.get(id));
+            Vector2 b = buttonCenter(configs.get(id + 1));
+            // 画面の外の区間は描かない
+            if (Math.max(a.getY(), b.getY()) < 0 || Math.min(a.getY(), b.getY()) > getHeight())
+                continue;
+
+            Line2D line = new Line2D.Double(a.getX(), a.getY(), b.getX(), b.getY());
+            if (id <= cleared) {
+                g2.setStroke(new BasicStroke((float) (7 * adj), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                g2.setColor(new Color(70, 215, 255, 40));
+                g2.draw(line);
+                g2.setStroke(new BasicStroke((float) (2.5 * adj), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                g2.setColor(new Color(70, 215, 255, 200));
+                g2.draw(line);
+            } else {
+                float dash = (float) (6 * adj);
+                g2.setStroke(new BasicStroke((float) (1.5 * adj), BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10f,
+                        new float[] { dash, dash }, 0f));
+                g2.setColor(new Color(120, 130, 150, 110));
+                g2.draw(line);
+            }
+        }
+        g2.dispose();
     }
 
     /**
@@ -172,62 +227,60 @@ public class StageBtnPanel extends JPanel {
 
         buttonMap = new HashMap<>();
 
+        // 現在のクリア状況の取得
+        int clearedStage = DataManager.getUserData().getProgress().getClearedStage();
+
         for (Map.Entry<Integer, BufferedImage> entry : NSM.getStageBtnImageCache().entrySet()) {
             int stageId = entry.getKey();
-            BufferedImage image = entry.getValue();
+            // 解放されていないステージはロックする
+            boolean isLocked = stageId > (clearedStage + 1);
 
-            // ステージボタン
-            Vector2 stageBtnSize = new Vector2(
-                    50 * ShootingGameMain.getScreenSizeAdj(),
-                    50 * ShootingGameMain.getScreenSizeAdj());
-            JButton button = UIBuilder.createImageBtn(
-                    component, image, stageBtnSize, String.valueOf(stageId));
-            button.addActionListener(e -> {
-                STAGE_M.getStage().setStageId(stageId);
-                stageDetailPanel.showStageDaetail(stageId);
-            });
-            button.setRolloverEnabled(false);
-
+            JButton button = createStageButton(stageId, entry.getValue(), isLocked);
             this.add(button);
             button.setVisible(false); // 非表示
-
-            // 現在のクリア状況の取得
-            int clearedStage = DataManager.getUserData().getProgress().getClearedStage();
-            // 解放されているかどうか
-            boolean isLocked = stageId > (clearedStage + 1);
-            // 解放されていないステージの場合ロックする
-            if (isLocked) {
-                button.setEnabled(false);
-                // ロックアイコンが存在する場合
-                if (lockImage != null) {
-                    // ボタンアイコンが存在する場合はロックアイコンと合成する
-                    if (button.getIcon() != null) {
-                        BufferedImage combined = new BufferedImage(button.getWidth(), button.getHeight(),
-                                BufferedImage.TYPE_INT_ARGB);
-                        Graphics2D g2 = combined.createGraphics();
-                        UIBuilder.drawImage(g2, new Anchor(H.LEFT, V.TOP), new Vector2(0, 0), image);
-                        UIBuilder.drawImage(g2, Anchor.CENTER, new Vector2(button.getWidth(), button.getHeight()),
-                                lockImage);
-                        g2.dispose();
-                        button.setIcon(new ImageIcon(combined));
-                        button.setDisabledIcon(new ImageIcon(combined));
-
-                        button.setBorderPainted(false);
-                        button.setContentAreaFilled(false);
-                        button.setText("");
-                    } else {
-                        button.setText("");
-                        button.setIcon(new ImageIcon(lockImage));
-                        button.setDisabledIcon(new ImageIcon(lockImage));
-                    }
-                } else
-                    button.setText("Locked");
-            } else
-                button.setEnabled(true);
-
             buttonMap.put(stageId, button);
         }
 
         this.add(stageDetailPanel);
+    }
+
+    /**
+     * ステージボタンの作成(アイコンと、押したときの動き。ロック中は押せないボタンにする)
+     * 
+     * @param stageId ステージID
+     * @param image   ステージのアイコン画像(なければnull)
+     * @param locked  ロック中かどうか
+     */
+    private JButton createStageButton(int stageId, BufferedImage image, boolean locked) {
+        int w = (int) (50 * ShootingGameMain.getScreenSizeAdj());
+        int h = (int) (50 * ShootingGameMain.getScreenSizeAdj());
+
+        // アイコン(画像がなければコードで描いた番号つきの四角)。ロック中は鍵を重ねる
+        BufferedImage icon = image != null ? image : StageLockIcon.placeholder(w, h, String.valueOf(stageId));
+        if (locked)
+            icon = StageLockIcon.overlay(icon, lockIconImage(w), w, h);
+
+        JButton button = UIBuilder.createImageBtn(component, icon, new Vector2(w, h), String.valueOf(stageId));
+        button.setRolloverEnabled(false);
+        button.setEnabled(!locked);
+        if (locked) {
+            // 押せないボタンを、灰色に塗り替えず、同じアイコンのまま出す
+            button.setDisabledIcon(button.getIcon());
+        } else {
+            button.addActionListener(e -> {
+                STAGE_M.getStage().setStageId(stageId);
+                stageDetailPanel.showStageDaetail(stageId);
+            });
+        }
+        return button;
+    }
+
+    /**
+     * ロックの鍵の画像(鍵の画像ファイルがなければ、コードで描いた南京錠)
+     * 
+     * @param buttonSize ボタンの一辺(px)
+     */
+    private BufferedImage lockIconImage(int buttonSize) {
+        return lockImage != null ? lockImage : StageLockIcon.padlock((int) (buttonSize * 0.55));
     }
 }
