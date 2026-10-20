@@ -7,14 +7,13 @@ import com.game.shooting_game.data.UserData;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.ship.ShipFactory;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
-import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.utils.Vector2;
 
 /**
- * ゲーム操作・デバッグ系のコマンド(/kill /summon /beam /clear /effect /gameclear /gameover
- * /clearstage)
+ * ゲーム操作・デバッグ系のコマンド(/kill /summon /beam /despawn /effect /gameclear /gameover
+ * /stageclear)
  */
 final class GameCommands extends CommandGroup {
     GameCommands(CommandGlassPane pane) {
@@ -27,9 +26,7 @@ final class GameCommands extends CommandGroup {
         register(rootCommands, "/kill", "Kill targets.", true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 1) {
-                logText = node.getUseage();
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                usage(node);
                 return;
             }
             // シーンが不適切な場合
@@ -38,9 +35,7 @@ final class GameCommands extends CommandGroup {
 
             SHIP_M.kill(args[0].toLowerCase());
 
-            logText = args[0] + " killed.";
-            log().addElement(logText);
-            LogUtils.systemLog("[INFO]", component, logText);
+            success(args[0] + " killed.");
         }).setSyntax("<target>");
 
         // 召喚 /summon <enemyId> <x> <y> [mode] [level] (座標は画面中央が0,0)
@@ -48,9 +43,7 @@ final class GameCommands extends CommandGroup {
                 (node, args) -> {
                     // 引数が不適切な場合
                     if (args.length < 3 || args.length > 5) {
-                        logText = node.getUseage();
-                        log().addElement(logText);
-                        LogUtils.debugLog(logText);
+                        usage(node);
                         return;
                     }
                     // シーンが不適切な場合
@@ -75,9 +68,7 @@ final class GameCommands extends CommandGroup {
                             }
                         }
                         if (owner == null) {
-                            logText = "Unknown enemy: " + enemyId;
-                            log().addElement(logText);
-                            LogUtils.debugLog(logText);
+                            error("Unknown enemy: " + enemyId);
                             return;
                         }
 
@@ -90,17 +81,11 @@ final class GameCommands extends CommandGroup {
                         SHIP_M.addShip(
                                 ShipFactory.createShip(owner, enemyId, mode, level, pos, new Vector2(pos), null));
 
-                        logText = enemyId + " summoned at (" + x + ", " + y + ").";
-                        log().addElement(logText);
-                        LogUtils.systemLog("[INFO]", component, logText);
+                        success(enemyId + " summoned at (" + x + ", " + y + ").");
                     } catch (NumberFormatException ne) {
-                        logText = "Invalid number: " + ne.getMessage();
-                        log().addElement(logText);
-                        LogUtils.debugLog(logText);
+                        error("Invalid number: " + ne.getMessage());
                     } catch (IllegalArgumentException ie) {
-                        logText = "Invalid mode (BLUE or RED).";
-                        log().addElement(logText);
-                        LogUtils.debugLog(logText);
+                        error("Invalid mode (BLUE or RED).");
                     } catch (Exception e) {
                         LogUtils.systemLog("[WARN]", component, "Command Error");
                     }
@@ -112,9 +97,7 @@ final class GameCommands extends CommandGroup {
                 true, (node, args) -> {
                     // 引数が不適切な場合
                     if (args.length < 1 || args.length > 2) {
-                        logText = node.getUseage();
-                        log().addElement(logText);
-                        LogUtils.debugLog(logText);
+                        usage(node);
                         return;
                     }
                     // シーンが不適切な場合
@@ -148,25 +131,19 @@ final class GameCommands extends CommandGroup {
                                     mode);
                         }
 
-                        logText = "Beam fired: " + spec.getOrigin() + " " + mode;
-                        log().addElement(logText);
-                        LogUtils.systemLog("[INFO]", component, logText);
+                        success("Beam fired: " + spec.getOrigin() + " " + mode);
                     } catch (IllegalArgumentException ie) {
-                        logText = "Invalid origin or color (BLUE or RED).";
-                        log().addElement(logText);
-                        LogUtils.debugLog(logText);
+                        error("Invalid origin or color (BLUE or RED).");
                     } catch (Exception e) {
                         LogUtils.systemLog("[WARN]", component, "Command Error");
                     }
                 }).setSyntax("<origin>", "[color]");
 
-        // 消去 /clear <target>
-        register(rootCommands, "/clear", "Kill targets.", true, (node, args) -> {
+        // 消去 /despawn <target>
+        register(rootCommands, "/despawn", "Remove targets without killing them.", true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 1) {
-                logText = node.getUseage();
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                usage(node);
                 return;
             }
             // シーンが不適切な場合
@@ -175,18 +152,14 @@ final class GameCommands extends CommandGroup {
 
             SHIP_M.clear(args[0].toLowerCase());
 
-            logText = args[0] + " cleared.";
-            log().addElement(logText);
-            LogUtils.systemLog("[INFO]", component, logText);
+            success(args[0] + " cleared.");
         }).setSyntax("<target>");
 
         // 効果付与 /effect
         CommandNode effect = register(rootCommands, "/effect", "Apply effect.", true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length == 0) {
-                logText = node.getUseage();
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                usage(node);
                 return;
             }
         });
@@ -195,9 +168,7 @@ final class GameCommands extends CommandGroup {
         register(effect, "heal", null, true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 1) {
-                logText = node.getUseage();
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                usage(node);
                 return;
             }
             // シーンが不適切な場合
@@ -209,24 +180,18 @@ final class GameCommands extends CommandGroup {
 
                 SHIP_M.getPlayer().heal(num);
 
-                logText = "Healed " + num + "HP.";
-                log().addElement(logText);
-                LogUtils.systemLog("[INFO]", component, logText);
+                success("Healed " + num + "HP.");
             } catch (NumberFormatException ne) {
-                logText = "Unknnown param: " + args[0];
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                error("Unknown param: " + args[0]);
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
-        }).setSyntax("<seconds>");
+        }).setSyntax("<amount>");
         // レベルアップ
         register(effect, "levelup", null, true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length > 2) {
-                logText = node.getUseage();
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                usage(node);
                 return;
             }
             // シーンが不適切な場合
@@ -239,26 +204,20 @@ final class GameCommands extends CommandGroup {
                 Integer num = GameUtils.tryParse(args[0]);
                 amount = num > 0 ? num : 1;
             } catch (NumberFormatException ne) {
-                logText = "Unknnown param: " + args[0];
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                error("Unknown param: " + args[0]);
             }
             // レベルアップ処理
             for (int i = 0; i < amount; i++) {
                 SHIP_M.getPlayer().levelUp();
             }
 
-            logText = "Ship leveled up to level " + SHIP_M.getPlayer().getShipLevel() + ".";
-            log().addElement(logText);
-            LogUtils.systemLog("[INFO]", component, logText);
+            success("Ship leveled up to level " + SHIP_M.getPlayer().getShipLevel() + ".");
         });
         // レベル設定
         register(effect, "setlevel", null, true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 1) {
-                logText = node.getUseage();
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                usage(node);
                 return;
             }
             // シーンが不適切な場合
@@ -274,13 +233,9 @@ final class GameCommands extends CommandGroup {
                 } else
                     SHIP_M.getPlayer().setShipLevel(num);
 
-                logText = "Ship level set to " + SHIP_M.getPlayer().getShipLevel() + ".";
-                log().addElement(logText);
-                LogUtils.systemLog("[INFO]", component, logText);
+                success("Ship level set to " + SHIP_M.getPlayer().getShipLevel() + ".");
             } catch (NumberFormatException ne) {
-                logText = "Unknnown param: " + args[0];
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                error("Unknown param: " + args[0]);
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }
@@ -289,9 +244,7 @@ final class GameCommands extends CommandGroup {
         register(effect, "ooc", null, true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length > 2) {
-                logText = node.getUseage();
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                usage(node);
                 return;
             }
             // シーンが不適切な場合
@@ -308,29 +261,21 @@ final class GameCommands extends CommandGroup {
                 SHIP_M.getPlayer().setOOCTimer(time);
                 SHIP_M.getPlayer().setShipLevel(level);
 
-                logText = "OOC " + (isInfinityOOC ? "enabled." : "disabled.");
-                log().addElement(logText);
-                LogUtils.systemLog("[INFO]", component, logText);
+                success("OOC " + (isInfinityOOC ? "enabled." : "disabled."));
             } else {
                 try {
                     Integer time = GameUtils.tryParse(args[0]);
 
                     if (isInfinityOOC) {
-                        logText = "The ship is already OOC.";
-                        log().addElement(logText);
-                        LogUtils.systemLog("[INFO]", component, logText);
+                        info("The ship is already OOC.");
                     } else {
                         SHIP_M.getPlayer().setShipLevel(5);
                         SHIP_M.getPlayer().setOOCTimer(time);
 
-                        logText = "The ship became OOC.";
-                        log().addElement(logText);
-                        LogUtils.systemLog("[INFO]", component, logText);
+                        success("The ship became OOC.");
                     }
                 } catch (NumberFormatException ne) {
-                    logText = "Unknnown param: " + args[0];
-                    log().addElement(logText);
-                    LogUtils.debugLog(logText);
+                    error("Unknown param: " + args[0]);
                 } catch (Exception e) {
                     LogUtils.systemLog("[WARN]", component, "Command Error");
                 }
@@ -341,9 +286,7 @@ final class GameCommands extends CommandGroup {
         register(rootCommands, "/gameclear", "Instantly clear.", true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 0) {
-                logText = node.getUseage();
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                usage(node);
                 return;
             }
             // シーンが不適切な場合
@@ -356,9 +299,7 @@ final class GameCommands extends CommandGroup {
         register(rootCommands, "/gameover", "Instantly gameover.", true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 0) {
-                logText = node.getUseage();
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                usage(node);
                 return;
             }
             // シーンが不適切な場合
@@ -368,12 +309,10 @@ final class GameCommands extends CommandGroup {
             GM.gameover(true);
             GM.result();
         });
-        register(rootCommands, "/clearstage", "Force clear a specific stage.", true, (node, args) -> {
+        register(rootCommands, "/stageclear", "Force clear a specific stage.", true, (node, args) -> {
             // 引数が不適切な場合
             if (args.length != 1) {
-                logText = node.getUseage();
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                usage(node);
                 return;
             }
 
@@ -388,18 +327,12 @@ final class GameCommands extends CommandGroup {
                     NSM.getStageBtnPanel().setup();
 
                     // クリア進捗更新ログ
-                    logText = "Progress reached " + ANSI.YELLOW + "Stage" + stageId + ANSI.RESET + ".";
-                    log().addElement(logText);
-                    LogUtils.systemLog("[INFO]", component, logText);
+                    success("Progress reached Stage" + stageId + ".");
                 } else {
-                    logText = "Specified stage has already been completed.";
-                    log().addElement(logText);
-                    LogUtils.systemLog("[INFO]", component, logText);
+                    info("Specified stage has already been completed.");
                 }
             } catch (NumberFormatException ne) {
-                logText = "Unknnown param: " + args[0];
-                log().addElement(logText);
-                LogUtils.debugLog(logText);
+                error("Unknown param: " + args[0]);
             } catch (Exception e) {
                 LogUtils.systemLog("[WARN]", component, "Command Error");
             }

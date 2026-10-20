@@ -50,10 +50,35 @@ abstract class CommandGroup {
     abstract void registerAll();
 
     /**
-     * コマンドのログ欄
+     * 通常のお知らせを、ログ欄(白)とコンソールに出す
      */
-    protected ChatBoxContext log() {
-        return pane.logHistory();
+    protected void info(String text) {
+        pane.addLog(LogLine.Kind.INFO, text);
+        LogUtils.systemLog("[INFO]", component, text);
+    }
+
+    /**
+     * 成功を、ログ欄(緑)とコンソールに出す
+     */
+    protected void success(String text) {
+        pane.addLog(LogLine.Kind.SUCCESS, text);
+        LogUtils.systemLog("[INFO]", component, text);
+    }
+
+    /**
+     * 失敗・入力の誤りを、ログ欄(赤)とデバッグログに出す
+     */
+    protected void error(String text) {
+        pane.addLog(LogLine.Kind.ERROR, text);
+        LogUtils.debugLog(text);
+    }
+
+    /**
+     * 使い方を、ログ欄(水色)とデバッグログに出す(引数が足りない・多いとき)
+     */
+    protected void usage(CommandNode node) {
+        pane.addLog(LogLine.Kind.HELP, node.getUseage());
+        LogUtils.debugLog(node.getUseage());
     }
 
     /**
@@ -102,9 +127,7 @@ abstract class CommandGroup {
             if (current == type)
                 return true;
         }
-        logText = "Command not available in the current scene.";
-        log().addElement(logText);
-        LogUtils.debugLog(logText);
+        error("Command not available in the current scene.");
         return false;
     }
 
