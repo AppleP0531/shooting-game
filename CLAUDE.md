@@ -9,11 +9,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 JAVA_HOME は JDK 25(README 参照)。Windows では `.\mvnw.cmd`、Git Bash では `./mvnw`。
 
 ```bash
-./mvnw -q -o compile                 # コンパイル確認(-o はオフライン。普段これで足りる)
+./mvnw -q -o compile                 # 軽い確認(下の注意のとおり、これだけだと再コンパイルされないことがある)
 ./mvnw clean spring-boot:run         # 起動(Swing のウィンドウが開く)
 ./mvnw test -Dtest=クラス名 -Djava.awt.headless=true   # テスト(-o は付けない: オフラインだと surefire が無く失敗する)
 ```
 
+- **「BUILD SUCCESS」だけでは、コンパイルできたと言えない。** 差分コンパイルが何も再コンパイルせずに成功することがあり、実際にエラーを見逃した。確実に確認するには、`target/classes/com`・`target/test-classes`・`target/maven-status` を消してから実行し、出力に `Compiling N source files` が出ることを確認する(または `clean` を使う)。
+- ゲームを起動したままだと `target` 内の画像が掴まれて `clean` が失敗する。その場合は上のフォルダだけを消し、`-Dmaven.resources.skip=true` を付けてコンパイル・テストする(リソースは前のコピーを使う)。
 - 起動時に Spring Boot で DB(AWS RDS / MySQL。`src/main/resources/application.properties` は git 管理外)へつなぐ。**つながらなければ自動でオフラインモード**(`DataManager.load("guest", "create")`、ログインなし)になる。DB なしの動作確認はこれで足りる。
 - `ShootingGameApplicationTests`(コンテキスト読み込み)は DB が必要。単体テストは DB・画面なしで動く純ロジックだけを対象にする。
 - 公式のリンタ・フォーマッタ設定はない。
@@ -35,6 +37,14 @@ JAVA_HOME は JDK 25(README 参照)。Windows では `.\mvnw.cmd`、Git Bash で
 - ボスの見た目は `BossLook`(形・色・形態ごとに増える部品)が定義。`img/ship/boss/*_f0〜f4.png` はこの定義から描いた4x2・6コマのシート(画像がなければ `Boss.drawPlaceholder` が図形で描く)。
 - ステージのギミック(ビームを撃つブロック `BlockSpec`、ビーム `BeamSpec`)は StageConfig の `blocks` / `gimmicks`。ブロックは `spin` で回転し、ビーム・当たり判定・押し出しも回転に追従する。
 
+### 画面の部品(ボタン・アイコン)
+
+- ボタン画像は `static/img/UI/**` に置く。`UIBuilder.createImageBtn(component, 画像パス, サイズ, 代替の文字)` は、画像があれば画像だけのボタンにし(**文字は消えるので、ラベルは画像に描き込む**)、`<名前>_rollover.png` / `<名前>_pressed.png` があれば状態に応じて切り替える。画像がなければ `ShooterButtonUI`(全ボタン共通の文字ボタンの見た目)で代替の文字を出す。
+- 画像ボタンは、透明なところは押せない。中が透明なアイコンは、中を押しても反応しないので、不透明な板の上に描くこと。
+- 戻るボタンは `UIBuilder.createBackBtn`(左下の隅の正方形の矢印)。画面によってサイズ・配置を変えず、これを使う。
+- スキルツリーのボタンは、`img/UI/upgradeScene/<ノード名>.png`(模様だけ)に、`SkillIconComposer` が枠とレベルの札を重ねて作る(最大レベルは金の枠)。配置は `SkillTreeLayout` が機体ごとの模様(花・渦巻き・蜂の巣・星・同心円)で決める純ロジックで、枝が交差しないことをテストで確認している。
+- 設定ファイルの値が「減る効果」のスキルは `reduce: true`(表示を「-」にするだけ。値は正のまま)。
+
 ### ゲーム内
 
 - `GameManager` が一連のマネージャー(`StageManager` → `BulletManager` → `BeamManager` → `ShipManager` → `ItemManager` → `DamagePopupManager`)を**この順で**更新・描画する(描画順が重なり順)。船は `Ship`(Player / Enemy / Boss / SubShip)。ダメージは `Ship.addDamage` が起点(ここからダメージ数字が出る)。
@@ -45,7 +55,11 @@ JAVA_HOME は JDK 25(README 参照)。Windows では `.\mvnw.cmd`、Git Bash で
 - `DataManager`(static)が現在の `UserData`(進捗 `Progress`、資源、船、モジュール…)を持ち、`UserDataMapper` で JPA の `UserEntity` と相互変換する。**保存はウィンドウを閉じる時(`windowClosing`)にまとめて1回**で、各サービスは操作のたびに保存しない(クラッシュ・強制終了では直近の操作が失われる)。
 - 追加のフラグ類は DB のテーブルを増やさず、`Progress.highScores`(`Map<String,Integer>`)に接頭辞つきキーで相乗りさせる流儀がある(`daily:`、`endless:wave`、`seen:<船ID>`=図鑑)。
 - 端末ごとの設定(FPS、ダメージ表記)は `GameSettings` が実行フォルダの `settings.properties`(git 管理外)に保存する。ユーザーデータとは別。
-- ゲームのルール計算は `domain/*Service`(スキル・ユニット・モジュール・サブ機・変換・コスト・図鑑)の static メソッドに置く流儀。UI(`*Panel`)はそれを呼ぶだけ。
+- ゲームのルール計算は `domain/*Service`(スキル・ユニット・モジュール・サブ機・変換・コスト・図鑑・ショップ・★報酬・解放)の static メソッドに置く流儀。UI(`*Panel`)はそれを呼ぶだけ。
+- **レベル解放**: `UnlockService`(解放レベルは `UnlockConfig.json`)。未開放のボタンは `guard(button, Feature)` で登録し、画面に入るたびの `setup()` で `refreshAll()` を呼ぶとグレーアウトされる(押すと案内)。経験値表 `Exp.json` は Lv50 まで。
+- **サブ機**: パーツ制作は廃止。`SubShipTypeService`(タイプ一覧とレベルごとの撃ち方は `SubShipTypeConfig.json`。先頭が標準)と `SubShipService`(タイプごとのレベルは `userData.subShipParts` の `LV:<タイプID>`)。レベルが上がると撃つ弾の数と種類が増える。
+- **ボスのゲージ**: `BossLibrary.forFight(bossId, stageId)` が、ステージに応じて戦うゲージを絞る(無限モードは後ろ3つ、ノーマルは10の倍数が5・5の倍数が3)。
+- 保存は、読み込みを別々の select にし(`@Fetch(SELECT)`)、書き込みをバッチ(`ShootingGameMain` の既定値)にして、遠い DB でも固まりにくくしている。閉じる操作では先にウィンドウを隠す。
 
 ### コマンド
 
@@ -57,11 +71,21 @@ JAVA_HOME は JDK 25(README 参照)。Windows では `.\mvnw.cmd`、Git Bash で
 
 ## 作業上の注意
 
+- **作業が終わるごとに、コミットして push する。** 手順:
+  - まず、上の方法で確実に再コンパイルし、単体テストが通ることを確認する(通らなければコミットしない)。
+  - 変更は、テーマごとに分けてコミットする(会心、サブ機、UI など)。1つのファイルに複数のテーマが混ざる場合は、主なテーマのコミットに入れる。メッセージは日本語で、1行目に要約、本文に理由と範囲を書く。
+  - `git add` は、パスを指定して行う(`git add -A` で `application.properties` や `settings.properties` など git 管理外のものや、生成物を巻き込まない)。削除したファイルのパスを `git add` に渡すと全体が失敗するので、`git add -A -- <パス>` を使う。
+  - コミットのあとは、今のブランチを `git push` する。force push はしない。
+  - 見た目の確認ができていない変更は、コミットメッセージや報告に「未確認」と書く。
 - 大きな機能は、実装前に方針をユーザーに確認する運用になっている(選択肢を出して決めてもらう)。
 - 大きな変更は、サブエージェントに分けて並行で進める運用になっている(ユーザーが依頼したとき)。分け方の決まり:
   - 担当ファイルが重ならないように分ける(同じファイルを2つのエージェントに触らせない)。
   - 先に自分が共通の土台(新しい型や API の骨組み)を作ってコンパイルを通し、各エージェントにはそのシグネチャを正確に伝える。
-  - 各エージェントには「触ってよいファイル」「コミットしない」「他の人が同時に別のファイルを編集している」ことを明記する。
-  - 全員の終了後に、全体のコンパイルと、触った範囲が重なっていないかを自分で確認する。エージェントの報告は鵜呑みにしない。
+  - 各エージェントには「触ってよいファイル」「コミットしない(コミットと push は、全員の終了後に親が行う)」「他の人が同時に別のファイルを編集している」ことを明記する。
+  - 同時に Maven を実行すると `target` の操作が衝突する。Maven を使うのは1人だけにし、ほかのエージェントには「Maven は実行しない」と伝える。
+  - 全員の終了後に、全体の再コンパイル(上の「確実に確認する方法」)とテストと、触った範囲が重なっていないかを自分で確認する。エージェントの報告は鵜呑みにしない。
   - UML・テスト・ドキュメント(`UML.puml` / `src/test` / `command.md`)の更新は、機能の実装と並行してそれぞれ別エージェントに任せてよい。
 - 見た目・描画まわりの変更は、コンパイルが通っても実際の見た目は保証されない。起動して確認するか、未確認と明記する。
+- ファイルの編集で、複数行の正規表現の置換(perl や sed)は、改行コード(CRLF/LF)の違いや文字列の中のエスケープで、黙って失敗したり、文字列の途中に改行が入ったりした。編集のあとは必ず該当箇所を読み直して反映を確認し、小さな編集は Edit ツールを使う。
+- UML(`UML.puml`)は、構成を変えたら更新し、波括弧の数が合うことを確認する(PlantUML での描画確認はまだしていない)。
+- ボタン画像や模様の絵は、スクリプト(Java)で描いて生成してきた。生成スクリプトはリポジトリに入っていないので、絵を直すときは、同じ作りの画像を描き直すか、画像を直接差し替える。
