@@ -7310,7 +7310,7 @@
       ],
       "wave3": [
         {
-          "enemyId": "Waver",
+          "enemyId": "Serpent",
           "mode": "BLUE",
           "level": 0,
           "spawnPos": [-300, 40],
@@ -7348,7 +7348,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Gunner",
+          "enemyId": "Serpent",
           "mode": "RED",
           "level": 0,
           "spawnPos": [260, -40],
@@ -7424,7 +7424,7 @@
       ],
       "wave6": [
         {
-          "enemyId": "Enemy1",
+          "enemyId": "Serpent",
           "mode": "BLUE",
           "level": 0,
           "spawnPos": [-170, -60],
@@ -7471,7 +7471,7 @@
           "delay": 0.3
         },
         {
-          "enemyId": "Drone",
+          "enemyId": "Serpent",
           "mode": "BLUE",
           "level": 0,
           "spawnPos": [110, -50],
@@ -7529,7 +7529,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Bat",
+          "enemyId": "Serpent",
           "mode": "RED",
           "level": 0,
           "spawnPos": [300, 80],
@@ -7779,7 +7779,7 @@
           "delay": 0.15
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Helix",
           "mode": "BLUE",
           "level": 0,
           "spawnPos": [0, -60],
@@ -7808,7 +7808,7 @@
           "delay": 0.15
         },
         {
-          "enemyId": "Bat",
+          "enemyId": "Helix",
           "mode": "BLUE",
           "level": 0,
           "spawnPos": [0, -60],
@@ -7837,7 +7837,7 @@
           "delay": 0.15
         },
         {
-          "enemyId": "Drone",
+          "enemyId": "Helix",
           "mode": "RED",
           "level": 0,
           "spawnPos": [0, -60],
@@ -7913,7 +7913,7 @@
           "delay": 0.1
         },
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Helix",
           "mode": "BLUE",
           "level": 0,
           "spawnPos": [300, 30],
@@ -7933,7 +7933,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Helix",
           "mode": "RED",
           "level": 0,
           "spawnPos": [0, -60],
@@ -7991,7 +7991,7 @@
       ],
       "wave8": [
         {
-          "enemyId": "Cloud",
+          "enemyId": "Helix",
           "mode": "BLUE",
           "level": 0,
           "spawnPos": [-300, 50],
@@ -8009,7 +8009,7 @@
           "delay": 0.23
         },
         {
-          "enemyId": "Cloud",
+          "enemyId": "Serpent",
           "mode": "BLUE",
           "level": 0,
           "spawnPos": [300, 70],
@@ -8067,7 +8067,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Beetle",
+          "enemyId": "Helix",
           "mode": "RED",
           "level": 0,
           "spawnPos": [-260, -40],
@@ -8330,7 +8330,7 @@
           "delay": 0.15
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Helix",
           "mode": "BLUE",
           "level": 0,
           "spawnPos": [0, -60],
@@ -8502,7 +8502,7 @@
           "delay": 0.3
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Serpent",
           "mode": "BLUE",
           "level": 0,
           "spawnPos": [110, -50],
@@ -8522,7 +8522,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Enemy1",
+          "enemyId": "Helix",
           "mode": "BLUE",
           "level": 0,
           "spawnPos": [-260, -40],
@@ -8542,7 +8542,7 @@
       ],
       "wave9": [
         {
-          "enemyId": "Drone",
+          "enemyId": "Serpent",
           "mode": "RED",
           "level": 0,
           "spawnPos": [-300, 30],
@@ -8618,7 +8618,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Cloud",
+          "enemyId": "Rusher",
           "mode": "BLUE",
           "level": 0,
           "spawnPos": [260, -40],
@@ -9093,7 +9093,7 @@
           "delay": 0.3
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Crosser",
           "mode": "RED",
           "level": 0,
           "spawnPos": [110, -50],
@@ -9464,7 +9464,7 @@
     "enemyList": {
       "wave1": [
         {
-          "enemyId": "Beetle",
+          "enemyId": "Crosser",
           "mode": "RED",
           "level": 1,
           "spawnPos": [0, -60],
@@ -9616,7 +9616,7 @@
           "delay": 0.38
         },
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Splitter",
           "mode": "RED",
           "level": 1,
           "spawnPos": [300, 120],
@@ -9732,7 +9732,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Helix",
           "mode": "RED",
           "level": 0,
           "spawnPos": [-50, -50],
@@ -9770,7 +9770,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Helix",
           "mode": "RED",
           "level": 0,
           "spawnPos": [-110, -50],
@@ -10065,7 +10065,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Gunner",
+          "enemyId": "Splitter",
           "mode": "BLUE",
           "level": 0,
           "spawnPos": [300, 80],
@@ -10215,7 +10215,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Splitter",
           "mode": "BLUE",
           "level": 0,
           "spawnPos": [260, -40],
@@ -10224,7 +10224,7 @@
           "delay": 0.25
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Serpent",
           "mode": "RED",
           "level": 0,
           "spawnPos": [-260, -40],
@@ -10235,7 +10235,7 @@
       ],
       "wave5": [
         {
-          "enemyId": "Cloud",
+          "enemyId": "Sprinkler",
           "mode": "BLUE",
           "level": 0,
           "spawnPos": [-300, 40],
@@ -10253,7 +10253,7 @@
           "delay": 0.1
         },
         {
-          "enemyId": "Cloud",
+          "enemyId": "Sprinkler",
           "mode": "BLUE",
           "level": 0,
           "spawnPos": [300, 40],
@@ -10282,7 +10282,7 @@
           "delay": 0.1
         },
         {
-          "enemyId": "Bat",
+          "enemyId": "Sprinkler",
           "mode": "RED",
           "level": 0,
           "spawnPos": [300, 70],
@@ -10349,7 +10349,7 @@
       ],
       "wave8": [
         {
-          "enemyId": "Bat",
+          "enemyId": "Sprinkler",
           "mode": "RED",
           "level": 0,
           "spawnPos": [260, -40],
@@ -10499,7 +10499,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Rusher",
           "mode": "BLUE",
           "level": 0,
           "spawnPos": [60, -60],
@@ -10519,7 +10519,7 @@
       ],
       "wave12": [
         {
-          "enemyId": "Enemy1",
+          "enemyId": "Crosser",
           "mode": "BLUE",
           "level": 0,
           "spawnPos": [260, -40],
@@ -10528,7 +10528,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Rusher",
           "mode": "RED",
           "level": 0,
           "spawnPos": [260, -40],
@@ -10899,7 +10899,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Helix",
           "mode": "RED",
           "level": 1,
           "spawnPos": [0, -60],
@@ -10908,7 +10908,7 @@
           "delay": 0.15
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Helix",
           "mode": "BLUE",
           "level": 1,
           "spawnPos": [0, -60],
@@ -10919,7 +10919,7 @@
       ],
       "wave4": [
         {
-          "enemyId": "Drone",
+          "enemyId": "Crosser",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [260, -40],
@@ -10975,7 +10975,7 @@
           "delay": 0.12
         },
         {
-          "enemyId": "Waver",
+          "enemyId": "Sprinkler",
           "mode": "RED",
           "level": 1,
           "spawnPos": [300, 50],
@@ -11060,7 +11060,7 @@
           "delay": 0.25
         },
         {
-          "enemyId": "Enemy1",
+          "enemyId": "Helix",
           "mode": "BLUE",
           "level": 1,
           "spawnPos": [260, -40],
@@ -11183,7 +11183,7 @@
       ],
       "wave10": [
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Sprinkler",
           "mode": "RED",
           "level": 1,
           "spawnPos": [-210, -60],
@@ -11230,7 +11230,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Gunner",
+          "enemyId": "Trio",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-260, -40],
@@ -11333,7 +11333,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Beetle",
+          "enemyId": "Sprinkler",
           "mode": "RED",
           "level": 1,
           "spawnPos": [260, -40],
@@ -11644,7 +11644,7 @@
           "delay": 1.2
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Crosser",
           "mode": "RED",
           "level": 1,
           "spawnPos": [90, -60],
@@ -11684,7 +11684,7 @@
       ],
       "wave3": [
         {
-          "enemyId": "Scout",
+          "enemyId": "Trio",
           "mode": "RED",
           "level": 1,
           "spawnPos": [-300, 30],
@@ -11693,7 +11693,7 @@
           "delay": 0.28
         },
         {
-          "enemyId": "Enemy1",
+          "enemyId": "Helix",
           "mode": "BLUE",
           "level": 1,
           "spawnPos": [300, 30],
@@ -11749,7 +11749,7 @@
           "delay": 0.12
         },
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Trio",
           "mode": "BLUE",
           "level": 1,
           "spawnPos": [300, 50],
@@ -11852,7 +11852,7 @@
           "delay": 0.3
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Sprinkler",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [50, -50],
@@ -11861,7 +11861,7 @@
           "delay": 0.6
         },
         {
-          "enemyId": "Drone",
+          "enemyId": "Serpent",
           "mode": "RED",
           "level": 2,
           "spawnPos": [150, -50],
@@ -12040,7 +12040,7 @@
           "delay": 0.8
         },
         {
-          "enemyId": "Cloud",
+          "enemyId": "Crosser",
           "mode": "BLUE",
           "level": 1,
           "spawnPos": [210, -60],
@@ -12134,7 +12134,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Sprinkler",
           "mode": "RED",
           "level": 1,
           "spawnPos": [-110, -50],
@@ -12143,7 +12143,7 @@
           "delay": 0.3
         },
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Splitter",
           "mode": "BLUE",
           "level": 1,
           "spawnPos": [110, -50],
@@ -12163,7 +12163,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Rusher",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [260, -40],
@@ -12181,7 +12181,7 @@
           "delay": 0.5
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Lancer",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-260, -40],
@@ -12525,7 +12525,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Splitter",
           "mode": "RED",
           "level": 1,
           "spawnPos": [300, 80],
@@ -12581,7 +12581,7 @@
           "delay": 0.6
         },
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Lancer",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-140, -50],
@@ -12675,7 +12675,7 @@
       ],
       "wave5": [
         {
-          "enemyId": "Drone",
+          "enemyId": "Gatling",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-300, 40],
@@ -12702,7 +12702,7 @@
           "delay": 0.7
         },
         {
-          "enemyId": "Gunner",
+          "enemyId": "Splitter",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [300, 40],
@@ -13013,7 +13013,7 @@
       ],
       "wave12": [
         {
-          "enemyId": "Drone",
+          "enemyId": "Gatling",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-170, -60],
@@ -13069,7 +13069,7 @@
           "delay": 0.35
         },
         {
-          "enemyId": "Bat",
+          "enemyId": "Sprinkler",
           "mode": "RED",
           "level": 1,
           "spawnPos": [-300, 120],
@@ -13473,7 +13473,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Crosser",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-50, -50],
@@ -13491,7 +13491,7 @@
           "delay": 0.6
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Crosser",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [150, -50],
@@ -13520,7 +13520,7 @@
           "delay": 0.15
         },
         {
-          "enemyId": "Waver",
+          "enemyId": "Splitter",
           "mode": "BLUE",
           "level": 1,
           "spawnPos": [0, -60],
@@ -13538,7 +13538,7 @@
           "delay": 0.45
         },
         {
-          "enemyId": "Waver",
+          "enemyId": "Helix",
           "mode": "BLUE",
           "level": 1,
           "spawnPos": [0, -60],
@@ -13679,7 +13679,7 @@
           "delay": 0.38
         },
         {
-          "enemyId": "Beetle",
+          "enemyId": "Trio",
           "mode": "BLUE",
           "level": 1,
           "spawnPos": [300, 120],
@@ -13800,7 +13800,7 @@
           "delay": 0.38
         },
         {
-          "enemyId": "Waver",
+          "enemyId": "Lancer",
           "mode": "BLUE",
           "level": 1,
           "spawnPos": [-300, 120],
@@ -13809,7 +13809,7 @@
           "delay": 0.15
         },
         {
-          "enemyId": "Waver",
+          "enemyId": "Trio",
           "mode": "RED",
           "level": 1,
           "spawnPos": [300, 120],
@@ -13847,7 +13847,7 @@
           "delay": 0.3
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Gatling",
           "mode": "BLUE",
           "level": 1,
           "spawnPos": [0, -60],
@@ -13950,7 +13950,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Beetle",
+          "enemyId": "Sprinkler",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-300, 120],
@@ -13959,7 +13959,7 @@
           "delay": 0.38
         },
         {
-          "enemyId": "Beetle",
+          "enemyId": "Helix",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [300, 120],
@@ -13988,7 +13988,7 @@
       ],
       "wave11": [
         {
-          "enemyId": "Waver",
+          "enemyId": "Lancer",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [0, -60],
@@ -13997,7 +13997,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Spinner",
+          "enemyId": "Scatter",
           "mode": "RED",
           "level": 2,
           "spawnPos": [0, -60],
@@ -14053,7 +14053,7 @@
           "delay": 0.6
         },
         {
-          "enemyId": "Scout",
+          "enemyId": "Rusher",
           "mode": "RED",
           "level": 1,
           "spawnPos": [-140, -50],
@@ -14459,7 +14459,7 @@
           "delay": 0.5
         },
         {
-          "enemyId": "Beetle",
+          "enemyId": "Rusher",
           "mode": "RED",
           "level": 1,
           "spawnPos": [-260, -40],
@@ -14468,7 +14468,7 @@
           "delay": 0.75
         },
         {
-          "enemyId": "Beetle",
+          "enemyId": "Splitter",
           "mode": "BLUE",
           "level": 1,
           "spawnPos": [-260, -40],
@@ -14580,7 +14580,7 @@
           "delay": 0.7
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Serpent",
           "mode": "BLUE",
           "level": 1,
           "spawnPos": [300, 40],
@@ -14600,7 +14600,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Spinner",
+          "enemyId": "Crosser",
           "mode": "BLUE",
           "level": 1,
           "spawnPos": [-300, 120],
@@ -14627,7 +14627,7 @@
           "delay": 0.5
         },
         {
-          "enemyId": "Drone",
+          "enemyId": "Crosser",
           "mode": "RED",
           "level": 1,
           "spawnPos": [300, 30],
@@ -14759,7 +14759,7 @@
       ],
       "wave7": [
         {
-          "enemyId": "Scout",
+          "enemyId": "Scatter",
           "mode": "RED",
           "level": 2,
           "spawnPos": [0, -60],
@@ -14768,7 +14768,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Gatling",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [0, -60],
@@ -14898,7 +14898,7 @@
           "delay": 0.6
         },
         {
-          "enemyId": "Scout",
+          "enemyId": "Serpent",
           "mode": "RED",
           "level": 1,
           "spawnPos": [-160, -50],
@@ -14907,7 +14907,7 @@
           "delay": 0.9
         },
         {
-          "enemyId": "Cloud",
+          "enemyId": "Gatling",
           "mode": "BLUE",
           "level": 1,
           "spawnPos": [160, -50],
@@ -14918,7 +14918,7 @@
       ],
       "wave10": [
         {
-          "enemyId": "Clab",
+          "enemyId": "Helix",
           "mode": "RED",
           "level": 1,
           "spawnPos": [-150, -50],
@@ -14992,7 +14992,7 @@
           "delay": 0.5
         },
         {
-          "enemyId": "Enemy1",
+          "enemyId": "Helix",
           "mode": "RED",
           "level": 1,
           "spawnPos": [-260, -40],
@@ -15077,7 +15077,7 @@
       ],
       "wave13": [
         {
-          "enemyId": "Clab",
+          "enemyId": "Gatling",
           "mode": "BLUE",
           "level": 1,
           "spawnPos": [260, -40],
@@ -15086,7 +15086,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Waver",
+          "enemyId": "Crosser",
           "mode": "RED",
           "level": 1,
           "spawnPos": [260, -40],
@@ -15095,7 +15095,7 @@
           "delay": 0.25
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Lancer",
           "mode": "BLUE",
           "level": 1,
           "spawnPos": [-260, -40],
@@ -15104,7 +15104,7 @@
           "delay": 0.5
         },
         {
-          "enemyId": "Waver",
+          "enemyId": "Rusher",
           "mode": "RED",
           "level": 1,
           "spawnPos": [260, -40],
@@ -15151,7 +15151,7 @@
           "delay": 0.5
         },
         {
-          "enemyId": "Drone",
+          "enemyId": "Scatter",
           "mode": "RED",
           "level": 1,
           "spawnPos": [260, -40],
@@ -15160,7 +15160,7 @@
           "delay": 0.75
         },
         {
-          "enemyId": "Bat",
+          "enemyId": "Gatling",
           "mode": "BLUE",
           "level": 1,
           "spawnPos": [-260, -40],
@@ -15879,7 +15879,7 @@
     "enemyList": {
       "wave1": [
         {
-          "enemyId": "Gunner",
+          "enemyId": "Gatling",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-300, 40],
@@ -15906,7 +15906,7 @@
           "delay": 0.7
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Orbiter",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [300, 40],
@@ -15973,7 +15973,7 @@
           "delay": 0.15
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Orbiter",
           "mode": "RED",
           "level": 1,
           "spawnPos": [0, -60],
@@ -15991,7 +15991,7 @@
           "delay": 0.45
         },
         {
-          "enemyId": "Waver",
+          "enemyId": "Sprinkler",
           "mode": "RED",
           "level": 1,
           "spawnPos": [0, -60],
@@ -16076,7 +16076,7 @@
       ],
       "wave5": [
         {
-          "enemyId": "Beetle",
+          "enemyId": "Crosser",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [0, -60],
@@ -16085,7 +16085,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Trio",
           "mode": "RED",
           "level": 2,
           "spawnPos": [0, -60],
@@ -16094,7 +16094,7 @@
           "delay": 0.15
         },
         {
-          "enemyId": "Beetle",
+          "enemyId": "Sprinkler",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [0, -60],
@@ -16114,7 +16114,7 @@
       ],
       "wave6": [
         {
-          "enemyId": "Waver",
+          "enemyId": "Serpent",
           "mode": "RED",
           "level": 1,
           "spawnPos": [260, -40],
@@ -16150,7 +16150,7 @@
           "delay": 0.75
         },
         {
-          "enemyId": "Waver",
+          "enemyId": "Lancer",
           "mode": "RED",
           "level": 1,
           "spawnPos": [-260, -40],
@@ -16244,7 +16244,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Spinner",
+          "enemyId": "Serpent",
           "mode": "BLUE",
           "level": 1,
           "spawnPos": [-300, 120],
@@ -16262,7 +16262,7 @@
           "delay": 0.28
         },
         {
-          "enemyId": "Waver",
+          "enemyId": "Crosser",
           "mode": "BLUE",
           "level": 1,
           "spawnPos": [-300, 30],
@@ -16271,7 +16271,7 @@
           "delay": 0.5
         },
         {
-          "enemyId": "Enemy1",
+          "enemyId": "Helix",
           "mode": "RED",
           "level": 1,
           "spawnPos": [300, 30],
@@ -16282,7 +16282,7 @@
       ],
       "wave9": [
         {
-          "enemyId": "Beetle",
+          "enemyId": "Crosser",
           "mode": "BLUE",
           "level": 1,
           "spawnPos": [-150, -50],
@@ -16320,7 +16320,7 @@
       ],
       "wave10": [
         {
-          "enemyId": "Bat",
+          "enemyId": "Scatter",
           "mode": "RED",
           "level": 1,
           "spawnPos": [-110, -50],
@@ -16338,7 +16338,7 @@
           "delay": 0.3
         },
         {
-          "enemyId": "Bat",
+          "enemyId": "Orbiter",
           "mode": "RED",
           "level": 1,
           "spawnPos": [-60, -50],
@@ -16450,7 +16450,7 @@
           "delay": 0.25
         },
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Trio",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [260, -40],
@@ -16609,7 +16609,7 @@
           "delay": 0.3
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Lancer",
           "mode": "BLUE",
           "level": 1,
           "spawnPos": [-60, -50],
@@ -17262,7 +17262,7 @@
     "enemyList": {
       "wave1": [
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Serpent",
           "mode": "RED",
           "level": 2,
           "spawnPos": [0, -60],
@@ -17327,7 +17327,7 @@
           "delay": 0.5
         },
         {
-          "enemyId": "Scout",
+          "enemyId": "Crosser",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [260, -40],
@@ -17336,7 +17336,7 @@
           "delay": 0.75
         },
         {
-          "enemyId": "Enemy1",
+          "enemyId": "Orbiter",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-260, -40],
@@ -17421,7 +17421,7 @@
       ],
       "wave4": [
         {
-          "enemyId": "Spinner",
+          "enemyId": "Scatter",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-150, -50],
@@ -17430,7 +17430,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Serpent",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-50, -50],
@@ -17589,7 +17589,7 @@
           "delay": 0.15
         },
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Scatter",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [0, -60],
@@ -17598,7 +17598,7 @@
           "delay": 0.3
         },
         {
-          "enemyId": "Enemy1",
+          "enemyId": "Orbiter",
           "mode": "RED",
           "level": 2,
           "spawnPos": [0, -60],
@@ -17665,7 +17665,7 @@
           "delay": 0.38
         },
         {
-          "enemyId": "Drone",
+          "enemyId": "Serpent",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-300, 70],
@@ -17768,7 +17768,7 @@
       ],
       "wave11": [
         {
-          "enemyId": "Spinner",
+          "enemyId": "Splitter",
           "mode": "RED",
           "level": 2,
           "spawnPos": [0, -60],
@@ -17842,7 +17842,7 @@
           "delay": 0.5
         },
         {
-          "enemyId": "Cloud",
+          "enemyId": "Helix",
           "mode": "RED",
           "level": 2,
           "spawnPos": [300, 30],
@@ -17965,7 +17965,7 @@
       ],
       "wave15": [
         {
-          "enemyId": "Twin",
+          "enemyId": "Rusher",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-170, -60],
@@ -17983,7 +17983,7 @@
           "delay": 0.4
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Orbiter",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-120, -60],
@@ -18754,7 +18754,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Mine",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-10, -60],
@@ -18781,7 +18781,7 @@
           "delay": 1.2
         },
         {
-          "enemyId": "Gunner",
+          "enemyId": "Splitter",
           "mode": "RED",
           "level": 2,
           "spawnPos": [80, -60],
@@ -18893,7 +18893,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Scout",
+          "enemyId": "Scatter",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-70, -50],
@@ -18949,7 +18949,7 @@
           "delay": 0.35
         },
         {
-          "enemyId": "Bat",
+          "enemyId": "Orbiter",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-300, 120],
@@ -18958,7 +18958,7 @@
           "delay": 0.7
         },
         {
-          "enemyId": "Scout",
+          "enemyId": "Scatter",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [300, 40],
@@ -19097,7 +19097,7 @@
           "delay": 0.28
         },
         {
-          "enemyId": "Bat",
+          "enemyId": "Lancer",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-300, 30],
@@ -19106,7 +19106,7 @@
           "delay": 0.5
         },
         {
-          "enemyId": "Waver",
+          "enemyId": "Serpent",
           "mode": "RED",
           "level": 2,
           "spawnPos": [300, 30],
@@ -19135,7 +19135,7 @@
           "delay": 0.4
         },
         {
-          "enemyId": "Beetle",
+          "enemyId": "Orbiter",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-60, -60],
@@ -19191,7 +19191,7 @@
           "delay": 0.6
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Scatter",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-140, -50],
@@ -19200,7 +19200,7 @@
           "delay": 0.9
         },
         {
-          "enemyId": "Gunner",
+          "enemyId": "Scatter",
           "mode": "RED",
           "level": 2,
           "spawnPos": [140, -50],
@@ -19312,7 +19312,7 @@
           "delay": 0.8
         },
         {
-          "enemyId": "Drone",
+          "enemyId": "Mine",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-80, -60],
@@ -19341,7 +19341,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Gatling",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-300, 120],
@@ -19359,7 +19359,7 @@
           "delay": 0.28
         },
         {
-          "enemyId": "Cloud",
+          "enemyId": "Serpent",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-300, 30],
@@ -19489,7 +19489,7 @@
           "delay": 0.3
         },
         {
-          "enemyId": "Bat",
+          "enemyId": "Splitter",
           "mode": "RED",
           "level": 2,
           "spawnPos": [70, -50],
@@ -19498,7 +19498,7 @@
           "delay": 0.6
         },
         {
-          "enemyId": "Gunner",
+          "enemyId": "Sprinkler",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-140, -50],
@@ -19507,7 +19507,7 @@
           "delay": 0.9
         },
         {
-          "enemyId": "Bat",
+          "enemyId": "Serpent",
           "mode": "RED",
           "level": 2,
           "spawnPos": [140, -50],
@@ -19536,7 +19536,7 @@
           "delay": 0.4
         },
         {
-          "enemyId": "Gunner",
+          "enemyId": "Mine",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [90, -60],
@@ -19675,7 +19675,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Helix",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-110, -50],
@@ -20430,7 +20430,7 @@
       ],
       "wave2": [
         {
-          "enemyId": "Gunner",
+          "enemyId": "Helix",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-210, -60],
@@ -20466,7 +20466,7 @@
           "delay": 1.2
         },
         {
-          "enemyId": "Gunner",
+          "enemyId": "Lancer",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [15, -60],
@@ -20616,7 +20616,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Spinner",
+          "enemyId": "Mine",
           "mode": "RED",
           "level": 2,
           "spawnPos": [260, -40],
@@ -20643,7 +20643,7 @@
           "delay": 0.75
         },
         {
-          "enemyId": "Cloud",
+          "enemyId": "Gatling",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-260, -40],
@@ -20681,7 +20681,7 @@
           "delay": 0.8
         },
         {
-          "enemyId": "Scout",
+          "enemyId": "Rusher",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-80, -60],
@@ -20719,7 +20719,7 @@
           "delay": 0.15
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Mine",
           "mode": "RED",
           "level": 2,
           "spawnPos": [0, -60],
@@ -20876,7 +20876,7 @@
           "delay": 0.07
         },
         {
-          "enemyId": "Waver",
+          "enemyId": "Rusher",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [300, 30],
@@ -20932,7 +20932,7 @@
           "delay": 0.6
         },
         {
-          "enemyId": "Scout",
+          "enemyId": "Sprinkler",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-160, -50],
@@ -20941,7 +20941,7 @@
           "delay": 0.9
         },
         {
-          "enemyId": "Waver",
+          "enemyId": "Lancer",
           "mode": "RED",
           "level": 2,
           "spawnPos": [160, -50],
@@ -21026,7 +21026,7 @@
       ],
       "wave12": [
         {
-          "enemyId": "Cloud",
+          "enemyId": "Orbiter",
           "mode": "RED",
           "level": 2,
           "spawnPos": [0, -50],
@@ -21053,7 +21053,7 @@
           "delay": 0.6
         },
         {
-          "enemyId": "Waver",
+          "enemyId": "Serpent",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-140, -50],
@@ -21062,7 +21062,7 @@
           "delay": 0.9
         },
         {
-          "enemyId": "Cloud",
+          "enemyId": "Scatter",
           "mode": "RED",
           "level": 2,
           "spawnPos": [140, -50],
@@ -22025,7 +22025,7 @@
           "delay": 0.8
         },
         {
-          "enemyId": "Beetle",
+          "enemyId": "Helix",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-80, -60],
@@ -22072,7 +22072,7 @@
           "delay": 0.38
         },
         {
-          "enemyId": "Scout",
+          "enemyId": "Rusher",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-300, 110],
@@ -22211,7 +22211,7 @@
           "delay": 0.4
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Helix",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-300, 120],
@@ -22258,7 +22258,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Mine",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-300, 70],
@@ -22285,7 +22285,7 @@
           "delay": 0.45
         },
         {
-          "enemyId": "Spinner",
+          "enemyId": "Sprinkler",
           "mode": "RED",
           "level": 2,
           "spawnPos": [300, 30],
@@ -22296,7 +22296,7 @@
       ],
       "wave6": [
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Lancer",
           "mode": "RED",
           "level": 2,
           "spawnPos": [260, -40],
@@ -22323,7 +22323,7 @@
           "delay": 0.5
         },
         {
-          "enemyId": "Cloud",
+          "enemyId": "Splitter",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-260, -40],
@@ -22462,7 +22462,7 @@
           "delay": 0.35
         },
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Scatter",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-300, 120],
@@ -22518,7 +22518,7 @@
           "delay": 0.15
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Mine",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [0, -60],
@@ -22684,7 +22684,7 @@
           "delay": 0.45
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Crosser",
           "mode": "RED",
           "level": 2,
           "spawnPos": [300, 30],
@@ -22695,7 +22695,7 @@
       ],
       "wave12": [
         {
-          "enemyId": "Gunner",
+          "enemyId": "Trio",
           "mode": "RED",
           "level": 2,
           "spawnPos": [0, -60],
@@ -22731,7 +22731,7 @@
           "delay": 0.45
         },
         {
-          "enemyId": "Gunner",
+          "enemyId": "Mine",
           "mode": "RED",
           "level": 2,
           "spawnPos": [0, -60],
@@ -22861,7 +22861,7 @@
           "delay": 0.75
         },
         {
-          "enemyId": "Enemy1",
+          "enemyId": "Rusher",
           "mode": "RED",
           "level": 2,
           "spawnPos": [260, -40],
@@ -22870,7 +22870,7 @@
           "delay": 1.0
         },
         {
-          "enemyId": "Drone",
+          "enemyId": "Orbiter",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-260, -40],
@@ -22881,7 +22881,7 @@
       ],
       "wave15": [
         {
-          "enemyId": "Clab",
+          "enemyId": "Lancer",
           "mode": "RED",
           "level": 2,
           "spawnPos": [0, -60],
@@ -22917,7 +22917,7 @@
           "delay": 0.45
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Sprinkler",
           "mode": "RED",
           "level": 2,
           "spawnPos": [0, -60],
@@ -22928,7 +22928,7 @@
       ],
       "wave16": [
         {
-          "enemyId": "Twin",
+          "enemyId": "Lancer",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-300, 40],
@@ -23812,7 +23812,7 @@
           "delay": 0.8
         },
         {
-          "enemyId": "Beetle",
+          "enemyId": "Gatling",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-15, -60],
@@ -23951,7 +23951,7 @@
           "delay": 0.15
         },
         {
-          "enemyId": "Gunner",
+          "enemyId": "Serpent",
           "mode": "RED",
           "level": 2,
           "spawnPos": [0, -60],
@@ -23969,7 +23969,7 @@
           "delay": 0.45
         },
         {
-          "enemyId": "Waver",
+          "enemyId": "Helix",
           "mode": "RED",
           "level": 2,
           "spawnPos": [0, -60],
@@ -24016,7 +24016,7 @@
           "delay": 0.5
         },
         {
-          "enemyId": "Gunner",
+          "enemyId": "Mine",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-260, -40],
@@ -24025,7 +24025,7 @@
           "delay": 0.75
         },
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Rusher",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-260, -40],
@@ -24072,7 +24072,7 @@
           "delay": 1.2
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Lancer",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [80, -60],
@@ -24193,7 +24193,7 @@
           "delay": 0.35
         },
         {
-          "enemyId": "Gunner",
+          "enemyId": "Helix",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-300, 120],
@@ -24220,7 +24220,7 @@
           "delay": 1.4
         },
         {
-          "enemyId": "Cloud",
+          "enemyId": "Splitter",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [300, 120],
@@ -24267,7 +24267,7 @@
           "delay": 0.9
         },
         {
-          "enemyId": "Enemy1",
+          "enemyId": "Lancer",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-160, -50],
@@ -24276,7 +24276,7 @@
           "delay": 1.2
         },
         {
-          "enemyId": "Bat",
+          "enemyId": "Trio",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [160, -50],
@@ -24556,7 +24556,7 @@
           "delay": 0.5
         },
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Scatter",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-260, -40],
@@ -24585,7 +24585,7 @@
       ],
       "wave14": [
         {
-          "enemyId": "Bat",
+          "enemyId": "Mine",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-150, -50],
@@ -24594,7 +24594,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Gatling",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-75, -50],
@@ -24621,7 +24621,7 @@
           "delay": 0.9
         },
         {
-          "enemyId": "Bat",
+          "enemyId": "Trio",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [150, -50],
@@ -24641,7 +24641,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Spinner",
+          "enemyId": "Trio",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [0, -60],
@@ -24818,7 +24818,7 @@
           "delay": 0.25
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Helix",
           "mode": "RED",
           "level": 2,
           "spawnPos": [260, -40],
@@ -24827,7 +24827,7 @@
           "delay": 0.5
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Crosser",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-260, -40],
@@ -25634,7 +25634,7 @@
           "delay": 0.8
         },
         {
-          "enemyId": "Beetle",
+          "enemyId": "Rusher",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-15, -60],
@@ -25652,7 +25652,7 @@
           "delay": 1.6
         },
         {
-          "enemyId": "Beetle",
+          "enemyId": "Lancer",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [60, -60],
@@ -25681,7 +25681,7 @@
           "delay": 0.4
         },
         {
-          "enemyId": "Gunner",
+          "enemyId": "Scatter",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-300, 120],
@@ -25690,7 +25690,7 @@
           "delay": 0.28
         },
         {
-          "enemyId": "Gunner",
+          "enemyId": "Lancer",
           "mode": "RED",
           "level": 2,
           "spawnPos": [300, 120],
@@ -25708,7 +25708,7 @@
           "delay": 0.4
         },
         {
-          "enemyId": "Scout",
+          "enemyId": "Lancer",
           "mode": "RED",
           "level": 2,
           "spawnPos": [300, 30],
@@ -25728,7 +25728,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Bat",
+          "enemyId": "Serpent",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [300, 80],
@@ -25784,7 +25784,7 @@
           "delay": 0.28
         },
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Scatter",
           "mode": "RED",
           "level": 2,
           "spawnPos": [300, 70],
@@ -25979,7 +25979,7 @@
           "delay": 0.28
         },
         {
-          "enemyId": "Gunner",
+          "enemyId": "Serpent",
           "mode": "RED",
           "level": 2,
           "spawnPos": [300, 120],
@@ -25997,7 +25997,7 @@
           "delay": 0.4
         },
         {
-          "enemyId": "Waver",
+          "enemyId": "Lancer",
           "mode": "RED",
           "level": 2,
           "spawnPos": [300, 30],
@@ -26147,7 +26147,7 @@
       ],
       "wave10": [
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Orbiter",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [260, -40],
@@ -26165,7 +26165,7 @@
           "delay": 0.25
         },
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Trio",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [260, -40],
@@ -26174,7 +26174,7 @@
           "delay": 0.5
         },
         {
-          "enemyId": "Waver",
+          "enemyId": "Serpent",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-260, -40],
@@ -26360,7 +26360,7 @@
           "delay": 0.25
         },
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Orbiter",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-260, -40],
@@ -26398,7 +26398,7 @@
       ],
       "wave14": [
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Sprinkler",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [260, -40],
@@ -26407,7 +26407,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Gunner",
+          "enemyId": "Mine",
           "mode": "RED",
           "level": 2,
           "spawnPos": [260, -40],
@@ -26537,7 +26537,7 @@
       ],
       "wave16": [
         {
-          "enemyId": "Spinner",
+          "enemyId": "Helix",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-210, -60],
@@ -26546,7 +26546,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Spinner",
+          "enemyId": "Scatter",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [60, -60],
@@ -26555,7 +26555,7 @@
           "delay": 0.4
         },
         {
-          "enemyId": "Spinner",
+          "enemyId": "Mine",
           "mode": "RED",
           "level": 2,
           "spawnPos": [90, -60],
@@ -26573,7 +26573,7 @@
           "delay": 1.2
         },
         {
-          "enemyId": "Spinner",
+          "enemyId": "Orbiter",
           "mode": "RED",
           "level": 2,
           "spawnPos": [15, -60],
@@ -26629,7 +26629,7 @@
           "delay": 0.9
         },
         {
-          "enemyId": "Bat",
+          "enemyId": "Splitter",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-160, -50],
@@ -27469,7 +27469,7 @@
     "enemyList": {
       "wave1": [
         {
-          "enemyId": "Spinner",
+          "enemyId": "Scatter",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-300, 40],
@@ -27581,7 +27581,7 @@
           "delay": 0.0
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Sprinkler",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-75, -50],
@@ -27608,7 +27608,7 @@
           "delay": 0.9
         },
         {
-          "enemyId": "Drone",
+          "enemyId": "Helix",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [150, -50],
@@ -27720,7 +27720,7 @@
           "delay": 0.38
         },
         {
-          "enemyId": "Waver",
+          "enemyId": "Gatling",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-300, 70],
@@ -27729,7 +27729,7 @@
           "delay": 0.29
         },
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Sprinkler",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-300, 100],
@@ -27747,7 +27747,7 @@
           "delay": 0.29
         },
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Mine",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [300, 40],
@@ -27915,7 +27915,7 @@
           "delay": 0.5
         },
         {
-          "enemyId": "Bat",
+          "enemyId": "Crosser",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-260, -40],
@@ -28352,7 +28352,7 @@
           "delay": 0.6
         },
         {
-          "enemyId": "Beetle",
+          "enemyId": "Helix",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [0, -60],
@@ -28390,7 +28390,7 @@
           "delay": 0.3
         },
         {
-          "enemyId": "Gunner",
+          "enemyId": "Lancer",
           "mode": "RED",
           "level": 2,
           "spawnPos": [0, -60],
@@ -28408,7 +28408,7 @@
           "delay": 0.6
         },
         {
-          "enemyId": "Waver",
+          "enemyId": "Serpent",
           "mode": "RED",
           "level": 2,
           "spawnPos": [0, -60],
@@ -28511,7 +28511,7 @@
           "delay": 0.4
         },
         {
-          "enemyId": "Cloud",
+          "enemyId": "Splitter",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [90, -60],
@@ -28520,7 +28520,7 @@
           "delay": 0.8
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Lancer",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-15, -60],
@@ -28538,7 +28538,7 @@
           "delay": 1.6
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Lancer",
           "mode": "RED",
           "level": 2,
           "spawnPos": [60, -60],
@@ -28585,7 +28585,7 @@
           "delay": 1.2
         },
         {
-          "enemyId": "Spinner",
+          "enemyId": "Splitter",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [80, -60],
@@ -29264,7 +29264,7 @@
           "delay": 0.6
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Crosser",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [30, -50],
@@ -29320,7 +29320,7 @@
           "delay": 0.8
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Trio",
           "mode": "RED",
           "level": 2,
           "spawnPos": [90, -60],
@@ -29329,7 +29329,7 @@
           "delay": 1.2
         },
         {
-          "enemyId": "Spinner",
+          "enemyId": "Serpent",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [30, -60],
@@ -29338,7 +29338,7 @@
           "delay": 1.6
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Trio",
           "mode": "RED",
           "level": 2,
           "spawnPos": [210, -60],
@@ -29441,7 +29441,7 @@
       ],
       "wave4": [
         {
-          "enemyId": "Enemy2",
+          "enemyId": "Rusher",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-150, -50],
@@ -29533,7 +29533,7 @@
           "delay": 0.75
         },
         {
-          "enemyId": "Scout",
+          "enemyId": "Trio",
           "mode": "RED",
           "level": 2,
           "spawnPos": [260, -40],
@@ -29663,7 +29663,7 @@
           "delay": 0.35
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Crosser",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-300, 120],
@@ -29681,7 +29681,7 @@
           "delay": 1.05
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Sprinkler",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-300, 80],
@@ -29746,7 +29746,7 @@
           "delay": 1.2
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Gatling",
           "mode": "RED",
           "level": 2,
           "spawnPos": [150, -50],
@@ -29867,7 +29867,7 @@
           "delay": 0.25
         },
         {
-          "enemyId": "Twin",
+          "enemyId": "Trio",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [260, -40],
@@ -29894,7 +29894,7 @@
           "delay": 1.0
         },
         {
-          "enemyId": "Bat",
+          "enemyId": "Lancer",
           "mode": "RED",
           "level": 2,
           "spawnPos": [-260, -40],
@@ -29961,7 +29961,7 @@
       ],
       "wave12": [
         {
-          "enemyId": "Twin",
+          "enemyId": "Sprinkler",
           "mode": "BLUE",
           "level": 2,
           "spawnPos": [-210, -60],
@@ -30145,7 +30145,7 @@
           "delay": 0.45
         },
         {
-          "enemyId": "Clab",
+          "enemyId": "Lancer",
           "mode": "RED",
           "level": 2,
           "spawnPos": [0, -60],
@@ -30201,7 +30201,7 @@
           "delay": 0.75
         },
         {
-          "enemyId": "Enemy1",
+          "enemyId": "Trio",
           "mode": "RED",
           "level": 2,
           "spawnPos": [260, -40],
@@ -30358,7 +30358,7 @@
           "delay": 1.2
         },
         {
-          "enemyId": "Drone",
+          "enemyId": "Helix",
           "mode": "RED",
           "level": 2,
           "spawnPos": [0, -50],

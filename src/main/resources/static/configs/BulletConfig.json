@@ -191,8 +191,8 @@
     "BALL": {
       "1": {
         "imagePath": "/player/Ball_1.png",
-        "grids": [1, 1],
-        "useCount": 1,
+        "grids": [4, 2],
+        "useCount": 5,
         "frameRate": 0.1,
         "imageSize": 20,
         "collisionSize": 10,
@@ -373,6 +373,41 @@
         "speed": 150,
         "damage": 10,
         "Normal": 3
+      },
+      "8": {
+        "imagePath": "/enemy/Normal_5.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 28,
+        "collisionSize": 5,
+        "speed": 340,
+        "damage": 10,
+        "startSpeed": 50,
+        "accel": 280,
+        "Normal": 3
+      },
+      "9": {
+        "imagePath": "/enemy/Normal_7.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 30,
+        "collisionSize": 5,
+        "speed": 430,
+        "damage": 14,
+        "Normal": 3
+      },
+      "10": {
+        "imagePath": "/enemy/Normal_2.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 20,
+        "collisionSize": 4,
+        "speed": 230,
+        "damage": 7,
+        "Normal": 0.3
       }
     },
     "CURVE": {
@@ -386,6 +421,30 @@
         "speed": 150,
         "damage": 10,
         "diff": 0.2,
+        "Normal": 3
+      },
+      "2": {
+        "imagePath": "/enemy/Normal_3.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 170,
+        "damage": 10,
+        "diff": 0.9,
+        "Normal": 3
+      },
+      "3": {
+        "imagePath": "/enemy/Normal_4.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 150,
+        "damage": 10,
+        "diff": 0.7,
         "Normal": 3
       }
     },
@@ -405,12 +464,23 @@
     "TRACKING": {
       "1": {
         "imagePath": "/enemy/Tracking_1.png",
-        "grids": [1, 1],
-        "useCount": 1,
+        "grids": [4, 1],
+        "useCount": 4,
         "frameRate": 0.1,
         "imageSize": 25,
         "collisionSize": 5,
         "speed": 150,
+        "damage": 10,
+        "Normal": 3
+      },
+      "2": {
+        "imagePath": "/enemy/Tracking_1.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 130,
         "damage": 10,
         "Normal": 3
       }
@@ -527,6 +597,72 @@
         "speed": 100,
         "damage": 10,
         "Normal": 20
+      },
+      "10": {
+        "imagePath": "/enemy/Ball_3.png",
+        "grids": [4, 2],
+        "useCount": 5,
+        "frameRate": 0.1,
+        "imageSize": 40,
+        "collisionSize": 16,
+        "speed": 65,
+        "damage": 14,
+        "Normal": 20
+      },
+      "11": {
+        "imagePath": "/enemy/Ball_6.png",
+        "grids": [4, 2],
+        "useCount": 5,
+        "frameRate": 0.1,
+        "imageSize": 34,
+        "collisionSize": 14,
+        "speed": 105,
+        "damage": 12,
+        "Normal": 20
+      },
+      "12": {
+        "imagePath": "/enemy/Ball_8.png",
+        "grids": [4, 2],
+        "useCount": 5,
+        "frameRate": 0.1,
+        "imageSize": 20,
+        "collisionSize": 10,
+        "speed": 120,
+        "damage": 10,
+        "Normal": 20
+      }
+    },
+    "SPIRAL": {
+      "1": {
+        "imagePath": "/enemy/Normal_6.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 25,
+        "collisionSize": 5,
+        "speed": 140,
+        "damage": 10,
+        "amplitude": 26,
+        "frequency": 7,
+        "Normal": 3
+      }
+    },
+    "SPLIT": {
+      "1": {
+        "imagePath": "/enemy/Normal_4.png",
+        "grids": [4, 1],
+        "useCount": 4,
+        "frameRate": 0.1,
+        "imageSize": 32,
+        "collisionSize": 6,
+        "speed": 130,
+        "damage": 10,
+        "splitTime": 0.95,
+        "splitCount": 5,
+        "splitSpread": 80,
+        "childId": 1,
+        "childRate": 1.0,
+        "Normal": 3
       }
     }
   },
@@ -640,8 +776,8 @@
     "TRACKING": {
       "1": {
         "imagePath": "/enemy/Tracking_1.png",
-        "grids": [1, 1],
-        "useCount": 1,
+        "grids": [4, 1],
+        "useCount": 4,
         "frameRate": 0.1,
         "imageSize": 25,
         "collisionSize": 5,
