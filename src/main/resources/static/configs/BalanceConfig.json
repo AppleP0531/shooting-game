@@ -1,0 +1,6 @@
+{
+  "unitAttackGrowth": 1.10,
+  "attackPerStar": 0.25,
+  "stageHpGrowth": 1.15,
+  "endlessHpPerWave": 0.015
+}

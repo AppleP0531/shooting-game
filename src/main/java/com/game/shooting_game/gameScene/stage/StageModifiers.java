@@ -1,6 +1,7 @@
 package com.game.shooting_game.gameScene.stage;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.game.shooting_game.utils.GameBalance;
 import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 
@@ -35,6 +36,7 @@ public final class StageModifiers {
     private static Difficulty difficulty = Difficulty.NORMAL;
     private static double endlessHp = 1.0;
     private static double endlessDamage = 1.0;
+    private static double stageHp = 1.0; // ステージが進むほど敵のHPが増える倍率(BalanceConfig.json の stageHpGrowth)
 
     private StageModifiers() {
     }
@@ -50,6 +52,16 @@ public final class StageModifiers {
      * ステージの開始時に読み込む(難易度の倍率も、ステージ条件に重ねてかける)
      */
     public static void load(Spec spec, Difficulty diff) {
+        load(spec, diff, 1);
+    }
+
+    /**
+     * ステージの開始時に読み込む(ステージの番号に応じた敵HPの倍率も決める)
+     *
+     * @param stageIndex ステージの番号(ノーマルはステージ番号。エクストラは解放に要るステージ番号)
+     */
+    public static void load(Spec spec, Difficulty diff, int stageIndex) {
+        stageHp = GameBalance.stageHpRate(stageIndex);
         current = spec == null ? new Spec() : spec;
         difficulty = diff == null ? Difficulty.NORMAL : diff;
         endlessHp = 1.0;
@@ -62,7 +74,8 @@ public final class StageModifiers {
      * @param wave 今のウェーブ番号
      */
     public static void setEndlessScale(int wave) {
-        endlessHp = 1 + 0.015 * wave;
+        // 無限モードは、元にしているステージ(2ウェーブごとに1つ進む)の指数に、ウェーブごとの増加を重ねる
+        endlessHp = GameBalance.stageHpRate(1 + (wave - 1) / 2.0) * (1 + GameBalance.endlessHpPerWave() * wave);
         endlessDamage = 1 + 0.01 * wave;
     }
 
@@ -71,7 +84,7 @@ public final class StageModifiers {
     }
 
     public static double enemyHpRate() {
-        return active() ? current.getEnemyHpRate() * difficulty.getEnemyHpRate() * endlessHp : 1.0;
+        return active() ? current.getEnemyHpRate() * difficulty.getEnemyHpRate() * endlessHp * stageHp : 1.0;
     }
 
     public static double enemyDamageRate() {
