@@ -15,6 +15,7 @@ import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.domain.unit.UnitService;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.lobbyScene.LobbyManager;
+import com.game.shooting_game.upgradeScene.UpgradeManager;
 import com.game.shooting_game.upgradeScene.UpgradeManager.SkillTreeData;
 import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.LogUtils;
@@ -169,6 +170,7 @@ final class PlayerDataCommands extends CommandGroup {
                 if (args[1].equalsIgnoreCase("all")) {
                     for (SkillTreeData d : SkillService.getConfig())
                         SkillService.setLevel(d, add ? SkillService.getLevel(d.getName()) + amount : amount);
+                    UpgradeManager.getInstance().reloadScreen(); // スキルツリーの絵を描き直す
                     success("Set level of " + SkillService.getConfig().size() + " skill(s).");
                     return;
                 }
@@ -179,6 +181,7 @@ final class PlayerDataCommands extends CommandGroup {
                     return;
                 }
                 int level = SkillService.setLevel(d, add ? SkillService.getLevel(d.getName()) + amount : amount);
+                UpgradeManager.getInstance().reloadScreen(); // スキルツリーの絵を描き直す
                 success(d.getName() + " is now Lv " + level + " / " + d.getMaxLevel() + ".");
             } catch (NumberFormatException ne) {
                 error("Unknown param: '" + args[2] + "'");
