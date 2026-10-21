@@ -18,3 +18,6 @@ out/
 
 # 端末ごとの設定
 settings.properties
+
+# H2 のセーブデータ
+data/

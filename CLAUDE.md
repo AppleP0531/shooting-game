@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-縦画面の Java Swing 製シューティングゲーム(Spring Boot 4 + JPA/MySQL でセーブデータを持つ)。コメント・ログ・UI文言・TODOは日本語。Java 25 / Maven。
+縦画面の Java Swing 製シューティングゲーム(Spring Boot 4 + JPA/H2 でセーブデータを持つ)。コメント・ログ・UI文言・TODOは日本語。Java 25 / Maven。
 
 ## コマンド
 
@@ -16,7 +16,7 @@ JAVA_HOME は JDK 25(README 参照)。Windows では `.\mvnw.cmd`、Git Bash で
 
 - **「BUILD SUCCESS」だけでは、コンパイルできたと言えない。** 差分コンパイルが何も再コンパイルせずに成功することがあり、実際にエラーを見逃した。確実に確認するには、`target/classes/com`・`target/test-classes`・`target/maven-status` を消してから実行し、出力に `Compiling N source files` が出ることを確認する(または `clean` を使う)。
 - ゲームを起動したままだと `target` 内の画像が掴まれて `clean` が失敗する。その場合は上のフォルダだけを消し、`-Dmaven.resources.skip=true` を付けてコンパイル・テストする(リソースは前のコピーを使う)。
-- 起動時に Spring Boot で DB(AWS RDS / MySQL。`src/main/resources/application.properties` は git 管理外)へつなぐ。**つながらなければ自動でオフラインモード**(`DataManager.load("guest", "create")`、ログインなし)になる。DB なしの動作確認はこれで足りる。
+- 起動時に Spring Boot で DB(H2 のファイル。実行フォルダの `data/` にできる。接続は `src/main/resources/application.properties`(git 管理外)の `spring.datasource.*`)へつなぐ。テーブルは `ddl-auto=update` で自動作成される。**つながらなければ自動でオフラインモード**(`DataManager.load("guest", "create")`、ログインなし)になる。DB なしの動作確認はこれで足りる。
 - `ShootingGameApplicationTests`(コンテキスト読み込み)は DB が必要。単体テストは DB・画面なしで動く純ロジックだけを対象にする。
 - 公式のリンタ・フォーマッタ設定はない。
 
