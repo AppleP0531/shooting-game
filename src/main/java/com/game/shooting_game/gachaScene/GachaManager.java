@@ -178,8 +178,9 @@ public final class GachaManager extends JPanel implements Manager {
             g.fillRoundRect(barX, barY, (int) (barW * ratio), barH, barH, barH);
             g.setFont(new Font("SansSerif", Font.PLAIN, Math.max(9, (int) (10 * adj))));
             g.setColor(Color.WHITE);
-            String t = need <= 0 ? have + " ピース(ランク最大)"
-                    : have + " / " + need + " ピース" + (owned ? "(次のランクアップ)" : "");
+            String haveText = PieceService.ownedText(id);
+            String t = need <= 0 ? haveText + " ピース(ランク最大)"
+                    : haveText + " / " + need + " ピース" + (owned ? "(次のランクアップ)" : "");
             FontMetrics fm = g.getFontMetrics();
             g.drawString(t, barX + barW - fm.stringWidth(t), ry + (int) (16 * adj));
             ry += rowH;

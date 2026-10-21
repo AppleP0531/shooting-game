@@ -312,7 +312,7 @@ public final class LobbyManager extends JPanel implements Manager {
         g2.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, Math.max(10, (int) (13 * adj))));
         int havePieces = PieceService.owned(ships[viewingShipInd]);
         enough = enough && havePieces >= PieceService.UNLOCK_PIECES;
-        String text = "ピース " + havePieces + " / " + PieceService.UNLOCK_PIECES + " + "
+        String text = "ピース " + PieceService.ownedText(ships[viewingShipInd]) + " / " + PieceService.UNLOCK_PIECES + " + "
                 + String.format("%,d", cost) + " コイン";
         java.awt.FontMetrics fm = g2.getFontMetrics();
         g2.setColor(enough ? new java.awt.Color(255, 214, 80) : new java.awt.Color(255, 120, 120));

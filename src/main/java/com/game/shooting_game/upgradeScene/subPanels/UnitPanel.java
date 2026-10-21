@@ -141,7 +141,7 @@ public class UnitPanel extends JPanel {
 
         boolean maxRank = rank >= UnitService.MAX_RANK;
         String pieceLine = maxRank ? ""
-                : "\nこの機体のピース: " + PieceService.owned(id) + " / " + PieceService.rankUpPieces(rank);
+                : "\nこの機体のピース: " + PieceService.ownedText(id) + " / " + PieceService.rankUpPieces(rank);
         starArea.setText("Rank " + rank + " / " + UnitService.MAX_RANK + "\nレベルが最大(" + UnitService.MAX_LEVEL
                 + ")になると、ランクコアとピースでランクを上げられます。\n上げるとレベルは1に戻りますが、火力と耐久が大きく上がります。"
                 + pieceLine);

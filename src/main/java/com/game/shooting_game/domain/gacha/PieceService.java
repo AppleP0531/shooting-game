@@ -43,6 +43,11 @@ public final class PieceService {
         return ownedReal(shipId);
     }
 
+    /** 画面に出すピースの数(管理者モードは∞) */
+    public static String ownedText(String shipId) {
+        return DataManager.isAdminMode() ? "∞" : String.valueOf(ownedReal(shipId));
+    }
+
     /** 実際に持っているピースの数(管理者モードでも実数) */
     public static int ownedReal(String shipId) {
         Map<String, Integer> s = store();
