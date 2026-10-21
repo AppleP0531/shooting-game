@@ -19,6 +19,7 @@ public final class GameBalance {
     private static double rankAttackGrowth = 4.0;
     private static double stageHpGrowth = 1.034;
     private static double endlessHpPerWave = 0.015;
+    private static double bossHpRate = 5.0;
     private static boolean loaded = false;
 
     private GameBalance() {
@@ -36,6 +37,7 @@ public final class GameBalance {
             rankAttackGrowth = Math.max(1.0, n.path("rankAttackGrowth").asDouble(rankAttackGrowth));
             stageHpGrowth = Math.max(1.0, n.path("stageHpGrowth").asDouble(stageHpGrowth));
             endlessHpPerWave = Math.max(0.0, n.path("endlessHpPerWave").asDouble(endlessHpPerWave));
+            bossHpRate = Math.max(1.0, n.path("bossHpRate").asDouble(bossHpRate));
         } catch (Exception e) {
             LogUtils.systemLog("[WARN]", component, "バランスの設定を読めないため既定値を使います: " + e.getMessage());
         }
@@ -63,6 +65,12 @@ public final class GameBalance {
     public static double endlessHpPerWave() {
         ensureLoaded();
         return endlessHpPerWave;
+    }
+
+    /** ボスのゲージHP(BossConfig の gaugeHp)にかける倍率。コインボスには掛けない */
+    public static double bossHpRate() {
+        ensureLoaded();
+        return bossHpRate;
     }
 
     /**
