@@ -2,7 +2,7 @@
 https://adoptium.net/ja
 
 [shootingGame db]
-copy command from AWS GUI about RDS console
+H2 のファイル(実行フォルダの data/shooting_game_db.mv.db)。バックアップはこのファイルをコピーする
 
 [行カウント方法]
 press "ctrl + shift + p" and type "VsCodeCounter: Count lines in workspace"
