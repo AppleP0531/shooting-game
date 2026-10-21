@@ -38,12 +38,14 @@ class PieceServiceTest {
             assertThat(PieceService.owned("Ship3")).isEqualTo(CostService.UNLIMITED);
             assertThat(PieceService.consume("Ship2", PieceService.UNLOCK_PIECES)).isTrue();
             assertThat(PieceService.consume("Ship3", 1000)).isTrue();
+            assertThat(PieceService.ownedText("Ship2")).isEqualTo("∞");
             assertThat(PieceService.ownedReal("Ship2")).isEqualTo(3);
             assertThat(PieceService.ownedReal("Ship3")).isZero();
         } finally {
             DataManager.setAdminMode(false);
         }
         assertThat(PieceService.owned("Ship2")).isEqualTo(3);
+        assertThat(PieceService.ownedText("Ship2")).isEqualTo("3");
     }
 
     @Test
