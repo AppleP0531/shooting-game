@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 import com.game.shooting_game.gameScene.beam.BeamSpec;
 import com.game.shooting_game.gameScene.bullet.barrage.BarrageSpec;
 import com.game.shooting_game.utils.ANSI;
+import com.game.shooting_game.utils.GameBalance;
 import com.game.shooting_game.utils.LogUtils;
 
 /**
@@ -64,6 +65,7 @@ public final class BossLibrary {
         private List<BeamSpec> beams = new ArrayList<>(); // このゲージ中に撃つビーム
     }
 
+    private static final String COIN_BOSS_ID = "BossCoin";
     private static Map<String, BossDefinition> bossMap = new HashMap<>();
 
     static {
@@ -87,6 +89,11 @@ public final class BossLibrary {
                 if (ex != null)
                     bossMap.putAll(new ObjectMapper().readValue(ex, TYPE_REF));
             }
+
+            // ボスは、設定のゲージHPに倍率(BalanceConfig.json の bossHpRate)をかけて使う。コインボスは対象外
+            for (Map.Entry<String, BossDefinition> e : bossMap.entrySet())
+                if (!e.getKey().equals(COIN_BOSS_ID))
+                    e.getValue().setGaugeHp(e.getValue().getGaugeHp() * GameBalance.bossHpRate());
 
             LogUtils.systemLog(
                     "[DEBUG]",

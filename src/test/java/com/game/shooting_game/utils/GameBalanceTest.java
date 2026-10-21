@@ -20,6 +20,7 @@ class GameBalanceTest {
         assertThat(GameBalance.rankAttackGrowth()).isGreaterThanOrEqualTo(Math.pow(GameBalance.unitAttackGrowth(), 49));
         assertThat(GameBalance.stageHpGrowth()).isCloseTo(1.034, within(1e-9));
         assertThat(GameBalance.endlessHpPerWave()).isCloseTo(0.015, within(1e-9));
+        assertThat(GameBalance.bossHpRate()).isCloseTo(5.0, within(1e-9));
     }
 
     @Test
