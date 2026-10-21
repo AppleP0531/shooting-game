@@ -1215,6 +1215,8 @@ package "shooting_game" {
                 + {static} tickResearch(): boolean
                 + {static} formatTime(sec: long): String
                 + {static} isMaxLevel(d: SkillTreeData): boolean
+                + {static} findIgnoreCase(name: String): SkillTreeData <<コマンド用。大文字小文字を区別しない>>
+                + {static} setLevel(d: SkillTreeData, level: int): int <<コスト無視で直接設定(管理用)。0〜最大に収める>>
                 + {static} purchase(name: String): boolean
                 + {static} describe(d: SkillTreeData): String
                 + {static} status(d: SkillTreeData): String
@@ -1234,6 +1236,7 @@ package "shooting_game" {
                 + {static} baseHp(shipId: String): double
                 + {static} levelCost(level: int): Cost
                 + {static} levelUp(shipId: String): boolean
+                + {static} setLevel(shipId: String, level: int): int <<コスト無視で直接設定(管理用)。1〜MAX_LEVELに収める>>
                 + {static} rankUpCost(rank: int): Cost <<ランクコア。ランク0→1は RANK_BASE 個>>
                 + {static} canRankUp(shipId: String): boolean <<レベル最大・ランクコアと機体のピースが足りる>>
                 + {static} rankUp(shipId: String): boolean <<素材とピースを払い、ランク+1、レベルは1に戻る>>
@@ -1248,9 +1251,11 @@ package "shooting_game" {
                 - {static} RANK_UP_PIECES: int[]
                 --
                 + {static} rankUpPieces(rank: int): int
-                + {static} owned(shipId: String): int
+                + {static} owned(shipId: String): int <<管理者モードは無制限>>
+                + {static} ownedReal(shipId: String): int
+                + {static} ownedText(shipId: String): String <<管理者モードは∞>>
                 + {static} add(shipId: String, amount: int): void
-                + {static} consume(shipId: String, amount: int): boolean
+                + {static} consume(shipId: String, amount: int): boolean <<管理者モードは減らさずtrue>>
             }
 
             class GachaService <<Utility>> {
@@ -3297,6 +3302,11 @@ package "shooting_game" {
             - {static} cache: Map<String,BufferedImage>
             --
             + {static} get(kind: ResourceKinds, size: int): BufferedImage
+        }
+
+        class ShipPieceIcon <<Utility>> {
+            + {static} draw(g: Graphics2D, shipId: String, x: int, y: int, size: int): void <<機体の絵+右下にピースの図形>>
+            - {static} drawPiece(g: Graphics2D, x: int, y: int, s: int): void
         }
 
         class CostPanel {
