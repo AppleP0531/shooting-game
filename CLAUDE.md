@@ -16,8 +16,8 @@ JAVA_HOME は JDK 25(README 参照)。Windows では `.\mvnw.cmd`、Git Bash で
 
 - **「BUILD SUCCESS」だけでは、コンパイルできたと言えない。** 差分コンパイルが何も再コンパイルせずに成功することがあり、実際にエラーを見逃した。確実に確認するには、`target/classes/com`・`target/test-classes`・`target/maven-status` を消してから実行し、出力に `Compiling N source files` が出ることを確認する(または `clean` を使う)。
 - ゲームを起動したままだと `target` 内の画像が掴まれて `clean` が失敗する。その場合は上のフォルダだけを消し、`-Dmaven.resources.skip=true` を付けてコンパイル・テストする(リソースは前のコピーを使う)。
-- 起動時に Spring Boot で DB(H2 のファイル。実行フォルダの `data/` にできる。接続は `src/main/resources/application.properties`(git 管理外)の `spring.datasource.*`)へつなぐ。テーブルは `ddl-auto=update` で自動作成される。**つながらなければ自動でオフラインモード**(`DataManager.load("guest", "create")`、ログインなし)になる。DB なしの動作確認はこれで足りる。
-- `ShootingGameApplicationTests`(コンテキスト読み込み)は DB が必要。単体テストは DB・画面なしで動く純ロジックだけを対象にする。
+- 起動時に Spring Boot で DB(H2 のファイル。実行フォルダの `data/` にできる。接続は `src/main/resources/application.properties`(git 管理)の `spring.datasource.*`)へつなぐ。テーブルは `ddl-auto=update` で自動作成される。**つながらなければ自動でオフラインモード**(`DataManager.load("guest", "create")`、ログインなし)になる。DB なしの動作確認はこれで足りる。
+- `ShootingGameApplicationTests`(コンテキスト読み込み)は H2 のファイルを開く(ネットワークは不要。ゲームを起動中だと同じファイルを開けず失敗する)。単体テストは DB・画面なしで動く純ロジックだけを対象にする。
 - 公式のリンタ・フォーマッタ設定はない。
 
 ## アーキテクチャ(複数ファイルを読まないと分からない部分)
@@ -74,7 +74,7 @@ JAVA_HOME は JDK 25(README 参照)。Windows では `.\mvnw.cmd`、Git Bash で
 - **作業が終わるごとに、コミットして push する。** 手順:
   - まず、上の方法で確実に再コンパイルし、単体テストが通ることを確認する(通らなければコミットしない)。
   - 変更は、テーマごとに分けてコミットする(会心、サブ機、UI など)。1つのファイルに複数のテーマが混ざる場合は、主なテーマのコミットに入れる。メッセージは日本語で、1行目に要約、本文に理由と範囲を書く。
-  - `git add` は、パスを指定して行う(`git add -A` で `application.properties` や `settings.properties` など git 管理外のものや、生成物を巻き込まない)。削除したファイルのパスを `git add` に渡すと全体が失敗するので、`git add -A -- <パス>` を使う。
+  - `git add` は、パスを指定して行う(`git add -A` で `settings.properties` など git 管理外のものや、生成物を巻き込まない)。削除したファイルのパスを `git add` に渡すと全体が失敗するので、`git add -A -- <パス>` を使う。
   - **コミットメッセージに `Co-Authored-By`(Claude を共作者にする行)や「Generated with Claude Code」の行を付けない。** GitHub の履歴に Claude の名前が出ないようにするため。PR の説明にも付けない。
   - コミットのあとは、今のブランチを `git push` する。force push はしない。
   - 見た目の確認ができていない変更は、コミットメッセージや報告に「未確認」と書く。

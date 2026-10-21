@@ -4,8 +4,6 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-# Spring Boot configuration
-src/main/resources/application.properties
 
 ### VS Code ###
 .vscode/
@@ -14,7 +12,6 @@ src/main/resources/application.properties
 sampleImages/
 .VSCodeCounter/
 out/
-*.pem
 
 # 端末ごとの設定
 settings.properties
