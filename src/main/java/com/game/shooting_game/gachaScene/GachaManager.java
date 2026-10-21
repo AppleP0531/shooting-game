@@ -25,6 +25,7 @@ import com.game.shooting_game.domain.gacha.GachaService.Result;
 import com.game.shooting_game.domain.gacha.PieceService;
 import com.game.shooting_game.domain.unit.UnitService;
 import com.game.shooting_game.interfaces.Manager;
+import com.game.shooting_game.ui.ShipPieceIcon;
 import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
@@ -137,9 +138,13 @@ public final class GachaManager extends JPanel implements Manager {
             center(g, "手に入ったピース", cx, y);
             g.setFont(new Font("SansSerif", Font.PLAIN, Math.max(11, (int) (14 * adj))));
             g.setColor(Color.WHITE);
+            int icon = (int) (22 * adj), gap = (int) (8 * adj);
             for (Map.Entry<String, Integer> e : sum.entrySet()) {
-                y += (int) (20 * adj);
-                center(g, e.getKey() + "   +" + e.getValue() + " ピース", cx, y);
+                y += (int) (26 * adj);
+                String t = "+" + e.getValue();
+                int left = cx - (icon + gap + g.getFontMetrics().stringWidth(t)) / 2;
+                ShipPieceIcon.draw(g, e.getKey(), left, y - icon + (int) (4 * adj), icon);
+                g.drawString(t, left + icon + gap, y);
             }
         }
 
@@ -164,13 +169,16 @@ public final class GachaManager extends JPanel implements Manager {
             boolean owned = DataManager.getUserData().getShips().containsKey(id);
             int have = PieceService.owned(id);
             int need = owned ? PieceService.rankUpPieces(UnitService.getRank(id)) : PieceService.UNLOCK_PIECES;
+            int icon = (int) (36 * adj);
+            ShipPieceIcon.draw(g, id, cardX + (int) (10 * adj), ry, icon);
+            int textX = cardX + (int) (10 * adj) + icon + (int) (8 * adj);
             g.setColor(Color.WHITE);
             g.setFont(new Font("SansSerif", Font.BOLD, Math.max(10, (int) (13 * adj))));
-            g.drawString(id + (owned ? "  Rank " + UnitService.getRank(id) : "  未解放"), cardX + (int) (10 * adj),
+            g.drawString(id + (owned ? "  Rank " + UnitService.getRank(id) : "  未解放"), textX,
                     ry + (int) (16 * adj));
             // バー
-            int barX = cardX + (int) (10 * adj), barY = ry + (int) (22 * adj);
-            int barW = cardW - (int) (20 * adj), barH = (int) (10 * adj);
+            int barX = textX, barY = ry + (int) (22 * adj);
+            int barW = cardX + cardW - (int) (10 * adj) - textX, barH = (int) (10 * adj);
             double ratio = need <= 0 ? 1.0 : Math.min(1.0, (double) have / need);
             g.setColor(new Color(255, 255, 255, 40));
             g.fillRoundRect(barX, barY, barW, barH, barH, barH);
@@ -179,8 +187,8 @@ public final class GachaManager extends JPanel implements Manager {
             g.setFont(new Font("SansSerif", Font.PLAIN, Math.max(9, (int) (10 * adj))));
             g.setColor(Color.WHITE);
             String haveText = PieceService.ownedText(id);
-            String t = need <= 0 ? haveText + " ピース(ランク最大)"
-                    : haveText + " / " + need + " ピース" + (owned ? "(次のランクアップ)" : "");
+            String t = need <= 0 ? haveText + "(ランク最大)"
+                    : haveText + " / " + need + (owned ? "(次のランクアップ)" : "");
             FontMetrics fm = g.getFontMetrics();
             g.drawString(t, barX + barW - fm.stringWidth(t), ry + (int) (16 * adj));
             ry += rowH;

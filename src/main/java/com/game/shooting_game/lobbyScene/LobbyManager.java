@@ -21,6 +21,7 @@ import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.lobbyScene.LobbySceneUI.HangarSceneUIData;
+import com.game.shooting_game.ui.ShipPieceIcon;
 import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
@@ -312,12 +313,15 @@ public final class LobbyManager extends JPanel implements Manager {
         g2.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, Math.max(10, (int) (13 * adj))));
         int havePieces = PieceService.owned(ships[viewingShipInd]);
         enough = enough && havePieces >= PieceService.UNLOCK_PIECES;
-        String text = "ピース " + PieceService.ownedText(ships[viewingShipInd]) + " / " + PieceService.UNLOCK_PIECES + " + "
+        String text = PieceService.ownedText(ships[viewingShipInd]) + " / " + PieceService.UNLOCK_PIECES + " + "
                 + String.format("%,d", cost) + " コイン";
         java.awt.FontMetrics fm = g2.getFontMetrics();
+        int icon = (int) (26 * adj), gap = (int) (6 * adj);
+        int left = unlockShipBtn.getX() + (unlockShipBtn.getWidth() - (icon + gap + fm.stringWidth(text))) / 2;
+        int baseY = unlockShipBtn.getY() - (int) (6 * adj);
+        ShipPieceIcon.draw(g2, ships[viewingShipInd], left, baseY - icon + (int) (4 * adj), icon);
         g2.setColor(enough ? new java.awt.Color(255, 214, 80) : new java.awt.Color(255, 120, 120));
-        g2.drawString(text, unlockShipBtn.getX() + (unlockShipBtn.getWidth() - fm.stringWidth(text)) / 2,
-                unlockShipBtn.getY() - (int) (6 * adj));
+        g2.drawString(text, left + icon + gap, baseY);
         g2.dispose();
     }
 

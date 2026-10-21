@@ -19,6 +19,7 @@ import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.domain.unit.UnitService;
 import com.game.shooting_game.ui.CostPanel;
+import com.game.shooting_game.ui.ShipPieceIcon;
 import com.game.shooting_game.ui.UIBuilder;
 
 /**
@@ -38,6 +39,7 @@ public class UnitPanel extends JPanel {
     private JButton levelBtn;
     private CostPanel rankCostPanel; // ランクアップに必要な素材
     private JButton starBtn;
+    private String pieceText; // ランクアップに使うピースの「所持 / 必要」(ランク最大ならnull)
 
     private static String shipId() {
         return DataManager.getUserData().getSelectedShip();
@@ -140,11 +142,10 @@ public class UnitPanel extends JPanel {
         levelBtn.setEnabled(canLv);
 
         boolean maxRank = rank >= UnitService.MAX_RANK;
-        String pieceLine = maxRank ? ""
-                : "\nこの機体のピース: " + PieceService.ownedText(id) + " / " + PieceService.rankUpPieces(rank);
+        // ピースの数は、見出しの右端に、アイコンと並べて描く(paintComponent)
+        pieceText = maxRank ? null : PieceService.ownedText(id) + " / " + PieceService.rankUpPieces(rank);
         starArea.setText("Rank " + rank + " / " + UnitService.MAX_RANK + "\nレベルが最大(" + UnitService.MAX_LEVEL
-                + ")になると、ランクコアとピースでランクを上げられます。\n上げるとレベルは1に戻りますが、火力と耐久が大きく上がります。"
-                + pieceLine);
+                + ")になると、ランクコアとピースでランクを上げられます。\n上げるとレベルは1に戻りますが、火力と耐久が大きく上がります。");
         rankCostPanel.setCost(maxRank || !maxLv ? null : UnitService.rankUpCost(rank));
         starBtn.setText(maxRank ? "ランク最大" : "ランクアップ  Rank " + rank + " → Rank " + (rank + 1));
         starBtn.setEnabled(UnitService.canRankUp(id));
@@ -186,6 +187,17 @@ public class UnitPanel extends JPanel {
         }
         g2.setColor(GOLD);
         g2.drawRoundRect(px(8), px(8), s, s, 10, 10);
+
+        // ランクアップに使うピース(見出しの右端に、アイコンと「所持 / 必要」を縦に並べる)
+        if (pieceText != null) {
+            int icon = px(44);
+            int right = getWidth() - px(16);
+            ShipPieceIcon.draw(g2, shipId(), right - icon, px(8), icon);
+            g2.setFont(g2.getFont().deriveFont(java.awt.Font.BOLD, (float) px(12)));
+            g2.setColor(Color.WHITE);
+            java.awt.FontMetrics fm = g2.getFontMetrics();
+            g2.drawString(pieceText, right - icon / 2 - fm.stringWidth(pieceText) / 2, px(8) + icon + px(14));
+        }
         g2.dispose();
     }
 
