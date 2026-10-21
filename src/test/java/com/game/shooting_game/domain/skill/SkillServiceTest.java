@@ -112,4 +112,14 @@ class SkillServiceTest {
         assertThat(SkillService.findIgnoreCase(name.toLowerCase()).getName()).isEqualTo(name);
         assertThat(SkillService.findIgnoreCase("noSuchSkill")).isNull();
     }
+
+    @Test
+    @DisplayName("効果量は最大レベルまでしか数えない(最大レベルを下げた後の古いセーブ対策)")
+    void bonusCappedAtMaxLevel() {
+        var d = SkillService.find("Runup");
+        assertThat(d.getMaxLevel()).isEqualTo(1);
+        stats().getUpgrades().put("Runup", 5);
+        SkillService.invalidate();
+        assertThat(SkillService.getBonus("ENDLESS_SKIP")).isEqualTo(d.getPerLevel());
+    }
 }

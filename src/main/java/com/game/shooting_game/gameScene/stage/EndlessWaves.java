@@ -45,14 +45,16 @@ public final class EndlessWaves {
 
     /**
      * 自動スキップで飛ぶ先のウェーブ(実際に戦い始めるウェーブ)
-     * スキルの数だけ飛べるが、これまでに到達したウェーブの次(best+1)は超えない。
+     * スキル「助走」を強化していると、最高到達ウェーブの skillBonus ウェーブ前から始まる(最低1)。
      *
-     * @param skillBonus スキル「助走」の効果の値(ENDLESS_SKIP)
+     * @param skillBonus スキル「助走」の効果の値(ENDLESS_SKIP。最高ウェーブの何ウェーブ前から始めるか。0なら飛ばさない)
      * @param bestWave   これまでの最高到達ウェーブ
      */
     public static int skipTarget(double skillBonus, int bestWave) {
-        int bySkill = 1 + (int) Math.max(0, skillBonus);
-        return Math.max(1, Math.min(bySkill, Math.max(0, bestWave) + 1));
+        int before = (int) Math.max(0, skillBonus);
+        if (before == 0)
+            return 1;
+        return Math.max(1, Math.max(0, bestWave) - before);
     }
 
     private static boolean hasBoss(EnemyConfig[] enemies) {
