@@ -244,6 +244,35 @@ public final class SkillService {
     }
 
     /**
+     * 名前でスキルを探す(大文字小文字は区別しない。コマンド用)
+     */
+    public static SkillTreeData findIgnoreCase(String name) {
+        for (SkillTreeData d : getConfig())
+            if (d.getName().equalsIgnoreCase(name))
+                return d;
+        return null;
+    }
+
+    /**
+     * レベルを直接設定する(コスト・研究時間・解放条件は見ない。管理用)
+     * 0〜最大レベルの範囲に収める。0にすると強化の記録を消す。
+     *
+     * @return 設定後のレベル(選択中の機体がなければ -1)
+     */
+    public static synchronized int setLevel(SkillTreeData d, int level) {
+        Map<String, Integer> up = upgrades();
+        if (d == null || up == null)
+            return -1;
+        int lv = Math.max(0, Math.min(d.getMaxLevel(), level));
+        if (lv == 0)
+            up.remove(d.getName());
+        else
+            up.put(d.getName(), lv);
+        invalidate();
+        return lv;
+    }
+
+    /**
      * 強化の実行
      * 
      * @return 強化できたらtrue

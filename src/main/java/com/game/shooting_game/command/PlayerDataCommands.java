@@ -11,13 +11,16 @@ import com.game.shooting_game.bagScene.BagManager;
 import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.data.UserData;
 import com.game.shooting_game.data.UserData.Resources;
+import com.game.shooting_game.domain.skill.SkillService;
+import com.game.shooting_game.domain.unit.UnitService;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.lobbyScene.LobbyManager;
+import com.game.shooting_game.upgradeScene.UpgradeManager.SkillTreeData;
 import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.LogUtils;
 
 /**
- * プレイヤーデータ系のコマンド(/setship /unlockship /exp /give /deleteuser /changepassword)
+ * プレイヤーデータ系のコマンド(/setship /unlockship /exp /shiplevel /skill /give /deleteuser /changepassword)
  */
 final class PlayerDataCommands extends CommandGroup {
     PlayerDataCommands(CommandGlassPane pane) {
@@ -118,6 +121,69 @@ final class PlayerDataCommands extends CommandGroup {
                 error("Unknown param: '" + args[1] + "'");
             }
         }).setSyntax("<add|set>", "<amount>");
+
+        // 船のレベルの加算・設定 /shiplevel
+        register(rootCommands, "/shiplevel", "Add or set ship level.", true, (node, args) -> {
+            if (args.length != 3 || !(args[0].equalsIgnoreCase("add") || args[0].equalsIgnoreCase("set"))) {
+                usage(node);
+                return;
+            }
+
+            try {
+                int amount = GameUtils.tryParse(args[2]);
+                boolean add = args[0].equalsIgnoreCase("add");
+                UserData ud = DataManager.getUserData();
+
+                // all: 持っている船すべて
+                if (args[1].equalsIgnoreCase("all")) {
+                    for (String shipId : ud.getShips().keySet())
+                        UnitService.setLevel(shipId, add ? UnitService.getLevel(shipId) + amount : amount);
+                    success("Set level of " + ud.getShips().size() + " ship(s).");
+                    return;
+                }
+
+                String shipId = "Ship" + GameUtils.tryParse(args[1].toLowerCase().replace("ship", ""));
+                if (!ud.getShips().containsKey(shipId)) {
+                    error("Ship not owned: " + shipId);
+                    return;
+                }
+                int level = UnitService.setLevel(shipId, add ? UnitService.getLevel(shipId) + amount : amount);
+                success(shipId + " is now Lv " + level + " / " + UnitService.MAX_LEVEL + ".");
+            } catch (NumberFormatException ne) {
+                error("Unknown param: '" + args[1] + "' or '" + args[2] + "'");
+            }
+        }).setSyntax("<add|set>", "<shipId|all>", "<amount>");
+
+        // スキルツリーの強化 /skill(使っている船が対象。コスト・研究時間・解放条件は見ない)
+        register(rootCommands, "/skill", "Add or set skill levels of the selected ship.", true, (node, args) -> {
+            if (args.length != 3 || !(args[0].equalsIgnoreCase("add") || args[0].equalsIgnoreCase("set"))) {
+                usage(node);
+                return;
+            }
+
+            try {
+                int amount = GameUtils.tryParse(args[2]);
+                boolean add = args[0].equalsIgnoreCase("add");
+
+                // all: スキルツリーのすべて
+                if (args[1].equalsIgnoreCase("all")) {
+                    for (SkillTreeData d : SkillService.getConfig())
+                        SkillService.setLevel(d, add ? SkillService.getLevel(d.getName()) + amount : amount);
+                    success("Set level of " + SkillService.getConfig().size() + " skill(s).");
+                    return;
+                }
+
+                SkillTreeData d = SkillService.findIgnoreCase(args[1]);
+                if (d == null) {
+                    error("Unknown skill: " + args[1]);
+                    return;
+                }
+                int level = SkillService.setLevel(d, add ? SkillService.getLevel(d.getName()) + amount : amount);
+                success(d.getName() + " is now Lv " + level + " / " + d.getMaxLevel() + ".");
+            } catch (NumberFormatException ne) {
+                error("Unknown param: '" + args[2] + "'");
+            }
+        }).setSyntax("<add|set>", "<skillName|all>", "<amount>");
 
         // 資源入手 /give
         register(rootCommands, "/give", "Give resources.", true, (node, args) -> {
