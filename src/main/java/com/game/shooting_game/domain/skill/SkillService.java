@@ -114,7 +114,7 @@ public final class SkillService {
             double sum = 0;
             for (SkillTreeData d : getConfig()) {
                 if (k.equals(d.getEffect()))
-                    sum += getLevel(d.getName()) * d.getPerLevel();
+                    sum += Math.min(getLevel(d.getName()), d.getMaxLevel()) * d.getPerLevel(); // 最大レベルを下げた後の古いセーブ対策
             }
             return sum;
         });

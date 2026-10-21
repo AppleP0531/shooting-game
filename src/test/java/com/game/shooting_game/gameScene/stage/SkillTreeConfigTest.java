@@ -69,9 +69,9 @@ class SkillTreeConfigTest {
         JsonNode r = nodes().get("Runup");
         assertThat(r).isNotNull();
         assertThat(r.get("effect").asText()).isEqualTo("ENDLESS_SKIP");
-        assertThat(r.get("perLevel").asDouble()).isCloseTo(5, within(1e-9));
-        assertThat(r.get("maxLevel").asInt()).isEqualTo(10);
+        assertThat(r.get("perLevel").asDouble()).isCloseTo(50, within(1e-9));
+        assertThat(r.get("maxLevel").asInt()).isEqualTo(1);
         assertThat(r.get("rootNode").asText()).isEqualTo("Thruster");
-        assertThat(r.get("matLevels").size()).isEqualTo(10);
+        assertThat(r.get("matLevels").size()).isEqualTo(1);
     }
 }
