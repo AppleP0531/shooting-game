@@ -53,7 +53,7 @@ public final class ShipPieceIcon {
         g.drawRoundRect(x, y, size, size, arc, arc);
 
         // 右下のピース
-        int p = (int) (size * 0.5);
+        int p = (int) (size / 3.0);
         drawPiece(g, x + size - p, y + size - p, p);
         g.dispose();
     }
