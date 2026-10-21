@@ -133,6 +133,19 @@ public final class UnitService {
         return true;
     }
 
+    /**
+     * レベルを直接設定する(コストは見ない。管理用)。1〜MAX_LEVEL の範囲に収める。
+     *
+     * @return 設定後のレベル(持っていない機体なら -1)
+     */
+    public static int setLevel(String shipId, int level) {
+        ShipStats s = stats(shipId);
+        if (s == null)
+            return -1;
+        s.setLevel(Math.max(1, Math.min(MAX_LEVEL, level)));
+        return s.getLevel();
+    }
+
     // ----- ランク -----
     /** ランクアップに使う素材の数(ランク0→1は RANK_BASE 個、以降はランクごとに2倍) */
     public static final int RANK_BASE = 10;
