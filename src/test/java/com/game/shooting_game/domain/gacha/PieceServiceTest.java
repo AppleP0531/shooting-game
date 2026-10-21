@@ -7,6 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.game.shooting_game.data.DataManager;
+import com.game.shooting_game.domain.cost.CostService;
 
 class PieceServiceTest {
     @BeforeEach
@@ -25,6 +26,24 @@ class PieceServiceTest {
         assertThat(PieceService.owned("Ship2")).isEqualTo(8);
         assertThat(PieceService.owned("Ship3")).isZero();
         assertThat(DataManager.getUserData().getProgress().getHighScores()).containsEntry("piece:Ship2", 8);
+    }
+
+    @Test
+    @DisplayName("管理者モードは、所持数が無制限で、consume しても実数は減らない")
+    void adminModeIsUnlimited() {
+        PieceService.add("Ship2", 3);
+        DataManager.setAdminMode(true);
+        try {
+            assertThat(PieceService.owned("Ship2")).isEqualTo(CostService.UNLIMITED);
+            assertThat(PieceService.owned("Ship3")).isEqualTo(CostService.UNLIMITED);
+            assertThat(PieceService.consume("Ship2", PieceService.UNLOCK_PIECES)).isTrue();
+            assertThat(PieceService.consume("Ship3", 1000)).isTrue();
+            assertThat(PieceService.ownedReal("Ship2")).isEqualTo(3);
+            assertThat(PieceService.ownedReal("Ship3")).isZero();
+        } finally {
+            DataManager.setAdminMode(false);
+        }
+        assertThat(PieceService.owned("Ship2")).isEqualTo(3);
     }
 
     @Test
