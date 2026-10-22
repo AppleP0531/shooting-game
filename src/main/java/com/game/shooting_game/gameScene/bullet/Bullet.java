@@ -55,6 +55,7 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
     protected double lifeTime = 10; // 存在可能時間
     protected double lifeTimer; // 存在時間
     protected float alpha; // 透明度
+    private static final float PLAYER_MAX_ALPHA = 0.9f; // 自機の弾の透明度の上限
     @Getter
     protected ShipKinds owner; // 弾を発射者
     @Getter
@@ -160,7 +161,9 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
 
         UIBuilder.applyHighQualityRenderSettings(g2);
 
-        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+        // 自機の弾は、透明度の上限を決めて描く(敵の弾やビームと重なっても見分けがつくように)
+        float drawAlpha = owner == ShipKinds.PLAYER ? Math.min(alpha, PLAYER_MAX_ALPHA) : alpha;
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, drawAlpha));
         Vector2 drawPos = new Vector2(pos.getX(), pos.getY());
         // 画像が存在するときは読み込む(削除直後でアニメーションが解放済みの場合は描画しない)
         BufferedImage image = animationId == null ? null : AM.getCurrentImage(animationId);

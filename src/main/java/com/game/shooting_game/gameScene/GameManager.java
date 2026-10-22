@@ -221,15 +221,18 @@ public final class GameManager extends JPanel implements Manager {
     @Override
     public void setup() {
         setupDone = false;
+        com.game.shooting_game.gameScene.stage.CoinBossMemory.reset(); // 無限モードのコインボスの引き継ぎは、挑戦ごとに初期化する
         resumeTimer = leaveTimer = -1;
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
+        LogUtils.info(component,
                 ANSI.YELLOW + "Stage " + STAGE_M.getStageId() + ANSI.RESET + " loaded.");
 
         // ステージ条件の読み込み(敵が硬い・回復なし など。プレイヤーの生成より前に行う)
         StageData sd = STAGE_M.getStageConfig().get("stage" + STAGE_M.getStageId());
-        StageModifiers.load(sd == null ? null : sd.getModifiers(), STAGE_M.getStage().getDifficulty());
+        // 敵HPの強さの目安になるステージ番号(ノーマル=ステージ番号、エクストラ=解放に要るステージ番号。無限は、ウェーブごとに別に決める)
+        int sid = STAGE_M.getStageId();
+        int stageIndex = sid == EndlessWaves.STAGE_ID ? 1 : sid < 1000 ? sid : Math.max(1, sd == null ? 1 : sd.getUnlock());
+        StageModifiers.load(sd == null ? null : sd.getModifiers(), STAGE_M.getStage().getDifficulty(), stageIndex,
+                sd != null && "BOSS".equals(sd.getCategory()));
 
         // リセット
         gameover = false;
@@ -239,6 +242,8 @@ public final class GameManager extends JPanel implements Manager {
         hitCount = 0;
         playTime = 0;
         skipped = false;
+        LogUtils.debug(component, "Mission HUD: stage=" + STAGE_M.getStageId() + ", difficulty="
+                + STAGE_M.getStage().getDifficulty() + ", selectable=" + DifficultyService.selectable(STAGE_M.getStageId()) + ".");
         collectedResources.clear();
 
         // 各マネージャーのセットアップ
@@ -305,6 +310,9 @@ public final class GameManager extends JPanel implements Manager {
         // 各マネージャーの描画
         for (Manager m : managers) {
             m.draw(g);
+            // 敵の弾は、自機の弾・ビーム・船の上(アイテムの下)に描く
+            if (m instanceof com.game.shooting_game.gameScene.ship.ShipManager)
+                BulletManager.getInstance().drawEnemyBullets(g);
         }
 
         // 必要データのパッキング
@@ -315,8 +323,22 @@ public final class GameManager extends JPanel implements Manager {
                 coin,
                 effectList,
                 resumeTimer >= 0 ? resumeTimer : -1,
-                leaveTimer >= 0 ? Math.min(1, leaveTimer / LEAVE_FADE) : -1);
+                leaveTimer >= 0 ? Math.min(1, leaveTimer / LEAVE_FADE) : -1,
+                liveMissions());
         gameSceneUI.draw(g, uiData);
+    }
+
+    /**
+     * プレイ中に画面の左上へ出す、ミッションの状況(★は難易度ごとに取れるので、どの難易度でも出す。無限・スキップ・ミッションのないステージは空)
+     */
+    private java.util.List<DifficultyService.LiveMission> liveMissions() {
+        Difficulty diff = STAGE_M.getStage().getDifficulty();
+        if (skipped || STAGE_M.getStageId() == EndlessWaves.STAGE_ID
+                || !DifficultyService.selectable(STAGE_M.getStageId()) || SHIP_M.getPlayer() == null)
+            return java.util.List.of();
+        double maxHp = SHIP_M.getPlayer().getMaxHp();
+        double hpRate = maxHp > 0 ? SHIP_M.getPlayer().getHp() / maxHp : 0;
+        return DifficultyService.liveMissions(STAGE_M.getStageId(), diff, hitCount, hpRate, playTime);
     }
 
     /**
@@ -407,9 +429,7 @@ public final class GameManager extends JPanel implements Manager {
         boolean isClear = endless || getGameResult();
 
         // 結果ログ
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
+        LogUtils.info(component,
                 ANSI.YELLOW + (isClear ? "Game Clear" : "Game Over") + ANSI.RESET);
 
         if (isClear) {
@@ -417,13 +437,11 @@ public final class GameManager extends JPanel implements Manager {
 
             // 新しくクリアしたステージの場合更新
             // (エクストラステージは番号が100以上なので、通常ステージの進行度には数えない)
-            if (STAGE_M.getStageId() < 100 && STAGE_M.getStageId() > data.getProgress().getClearedStage()) {
+            if (STAGE_M.getStageId() < 1000 && STAGE_M.getStageId() > data.getProgress().getClearedStage()) {
                 data.getProgress().setClearedStage(STAGE_M.getStageId());
 
                 // クリア進捗更新ログ
-                LogUtils.systemLog(
-                        "[INFO]",
-                        component,
+                LogUtils.info(component,
                         "Progress reached " + ANSI.YELLOW + "Stage" + STAGE_M.getStageId() + ANSI.RESET + ".");
             }
 
@@ -503,6 +521,9 @@ public final class GameManager extends JPanel implements Manager {
                     data.getResources().getEquipments().merge(e.getKey(), e.getValue(), Integer::sum);
                     StageRewards.getInstance().getResources().merge(e.getKey(), e.getValue(), Integer::sum);
                 }
+                // コインボスを倒していれば、特殊ドロップのモジュールも受け取る
+                for (Rarity rarity : com.game.shooting_game.gameScene.stage.CoinBossMemory.takeSpecialDrops())
+                    StageRewards.getInstance().getModules().add(ModuleService.addNew(null, rarity));
                 for (Rarity rarity : EndlessWaves.moduleRewards(cleared))
                     StageRewards.getInstance().getModules().add(ModuleService.addNew(null, rarity));
             }
@@ -523,7 +544,7 @@ public final class GameManager extends JPanel implements Manager {
                         StageRewards.getInstance().getModules().add(ModuleService
                                 .addNew(kind, bumpRarity(Rarity.valueOf(r.getRarity()), diff.getRarityBump())));
                     } catch (IllegalArgumentException e) {
-                        LogUtils.systemLog("[WARN]", component, "Invalid module reward: " + r);
+                        LogUtils.warn(component, "Invalid module reward: " + r);
                     }
                 }
                 // 1日1回の報酬を受け取ったことを記録する
@@ -640,7 +661,10 @@ public final class GameManager extends JPanel implements Manager {
 
         // アイテム衝突
         for (Item item : IM.getItemList()) {
-            if (GameUtils.collidesWith(SHIP_M.getPlayer(), item)) {
+            // 拾う範囲は、弾の当たり判定(白いドット)とは別に、機体ごとの元の大きさ
+            Player picker = SHIP_M.getPlayer();
+            if (GameUtils.distSq(picker.getPos(), item.getPos())
+                    < Math.pow(picker.getPickupSize() + item.getCollisionSize(), 2)) {
                 item.effect();
                 item.destroySelf();
             }

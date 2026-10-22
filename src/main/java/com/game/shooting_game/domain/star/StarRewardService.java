@@ -20,7 +20,7 @@ import com.game.shooting_game.utils.LogUtils;
 /**
  * ★(ミッション達成数)のマイルストーン報酬
  * <p>
- * ★が interval(既定12)個たまるごとに報酬を受け取れる。受け取りは手動で、
+ * ★が interval(既定36)個たまるごとに報酬を受け取れる。受け取りは手動で、
  * 受取済みは progress.highScores のキー {@code "starReward:" + n}(値1)に記録する。
  * 注意: "mission:" で始まるキーは★の数に数えられるので、受取済みキーはその接頭辞にしないこと。
  */
@@ -28,7 +28,7 @@ public final class StarRewardService {
     private static final String component = "[StarRewardService]";
     private static final String CONFIG_PATH = "/static/configs/StarRewardConfig.json";
     private static final String CLAIMED_PREFIX = "starReward:";
-    private static final int DEFAULT_INTERVAL = 12;
+    private static final int DEFAULT_INTERVAL = 36;
 
     /** 報酬(コインと素材、研究スキップ券) */
     public record Reward(int coins, Map<ResourceKinds, Integer> resources, int skipTickets) {
@@ -62,7 +62,7 @@ public final class StarRewardService {
             for (JsonNode t : root.path("tiers"))
                 loaded.add(parseTier(t));
         } catch (Exception e) {
-            LogUtils.systemLog("[WARN]", component, "★報酬の設定を読めないため既定値を使います: " + e.getMessage());
+            LogUtils.warn(component, "★報酬の設定を読めないため既定値を使います: " + e.getMessage());
             loadedInterval = DEFAULT_INTERVAL;
             loaded.clear();
         }
@@ -78,7 +78,7 @@ public final class StarRewardService {
         JsonNode r = t.path("resources");
         r.fieldNames().forEachRemaining(name -> {
             ResourceName rn = ResourceName.fromString(name);
-            r.get(name).fields().forEachRemaining(en -> {
+            r.get(name).properties().forEach(en -> {
                 int count = en.getValue().asInt(0);
                 if (count > 0)
                     res.merge(new ResourceKinds(rn, Rarity.fromString(en.getKey())), count, Integer::sum);

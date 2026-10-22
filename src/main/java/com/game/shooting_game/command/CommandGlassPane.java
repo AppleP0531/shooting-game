@@ -962,7 +962,7 @@ public final class CommandGlassPane extends JPanel {
         // リロード開始ログ
         String logText = "Attempting to reload resources...";
         addLog(LogLine.Kind.INFO, logText);
-        LogUtils.systemLog("[INFO]", component, logText);
+        LogUtils.info(component, logText);
 
         RM.reload();
         IM.reload();
@@ -981,7 +981,7 @@ public final class CommandGlassPane extends JPanel {
         // リロード完了ログ
         logText = "Reload complete.";
         addLog(LogLine.Kind.SUCCESS, logText);
-        LogUtils.systemLog("[INFO]", component, logText);
+        LogUtils.info(component, logText);
     }
 
     /**

@@ -56,9 +56,7 @@ public class SubShip extends Ship {
         gunTimer = 0;
         missileTimer = 0;
 
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
+        LogUtils.info(component,
                 "Sub ship " + ANSI.YELLOW + id + ANSI.RESET + " attached.");
     }
 

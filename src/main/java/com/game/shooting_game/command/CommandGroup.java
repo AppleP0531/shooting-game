@@ -54,7 +54,7 @@ abstract class CommandGroup {
      */
     protected void info(String text) {
         pane.addLog(LogLine.Kind.INFO, text);
-        LogUtils.systemLog("[INFO]", component, text);
+        LogUtils.info(component, text);
     }
 
     /**
@@ -62,7 +62,7 @@ abstract class CommandGroup {
      */
     protected void success(String text) {
         pane.addLog(LogLine.Kind.SUCCESS, text);
-        LogUtils.systemLog("[INFO]", component, text);
+        LogUtils.notice(component, text);
     }
 
     /**
@@ -70,7 +70,7 @@ abstract class CommandGroup {
      */
     protected void error(String text) {
         pane.addLog(LogLine.Kind.ERROR, text);
-        LogUtils.debugLog(text);
+        LogUtils.warn(component, text);
     }
 
     /**

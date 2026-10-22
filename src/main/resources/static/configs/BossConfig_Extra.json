@@ -1,0 +1,2809 @@
+{
+  "Boss10": {
+    "gaugeHp": 2100,
+    "entrance": "ARC_LEFT",
+    "entranceTime": 5,
+    "transitionTime": 2.2,
+    "gauges": [
+      {
+        "move": "STATIC",
+        "dropRolls": 9,
+        "barrages": [
+          {
+            "type": "RING",
+            "bulletId": 1,
+            "color": "ALT_ARM",
+            "interval": 1,
+            "count": 24,
+            "startAngle": 90,
+            "speed": 0.55,
+            "spin": 12
+          },
+          {
+            "type": "RING",
+            "bulletId": 2,
+            "color": "ALT_ARM",
+            "interval": 1,
+            "count": 24,
+            "startAngle": 105,
+            "speed": 0.5,
+            "spin": 12,
+            "delay": 0.5
+          }
+        ]
+      },
+      {
+        "move": "SWAY",
+        "dropRolls": 10,
+        "moveAmpX": 70,
+        "moveSpeed": 0.7,
+        "barrages": [
+          {
+            "type": "RING",
+            "bulletId": 3,
+            "color": "ALT_ARM",
+            "interval": 0.9,
+            "count": 28,
+            "startAngle": 90,
+            "speed": 0.6,
+            "spin": -16
+          },
+          {
+            "type": "RING",
+            "bulletId": 4,
+            "color": "ALT_ARM",
+            "interval": 0.9,
+            "count": 28,
+            "startAngle": 96,
+            "speed": 0.5,
+            "spin": 16,
+            "delay": 0.45
+          },
+          {
+            "type": "FAN",
+            "bulletId": 1,
+            "color": "ALT_VOLLEY",
+            "interval": 2.2,
+            "count": 3,
+            "spread": 14,
+            "aim": "target",
+            "speed": 0.8,
+            "delay": 0.6
+          }
+        ]
+      },
+      {
+        "move": "FIGURE8",
+        "dropRolls": 11,
+        "moveAmpX": 90,
+        "moveAmpY": 20,
+        "moveSpeed": 0.8,
+        "barrages": [
+          {
+            "type": "RING",
+            "bulletId": 5,
+            "color": "ALT_ARM",
+            "interval": 0.8,
+            "count": 32,
+            "startAngle": 90,
+            "speed": 0.6,
+            "spin": 22
+          },
+          {
+            "type": "RING",
+            "bulletId": 6,
+            "color": "ALT_ARM",
+            "interval": 0.8,
+            "count": 32,
+            "startAngle": 90,
+            "speed": 0.5,
+            "spin": -22,
+            "delay": 0.4,
+            "onTime": 4,
+            "offTime": 1.4
+          },
+          {
+            "type": "ANCHOR",
+            "burst": "RING",
+            "anchor": "player",
+            "warnTime": 0.9,
+            "bulletId": 7,
+            "color": "ALT_ARM",
+            "interval": 2.6,
+            "count": 20,
+            "startAngle": 90,
+            "speed": 0.5
+          }
+        ],
+        "beams": [
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 10,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          }
+        ]
+      },
+      {
+        "move": "SWAY",
+        "dropRolls": 12,
+        "moveAmpX": 100,
+        "moveSpeed": 1,
+        "barrages": [
+          {
+            "type": "RING",
+            "bulletId": 1,
+            "color": "ALT_ARM",
+            "interval": 0.7,
+            "count": 36,
+            "startAngle": 90,
+            "speed": 0.62,
+            "spin": 28
+          },
+          {
+            "type": "RING",
+            "bulletId": 2,
+            "color": "ALT_ARM",
+            "interval": 0.7,
+            "count": 36,
+            "startAngle": 90,
+            "speed": 0.52,
+            "spin": -28,
+            "delay": 0.35
+          },
+          {
+            "type": "POLYGON",
+            "bulletId": 3,
+            "color": "ALT_SEGMENT",
+            "interval": 3,
+            "count": 48,
+            "sides": 6,
+            "spin": 18,
+            "speed": 0.7
+          }
+        ],
+        "beams": [
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 9,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "TOP_PLAYER",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 8,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 26,
+            "damage": 14
+          }
+        ]
+      }
+    ]
+  },
+  "Boss11": {
+    "gaugeHp": 2200,
+    "entrance": "SWOOP",
+    "entranceTime": 5,
+    "transitionTime": 2.2,
+    "gauges": [
+      {
+        "move": "SWAY",
+        "dropRolls": 9,
+        "moveAmpX": 80,
+        "moveSpeed": 0.8,
+        "barrages": [
+          {
+            "type": "CURTAIN",
+            "bulletId": 1,
+            "color": "ALT_VOLLEY",
+            "interval": 1.1,
+            "count": 14,
+            "gap": 0.3,
+            "sweepSpeed": 0.9,
+            "speed": 0.5
+          },
+          {
+            "type": "FAN",
+            "bulletId": 2,
+            "color": "ALT_VOLLEY",
+            "interval": 2.4,
+            "count": 3,
+            "spread": 10,
+            "aim": "target",
+            "speed": 0.8,
+            "delay": 0.7
+          }
+        ]
+      },
+      {
+        "move": "SWAY",
+        "dropRolls": 10,
+        "moveAmpX": 60,
+        "moveSpeed": 0.9,
+        "barrages": [
+          {
+            "type": "CURTAIN",
+            "bulletId": 3,
+            "color": "ALT_VOLLEY",
+            "interval": 0.9,
+            "count": 16,
+            "gap": 0.26,
+            "sweepSpeed": 1.1,
+            "speed": 0.5
+          },
+          {
+            "type": "CURTAIN",
+            "bulletId": 4,
+            "color": "ALT_VOLLEY",
+            "interval": 0.9,
+            "count": 16,
+            "gap": 0.26,
+            "sweepSpeed": -1.1,
+            "speed": 0.55,
+            "delay": 0.45
+          }
+        ]
+      },
+      {
+        "move": "STATIC",
+        "dropRolls": 11,
+        "barrages": [
+          {
+            "type": "CURTAIN",
+            "bulletId": 5,
+            "color": "ALT_VOLLEY",
+            "interval": 0.8,
+            "count": 18,
+            "gap": 0.24,
+            "sweepSpeed": 1.3,
+            "speed": 0.5
+          },
+          {
+            "type": "RING",
+            "bulletId": 6,
+            "color": "ALT_ARM",
+            "interval": 2,
+            "count": 18,
+            "startAngle": 90,
+            "speed": 0.5,
+            "delay": 0.6
+          }
+        ],
+        "beams": [
+          {
+            "origin": "TOP_RANDOM",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 4,
+            "warn": 1,
+            "duration": 0.8,
+            "width": 24,
+            "damage": 13
+          }
+        ]
+      },
+      {
+        "move": "FIGURE8",
+        "dropRolls": 12,
+        "moveAmpX": 100,
+        "moveAmpY": 22,
+        "moveSpeed": 0.9,
+        "barrages": [
+          {
+            "type": "CURTAIN",
+            "bulletId": 7,
+            "color": "ALT_VOLLEY",
+            "interval": 0.7,
+            "count": 20,
+            "gap": 0.22,
+            "sweepSpeed": 1.5,
+            "speed": 0.5
+          },
+          {
+            "type": "CURTAIN",
+            "bulletId": 1,
+            "color": "ALT_VOLLEY",
+            "interval": 0.7,
+            "count": 20,
+            "gap": 0.22,
+            "sweepSpeed": -1.5,
+            "speed": 0.55,
+            "delay": 0.35
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 2,
+            "color": "ALT_ARM",
+            "interval": 0.16,
+            "count": 2,
+            "spin": 50,
+            "speed": 0.6
+          }
+        ],
+        "beams": [
+          {
+            "origin": "TOP_PLAYER",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 7,
+            "warn": 1.1,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "TOP_RANDOM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 5,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 24,
+            "damage": 15
+          }
+        ]
+      },
+      {
+        "move": "SWAY",
+        "dropRolls": 13,
+        "moveAmpX": 110,
+        "moveSpeed": 1.1,
+        "barrages": [
+          {
+            "type": "CURTAIN",
+            "bulletId": 3,
+            "color": "ALT_VOLLEY",
+            "interval": 0.6,
+            "count": 22,
+            "gap": 0.2,
+            "sweepSpeed": 1.8,
+            "speed": 0.5
+          },
+          {
+            "type": "CURTAIN",
+            "bulletId": 4,
+            "color": "ALT_VOLLEY",
+            "interval": 0.6,
+            "count": 22,
+            "gap": 0.2,
+            "sweepSpeed": -1.8,
+            "speed": 0.6,
+            "delay": 0.3
+          },
+          {
+            "type": "FLOWER",
+            "bulletId": 5,
+            "color": "ALT_SEGMENT",
+            "interval": 2.4,
+            "count": 44,
+            "petals": 6,
+            "depth": 0.55,
+            "spin": 14,
+            "speed": 0.7
+          }
+        ],
+        "beams": [
+          {
+            "origin": "TOP_PLAYER",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 6,
+            "warn": 1,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "TOP_RANDOM",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 4,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 24,
+            "damage": 15
+          }
+        ]
+      }
+    ]
+  },
+  "Boss12": {
+    "gaugeHp": 2300,
+    "entrance": "ZIGZAG",
+    "entranceTime": 5,
+    "transitionTime": 2.2,
+    "gauges": [
+      {
+        "move": "STATIC",
+        "dropRolls": 9,
+        "barrages": [
+          {
+            "type": "FAN",
+            "bulletId": 1,
+            "color": "ALT_VOLLEY",
+            "interval": 1.6,
+            "count": 5,
+            "spread": 40,
+            "aim": "target",
+            "speed": 0.8
+          },
+          {
+            "type": "RING",
+            "bulletId": 2,
+            "color": "ALT_ARM",
+            "interval": 2.2,
+            "count": 16,
+            "startAngle": 90,
+            "speed": 0.55
+          }
+        ],
+        "beams": [
+          {
+            "origin": "WALL_LEFT",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 7,
+            "warn": 1.4,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15,
+            "y": 300
+          },
+          {
+            "origin": "WALL_RIGHT",
+            "color": "ALT",
+            "delay": 5.5,
+            "interval": 7,
+            "warn": 1.4,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15,
+            "y": 300
+          }
+        ]
+      },
+      {
+        "move": "SWAY",
+        "dropRolls": 10,
+        "moveAmpX": 70,
+        "moveSpeed": 0.8,
+        "barrages": [
+          {
+            "type": "FAN",
+            "bulletId": 3,
+            "color": "ALT_VOLLEY",
+            "interval": 1.3,
+            "count": 7,
+            "spread": 60,
+            "aim": "target",
+            "speed": 0.8
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 4,
+            "color": "ALT_ARM",
+            "interval": 0.18,
+            "count": 2,
+            "spin": 55,
+            "speed": 0.6
+          }
+        ],
+        "beams": [
+          {
+            "origin": "TOP_PLAYER",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 6,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "WALL_RANDOM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 5,
+            "warn": 1.2,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 14
+          }
+        ]
+      },
+      {
+        "move": "STATIC",
+        "dropRolls": 11,
+        "barrages": [
+          {
+            "type": "RING",
+            "bulletId": 5,
+            "color": "ALT_ARM",
+            "interval": 1.5,
+            "count": 24,
+            "startAngle": 90,
+            "speed": 0.55,
+            "spin": 10
+          },
+          {
+            "type": "FAN",
+            "bulletId": 6,
+            "color": "ALT_VOLLEY",
+            "interval": 1.8,
+            "count": 5,
+            "spread": 30,
+            "aim": "target",
+            "speed": 0.8
+          }
+        ],
+        "beams": [
+          {
+            "origin": "TOP_X",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 6,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 28,
+            "damage": 15,
+            "x": -120
+          },
+          {
+            "origin": "TOP_X",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 6,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 28,
+            "damage": 15,
+            "x": 120
+          },
+          {
+            "origin": "WALL_LEFT",
+            "color": "ALT",
+            "delay": 5,
+            "interval": 6,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15,
+            "y": 420
+          },
+          {
+            "origin": "WALL_RIGHT",
+            "color": "ALT",
+            "delay": 5,
+            "interval": 6,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15,
+            "y": 420
+          }
+        ]
+      },
+      {
+        "move": "FIGURE8",
+        "dropRolls": 12,
+        "moveAmpX": 85,
+        "moveAmpY": 20,
+        "moveSpeed": 0.9,
+        "barrages": [
+          {
+            "type": "SPIRAL",
+            "bulletId": 7,
+            "color": "ALT_ARM",
+            "interval": 0.14,
+            "count": 3,
+            "spin": 70,
+            "speed": 0.6
+          },
+          {
+            "type": "FAN",
+            "bulletId": 1,
+            "color": "ALT_VOLLEY",
+            "interval": 2,
+            "count": 3,
+            "spread": 20,
+            "aim": "target",
+            "speed": 0.8
+          }
+        ],
+        "beams": [
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 8,
+            "warn": 1.3,
+            "duration": 1.6,
+            "width": 32,
+            "damage": 15,
+            "sweep": 80
+          },
+          {
+            "origin": "TOP_PLAYER",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 5.5,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "WALL_RANDOM",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 4.5,
+            "warn": 1.1,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          }
+        ]
+      },
+      {
+        "move": "SWAY",
+        "dropRolls": 13,
+        "moveAmpX": 100,
+        "moveSpeed": 1,
+        "barrages": [
+          {
+            "type": "RING",
+            "bulletId": 2,
+            "color": "ALT_ARM",
+            "interval": 1,
+            "count": 28,
+            "startAngle": 90,
+            "speed": 0.55,
+            "spin": 20
+          },
+          {
+            "type": "FAN",
+            "bulletId": 3,
+            "color": "ALT_VOLLEY",
+            "interval": 1.2,
+            "count": 9,
+            "spread": 80,
+            "aim": "target",
+            "speed": 0.8
+          },
+          {
+            "type": "ANCHOR",
+            "burst": "RING",
+            "anchor": "player",
+            "warnTime": 1,
+            "bulletId": 4,
+            "color": "ALT_ARM",
+            "interval": 3,
+            "count": 24,
+            "startAngle": 90,
+            "speed": 0.5
+          }
+        ],
+        "beams": [
+          {
+            "origin": "TOP_X",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 5,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15,
+            "x": -150
+          },
+          {
+            "origin": "TOP_X",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 5,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15,
+            "x": 150
+          },
+          {
+            "origin": "TOP_PLAYER",
+            "color": "ALT",
+            "delay": 3.5,
+            "interval": 5,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "WALL_LEFT",
+            "color": "ALT",
+            "delay": 4.5,
+            "interval": 5,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15,
+            "y": 360
+          },
+          {
+            "origin": "WALL_RIGHT",
+            "color": "ALT",
+            "delay": 4.5,
+            "interval": 5,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15,
+            "y": 360
+          }
+        ]
+      }
+    ]
+  },
+  "Boss13": {
+    "gaugeHp": 2400,
+    "entrance": "LOOP_IN",
+    "entranceTime": 5.2,
+    "transitionTime": 2.2,
+    "gauges": [
+      {
+        "move": "SWAY",
+        "dropRolls": 9,
+        "moveAmpX": 80,
+        "moveSpeed": 0.7,
+        "barrages": [
+          {
+            "type": "RING",
+            "bulletId": 1,
+            "color": "ALT_ARM",
+            "interval": 1.5,
+            "count": 22,
+            "startAngle": 90,
+            "speed": 0.55,
+            "spin": 9
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 2,
+            "color": "ALT_ARM",
+            "interval": 0.2,
+            "count": 2,
+            "spin": 45,
+            "speed": 0.6
+          }
+        ]
+      },
+      {
+        "move": "FIGURE8",
+        "dropRolls": 10,
+        "moveAmpX": 80,
+        "moveAmpY": 20,
+        "moveSpeed": 0.85,
+        "barrages": [
+          {
+            "type": "RING",
+            "bulletId": 3,
+            "color": "ALT_ARM",
+            "interval": 1.2,
+            "count": 26,
+            "startAngle": 90,
+            "speed": 0.55,
+            "spin": -12
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 4,
+            "color": "ALT_ARM",
+            "interval": 0.15,
+            "count": 2,
+            "spin": 65,
+            "speed": 0.6
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 5,
+            "color": "ALT_ARM",
+            "interval": 0.15,
+            "count": 2,
+            "spin": -65,
+            "speed": 0.6,
+            "startAngle": 90
+          }
+        ]
+      },
+      {
+        "move": "STATIC",
+        "dropRolls": 11,
+        "barrages": [
+          {
+            "type": "RING",
+            "bulletId": 6,
+            "color": "ALT_ARM",
+            "interval": 1,
+            "count": 30,
+            "startAngle": 90,
+            "speed": 0.55,
+            "spin": 15
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 7,
+            "color": "ALT_ARM",
+            "interval": 0.12,
+            "count": 3,
+            "spin": 80,
+            "speed": 0.6,
+            "onTime": 3.5,
+            "offTime": 1.2
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 1,
+            "color": "ALT_ARM",
+            "interval": 0.12,
+            "count": 3,
+            "spin": -80,
+            "speed": 0.6,
+            "onTime": 3.5,
+            "offTime": 1.2,
+            "startAngle": 90
+          }
+        ]
+      },
+      {
+        "move": "SWAY",
+        "dropRolls": 12,
+        "moveAmpX": 100,
+        "moveSpeed": 1,
+        "barrages": [
+          {
+            "type": "RING",
+            "bulletId": 2,
+            "color": "ALT_ARM",
+            "interval": 0.9,
+            "count": 32,
+            "startAngle": 90,
+            "speed": 0.55,
+            "spin": -18
+          },
+          {
+            "type": "RING",
+            "bulletId": 3,
+            "color": "ALT_ARM",
+            "interval": 0.9,
+            "count": 32,
+            "startAngle": 90,
+            "speed": 0.55,
+            "spin": 18,
+            "delay": 0.45
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 4,
+            "color": "ALT_ARM",
+            "interval": 0.11,
+            "count": 3,
+            "spin": 90,
+            "speed": 0.6
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 5,
+            "color": "ALT_ARM",
+            "interval": 0.11,
+            "count": 3,
+            "spin": -90,
+            "speed": 0.6,
+            "startAngle": 90
+          }
+        ],
+        "beams": [
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 9,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          }
+        ]
+      },
+      {
+        "move": "FIGURE8",
+        "dropRolls": 13,
+        "moveAmpX": 100,
+        "moveAmpY": 24,
+        "moveSpeed": 1,
+        "barrages": [
+          {
+            "type": "RING",
+            "bulletId": 6,
+            "color": "ALT_ARM",
+            "interval": 0.8,
+            "count": 36,
+            "startAngle": 90,
+            "speed": 0.55,
+            "spin": 24
+          },
+          {
+            "type": "RING",
+            "bulletId": 7,
+            "color": "ALT_ARM",
+            "interval": 0.8,
+            "count": 36,
+            "startAngle": 90,
+            "speed": 0.55,
+            "spin": -24,
+            "delay": 0.4
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 1,
+            "color": "ALT_ARM",
+            "interval": 0.1,
+            "count": 4,
+            "spin": 100,
+            "speed": 0.6,
+            "onTime": 3,
+            "offTime": 1
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 2,
+            "color": "ALT_ARM",
+            "interval": 0.1,
+            "count": 4,
+            "spin": -100,
+            "speed": 0.6,
+            "startAngle": 90,
+            "onTime": 3,
+            "offTime": 1
+          }
+        ],
+        "beams": [
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 8.5,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "TOP_PLAYER",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 7,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 26,
+            "damage": 15
+          }
+        ]
+      }
+    ]
+  },
+  "Boss14": {
+    "gaugeHp": 2500,
+    "entrance": "BOUNCE",
+    "entranceTime": 5,
+    "transitionTime": 2.2,
+    "gauges": [
+      {
+        "move": "STATIC",
+        "dropRolls": 10,
+        "barrages": [
+          {
+            "type": "ANCHOR",
+            "burst": "RING",
+            "anchor": "player",
+            "warnTime": 0.9,
+            "bulletId": 1,
+            "color": "ALT_ARM",
+            "interval": 2,
+            "count": 18,
+            "startAngle": 90,
+            "speed": 0.5
+          },
+          {
+            "type": "FAN",
+            "bulletId": 2,
+            "color": "ALT_VOLLEY",
+            "interval": 2,
+            "count": 5,
+            "spread": 30,
+            "aim": "target",
+            "speed": 0.8,
+            "delay": 1
+          }
+        ]
+      },
+      {
+        "move": "FIGURE8",
+        "dropRolls": 11,
+        "moveAmpX": 100,
+        "moveAmpY": 10,
+        "moveSpeed": 1.4,
+        "barrages": [
+          {
+            "type": "RING",
+            "bulletId": 3,
+            "color": "ALT_ARM",
+            "interval": 1.1,
+            "count": 24,
+            "startAngle": 90,
+            "speed": 0.55,
+            "spin": 10,
+            "onTime": 2.5,
+            "offTime": 2
+          },
+          {
+            "type": "ANCHOR",
+            "burst": "FLOWER",
+            "anchor": "player",
+            "warnTime": 0.85,
+            "bulletId": 4,
+            "color": "ALT_ARM",
+            "interval": 2.4,
+            "count": 40,
+            "startAngle": 90,
+            "speed": 0.5,
+            "petals": 6
+          },
+          {
+            "type": "FAN",
+            "bulletId": 5,
+            "color": "ALT_VOLLEY",
+            "interval": 1.8,
+            "count": 3,
+            "spread": 16,
+            "aim": "target",
+            "speed": 0.8
+          }
+        ]
+      },
+      {
+        "move": "STATIC",
+        "dropRolls": 12,
+        "barrages": [
+          {
+            "type": "ANCHOR",
+            "burst": "POLYGON",
+            "anchor": "player",
+            "warnTime": 0.8,
+            "bulletId": 6,
+            "color": "ALT_ARM",
+            "interval": 1.8,
+            "count": 40,
+            "startAngle": 90,
+            "speed": 0.5,
+            "sides": 5
+          },
+          {
+            "type": "ANCHOR",
+            "burst": "RING",
+            "anchor": "random",
+            "warnTime": 0.8,
+            "bulletId": 7,
+            "color": "ALT_ARM",
+            "interval": 1.2,
+            "count": 16,
+            "startAngle": 90,
+            "speed": 0.5,
+            "delay": 0.5
+          },
+          {
+            "type": "RING",
+            "bulletId": 1,
+            "color": "ALT_ARM",
+            "interval": 2.5,
+            "count": 20,
+            "startAngle": 90,
+            "speed": 0.55
+          }
+        ],
+        "beams": [
+          {
+            "origin": "TOP_PLAYER",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 7,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          }
+        ]
+      },
+      {
+        "move": "SWAY",
+        "dropRolls": 13,
+        "moveAmpX": 110,
+        "moveSpeed": 1.3,
+        "barrages": [
+          {
+            "type": "ANCHOR",
+            "burst": "RING",
+            "anchor": "player",
+            "warnTime": 0.75,
+            "bulletId": 2,
+            "color": "ALT_ARM",
+            "interval": 1.5,
+            "count": 24,
+            "startAngle": 90,
+            "speed": 0.5
+          },
+          {
+            "type": "ANCHOR",
+            "burst": "FLOWER",
+            "anchor": "random",
+            "warnTime": 0.75,
+            "bulletId": 3,
+            "color": "ALT_ARM",
+            "interval": 1.7,
+            "count": 36,
+            "startAngle": 90,
+            "speed": 0.5,
+            "petals": 5,
+            "delay": 0.6
+          },
+          {
+            "type": "FAN",
+            "bulletId": 4,
+            "color": "ALT_VOLLEY",
+            "interval": 1.4,
+            "count": 7,
+            "spread": 50,
+            "aim": "target",
+            "speed": 0.8,
+            "onTime": 2,
+            "offTime": 1.6
+          }
+        ],
+        "beams": [
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 8,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "TOP_RANDOM",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 5,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 24,
+            "damage": 15
+          }
+        ]
+      },
+      {
+        "move": "FIGURE8",
+        "dropRolls": 14,
+        "moveAmpX": 110,
+        "moveAmpY": 16,
+        "moveSpeed": 1.2,
+        "barrages": [
+          {
+            "type": "ANCHOR",
+            "burst": "POLYGON",
+            "anchor": "player",
+            "warnTime": 0.7,
+            "bulletId": 5,
+            "color": "ALT_ARM",
+            "interval": 1.4,
+            "count": 48,
+            "startAngle": 90,
+            "speed": 0.5,
+            "sides": 6
+          },
+          {
+            "type": "ANCHOR",
+            "burst": "RING",
+            "anchor": "random",
+            "warnTime": 0.7,
+            "bulletId": 6,
+            "color": "ALT_ARM",
+            "interval": 1,
+            "count": 20,
+            "startAngle": 90,
+            "speed": 0.5,
+            "delay": 0.4
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 7,
+            "color": "ALT_ARM",
+            "interval": 0.13,
+            "count": 2,
+            "spin": 80,
+            "speed": 0.6,
+            "onTime": 2.5,
+            "offTime": 2.5
+          }
+        ],
+        "beams": [
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 7.5,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "TOP_PLAYER",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 6,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          }
+        ]
+      }
+    ]
+  },
+  "Boss15": {
+    "gaugeHp": 2600,
+    "entrance": "ZIGZAG",
+    "entranceTime": 5,
+    "transitionTime": 2.3,
+    "gauges": [
+      {
+        "move": "SWAY",
+        "dropRolls": 10,
+        "moveAmpX": 90,
+        "moveSpeed": 0.8,
+        "barrages": [
+          {
+            "type": "FAN",
+            "bulletId": 1,
+            "color": "ALT_VOLLEY",
+            "interval": 1,
+            "count": 3,
+            "spread": 12,
+            "aim": "target",
+            "speed": 0.8
+          },
+          {
+            "type": "FAN",
+            "bulletId": 2,
+            "color": "ALT_VOLLEY",
+            "interval": 2,
+            "count": 7,
+            "spread": 70,
+            "aim": "target",
+            "speed": 0.8,
+            "delay": 0.9
+          }
+        ]
+      },
+      {
+        "move": "SWAY",
+        "dropRolls": 11,
+        "moveAmpX": 100,
+        "moveSpeed": 0.9,
+        "barrages": [
+          {
+            "type": "FAN",
+            "bulletId": 3,
+            "color": "ALT_VOLLEY",
+            "interval": 0.9,
+            "count": 3,
+            "spread": 10,
+            "aim": "target",
+            "speed": 0.8
+          },
+          {
+            "type": "FAN",
+            "bulletId": 4,
+            "color": "ALT_VOLLEY",
+            "interval": 1.8,
+            "count": 9,
+            "spread": 90,
+            "aim": "target",
+            "speed": 0.8,
+            "delay": 0.9
+          },
+          {
+            "type": "FAN",
+            "bulletId": 5,
+            "color": "ALT_VOLLEY",
+            "interval": 1.8,
+            "count": 5,
+            "spread": 40,
+            "aim": "target",
+            "speed": 1,
+            "delay": 1.5
+          }
+        ],
+        "beams": [
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 9,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          }
+        ]
+      },
+      {
+        "move": "FIGURE8",
+        "dropRolls": 12,
+        "moveAmpX": 90,
+        "moveAmpY": 20,
+        "moveSpeed": 1,
+        "barrages": [
+          {
+            "type": "FAN",
+            "bulletId": 1,
+            "color": "ALT_VOLLEY",
+            "interval": 2.2,
+            "count": 9,
+            "spread": 100,
+            "aim": "target",
+            "speed": 0.9,
+            "bulletKind": "REDIRECT"
+          },
+          {
+            "type": "FAN",
+            "bulletId": 7,
+            "color": "ALT_VOLLEY",
+            "interval": 0.8,
+            "count": 3,
+            "spread": 8,
+            "aim": "target",
+            "speed": 1.1
+          },
+          {
+            "type": "RING",
+            "bulletId": 2,
+            "color": "ALT_ARM",
+            "interval": 2.6,
+            "count": 18,
+            "startAngle": 90,
+            "speed": 0.55,
+            "delay": 1
+          }
+        ],
+        "beams": [
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 8.5,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "TOP_PLAYER",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 7,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          }
+        ]
+      },
+      {
+        "move": "SWAY",
+        "dropRolls": 13,
+        "moveAmpX": 110,
+        "moveSpeed": 1.1,
+        "barrages": [
+          {
+            "type": "FAN",
+            "bulletId": 1,
+            "color": "ALT_VOLLEY",
+            "interval": 1.4,
+            "count": 11,
+            "spread": 110,
+            "aim": "target",
+            "speed": 0.8,
+            "sweepAmp": 20,
+            "sweepSpeed": 1.4
+          },
+          {
+            "type": "FAN",
+            "bulletId": 2,
+            "color": "ALT_VOLLEY",
+            "interval": 0.7,
+            "count": 3,
+            "spread": 8,
+            "aim": "target",
+            "speed": 1.15
+          },
+          {
+            "type": "FAN",
+            "bulletId": 3,
+            "color": "ALT_VOLLEY",
+            "interval": 2,
+            "count": 5,
+            "spread": 30,
+            "aim": "target",
+            "speed": 1,
+            "delay": 1
+          }
+        ],
+        "beams": [
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 8,
+            "warn": 1.3,
+            "duration": 1.4,
+            "width": 32,
+            "damage": 15,
+            "sweep": 70
+          },
+          {
+            "origin": "TOP_PLAYER",
+            "color": "ALT",
+            "delay": 2.5,
+            "interval": 6.5,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          }
+        ]
+      },
+      {
+        "move": "FIGURE8",
+        "dropRolls": 14,
+        "moveAmpX": 110,
+        "moveAmpY": 22,
+        "moveSpeed": 1.1,
+        "barrages": [
+          {
+            "type": "FAN",
+            "bulletId": 1,
+            "color": "ALT_VOLLEY",
+            "interval": 1.5,
+            "count": 9,
+            "spread": 80,
+            "aim": "target",
+            "speed": 0.7,
+            "bulletKind": "ACCEL"
+          },
+          {
+            "type": "FAN",
+            "bulletId": 5,
+            "color": "ALT_VOLLEY",
+            "interval": 0.6,
+            "count": 3,
+            "spread": 8,
+            "aim": "target",
+            "speed": 1.2
+          },
+          {
+            "type": "FAN",
+            "bulletId": 6,
+            "color": "ALT_VOLLEY",
+            "interval": 1.6,
+            "count": 13,
+            "spread": 120,
+            "aim": "target",
+            "speed": 0.8,
+            "sweepAmp": 25,
+            "sweepSpeed": 1.6,
+            "delay": 0.8
+          },
+          {
+            "type": "ANCHOR",
+            "burst": "RING",
+            "anchor": "player",
+            "warnTime": 1,
+            "bulletId": 7,
+            "color": "ALT_ARM",
+            "interval": 2.8,
+            "count": 22,
+            "startAngle": 90,
+            "speed": 0.5
+          }
+        ],
+        "beams": [
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 7,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "TOP_PLAYER",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 5.5,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 5,
+            "interval": 11,
+            "warn": 1.3,
+            "duration": 1.8,
+            "width": 34,
+            "damage": 16,
+            "sweep": 90
+          }
+        ]
+      }
+    ]
+  },
+  "Boss16": {
+    "gaugeHp": 2700,
+    "entrance": "SPIRAL",
+    "entranceTime": 5.2,
+    "transitionTime": 2.3,
+    "gauges": [
+      {
+        "move": "STATIC",
+        "dropRolls": 10,
+        "barrages": [
+          {
+            "type": "FLOWER",
+            "bulletId": 1,
+            "color": "ALT_SEGMENT",
+            "interval": 2.4,
+            "count": 40,
+            "petals": 5,
+            "depth": 0.55,
+            "spin": 14,
+            "speed": 0.7
+          },
+          {
+            "type": "POLYGON",
+            "bulletId": 2,
+            "color": "ALT_SEGMENT",
+            "interval": 2.4,
+            "count": 40,
+            "sides": 4,
+            "spin": -20,
+            "speed": 0.7,
+            "delay": 1.2
+          }
+        ]
+      },
+      {
+        "move": "SWAY",
+        "dropRolls": 11,
+        "moveAmpX": 70,
+        "moveSpeed": 0.7,
+        "barrages": [
+          {
+            "type": "FLOWER",
+            "bulletId": 3,
+            "color": "ALT_SEGMENT",
+            "interval": 2.2,
+            "count": 48,
+            "petals": 6,
+            "depth": 0.55,
+            "spin": -16,
+            "speed": 0.7
+          },
+          {
+            "type": "FLOWER",
+            "bulletId": 4,
+            "color": "ALT_SEGMENT",
+            "interval": 2.2,
+            "count": 36,
+            "petals": 4,
+            "depth": 0.7,
+            "spin": 20,
+            "speed": 0.7,
+            "delay": 1.1
+          },
+          {
+            "type": "FAN",
+            "bulletId": 5,
+            "color": "ALT_VOLLEY",
+            "interval": 2,
+            "count": 3,
+            "spread": 14,
+            "aim": "target",
+            "speed": 0.8
+          }
+        ]
+      },
+      {
+        "move": "FIGURE8",
+        "dropRolls": 12,
+        "moveAmpX": 80,
+        "moveAmpY": 18,
+        "moveSpeed": 0.8,
+        "barrages": [
+          {
+            "type": "FLOWER",
+            "bulletId": 6,
+            "color": "ALT_SEGMENT",
+            "interval": 2,
+            "count": 56,
+            "petals": 7,
+            "depth": 0.55,
+            "spin": 14,
+            "speed": 0.7
+          },
+          {
+            "type": "POLYGON",
+            "bulletId": 7,
+            "color": "ALT_SEGMENT",
+            "interval": 2,
+            "count": 54,
+            "sides": 6,
+            "spin": -24,
+            "speed": 0.7,
+            "delay": 1
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 1,
+            "color": "ALT_ARM",
+            "interval": 0.2,
+            "count": 2,
+            "spin": 50,
+            "speed": 0.6
+          }
+        ],
+        "beams": [
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 9,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          }
+        ]
+      },
+      {
+        "move": "STATIC",
+        "dropRolls": 13,
+        "barrages": [
+          {
+            "type": "FLOWER",
+            "bulletId": 2,
+            "color": "ALT_SEGMENT",
+            "interval": 1.8,
+            "count": 64,
+            "petals": 8,
+            "depth": 0.65,
+            "spin": 20,
+            "speed": 0.7
+          },
+          {
+            "type": "FLOWER",
+            "bulletId": 3,
+            "color": "ALT_SEGMENT",
+            "interval": 1.8,
+            "count": 45,
+            "petals": 5,
+            "depth": 0.55,
+            "spin": -24,
+            "speed": 0.7,
+            "delay": 0.9
+          },
+          {
+            "type": "POLYGON",
+            "bulletId": 4,
+            "color": "ALT_SEGMENT",
+            "interval": 2.6,
+            "count": 45,
+            "sides": 3,
+            "spin": 18,
+            "speed": 0.7,
+            "delay": 1.4
+          }
+        ],
+        "beams": [
+          {
+            "origin": "TOP_PLAYER",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 7,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 5,
+            "interval": 10,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          }
+        ]
+      },
+      {
+        "move": "SWAY",
+        "dropRolls": 14,
+        "moveAmpX": 100,
+        "moveSpeed": 1,
+        "barrages": [
+          {
+            "type": "FLOWER",
+            "bulletId": 5,
+            "color": "ALT_SEGMENT",
+            "interval": 1.6,
+            "count": 72,
+            "petals": 9,
+            "depth": 0.7,
+            "spin": 26,
+            "speed": 0.7
+          },
+          {
+            "type": "POLYGON",
+            "bulletId": 6,
+            "color": "ALT_SEGMENT",
+            "interval": 1.8,
+            "count": 64,
+            "sides": 8,
+            "spin": -28,
+            "speed": 0.7,
+            "delay": 0.8
+          },
+          {
+            "type": "RING",
+            "bulletId": 7,
+            "color": "ALT_ARM",
+            "interval": 1.6,
+            "count": 28,
+            "startAngle": 90,
+            "speed": 0.55,
+            "spin": 12
+          },
+          {
+            "type": "ANCHOR",
+            "burst": "FLOWER",
+            "anchor": "player",
+            "warnTime": 1,
+            "bulletId": 1,
+            "color": "ALT_ARM",
+            "interval": 2.6,
+            "count": 42,
+            "startAngle": 90,
+            "speed": 0.5,
+            "petals": 6
+          }
+        ],
+        "beams": [
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 8,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "TOP_PLAYER",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 6,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          }
+        ]
+      }
+    ]
+  },
+  "Boss17": {
+    "gaugeHp": 2800,
+    "entrance": "LOOP_IN",
+    "entranceTime": 5.4,
+    "transitionTime": 2.3,
+    "gauges": [
+      {
+        "move": "STATIC",
+        "dropRolls": 10,
+        "barrages": [
+          {
+            "type": "SPIRAL",
+            "bulletId": 1,
+            "color": "ALT_ARM",
+            "interval": 0.12,
+            "count": 3,
+            "spin": 70,
+            "speed": 0.6
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 2,
+            "color": "ALT_ARM",
+            "interval": 0.12,
+            "count": 3,
+            "spin": -70,
+            "speed": 0.6,
+            "startAngle": 90
+          }
+        ]
+      },
+      {
+        "move": "SWAY",
+        "dropRolls": 11,
+        "moveAmpX": 80,
+        "moveSpeed": 0.8,
+        "barrages": [
+          {
+            "type": "SPIRAL",
+            "bulletId": 1,
+            "color": "ALT_ARM",
+            "interval": 0.2,
+            "count": 3,
+            "spin": 55,
+            "speed": 0.45,
+            "bulletKind": "ACCEL"
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 4,
+            "color": "ALT_ARM",
+            "interval": 0.13,
+            "count": 2,
+            "spin": -85,
+            "speed": 0.6,
+            "startAngle": 90
+          },
+          {
+            "type": "FAN",
+            "bulletId": 5,
+            "color": "ALT_VOLLEY",
+            "interval": 2,
+            "count": 5,
+            "spread": 30,
+            "aim": "target",
+            "speed": 0.8
+          }
+        ]
+      },
+      {
+        "move": "FIGURE8",
+        "dropRolls": 12,
+        "moveAmpX": 90,
+        "moveAmpY": 20,
+        "moveSpeed": 0.9,
+        "barrages": [
+          {
+            "type": "SPIRAL",
+            "bulletId": 6,
+            "color": "ALT_ARM",
+            "interval": 0.1,
+            "count": 3,
+            "spin": 110,
+            "speed": 0.6,
+            "onTime": 3,
+            "offTime": 1
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 7,
+            "color": "ALT_ARM",
+            "interval": 0.1,
+            "count": 3,
+            "spin": -110,
+            "speed": 0.6,
+            "startAngle": 90,
+            "onTime": 3,
+            "offTime": 1
+          },
+          {
+            "type": "RING",
+            "bulletId": 1,
+            "color": "ALT_ARM",
+            "interval": 2.2,
+            "count": 22,
+            "startAngle": 90,
+            "speed": 0.55,
+            "spin": 30
+          }
+        ],
+        "beams": [
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 9,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          }
+        ]
+      },
+      {
+        "move": "STATIC",
+        "dropRolls": 13,
+        "barrages": [
+          {
+            "type": "SPIRAL",
+            "bulletId": 2,
+            "color": "ALT_ARM",
+            "interval": 0.15,
+            "count": 4,
+            "spin": 75,
+            "speed": 0.45,
+            "bulletKind": "ACCEL"
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 2,
+            "color": "ALT_ARM",
+            "interval": 0.15,
+            "count": 4,
+            "spin": -75,
+            "speed": 0.45,
+            "bulletKind": "ACCEL",
+            "startAngle": 90
+          },
+          {
+            "type": "RING",
+            "bulletId": 4,
+            "color": "ALT_ARM",
+            "interval": 1.4,
+            "count": 28,
+            "startAngle": 90,
+            "speed": 0.55,
+            "spin": -20
+          }
+        ],
+        "beams": [
+          {
+            "origin": "TOP_PLAYER",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 6.5,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 5,
+            "interval": 9,
+            "warn": 1.3,
+            "duration": 1.6,
+            "width": 30,
+            "damage": 15,
+            "sweep": 80
+          }
+        ]
+      },
+      {
+        "move": "SWAY",
+        "dropRolls": 14,
+        "moveAmpX": 110,
+        "moveSpeed": 1.1,
+        "barrages": [
+          {
+            "type": "SPIRAL",
+            "bulletId": 5,
+            "color": "ALT_ARM",
+            "interval": 0.09,
+            "count": 4,
+            "spin": 130,
+            "speed": 0.6
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 6,
+            "color": "ALT_ARM",
+            "interval": 0.09,
+            "count": 4,
+            "spin": -130,
+            "speed": 0.6,
+            "startAngle": 90
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 1,
+            "color": "ALT_ARM",
+            "interval": 0.2,
+            "count": 3,
+            "spin": 40,
+            "speed": 0.45,
+            "bulletKind": "ACCEL",
+            "onTime": 4,
+            "offTime": 1.5
+          },
+          {
+            "type": "ANCHOR",
+            "burst": "RING",
+            "anchor": "player",
+            "warnTime": 1,
+            "bulletId": 1,
+            "color": "ALT_ARM",
+            "interval": 2.6,
+            "count": 24,
+            "startAngle": 90,
+            "speed": 0.5
+          }
+        ],
+        "beams": [
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 8,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "TOP_PLAYER",
+            "color": "ALT",
+            "delay": 2.5,
+            "interval": 6,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          }
+        ]
+      }
+    ]
+  },
+  "Boss18": {
+    "gaugeHp": 2900,
+    "entrance": "SWOOP",
+    "entranceTime": 5.4,
+    "transitionTime": 2.3,
+    "gauges": [
+      {
+        "move": "SWAY",
+        "dropRolls": 10,
+        "moveAmpX": 80,
+        "moveSpeed": 0.8,
+        "barrages": [
+          {
+            "type": "ANCHOR",
+            "burst": "RING",
+            "anchor": "random",
+            "warnTime": 0.9,
+            "bulletId": 1,
+            "color": "ALT_ARM",
+            "interval": 1.3,
+            "count": 14,
+            "startAngle": 90,
+            "speed": 0.5
+          },
+          {
+            "type": "FAN",
+            "bulletId": 1,
+            "color": "ALT_VOLLEY",
+            "interval": 2.6,
+            "count": 3,
+            "spread": 20,
+            "aim": "target",
+            "speed": 0.7,
+            "bulletKind": "SPLIT"
+          }
+        ]
+      },
+      {
+        "move": "FIGURE8",
+        "dropRolls": 11,
+        "moveAmpX": 90,
+        "moveAmpY": 18,
+        "moveSpeed": 0.9,
+        "barrages": [
+          {
+            "type": "ANCHOR",
+            "burst": "FLOWER",
+            "anchor": "random",
+            "warnTime": 0.85,
+            "bulletId": 3,
+            "color": "ALT_ARM",
+            "interval": 1.5,
+            "count": 36,
+            "startAngle": 90,
+            "speed": 0.5,
+            "petals": 5
+          },
+          {
+            "type": "FAN",
+            "bulletId": 2,
+            "color": "ALT_VOLLEY",
+            "interval": 2.2,
+            "count": 5,
+            "spread": 36,
+            "aim": "target",
+            "speed": 0.7,
+            "bulletKind": "SPLIT"
+          },
+          {
+            "type": "RING",
+            "bulletId": 5,
+            "color": "ALT_ARM",
+            "interval": 2.5,
+            "count": 18,
+            "startAngle": 90,
+            "speed": 0.55
+          }
+        ]
+      },
+      {
+        "move": "STATIC",
+        "dropRolls": 12,
+        "barrages": [
+          {
+            "type": "ANCHOR",
+            "burst": "POLYGON",
+            "anchor": "random",
+            "warnTime": 0.8,
+            "bulletId": 6,
+            "color": "ALT_ARM",
+            "interval": 1.2,
+            "count": 40,
+            "startAngle": 90,
+            "speed": 0.5,
+            "sides": 5
+          },
+          {
+            "type": "ANCHOR",
+            "burst": "RING",
+            "anchor": "player",
+            "warnTime": 0.85,
+            "bulletId": 7,
+            "color": "ALT_ARM",
+            "interval": 2,
+            "count": 20,
+            "startAngle": 90,
+            "speed": 0.5,
+            "delay": 0.8
+          },
+          {
+            "type": "FAN",
+            "bulletId": 1,
+            "color": "ALT_VOLLEY",
+            "interval": 2,
+            "count": 7,
+            "spread": 60,
+            "aim": "target",
+            "speed": 0.7,
+            "bulletKind": "SPLIT"
+          }
+        ],
+        "beams": [
+          {
+            "origin": "TOP_RANDOM",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 4.5,
+            "warn": 1,
+            "duration": 0.8,
+            "width": 24,
+            "damage": 15
+          }
+        ]
+      },
+      {
+        "move": "SWAY",
+        "dropRolls": 13,
+        "moveAmpX": 110,
+        "moveSpeed": 1.1,
+        "barrages": [
+          {
+            "type": "ANCHOR",
+            "burst": "RING",
+            "anchor": "random",
+            "warnTime": 0.75,
+            "bulletId": 2,
+            "color": "ALT_ARM",
+            "interval": 0.9,
+            "count": 18,
+            "startAngle": 90,
+            "speed": 0.5
+          },
+          {
+            "type": "ANCHOR",
+            "burst": "FLOWER",
+            "anchor": "random",
+            "warnTime": 0.75,
+            "bulletId": 3,
+            "color": "ALT_ARM",
+            "interval": 1.4,
+            "count": 42,
+            "startAngle": 90,
+            "speed": 0.5,
+            "petals": 6,
+            "delay": 0.5
+          },
+          {
+            "type": "FAN",
+            "bulletId": 2,
+            "color": "ALT_VOLLEY",
+            "interval": 1.8,
+            "count": 9,
+            "spread": 80,
+            "aim": "target",
+            "speed": 0.7,
+            "bulletKind": "SPLIT"
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 5,
+            "color": "ALT_ARM",
+            "interval": 0.18,
+            "count": 2,
+            "spin": 60,
+            "speed": 0.6
+          }
+        ],
+        "beams": [
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 8,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "TOP_RANDOM",
+            "color": "ALT",
+            "delay": 2.5,
+            "interval": 4,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 24,
+            "damage": 15
+          }
+        ]
+      },
+      {
+        "move": "FIGURE8",
+        "dropRolls": 14,
+        "moveAmpX": 110,
+        "moveAmpY": 22,
+        "moveSpeed": 1.1,
+        "barrages": [
+          {
+            "type": "ANCHOR",
+            "burst": "POLYGON",
+            "anchor": "random",
+            "warnTime": 0.7,
+            "bulletId": 6,
+            "color": "ALT_ARM",
+            "interval": 0.9,
+            "count": 48,
+            "startAngle": 90,
+            "speed": 0.5,
+            "sides": 6
+          },
+          {
+            "type": "ANCHOR",
+            "burst": "RING",
+            "anchor": "player",
+            "warnTime": 0.7,
+            "bulletId": 7,
+            "color": "ALT_ARM",
+            "interval": 1.6,
+            "count": 26,
+            "startAngle": 90,
+            "speed": 0.5,
+            "delay": 0.4
+          },
+          {
+            "type": "FAN",
+            "bulletId": 2,
+            "color": "ALT_VOLLEY",
+            "interval": 1.6,
+            "count": 11,
+            "spread": 100,
+            "aim": "target",
+            "speed": 0.7,
+            "bulletKind": "SPLIT"
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 2,
+            "color": "ALT_ARM",
+            "interval": 0.15,
+            "count": 2,
+            "spin": -70,
+            "speed": 0.6
+          }
+        ],
+        "beams": [
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 7.5,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "TOP_PLAYER",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 5.5,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "TOP_RANDOM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 3.5,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 24,
+            "damage": 15
+          }
+        ]
+      }
+    ]
+  },
+  "Boss19": {
+    "gaugeHp": 3200,
+    "entrance": "ARC_RIGHT",
+    "entranceTime": 6,
+    "transitionTime": 2.5,
+    "gauges": [
+      {
+        "move": "SWAY",
+        "dropRolls": 11,
+        "moveAmpX": 90,
+        "moveSpeed": 0.8,
+        "barrages": [
+          {
+            "type": "RING",
+            "bulletId": 1,
+            "color": "ALT_ARM",
+            "interval": 1,
+            "count": 26,
+            "startAngle": 90,
+            "speed": 0.55,
+            "spin": 12
+          },
+          {
+            "type": "FAN",
+            "bulletId": 2,
+            "color": "ALT_VOLLEY",
+            "interval": 1.4,
+            "count": 7,
+            "spread": 60,
+            "aim": "target",
+            "speed": 0.8
+          },
+          {
+            "type": "CURTAIN",
+            "bulletId": 3,
+            "color": "ALT_VOLLEY",
+            "interval": 1.4,
+            "count": 14,
+            "gap": 0.28,
+            "sweepSpeed": 0.9,
+            "speed": 0.5,
+            "delay": 0.7
+          }
+        ],
+        "beams": [
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 9,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          }
+        ]
+      },
+      {
+        "move": "FIGURE8",
+        "dropRolls": 12,
+        "moveAmpX": 90,
+        "moveAmpY": 20,
+        "moveSpeed": 0.9,
+        "barrages": [
+          {
+            "type": "SPIRAL",
+            "bulletId": 4,
+            "color": "ALT_ARM",
+            "interval": 0.13,
+            "count": 3,
+            "spin": 70,
+            "speed": 0.6
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 5,
+            "color": "ALT_ARM",
+            "interval": 0.13,
+            "count": 3,
+            "spin": -70,
+            "speed": 0.6,
+            "startAngle": 90
+          },
+          {
+            "type": "FLOWER",
+            "bulletId": 6,
+            "color": "ALT_SEGMENT",
+            "interval": 2.4,
+            "count": 48,
+            "petals": 6,
+            "depth": 0.55,
+            "spin": 14,
+            "speed": 0.7,
+            "delay": 1
+          },
+          {
+            "type": "ANCHOR",
+            "burst": "RING",
+            "anchor": "player",
+            "warnTime": 1,
+            "bulletId": 7,
+            "color": "ALT_ARM",
+            "interval": 2.6,
+            "count": 20,
+            "startAngle": 90,
+            "speed": 0.5
+          }
+        ],
+        "beams": [
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 8.5,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "TOP_PLAYER",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 7,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          }
+        ]
+      },
+      {
+        "move": "STATIC",
+        "dropRolls": 13,
+        "barrages": [
+          {
+            "type": "CURTAIN",
+            "bulletId": 1,
+            "color": "ALT_VOLLEY",
+            "interval": 0.8,
+            "count": 18,
+            "gap": 0.24,
+            "sweepSpeed": 1.4,
+            "speed": 0.5
+          },
+          {
+            "type": "RING",
+            "bulletId": 2,
+            "color": "ALT_ARM",
+            "interval": 1.2,
+            "count": 30,
+            "startAngle": 90,
+            "speed": 0.55,
+            "spin": -18
+          },
+          {
+            "type": "ANCHOR",
+            "burst": "POLYGON",
+            "anchor": "random",
+            "warnTime": 1,
+            "bulletId": 3,
+            "color": "ALT_ARM",
+            "interval": 1.8,
+            "count": 48,
+            "startAngle": 90,
+            "speed": 0.5,
+            "sides": 6,
+            "delay": 0.6
+          }
+        ],
+        "beams": [
+          {
+            "origin": "WALL_LEFT",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 6,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15,
+            "y": 320
+          },
+          {
+            "origin": "WALL_RIGHT",
+            "color": "ALT",
+            "delay": 5,
+            "interval": 6,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15,
+            "y": 320
+          },
+          {
+            "origin": "TOP_PLAYER",
+            "color": "ALT",
+            "delay": 3.5,
+            "interval": 6,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          }
+        ]
+      },
+      {
+        "move": "SWAY",
+        "dropRolls": 14,
+        "moveAmpX": 110,
+        "moveSpeed": 1.1,
+        "barrages": [
+          {
+            "type": "SPIRAL",
+            "bulletId": 2,
+            "color": "ALT_ARM",
+            "interval": 0.12,
+            "count": 4,
+            "spin": 90,
+            "speed": 0.45,
+            "bulletKind": "ACCEL"
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 2,
+            "color": "ALT_ARM",
+            "interval": 0.12,
+            "count": 4,
+            "spin": -90,
+            "speed": 0.45,
+            "bulletKind": "ACCEL",
+            "startAngle": 90
+          },
+          {
+            "type": "FAN",
+            "bulletId": 2,
+            "color": "ALT_VOLLEY",
+            "interval": 2,
+            "count": 11,
+            "spread": 100,
+            "aim": "target",
+            "speed": 0.9,
+            "bulletKind": "REDIRECT"
+          },
+          {
+            "type": "FLOWER",
+            "bulletId": 7,
+            "color": "ALT_SEGMENT",
+            "interval": 2,
+            "count": 64,
+            "petals": 8,
+            "depth": 0.55,
+            "spin": 14,
+            "speed": 0.7,
+            "delay": 0.8
+          }
+        ],
+        "beams": [
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 7.5,
+            "warn": 1.3,
+            "duration": 1.6,
+            "width": 32,
+            "damage": 15,
+            "sweep": 80
+          },
+          {
+            "origin": "TOP_PLAYER",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 5.5,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "TOP_RANDOM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 4,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 24,
+            "damage": 15
+          }
+        ]
+      },
+      {
+        "move": "FIGURE8",
+        "dropRolls": 16,
+        "moveAmpX": 115,
+        "moveAmpY": 24,
+        "moveSpeed": 1.1,
+        "barrages": [
+          {
+            "type": "RING",
+            "bulletId": 1,
+            "color": "ALT_ARM",
+            "interval": 0.8,
+            "count": 36,
+            "startAngle": 90,
+            "speed": 0.55,
+            "spin": 26
+          },
+          {
+            "type": "RING",
+            "bulletId": 2,
+            "color": "ALT_ARM",
+            "interval": 0.8,
+            "count": 36,
+            "startAngle": 90,
+            "speed": 0.55,
+            "spin": -26,
+            "delay": 0.4
+          },
+          {
+            "type": "SPIRAL",
+            "bulletId": 3,
+            "color": "ALT_ARM",
+            "interval": 0.1,
+            "count": 4,
+            "spin": 110,
+            "speed": 0.6
+          },
+          {
+            "type": "CURTAIN",
+            "bulletId": 4,
+            "color": "ALT_VOLLEY",
+            "interval": 0.9,
+            "count": 20,
+            "gap": 0.22,
+            "sweepSpeed": 1.6,
+            "speed": 0.5,
+            "delay": 0.5
+          },
+          {
+            "type": "ANCHOR",
+            "burst": "FLOWER",
+            "anchor": "random",
+            "warnTime": 0.7,
+            "bulletId": 5,
+            "color": "ALT_ARM",
+            "interval": 1.4,
+            "count": 49,
+            "startAngle": 90,
+            "speed": 0.5,
+            "petals": 7
+          },
+          {
+            "type": "FAN",
+            "bulletId": 6,
+            "color": "ALT_VOLLEY",
+            "interval": 1.2,
+            "count": 9,
+            "spread": 80,
+            "aim": "target",
+            "speed": 0.8,
+            "sweepAmp": 20,
+            "sweepSpeed": 1.5
+          }
+        ],
+        "beams": [
+          {
+            "origin": "SHIP_AIM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 7,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "TOP_PLAYER",
+            "color": "ALT",
+            "delay": 2,
+            "interval": 5,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "WALL_RANDOM",
+            "color": "ALT",
+            "delay": 3,
+            "interval": 4.5,
+            "warn": 1.1,
+            "duration": 0.8,
+            "width": 30,
+            "damage": 15
+          },
+          {
+            "origin": "TOP_X",
+            "color": "ALT",
+            "delay": 6,
+            "interval": 8,
+            "warn": 1.3,
+            "duration": 0.8,
+            "width": 40,
+            "damage": 17,
+            "x": 0
+          }
+        ]
+      }
+    ]
+  }
+}

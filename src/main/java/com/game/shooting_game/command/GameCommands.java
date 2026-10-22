@@ -87,7 +87,7 @@ final class GameCommands extends CommandGroup {
                     } catch (IllegalArgumentException ie) {
                         error("Invalid mode (BLUE or RED).");
                     } catch (Exception e) {
-                        LogUtils.systemLog("[WARN]", component, "Command Error");
+                        LogUtils.warn(component, "Command Error");
                     }
                 }).setSyntax("<enemyId>", "<x>", "<y>", "[mode]", "[level]");
 
@@ -135,7 +135,7 @@ final class GameCommands extends CommandGroup {
                     } catch (IllegalArgumentException ie) {
                         error("Invalid origin or color (BLUE or RED).");
                     } catch (Exception e) {
-                        LogUtils.systemLog("[WARN]", component, "Command Error");
+                        LogUtils.warn(component, "Command Error");
                     }
                 }).setSyntax("<origin>", "[color]");
 
@@ -184,7 +184,7 @@ final class GameCommands extends CommandGroup {
             } catch (NumberFormatException ne) {
                 error("Unknown param: " + args[0]);
             } catch (Exception e) {
-                LogUtils.systemLog("[WARN]", component, "Command Error");
+                LogUtils.warn(component, "Command Error");
             }
         }).setSyntax("<amount>");
         // レベルアップ
@@ -237,7 +237,7 @@ final class GameCommands extends CommandGroup {
             } catch (NumberFormatException ne) {
                 error("Unknown param: " + args[0]);
             } catch (Exception e) {
-                LogUtils.systemLog("[WARN]", component, "Command Error");
+                LogUtils.warn(component, "Command Error");
             }
         }).setSyntax("<amount>");
         // 暴走
@@ -277,7 +277,7 @@ final class GameCommands extends CommandGroup {
                 } catch (NumberFormatException ne) {
                     error("Unknown param: " + args[0]);
                 } catch (Exception e) {
-                    LogUtils.systemLog("[WARN]", component, "Command Error");
+                    LogUtils.warn(component, "Command Error");
                 }
             }
         }).setSyntax("<seconds>");
@@ -334,7 +334,7 @@ final class GameCommands extends CommandGroup {
             } catch (NumberFormatException ne) {
                 error("Unknown param: " + args[0]);
             } catch (Exception e) {
-                LogUtils.systemLog("[WARN]", component, "Command Error");
+                LogUtils.warn(component, "Command Error");
             }
         }).setSyntax("<stageId>");
 

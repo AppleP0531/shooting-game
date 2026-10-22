@@ -13,7 +13,7 @@
 | --- | --- |
 | `SystemCommands.java` | システム系(`/fps` `/admin` `/help` `/scene` `/reload`) |
 | `GameCommands.java` | ゲーム操作・デバッグ系(`/kill` `/summon` `/beam` `/despawn` `/effect` `/gameclear` `/gameover` `/stageclear`) |
-| `PlayerDataCommands.java` | プレイヤーデータ系(`/setship` `/unlockship` `/exp` `/give` `/deleteuser` `/changepassword`) |
+| `PlayerDataCommands.java` | プレイヤーデータ系(`/setship` `/unlockship` `/exp` `/shiplevel` `/skill` `/give` `/deleteuser` `/changepassword`) |
 
 ---
 
@@ -59,6 +59,8 @@
 | `/setship <shipId>` | 使う船を変えて、プレイヤーを作り直す(GAME / TEST のみ)。`Ship2` でも `2` でも指定できる |
 | `/unlockship <shipId\|all>` | 船を解放する。`Ship2` でも `2` でも指定できる。すでに持っている船を指定すると、予備機が1つ増える。`all` は、持っていない船をすべて解放する(予備機は増えない)。船の設定(ShipConfig)にない船名は「Unknown ship」で断る |
 | `/exp <add\|set> <amount>` | 累計の経験値を増やす(`add`)か、その値にする(`set`)。0未満にはならない。実行後の経験値とレベルをログに出す |
+| `/shiplevel <add\|set> <shipId\|all> <amount>` | 船のレベルを増やす(`add`)か、その値にする(`set`)。1〜50に収める。コストは見ない。`Ship2` でも `2` でも指定できる。`all` は持っている船すべて。持っていない船は「Ship not owned」で断る |
+| `/skill <add\|set> <skillName\|all> <amount>` | 使っている船のスキルツリーのレベルを増やす(`add`)か、その値にする(`set`)。0〜そのスキルの最大レベルに収める。コスト・研究時間・解放条件は見ない。名前は大文字小文字を区別しない。`all` はすべてのスキル。研究中のスキルはそのまま続く |
 | `/give <resourceName>[{rarity=<レア度>}] <amount>` | 資源を入手する。レア度の省略時は `COMMON`(例: `/give resource_1 100`、`/give resource_1{rarity=epic} 5`)。コインを指定するとコインが増える。個数が負で、所持数が0以下になると、その資源が消える |
 | `/deleteuser <username> <password>` | ユーザーを削除する(オンラインモードのみ)。パスワードに `force` を渡すと、パスワードなしで削除する。`admin` は削除できない |
 | `/changepassword <username> <oldPassword> <newPassword>` | パスワードを変更する(オンラインモードのみ)。古いパスワードに `force` を渡すと、強制的に変更する |

@@ -1,5 +1,6 @@
 package com.game.shooting_game.stageScene.normal;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -30,6 +31,9 @@ import com.game.shooting_game.stageScene.StarRewardPanel;
 import com.game.shooting_game.stageScene.normal.subPanels.StageBtnPanel;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
+import com.game.shooting_game.ui.Anchor;
+import com.game.shooting_game.ui.ButtonAnimator;
+import com.game.shooting_game.ui.ModeButtonImage;
 import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
@@ -86,17 +90,27 @@ public final class NormalStageManager extends JPanel implements Manager {
         this.add(stageBtnPanel);
 
         // ロビーにボタン(ロビー画面に遷移)
-        Vector2 lobbyBtnSize = new Vector2(
-                200 * ShootingGameMain.getScreenSizeAdj(),
-                50 * ShootingGameMain.getScreenSizeAdj());
-        String lobbyImagePath = "/static/img/UI/stageScene/normal/lobbyImage.png";
-        lobbyBtn = UIBuilder.createImageBtn(component, lobbyImagePath, lobbyBtnSize, "LOBBY");
-        lobbyBtn.setBounds(
-                MAIN.getWidth() / 2 - (int) lobbyBtn.getWidth() / 2,
-                MAIN.getHeight() - (int) lobbyBtn.getHeight() - (int) (10 * ShootingGameMain.getScreenSizeAdj()),
-                (int) lobbyBtn.getWidth(), (int) lobbyBtn.getHeight());
+        // 右下の「戻る」ボタン(青い板。下の帯の中)
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        int backW = (int) (96 * adj), backH = (int) (38 * adj);
+        lobbyBtn = UIBuilder.createImageBtn(component,
+                ModeButtonImage.create(backW, backH, "戻る", new Color(90, 190, 255), new Color(20, 80, 190),
+                        new Color(190, 235, 255), (int) (17 * adj)),
+                new Vector2(backW, backH), "LOBBY");
+        UIBuilder.placeBtn(lobbyBtn, Anchor.BOTTOM_RIGHT, Anchor.BOTTOM_RIGHT, -8, -9);
         lobbyBtn.addActionListener(e -> SM.changeScene(SceneType.LOBBY));
+        ButtonAnimator.attachPop(lobbyBtn);
         this.add(lobbyBtn);
+
+        // 左下の「現在地」ボタン(いま挑めるステージ=クリアした最後の次へ、台の並びを動かす)
+        JButton currentBtn = UIBuilder.createImageBtn(component,
+                ModeButtonImage.create(backW, backH, "現在地", new Color(110, 220, 160), new Color(20, 130, 90),
+                        new Color(200, 255, 225), (int) (15 * adj)),
+                new Vector2(backW, backH), "CURRENT");
+        UIBuilder.placeBtn(currentBtn, Anchor.BOTTOM_LEFT, Anchor.BOTTOM_LEFT, 8, -9);
+        currentBtn.addActionListener(e -> stageBtnPanel.scrollToCurrent());
+        ButtonAnimator.attachPop(currentBtn);
+        this.add(currentBtn);
 
         // 設定ボタン(設定画面に遷移)
         Vector2 settingBtnSize = new Vector2(
@@ -104,10 +118,8 @@ public final class NormalStageManager extends JPanel implements Manager {
                 30 * ShootingGameMain.getScreenSizeAdj());
         String settingImagePath = "/static/img/UI/lobbyScene/SettingImage.png";
         settingBtn = UIBuilder.createImageBtn(component, settingImagePath, settingBtnSize, "SETTING");
-        settingBtn.setBounds(
-                MAIN.getWidth() - 10 - (int) settingBtn.getWidth(),
-                10,
-                (int) settingBtn.getWidth(), (int) settingBtn.getHeight());
+        UIBuilder.placeBtn(settingBtn, Anchor.TOP_RIGHT, Anchor.TOP_RIGHT, -8, 7);
+        ButtonAnimator.attachPop(settingBtn);
         settingBtn.addActionListener(e -> SM.changeScene(SceneType.SETTING));
         this.add(settingBtn);
 
@@ -120,7 +132,8 @@ public final class NormalStageManager extends JPanel implements Manager {
         starBtn.setBounds(
                 MAIN.getWidth() - 10 - (int) settingBtn.getWidth() - (int) (5 * ShootingGameMain.getScreenSizeAdj())
                         - (int) starBtn.getWidth(),
-                10, (int) starBtn.getWidth(), (int) starBtn.getHeight());
+                (int) (3 * ShootingGameMain.getScreenSizeAdj()), (int) starBtn.getWidth(),
+                (int) (38 * ShootingGameMain.getScreenSizeAdj()));
         starBtn.addActionListener(e -> starRewardPanel.showPanel());
         this.add(starBtn);
 
@@ -160,9 +173,7 @@ public final class NormalStageManager extends JPanel implements Manager {
 
         try (InputStream is = getClass().getResourceAsStream(CONFIG_PATH)) {
             // ロード開始ログ
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
+            LogUtils.debug(component,
                     "Attempting to load configuration from " + ANSI.YELLOW + CONFIG_PATH + ANSI.RESET + ".");
 
             // nullチェック
@@ -177,15 +188,11 @@ public final class NormalStageManager extends JPanel implements Manager {
                     .collect(Collectors.toMap(StageBtnData::getId, data -> data));
 
             // ロード成功ログ
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
+            LogUtils.debug(component,
                     "Configuration loaded successfully");
         } catch (IOException e) {
             // ロードエラーログ
-            LogUtils.error(
-                    "[FATAL]",
-                    component,
+            LogUtils.fatal(component,
                     "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + "." + ANSI.RESET + "\n"
                             + ANSI.RED + "Application will terminate." + ANSI.RESET,
                     e);
@@ -206,15 +213,11 @@ public final class NormalStageManager extends JPanel implements Manager {
             } catch (IOException e) {
                 switch (e.getMessage()) {
                     // 画像ファイル未発見ログ
-                    case "FILE_NOT_FOUND" -> LogUtils.systemLog(
-                            "[WARN]",
-                            component,
+                    case "FILE_NOT_FOUND" -> LogUtils.warn(component,
                             "File not found: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
 
                     // 画像読み込みエラーログ
-                    case "BROKEN_FILE" -> LogUtils.systemLog(
-                            "[ERROR]",
-                            component,
+                    case "BROKEN_FILE" -> LogUtils.error(component,
                             "Failed to load image: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
 
                     // その他エラーログ
@@ -239,7 +242,7 @@ public final class NormalStageManager extends JPanel implements Manager {
 
     @Override
     public void draw(Graphics g) {
-        lobbyUI.draw(g);
+        lobbyUI.draw(g, stageBtnPanel.getScrollOffset());
     }
 
     /**

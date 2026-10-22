@@ -91,9 +91,7 @@ public class UserData {
         // まだ所有していない場合は追加
         if (!ships.containsKey(shipId)) {
             ships.put(shipId, new ShipStats());
-            LogUtils.systemLog(
-                    "[INFO]",
-                    component,
+            LogUtils.info(component,
                     shipId + " unlocked.");
         }
     }

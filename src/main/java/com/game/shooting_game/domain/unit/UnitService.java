@@ -13,32 +13,34 @@ import com.game.shooting_game.data.UserData.ShipStats;
 import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.domain.cost.Cost;
+import com.game.shooting_game.domain.gacha.PieceService;
+import com.game.shooting_game.utils.GameBalance;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
 
 /**
- * 機体のレベル(1〜50)と★(0〜5)
+ * 機体のレベル(1〜50)とランク(0〜5)
  * 
  * - レベル: コインと強化素材で上げる。上がるほど火力と耐久力の基礎値が伸びる。
- * - ★: 同じ機体をもう1機(予備機)消費して上げる。レベルとは別に、さらに基礎値が伸びる。
- * 予備機は、ロビーの「機体を入手」で所持済みの機体をもう一度手に入れると増える。
+
+ * - ランク: レベルが最大(50)になったら、ランクコア(ボスなどが落とす)を使ってランクを1つ上げる。上げるとレベルは1に戻るが、
+ *   火力と耐久力の倍率が大きく上がる。ランクが高いほど、必要なランクコアが増える。
+ *   (保存の欄は、以前の★(ShipStats.stars)を使う。予備機(copies)は使わない)
  * スキルツリーの強化(%)とは別枠で、掛け算で効く。
  */
 public final class UnitService {
     private static final String component = "[UnitService]";
 
     public static final int MAX_LEVEL = 50;
-    public static final int MAX_STARS = 5;
+    public static final int MAX_RANK = 5;
 
     // 序盤は軽く(Lv1→2で60、Lv10→11で約280)、Lv30あたりから以前より重くなる(Lv49→50で約20万)
     private static final double LEVEL_COIN_BASE = 60; // Lv1→2に必要なコイン
     private static final double LEVEL_COIN_GROWTH = 1.185; // レベルごとのコイン倍率
     private static final double ITEM_BAND_EXTRA = 1.2; // 帯が上がるごとに素材が増える勢い(帯の2乗に比例)
 
-    private static final double ATTACK_PER_LEVEL = 0.02; // レベル1つあたりの火力(Lv50で約2倍)
     private static final double HP_PER_LEVEL = 0.03; // レベル1つあたりの耐久力(Lv50で約2.5倍)
-    private static final double ATTACK_PER_STAR = 0.05; // ★1つあたりの火力
-    private static final double HP_PER_STAR = 0.06; // ★1つあたりの耐久力
+    private static final double HP_PER_RANK = 0.5; // ランク1つあたりの耐久力
 
     private UnitService() {
     }
@@ -53,28 +55,26 @@ public final class UnitService {
         return s == null ? 1 : Math.max(1, Math.min(MAX_LEVEL, s.getLevel()));
     }
 
-    public static int getStars(String shipId) {
+    /** ランク(0〜5)。保存の欄は、以前の★(stars)をそのまま使う */
+    public static int getRank(String shipId) {
         ShipStats s = stats(shipId);
-        return s == null ? 0 : Math.max(0, Math.min(MAX_STARS, s.getStars()));
-    }
-
-    public static int getCopies(String shipId) {
-        ShipStats s = stats(shipId);
-        return s == null ? 0 : Math.max(0, s.getCopies());
+        return s == null ? 0 : Math.max(0, Math.min(MAX_RANK, s.getStars()));
     }
 
     /**
-     * 火力の倍率(レベルと★)
+     * 火力の倍率(機体ごとの基本の倍率 × レベルとランク)
      */
     public static double attackRate(String shipId) {
-        return (1 + ATTACK_PER_LEVEL * (getLevel(shipId) - 1)) * (1 + ATTACK_PER_STAR * getStars(shipId));
+        // レベルとランクの両方が指数的に伸びる(係数は BalanceConfig.json)。ランクが1つ上がると、レベルが1に戻っても、上がる前のLv50より強い
+        return baseAttackRate(shipId) * Math.pow(GameBalance.unitAttackGrowth(), getLevel(shipId) - 1)
+                * Math.pow(GameBalance.rankAttackGrowth(), getRank(shipId));
     }
 
     /**
-     * 耐久力の倍率(レベルと★)
+     * 耐久力の倍率(レベルとランク)
      */
     public static double hpRate(String shipId) {
-        return (1 + HP_PER_LEVEL * (getLevel(shipId) - 1)) * (1 + HP_PER_STAR * getStars(shipId));
+        return (1 + HP_PER_LEVEL * (getLevel(shipId) - 1)) * (1 + HP_PER_RANK * getRank(shipId));
     }
 
     /**
@@ -84,6 +84,43 @@ public final class UnitService {
         var def = ShipManager.getInstance().getShipConfig().get(ShipKinds.PLAYER).get(shipId);
         double hp = def != null && def.getDatas() != null ? def.getDatas().getHp() : 0;
         return hp > 0 ? hp : 100;
+    }
+
+    private static final double DEFAULT_SHIELD_RATE = 0.15;
+    private static final double DEFAULT_INVINCIBLE = 1;
+    private static final double DEFAULT_OOC_TIME = 10;
+
+    private static ShipManager.ShipConfig baseData(String shipId) {
+        var def = ShipManager.getInstance().getShipConfig().get(ShipKinds.PLAYER).get(shipId);
+        return def == null ? null : def.getDatas();
+    }
+
+    /** 機体ごとの、火力の基本の倍率(ShipConfig の attackRate。なければ1。設定が読めないときも1) */
+    public static double baseAttackRate(String shipId) {
+        try {
+            var d = baseData(shipId);
+            return d != null && d.getAttackRate() != null ? d.getAttackRate() : 1.0;
+        } catch (RuntimeException e) {
+            return 1.0;
+        }
+    }
+
+    /** 機体ごとの、最大HPに対する基本のシールド量(ShipConfig の shieldRate。なければ0.15) */
+    public static double baseShieldRate(String shipId) {
+        var d = baseData(shipId);
+        return d != null && d.getShieldRate() != null ? d.getShieldRate() : DEFAULT_SHIELD_RATE;
+    }
+
+    /** 機体ごとの、被弾後の無敵時間・秒(ShipConfig の invincibleTime。なければ1) */
+    public static double baseInvincibleTime(String shipId) {
+        var d = baseData(shipId);
+        return d != null && d.getInvincibleTime() != null ? d.getInvincibleTime() : DEFAULT_INVINCIBLE;
+    }
+
+    /** 機体ごとの、暴走状態の長さ・秒(ShipConfig の oocTime。なければ10) */
+    public static double baseOocTime(String shipId) {
+        var d = baseData(shipId);
+        return d != null && d.getOocTime() != null ? d.getOocTime() : DEFAULT_OOC_TIME;
     }
 
     /**
@@ -128,65 +165,71 @@ public final class UnitService {
             return false;
         CostService.pay(ud, cost);
         s.setLevel(getLevel(shipId) + 1);
-        LogUtils.systemLog("[INFO]", component,
+        LogUtils.info(component,
                 ANSI.YELLOW + shipId + ANSI.RESET + " reached Lv" + s.getLevel() + ".");
         return true;
     }
 
-    // ----- ★ -----
     /**
-     * 予備の機体を1機追加する(所持済みの機体をもう一度入手したとき)
+     * レベルを直接設定する(コストは見ない。管理用)。1〜MAX_LEVEL の範囲に収める。
+     *
+     * @return 設定後のレベル(持っていない機体なら -1)
      */
-    public static void addCopy(String shipId) {
+    public static int setLevel(String shipId, int level) {
         ShipStats s = stats(shipId);
         if (s == null)
-            return;
-        s.setCopies(s.getCopies() + 1);
+            return -1;
+        s.setLevel(Math.max(1, Math.min(MAX_LEVEL, level)));
+        return s.getLevel();
+    }
+
+    // ----- ランク -----
+    /** ランクアップに使う素材の数(ランク0→1は RANK_BASE 個、以降はランクごとに2倍) */
+    public static final int RANK_BASE = 10;
+
+    /**
+     * 次のランクへ上げるのに必要な素材(ランクコア。ランクが上がるほど多い)
+     * 
+     * @param rank 今のランク(0〜MAX_RANK-1)
+     */
+    public static Cost rankUpCost(int rank) {
+        Map<ResourceKinds, Integer> items = new LinkedHashMap<>();
+        items.put(new ResourceKinds(ResourceName.RANK_CORE, Rarity.COMMON), RANK_BASE * (1 << Math.max(0, rank)));
+        return new Cost(0, items);
     }
 
     /**
-     * 予備の機体を買う(コイン。★が最大のときは買えない)
+     * ランクアップできるか(レベルが最大で、ランクが最大ではなく、ランクコアとその機体のピースが足りている)
      */
-    public static boolean buyCopy(String shipId) {
+    public static boolean canRankUp(String shipId) {
+        return getLevel(shipId) >= MAX_LEVEL && getRank(shipId) < MAX_RANK
+                && CostService.canAfford(rankUpCost(getRank(shipId)))
+                && PieceService.owned(shipId) >= PieceService.rankUpPieces(getRank(shipId));
+    }
+
+    /**
+     * ランクアップする(素材を払い、ランクが1つ上がって、レベルは1に戻る)
+     * 
+     * @return できたらtrue
+     */
+    public static boolean rankUp(String shipId) {
+        ShipStats s = stats(shipId);
         UserData ud = DataManager.getUserData();
-        ShipStats s = stats(shipId);
-        if (ud == null || s == null || getStars(shipId) + getCopies(shipId) >= MAX_STARS)
+        if (s == null || ud == null || !canRankUp(shipId))
             return false;
-        int price = copyPrice(shipId);
-        if (CostService.coins() < price)
-            return false;
-        if (!DataManager.isAdminMode())
-            ud.getResources().setCoins(ud.getResources().getCoins() - price);
-        addCopy(shipId);
+        CostService.pay(ud, rankUpCost(getRank(shipId)));
+        PieceService.consume(shipId, PieceService.rankUpPieces(getRank(shipId)));
+        s.setStars(getRank(shipId) + 1);
+        s.setLevel(1);
+        LogUtils.info(component,
+                ANSI.YELLOW + shipId + ANSI.RESET + " is now " + rankText(shipId) + ".");
         return true;
     }
 
     /**
-     * 予備の機体の値段(機体の入手価格の1.5倍)
+     * ランクの表示(例: Rank 2)
      */
-    public static int copyPrice(String shipId) {
-        return (int) (shipPrice(shipId) * 1.5);
-    }
-
-    /**
-     * 予備機を1機消費して★を1つ上げる
-     */
-    public static boolean starUp(String shipId) {
-        ShipStats s = stats(shipId);
-        if (s == null || getStars(shipId) >= MAX_STARS || getCopies(shipId) < 1)
-            return false;
-        s.setCopies(s.getCopies() - 1);
-        s.setStars(getStars(shipId) + 1);
-        LogUtils.systemLog("[INFO]", component,
-                ANSI.YELLOW + shipId + ANSI.RESET + " is now " + starText(shipId) + ".");
-        return true;
-    }
-
-    /**
-     * ★の表示(例: ★★★☆☆)
-     */
-    public static String starText(String shipId) {
-        int n = getStars(shipId);
-        return "★".repeat(n) + "☆".repeat(MAX_STARS - n);
+    public static String rankText(String shipId) {
+        return "Rank " + getRank(shipId);
     }
 }

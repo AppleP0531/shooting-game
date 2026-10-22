@@ -23,7 +23,7 @@ import com.game.shooting_game.utils.Vector2;
 public final class CoinHud {
     // 所持コインを出す画面
     private static final Set<SceneType> SCENES = EnumSet.of(
-            SceneType.LOBBY, SceneType.BAG, SceneType.UPGRADE, SceneType.SHOP,
+            SceneType.LOBBY, SceneType.BAG, SceneType.UPGRADE, SceneType.SHOP, SceneType.GACHA,
             SceneType.SELECTSTAGE, SceneType.NORMALSTAGE, SceneType.INFINITYSTAGE,
             SceneType.EXTRA_MODULE, SceneType.EXTRA_BOSS, SceneType.EXTRA_MATERIAL, SceneType.EXTRA_SPECIAL);
 

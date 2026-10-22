@@ -75,9 +75,7 @@ public class LoginPanel extends JPanel {
 
             if (state.equals("Login")) {
                 if (userService.authenticate(username, password)) {
-                    LogUtils.systemLog(
-                            "[INFO]",
-                            component,
+                    LogUtils.info(component,
                             ANSI.GREEN + "Login successful." + ANSI.RESET);
                     DataManager.load(username, "login");
 
@@ -99,9 +97,7 @@ public class LoginPanel extends JPanel {
                 }
 
                 if (userService.registerUser(username, password)) {
-                    LogUtils.systemLog(
-                            "[INFO]",
-                            component,
+                    LogUtils.info(component,
                             ANSI.GREEN + "Login successful." + ANSI.RESET);
                     DataManager.load(username, "create");
 
@@ -162,6 +158,7 @@ public class LoginPanel extends JPanel {
                 MAIN.getHeight() / 2 - (int) panelSize.getY() / 2,
                 (int) panelSize.getX(), (int) panelSize.getY());
 
-        UIBuilder.openPanel(this, state, true, null, false); // ログインは外側を押しても閉じない
+        // ログインは、外側を押しても、閉じるボタンでも閉じない(ログインかアカウント作成を終えると閉じる)
+        UIBuilder.openPanel(this, state, true, null, false, false);
     }
 }

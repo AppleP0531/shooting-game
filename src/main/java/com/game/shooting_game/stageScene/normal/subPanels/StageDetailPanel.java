@@ -146,7 +146,11 @@ public class StageDetailPanel extends JPanel {
     /**
      * 難易度が選ばれたときの更新(報酬は難易度の倍率を反映して見せる)
      */
-    private void onDifficultyChanged(Difficulty diff) {
+    private void onDifficultyChanged(Difficulty chosen) {
+        // 難易度を選ぶまでは、STARTとSKIPを押せない(まだ選んでいないときは、ノーマルの内容を見せるだけ)
+        Difficulty diff = chosen == null ? Difficulty.NORMAL : chosen;
+        startStageBtn.setEnabled(chosen != null);
+        skipStageBtn.setEnabled(chosen != null);
         int stageId = currentStageId;
         STAGE_M.getStage().setDifficulty(diff);
         drawBtn(stageId, diff);
@@ -205,9 +209,7 @@ public class StageDetailPanel extends JPanel {
             return new LinkedHashMap<>(stageData.getRewardList());
         } catch (NullPointerException e) {
             // 報酬情報の取得に失敗した場合
-            LogUtils.systemLog(
-                    "[WARN]",
-                    component,
+            LogUtils.warn(component,
                     "Failed to get reward list for Stage" + ANSI.YELLOW + stageId + ANSI.RESET + ".");
         }
         return new LinkedHashMap<>();

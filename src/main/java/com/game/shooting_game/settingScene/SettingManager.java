@@ -10,7 +10,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -19,6 +18,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.SwingUtilities;
 
 import com.game.shooting_game.SceneManager;
@@ -70,16 +70,81 @@ public final class SettingManager extends JPanel implements Manager {
         gbc.gridy = 1;
         content.add(createDamageTextRow(), gbc);
 
+        // Shift中の移動速度(バーで割合を決める)
+        gbc.gridy = 2;
+        content.add(createSlowRateRow(), gbc);
+
         // ゲーム終了ボタン(確認のあと、ウィンドウを閉じるときと同じ処理でデータを保存して終了)
         Vector2 quitBtnSize = new Vector2(
                 200 * ShootingGameMain.getScreenSizeAdj(),
                 50 * ShootingGameMain.getScreenSizeAdj());
-        quitBtn = UIBuilder.createImageBtn(component, (BufferedImage) null, quitBtnSize, "QUIT GAME");
+        quitBtn = UIBuilder.createImageBtn(component, "/static/img/UI/settingScene/quitGame.png", quitBtnSize, "QUIT GAME");
         quitBtn.setPreferredSize(
                 new Dimension((int) quitBtn.getWidth(), (int) quitBtn.getHeight()));
         quitBtn.addActionListener(e -> confirmQuit());
-        gbc.gridy = 2;
+        gbc.gridy = 3;
         content.add(quitBtn, gbc);
+    }
+
+    /**
+     * Shift中の移動速度の行(「低速移動(Shift)」の文字と、割合を決めるバー)
+     * バーを動かすとすぐ保存する(端末の設定)。
+     */
+    private JPanel createSlowRateRow() {
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        JPanel row = new JPanel(new FlowLayout(FlowLayout.CENTER, (int) (6 * adj), 0));
+        row.setOpaque(false);
+
+        JLabel label = new JLabel("低速移動(Shift)");
+        label.setForeground(Color.WHITE);
+        label.setFont(label.getFont().deriveFont(Font.BOLD, (float) (14 * adj)));
+        row.add(label);
+
+        JSlider slider = new JSlider(GameSettings.SLOW_PERCENT_MIN, GameSettings.SLOW_PERCENT_MAX,
+                GameSettings.getSlowPercent());
+        slider.setOpaque(false);
+        slider.setFocusable(false); // ゲーム中のキー入力を奪わないように
+        slider.setPreferredSize(new Dimension((int) (130 * adj), (int) (28 * adj)));
+        row.add(slider);
+
+        JLabel value = new JLabel(GameSettings.getSlowPercent() + "%");
+        value.setForeground(Color.WHITE);
+        value.setPreferredSize(new Dimension((int) (40 * adj), (int) (20 * adj)));
+        row.add(value);
+
+        slider.addChangeListener(e -> {
+            value.setText(slider.getValue() + "%");
+            if (!slider.getValueIsAdjusting())
+                GameSettings.setSlowPercent(slider.getValue());
+        });
+        return row;
+    }
+
+    /**
+     * 選べるボタン(選ばれているかで絵が切り替わる。「<基本パス>.png」と「<基本パス>_on.png」を使う)
+     */
+    private JButton toggleBtn(String basePath, Vector2 size, String text) {
+        JButton btn = UIBuilder.createImageBtn(component, basePath + ".png", size, text);
+        JButton on = UIBuilder.createImageBtn(component, basePath + "_on.png", size, text);
+        btn.putClientProperty("iconOff", btn.getIcon());
+        btn.putClientProperty("iconOn", on.getIcon());
+        btn.setPreferredSize(new Dimension((int) size.getX(), (int) size.getY()));
+        btn.setMargin(new Insets(0, 0, 0, 0));
+        return btn;
+    }
+
+    /**
+     * 選ばれているかを見せる(絵があれば絵を切り替え、なければ文字を[ ]で囲む)
+     */
+    private static void showSelected(JButton btn, boolean selected, String text) {
+        javax.swing.Icon off = (javax.swing.Icon) btn.getClientProperty("iconOff");
+        javax.swing.Icon on = (javax.swing.Icon) btn.getClientProperty("iconOn");
+        if (off != null && on != null) {
+            btn.setIcon(selected ? on : off);
+            return;
+        }
+        btn.setText(selected ? "[" + text + "]" : text);
+        btn.setFont(btn.getFont().deriveFont(selected ? Font.BOLD : Font.PLAIN));
     }
 
     /**
@@ -96,8 +161,8 @@ public final class SettingManager extends JPanel implements Manager {
         row.add(label);
 
         for (int fps : GameSettings.FPS_CHOICES) {
-            JButton btn = UIBuilder.createImageBtn(component, (BufferedImage) null,
-                    new Vector2(52 * adj, 30 * adj), String.valueOf(fps));
+            JButton btn = toggleBtn("/static/img/UI/settingScene/fps" + fps, new Vector2(52 * adj, 30 * adj),
+                    String.valueOf(fps));
             btn.setPreferredSize(new Dimension((int) (52 * adj), (int) (30 * adj)));
             btn.setMargin(new Insets(0, 0, 0, 0));
             btn.addActionListener(e -> {
@@ -126,7 +191,7 @@ public final class SettingManager extends JPanel implements Manager {
         row.add(label);
 
         for (boolean enabled : new boolean[] { true, false }) {
-            JButton btn = UIBuilder.createImageBtn(component, (BufferedImage) null,
+            JButton btn = toggleBtn("/static/img/UI/settingScene/" + (enabled ? "on" : "off"),
                     new Vector2(60 * adj, 30 * adj), enabled ? "ON" : "OFF");
             btn.setPreferredSize(new Dimension((int) (60 * adj), (int) (30 * adj)));
             btn.setMargin(new Insets(0, 0, 0, 0));
@@ -149,8 +214,7 @@ public final class SettingManager extends JPanel implements Manager {
         damageTextBtns.forEach((enabled, btn) -> {
             boolean selected = enabled == current;
             String name = enabled ? "ON" : "OFF";
-            btn.setText(selected ? "[" + name + "]" : name);
-            btn.setFont(btn.getFont().deriveFont(selected ? Font.BOLD : Font.PLAIN));
+            showSelected(btn, selected, name);
         });
     }
 
@@ -161,8 +225,7 @@ public final class SettingManager extends JPanel implements Manager {
         int current = ShootingGameMain.getInstance().getFps();
         fpsBtns.forEach((fps, btn) -> {
             boolean selected = fps == current;
-            btn.setText(selected ? "[" + fps + "]" : String.valueOf(fps));
-            btn.setFont(btn.getFont().deriveFont(selected ? Font.BOLD : Font.PLAIN));
+            showSelected(btn, selected, String.valueOf(fps));
         });
     }
 

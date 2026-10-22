@@ -27,6 +27,7 @@ import com.game.shooting_game.gameScene.bullet.BulletFactory;
 import com.game.shooting_game.gameScene.bullet.BulletManager;
 import com.game.shooting_game.gameScene.bullet.BulletManager.BulletConfig;
 import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
+import com.game.shooting_game.gameScene.stage.StageModifiers;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipConfig;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipDefinition;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
@@ -126,6 +127,8 @@ public abstract class Ship implements Moveable, GameObject, Entity {
             ShipConfig datas = def.getDatas();
 
             maxHp = hp = datas.getHp() > 0 ? datas.getHp() : 100; // 未設定なら100
+            if (owner == ShipKinds.ENEMY)
+                maxHp = hp *= StageModifiers.enemyHpRate(); // 難易度・ステージ条件による敵の硬さはHPで表す(防御力は変えない)
             collisionSize = datas.getCollisionSize() * ShootingGameMain.getScreenSizeAdj() * sizeScale();
             imageSize.put("ship", (int) (datas.getImageSize() * ShootingGameMain.getScreenSizeAdj() * sizeScale()));
             speed = datas.getSpeed() * ShootingGameMain.getScreenSizeAdj();
@@ -375,9 +378,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
                         }
                         default -> {
                             // 不明な値ログ
-                            LogUtils.systemLog(
-                                    "[WARN]",
-                                    component,
+                            LogUtils.warn(component,
                                     "Unexpected value assigned to " + ANSI.YELLOW + "bulletVecRef" + ANSI.RESET);
                             return;
                         }
@@ -394,9 +395,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
                             config.getDirection()));
                 } else
                     // 基準vecの未定義ログ
-                    LogUtils.systemLog(
-                            "[WARN]",
-                            component,
+                    LogUtils.warn(component,
                             "Missing refercence: " + ANSI.YELLOW + id + " - Lv" + shipLevel + " - bulletVecRef"
                                     + ANSI.RESET);
 
@@ -503,8 +502,13 @@ public abstract class Ship implements Moveable, GameObject, Entity {
      * @return ドロップ量
      */
     public int getDropCoinAmount() {
-        String range = coins;
+        return rollCoinAmount(coins);
+    }
 
+    /**
+     * コインの範囲("最小~最大")から、ドロップ量を決める。読めない書き方なら0。
+     */
+    public static int rollCoinAmount(String range) {
         try {
             String[] num = range.split("~");
             int min = Integer.parseInt(num[0]);
