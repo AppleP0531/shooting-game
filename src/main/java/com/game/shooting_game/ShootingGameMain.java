@@ -9,7 +9,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 import javax.swing.AbstractAction;
@@ -29,7 +28,6 @@ import com.game.shooting_game.command.CommandGlassPane;
 import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.data.LoginPanel;
 import com.game.shooting_game.data.UserService;
-import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.titleScene.TitleManager;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.GameSettings;
