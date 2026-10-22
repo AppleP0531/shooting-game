@@ -2,6 +2,7 @@ package com.game.shooting_game.lobbyScene;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.util.Objects;
 
 import javax.swing.SwingUtilities;
@@ -27,6 +28,9 @@ import com.game.shooting_game.ui.ButtonAnimator;
 import com.game.shooting_game.ui.ModeButtonImage;
 import com.game.shooting_game.ui.ShipPieceIcon;
 import com.game.shooting_game.ui.UIBuilder;
+import com.game.shooting_game.upgradeScene.subPanels.ModulePanel;
+import com.game.shooting_game.upgradeScene.subPanels.SubShipPanel;
+import com.game.shooting_game.upgradeScene.subPanels.UnitPanel;
 import com.game.shooting_game.utils.Vector2;
 
 public final class LobbyManager extends JPanel implements Manager {
@@ -51,6 +55,11 @@ public final class LobbyManager extends JPanel implements Manager {
     private JButton unlockShipBtn;
     private JButton changeModeBtn;
     private JButton infinityBtn;
+    private final UnitPanel unitPanel = new UnitPanel();
+    private final SubShipPanel subShipPanel = new SubShipPanel();
+    private final ModulePanel modulePanel = new ModulePanel();
+    private Rectangle[] slotRects;
+    private JButton[] slotBtns;
     private JButton selectStageBtn;
 
     private int viewingShipInd = -1;
@@ -180,7 +189,7 @@ public final class LobbyManager extends JPanel implements Manager {
         String selectShipImagePath = "/static/img/UI/lobbyScene/selectShip.png";
         selectShipBtn = UIBuilder.createImageBtn(component, selectShipImagePath, selectShipBtnSize,
                 "SELLECT");
-        UIBuilder.placeBtn(selectShipBtn, Anchor.BOTTOM_CENTER, Anchor.CENTER, 0, -128);
+        UIBuilder.placeBtn(selectShipBtn, Anchor.BOTTOM_CENTER, Anchor.CENTER, 0, -218);
         selectShipBtn.addActionListener(e -> {
             DataManager.getUserData().setSelectedShip(ships[viewingShipInd]);
             updateBtnStates();
@@ -195,7 +204,7 @@ public final class LobbyManager extends JPanel implements Manager {
         String unlockShipImagePath = "/static/img/UI/lobbyScene/unlockShip.png";
         unlockShipBtn = UIBuilder.createImageBtn(component, unlockShipImagePath, unlockShipBtnSize,
                 "UNLOCK");
-        UIBuilder.placeBtn(unlockShipBtn, Anchor.BOTTOM_CENTER, Anchor.CENTER, 0, -128);
+        UIBuilder.placeBtn(unlockShipBtn, Anchor.BOTTOM_CENTER, Anchor.CENTER, 0, -218);
         unlockShipBtn.addActionListener(e -> {
             String id = ships[viewingShipInd];
             if (GachaService.unlock(id)) {
@@ -221,7 +230,7 @@ public final class LobbyManager extends JPanel implements Manager {
         String changeModeImagePath = "/static/img/UI/lobbyScene/modeIcon.png";
         changeModeBtn = UIBuilder.createImageBtn(component, changeModeImagePath, changeModeBtnSize,
                 "CHANGE_MODE");
-        UIBuilder.placeBtn(changeModeBtn, Anchor.BOTTOM_RIGHT, Anchor.BOTTOM_RIGHT, -10, -112);
+        UIBuilder.placeBtn(changeModeBtn, Anchor.BOTTOM_RIGHT, Anchor.BOTTOM_RIGHT, -10, -200);
         changeModeBtn.addActionListener(e -> {
             SHIP_M.getPlayer().changeMode();
         });
@@ -260,6 +269,37 @@ public final class LobbyManager extends JPanel implements Manager {
                 .addActionListener(e -> SM.changeScene(SceneType.SELECTSTAGE));
         selectStageBtn.setVisible(false); // 非表示
         this.add(selectStageBtn);
+
+        // 装備スロット(帯の上に4枚のカード。押すと、強化画面と同じパネルが開く)
+        int cardGap = (int) (6 * adj0);
+        int cardW = (MAIN.getWidth() - edge * 2 - cardGap * 3) / 4;
+        int cardH = (int) (84 * adj0);
+        int cardY = MAIN.getHeight() - (int) ((104 + 6) * adj0) - cardH;
+        LobbySceneUI.Slot[] slots = LobbySceneUI.Slot.values();
+        slotRects = new Rectangle[slots.length];
+        slotBtns = new JButton[slots.length];
+        for (LobbySceneUI.Slot s : slots) {
+            JButton b = new JButton();
+            b.setContentAreaFilled(false);
+            b.setBorderPainted(false);
+            b.setFocusPainted(false);
+            slotRects[s.ordinal()] = new Rectangle(edge + (cardW + cardGap) * s.ordinal(), cardY, cardW, cardH);
+            b.setBounds(slotRects[s.ordinal()]);
+            slotBtns[s.ordinal()] = b;
+            this.add(b);
+        }
+        slotBtns[LobbySceneUI.Slot.UNIT.ordinal()].addActionListener(e -> unitPanel.showPanel());
+        slotBtns[LobbySceneUI.Slot.SUBSHIP.ordinal()].addActionListener(e -> subShipPanel.showPanel());
+        slotBtns[LobbySceneUI.Slot.MODULE.ordinal()].addActionListener(e -> modulePanel.showPanel());
+        slotBtns[LobbySceneUI.Slot.WINGMAN.ordinal()].addActionListener(e -> lobbyUI.showMessage("僚機は準備中です"));
+        UnlockService.guard(slotBtns[LobbySceneUI.Slot.SUBSHIP.ordinal()], Feature.SUBSHIP);
+        UnlockService.guard(slotBtns[LobbySceneUI.Slot.MODULE.ordinal()], Feature.MODULE);
+        this.add(unitPanel);
+        this.add(subShipPanel);
+        this.add(modulePanel);
+        unitPanel.initComponents();
+        subShipPanel.initComponents();
+        modulePanel.initComponents();
 
         // 押す・乗せると拡大縮小する(下の列・右上・船の切り替え・選択/解放・色の切り替え)
         for (JButton b : new JButton[] { upgradeBtn, shopBtn, gachaBtn, settingBtn, dexBtn, nextShipBtn,
@@ -302,6 +342,7 @@ public final class LobbyManager extends JPanel implements Manager {
                 ships,
                 viewingShipInd);
         lobbyUI.draw(g, uiData);
+        drawSlots(g);
         drawModeIndicator(g);
         drawUnlockCost(g);
     }
@@ -332,6 +373,21 @@ public final class LobbyManager extends JPanel implements Manager {
         g2.setColor(enough ? new java.awt.Color(255, 214, 80) : new java.awt.Color(255, 120, 120));
         g2.drawString(text, left + icon + gap, baseY);
         g2.dispose();
+    }
+
+    /**
+     * 装備スロットのカードの描画(マウスが乗っているか、未解放かをボタンから読む)
+     */
+    private void drawSlots(Graphics g) {
+        if (slotBtns == null)
+            return;
+        boolean[] hovered = new boolean[slotBtns.length];
+        boolean[] locked = new boolean[slotBtns.length];
+        for (int i = 0; i < slotBtns.length; i++)
+            hovered[i] = slotBtns[i].isEnabled() && slotBtns[i].getModel().isRollover();
+        locked[LobbySceneUI.Slot.SUBSHIP.ordinal()] = !UnlockService.isUnlocked(Feature.SUBSHIP);
+        locked[LobbySceneUI.Slot.MODULE.ordinal()] = !UnlockService.isUnlocked(Feature.MODULE);
+        lobbyUI.drawSlots(g, slotRects, hovered, locked);
     }
 
     /**

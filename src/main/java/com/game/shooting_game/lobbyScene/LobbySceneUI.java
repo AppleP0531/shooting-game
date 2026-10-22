@@ -2,6 +2,7 @@ package com.game.shooting_game.lobbyScene;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -116,7 +117,7 @@ public class LobbySceneUI {
         drawBars(g);
         drawTabBar(g, uiData.ships.length, uiData.ind);
         drawUserLevel(g);
-        drawEquipment(g);
+        drawStats(g);
         drawMessage(g);
     }
 
@@ -178,7 +179,7 @@ public class LobbySceneUI {
             SHIP_M.setPlayer(new Player(
                     shipName,
                     ColorMode.BLUE,
-                    new Vector2(MAIN.getWidth() / 2, MAIN.getHeight() - 215 * ShootingGameMain.getScreenSizeAdj())));
+                    new Vector2(MAIN.getWidth() / 2, MAIN.getHeight() - 330 * ShootingGameMain.getScreenSizeAdj())));
         }
 
         BM.draw(g);
@@ -194,7 +195,7 @@ public class LobbySceneUI {
     private void drawTabBar(Graphics g, int totalLength, int ind) {
         Vector2 barPos = new Vector2(
                 MAIN.getWidth() / 2,
-                MAIN.getHeight() - 160 * ShootingGameMain.getScreenSizeAdj()); // 船(と、その下の炎)にめり込まない位置
+                MAIN.getHeight() - 246 * ShootingGameMain.getScreenSizeAdj()); // 船(と、その下の炎)にめり込まない位置
         Vector2 barSize = new Vector2(
                 120,
                 10);
@@ -310,14 +311,13 @@ public class LobbySceneUI {
         });
     }
 
+    // ----- 機体の能力(左のバー) -----
+
     /**
-     * 現在の装備一覧の描画(左上のカード)
-     * 自機(Lv・★)、サブ機(左下と右上にずらして2機)、装甲(HP)、火力、無敵時間、暴走時間、モジュール枠。
-     * モジュールは装着中のものを種類の文字とレア度の色で出す。
-     * 
-     * @param g
+     * 能力のバー(装甲・盾・火力・防御・無敵・暴走)を、ラベル+数値+バーで描く。
+     * バーの長さは目安(それぞれの値を、おおよその上限で割った割合)。
      */
-    private void drawEquipment(Graphics g) {
+    private void drawStats(Graphics g) {
         if (DataManager.getUserData() == null)
             return;
         double adj = ShootingGameMain.getScreenSizeAdj();
@@ -326,127 +326,170 @@ public class LobbySceneUI {
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
         String shipId = DataManager.getUserData().getSelectedShip();
-        int x = (int) (6 * adj);
-        int y = (int) (50 * adj); // 上のステータスバーの下
-        int w = (int) (150 * adj);
-        int h = (int) (226 * adj);
-        int pad = (int) (6 * adj);
-
-        g2.setColor(new Color(0, 0, 0, 150));
-        g2.fillRoundRect(x, y, w, h, 12, 12);
-        g2.setColor(new Color(110, 210, 255, 170));
-        g2.drawRoundRect(x, y, w, h, 12, 12);
-
-        Font bold = new Font("SansSerif", Font.BOLD, Math.max(9, (int) (11 * adj)));
-        Font small = new Font("SansSerif", Font.PLAIN, Math.max(8, (int) (10 * adj)));
-        g2.setFont(bold);
-        g2.setColor(new Color(150, 225, 255));
-        g2.drawString("装備", x + pad, y + (int) (13 * adj));
-
-        // --- 自機アイコン + Lv・★ ---
-        int icon = (int) (38 * adj);
-        int iy = y + (int) (20 * adj);
-        g2.setColor(new Color(255, 255, 255, 20));
-        g2.fillRoundRect(x + pad, iy, icon, icon, 8, 8);
-        BufferedImage[] frames = SHIP_M.getShipImage().get(shipId);
-        if (frames != null && frames.length > 0 && frames[0] != null) {
-            BufferedImage img = trimmed(shipId, frames[0]);
-            double k = Math.min((double) icon / img.getWidth(), (double) icon / img.getHeight()) * 0.92;
-            int dw = (int) (img.getWidth() * k);
-            int dh = (int) (img.getHeight() * k);
-            g2.drawImage(img, x + pad + (icon - dw) / 2, iy + (icon - dh) / 2, dw, dh, null);
-        }
-        g2.setColor(new Color(255, 214, 80, 200));
-        g2.drawRoundRect(x + pad, iy, icon, icon, 8, 8);
-        g2.setFont(bold);
-        g2.setColor(Color.WHITE);
-        g2.drawString(shipId + "  Lv" + UnitService.getLevel(shipId), x + pad + icon + (int) (6 * adj),
-                iy + (int) (14 * adj));
-        g2.setColor(new Color(255, 214, 80));
-        g2.drawString(UnitService.rankText(shipId), x + pad + icon + (int) (6 * adj), iy + (int) (30 * adj));
-
-        // --- サブ機(左下と右上にずらして置く) ---
-        int sy = iy + icon + (int) (6 * adj);
-        int cell = icon; // 自機のアイコンと同じ大きさにそろえる
-        g2.setColor(new Color(255, 255, 255, 20));
-        g2.fillRoundRect(x + pad, sy, cell, cell, 8, 8);
-        double time = System.nanoTime() / 1e9;
-        boolean equipped = SubShipService.isEquipped();
-        if (equipped) {
-            int[] look = SubShipService.look(com.game.shooting_game.domain.subship.SubShipTypeService.current(),
-                    SubShipService.level());
-            int hull = look[0];
-            int cannon = look[1];
-            int engine = look[2];
-            int core = look[3];
-            int emitter = look[4];
-            int typeIdx = SubShipService.typeIndex(com.game.shooting_game.domain.subship.SubShipTypeService.current());
-            double sc = 0.30 * cell / (38 * adj); // 枠の中に収まる大きさ
-            // 左機は左下、右機は右上(枠の外には描かない)
-            Graphics2D clipped = (Graphics2D) g2.create();
-            clipped.clipRect(x + pad, sy, cell, cell);
-            SubShipRenderer.draw(clipped, x + pad + cell * 0.30, sy + cell * 0.68, true,
-                    hull, cannon, engine, core, emitter, typeIdx, ColorMode.BLUE, time, 1f, sc);
-            SubShipRenderer.draw(clipped, x + pad + cell * 0.30 + cell * 0.45, sy + cell * 0.32, false,
-                    hull, cannon, engine, core, emitter, typeIdx, ColorMode.BLUE, time, 1f, sc);
-            clipped.dispose();
-        } else {
-            g2.setFont(small);
-            g2.setColor(new Color(150, 150, 150));
-            g2.drawString("なし", x + pad + (int) (10 * adj), sy + cell / 2 + (int) (4 * adj));
-        }
-        g2.setColor(new Color(255, 214, 80, 200));
-        g2.drawRoundRect(x + pad, sy, cell, cell, 8, 8);
-        g2.setFont(small);
-        g2.setColor(Color.WHITE);
-        int tx = x + pad + cell + (int) (6 * adj);
-        g2.drawString("サブ機", tx, sy + (int) (14 * adj));
-        g2.setColor(equipped ? new Color(170, 230, 255) : new Color(150, 150, 150));
-        g2.drawString(equipped ? SubShipService.levelLabel() : "未装備", tx,
-                sy + (int) (28 * adj));
-
-        // --- 数値(装甲・火力・無敵・暴走) ---
-        int ty = sy + cell + (int) (6 * adj);
-        double hp = UnitService.baseHp(shipId) * (1 + SkillService.getBonus("MAX_HP")) * UnitService.hpRate(shipId);
+        double baseHp = UnitService.baseHp(shipId);
+        double hp = baseHp * (1 + SkillService.getBonus("MAX_HP")) * UnitService.hpRate(shipId);
         hp = hp * (1 + ModuleService.stat(ModuleStat.HP_PCT)) + ModuleService.stat(ModuleStat.HP_FLAT);
         double shield = hp * 0.15 * (1 + ModuleService.stat(ModuleStat.SHIELD_PCT))
                 + ModuleService.stat(ModuleStat.SHIELD_FLAT);
         double atk = (1 + SkillService.getBonus("DAMAGE")) * UnitService.attackRate(shipId)
                 * (1 + ModuleService.stat(ModuleStat.ATK_PCT));
-        String[][] rows = {
-                { "装甲", String.valueOf(Math.round(hp)) },
-                { "盾", String.valueOf(Math.round(shield)) },
-                { "火力", String.format("×%.2f", atk) },
-                { "防御", String.format("-%.0f%%", ModuleService.stat(ModuleStat.DEF_PCT) * 100) },
-                { "無敵", String.format("%.1f秒", 1 + SkillService.getBonus("INVINCIBLE")) },
-                { "暴走", String.format("%.0f秒", 10 + SkillService.getBonus("OOC_TIME")) },
+        double def = ModuleService.stat(ModuleStat.DEF_PCT);
+        double invincible = 1 + SkillService.getBonus("INVINCIBLE");
+        double rampage = 10 + SkillService.getBonus("OOC_TIME");
+        Object[][] rows = {
+                { "火力", String.format("×%.2f", atk), atk / 4 },
+                { "装甲", String.valueOf(Math.round(hp)), hp / (baseHp * 5) },
+                { "盾", String.valueOf(Math.round(shield)), shield / (hp * 0.5) },
+                { "防御", String.format("-%.0f%%", def * 100), def / 0.5 },
+                { "無敵", String.format("%.1f秒", invincible), invincible / 5 },
+                { "暴走", String.format("%.0f秒", rampage), rampage / 30 },
         };
-        int line = (int) (13 * adj);
+
+        int x = (int) (10 * adj);
+        int y = (int) (56 * adj);
+        int labelW = (int) (34 * adj), valueW = (int) (54 * adj);
+        int barW = (int) (96 * adj), barH = (int) (7 * adj);
+        int line = (int) (20 * adj);
+        Font label = new Font("SansSerif", Font.PLAIN, Math.max(9, (int) (11 * adj)));
+        Font value = new Font("SansSerif", Font.BOLD, Math.max(9, (int) (11 * adj)));
+
+        // 機体の絵に重なって読みにくくならないよう、うっすら暗い板を敷く
+        g2.setColor(new Color(0, 0, 0, 90));
+        g2.fillRoundRect(x - (int) (4 * adj), y - (int) (6 * adj), labelW + valueW + barW + (int) (14 * adj),
+                rows.length * line + (int) (6 * adj), 10, 10);
         for (int i = 0; i < rows.length; i++) {
-            g2.setFont(small);
+            int ry = y + i * line;
+            g2.setFont(label);
             g2.setColor(new Color(170, 200, 220));
-            g2.drawString(rows[i][0], x + pad, ty + i * line + (int) (10 * adj));
-            g2.setFont(bold);
+            g2.drawString((String) rows[i][0], x, ry + (int) (9 * adj));
+            g2.setFont(value);
             g2.setColor(Color.WHITE);
-            g2.drawString(rows[i][1], x + pad + (int) (40 * adj), ty + i * line + (int) (10 * adj));
+            g2.drawString((String) rows[i][1], x + labelW, ry + (int) (9 * adj));
+            // バー(背景 → 中身)
+            double ratio = Math.clamp((double) rows[i][2], 0.0, 1.0);
+            int bx = x + labelW + valueW, by = ry + (int) (3 * adj);
+            g2.setColor(new Color(255, 255, 255, 40));
+            g2.fillRect(bx, by, barW, barH);
+            g2.setColor(new Color(255, 205, 40));
+            g2.fillRect(bx, by, (int) (barW * ratio), barH);
+        }
+        g2.dispose();
+    }
+
+    // ----- 装備スロット(下のカード) -----
+
+    /** 下のカードの種類 */
+    public enum Slot {
+        UNIT("機体"), SUBSHIP("サブ機"), MODULE("モジュール"), WINGMAN("僚機");
+
+        private final String label;
+
+        Slot(String label) {
+            this.label = label;
         }
 
-        // --- モジュール枠(装着中のものは種類の文字とレア度の色) ---
-        int my = ty + rows.length * line + (int) (4 * adj);
-        g2.setFont(small);
-        g2.setColor(new Color(170, 200, 220));
-        g2.drawString("モジュール", x + pad, my + (int) (9 * adj));
-        int slot = (int) (14 * adj);
-        for (int i = 0; i < 4; i++) {
-            int sx = x + pad + (int) (58 * adj) + i * (slot + (int) (4 * adj));
-            Module m = ModuleService.slotted()[i];
-            if (m == null) {
-                g2.setColor(new Color(255, 255, 255, 30));
-                g2.fillRoundRect(sx, my - 1, slot, slot, 4, 4);
-                g2.setColor(new Color(255, 255, 255, 90));
-                g2.drawRoundRect(sx, my - 1, slot, slot, 4, 4);
-            } else {
-                ModuleIcons.draw(g2, m, sx, my - 1, slot);
+        public String label() {
+            return label;
+        }
+    }
+
+    /**
+     * 装備スロットのカードを描く。押せる印として、マウスを乗せると縁が光り、未解放はグレーにする。
+     *
+     * @param rects   カードの位置(Slot の順)
+     * @param hovered マウスが乗っているか(Slot の順)
+     * @param locked  未解放か(Slot の順)
+     */
+    public void drawSlots(Graphics g, java.awt.Rectangle[] rects, boolean[] hovered, boolean[] locked) {
+        if (DataManager.getUserData() == null)
+            return;
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        Font title = new Font("SansSerif", Font.BOLD, Math.max(9, (int) (11 * adj)));
+        Font small = new Font("SansSerif", Font.BOLD, Math.max(8, (int) (10 * adj)));
+        String shipId = DataManager.getUserData().getSelectedShip();
+
+        for (Slot s : Slot.values()) {
+            java.awt.Rectangle r = rects[s.ordinal()];
+            boolean hover = hovered[s.ordinal()], lock = locked[s.ordinal()];
+            // 板(紫がかった暗い青。マウスを乗せると明るく)
+            g2.setPaint(new java.awt.GradientPaint(0, r.y, hover ? new Color(80, 60, 150) : new Color(52, 38, 108),
+                    0, r.y + r.height, new Color(22, 16, 56)));
+            g2.fillRoundRect(r.x, r.y, r.width, r.height, 12, 12);
+            g2.setColor(lock ? new Color(110, 110, 130) : (hover ? new Color(255, 235, 120) : new Color(255, 214, 80)));
+            g2.setStroke(new java.awt.BasicStroke(hover ? 2.4f : 1.6f));
+            g2.drawRoundRect(r.x, r.y, r.width, r.height, 12, 12);
+
+            // 中身
+            int pad = (int) (6 * adj);
+            int ix = r.x + pad, iy = r.y + pad + (int) (4 * adj);
+            int iw = r.width - 2 * pad, ih = r.height - 2 * pad - (int) (26 * adj);
+            Graphics2D c = (Graphics2D) g2.create();
+            c.clipRect(ix, iy, iw, ih);
+            String sub = ""; // 下の小さな文字
+            switch (s) {
+                case UNIT -> {
+                    BufferedImage[] frames = SHIP_M.getShipImage().get(shipId);
+                    if (frames != null && frames.length > 0 && frames[0] != null) {
+                        BufferedImage img = trimmed(shipId, frames[0]);
+                        double k = Math.min((double) iw / img.getWidth(), (double) ih / img.getHeight()) * 0.95;
+                        int dw = (int) (img.getWidth() * k), dh = (int) (img.getHeight() * k);
+                        c.drawImage(img, ix + (iw - dw) / 2, iy + (ih - dh) / 2, dw, dh, null);
+                    }
+                    sub = "Lv" + UnitService.getLevel(shipId) + " " + UnitService.rankText(shipId);
+                }
+                case SUBSHIP -> {
+                    if (SubShipService.isEquipped()) {
+                        var type = com.game.shooting_game.domain.subship.SubShipTypeService.current();
+                        int[] look = SubShipService.look(type, SubShipService.level());
+                        int typeIdx = SubShipService.typeIndex(type);
+                        double sc = 0.55 * Math.min(iw, ih) / (38 * adj);
+                        SubShipRenderer.draw(c, ix + iw / 2.0, iy + ih / 2.0, true, look[0], look[1], look[2],
+                                look[3], look[4], typeIdx, ColorMode.BLUE, System.nanoTime() / 1e9, 1f, sc);
+                        sub = SubShipService.levelLabel();
+                    } else {
+                        sub = "未装備";
+                    }
+                }
+                case MODULE -> {
+                    int cell = (int) (Math.min(iw, ih) / 2.0) - 2;
+                    int n = 0;
+                    for (int i = 0; i < 4; i++) {
+                        int mx = ix + (iw - cell * 2) / 2 + (i % 2) * cell;
+                        int my = iy + (ih - cell * 2) / 2 + (i / 2) * cell;
+                        Module m = ModuleService.slotted()[i];
+                        if (m == null) {
+                            c.setColor(new Color(255, 255, 255, 30));
+                            c.fillRoundRect(mx + 1, my + 1, cell - 2, cell - 2, 4, 4);
+                        } else {
+                            ModuleIcons.draw(c, m, mx + 1, my + 1, cell - 2);
+                            n++;
+                        }
+                    }
+                    sub = n + " / 4";
+                }
+                case WINGMAN -> {
+                    c.setFont(small);
+                    c.setColor(new Color(170, 170, 190));
+                    String t = "準備中";
+                    c.drawString(t, ix + (iw - c.getFontMetrics().stringWidth(t)) / 2, iy + ih / 2 + (int) (4 * adj));
+                }
+            }
+            c.dispose();
+
+            // 名前(上の左)と、下の小さな文字
+            g2.setFont(title);
+            g2.setColor(lock ? new Color(150, 150, 165) : Color.WHITE);
+            g2.drawString(s.label(), r.x + pad, r.y + pad + (int) (6 * adj));
+            g2.setFont(small);
+            g2.setColor(lock ? new Color(150, 150, 165) : new Color(255, 214, 80));
+            FontMetrics fm = g2.getFontMetrics();
+            g2.drawString(sub, r.x + (r.width - fm.stringWidth(sub)) / 2, r.y + r.height - (int) (7 * adj));
+            if (lock) {
+                g2.setColor(new Color(0, 0, 0, 120));
+                g2.fillRoundRect(r.x, r.y, r.width, r.height, 12, 12);
             }
         }
         g2.dispose();
