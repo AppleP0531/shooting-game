@@ -21,14 +21,14 @@ class DifficultyBossTest {
     }
 
     @Test
-    @DisplayName("通常倍率: HP は EASY 1・NORMAL 15・HARD 230・NIGHTMARE 3500、被ダメは EASY 0.8・NORMAL 3・HARD 10・NIGHTMARE 40")
+    @DisplayName("通常倍率: HP は EASY 1・NORMAL 15・HARD 115・NIGHTMARE 875、被ダメは EASY 0.8・NORMAL 3・HARD 16・NIGHTMARE 80")
     void normalRates() {
         assertThat(Difficulty.EASY.getEnemyHpRate()).isEqualTo(1.0);
         assertThat(Difficulty.NORMAL.getEnemyHpRate()).isEqualTo(15.0);
-        assertThat(Difficulty.HARD.getEnemyHpRate()).isEqualTo(230.0);
-        assertThat(Difficulty.HARD.getEnemyDamageRate()).isEqualTo(10.0);
-        assertThat(Difficulty.NIGHTMARE.getEnemyHpRate()).isEqualTo(3500.0);
-        assertThat(Difficulty.NIGHTMARE.getEnemyDamageRate()).isEqualTo(40.0);
+        assertThat(Difficulty.HARD.getEnemyHpRate()).isEqualTo(115.0);
+        assertThat(Difficulty.HARD.getEnemyDamageRate()).isEqualTo(16.0);
+        assertThat(Difficulty.NIGHTMARE.getEnemyHpRate()).isEqualTo(875.0);
+        assertThat(Difficulty.NIGHTMARE.getEnemyDamageRate()).isEqualTo(80.0);
     }
 
     @Test
@@ -47,16 +47,16 @@ class DifficultyBossTest {
         }
         double hardHp = Difficulty.HARD.getEnemyHpRate() * Difficulty.HARD.getBossHpRate();
         double nmHp = Difficulty.NIGHTMARE.getEnemyHpRate() * Difficulty.NIGHTMARE.getBossHpRate();
-        assertThat(hardHp).isCloseTo(299.0, within(1e-9));
-        assertThat(nmHp).isCloseTo(9800.0, within(1e-9));
+        assertThat(hardHp).isCloseTo(149.5, within(1e-9));
+        assertThat(nmHp).isCloseTo(2450.0, within(1e-9));
     }
 
     @Test
     @DisplayName("describe: ボスチャレンジはボス用倍率を掛けた値、ステージ固有の条件も重ねた値を出す")
     void describeBoss() {
         assertThat(Difficulty.NORMAL.describe(null, true)).isEqualTo(Difficulty.NORMAL.describe(null, false));
-        assertThat(Difficulty.HARD.describe(null, true)).contains("敵HP ×299").contains("ダメージ ×12");
-        assertThat(Difficulty.NIGHTMARE.describe(null, true)).contains("敵HP ×9,800").contains("ダメージ ×56")
+        assertThat(Difficulty.HARD.describe(null, true)).contains("敵HP ×150").contains("ダメージ ×19.2");
+        assertThat(Difficulty.NIGHTMARE.describe(null, true)).contains("敵HP ×2,450").contains("ダメージ ×112")
                 .contains("レア度UP");
         assertThat(Difficulty.HARD.describe(null, true)).isNotEqualTo(Difficulty.HARD.describe(null, false));
 

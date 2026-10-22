@@ -12,8 +12,8 @@ import lombok.Getter;
 public enum Difficulty {
     EASY("EASY", "イージー", 1.0, 0.8, 0.8, 1.0, 0, 1.0, 1.0),
     NORMAL("NORMAL", "ノーマル", 15.0, 3.0, 1.0, 1.0, 0, 1.0, 1.0),
-    HARD("HARD", "ハード", 230.0, 10.0, 1.6, 1.5, 0, 1.3, 1.2),
-    NIGHTMARE("NIGHTMARE", "ナイトメア", 3500.0, 40.0, 2.5, 2.0, 1, 2.8, 1.4);
+    HARD("HARD", "ハード", 115.0, 16.0, 1.6, 1.5, 0, 1.3, 1.2),
+    NIGHTMARE("NIGHTMARE", "ナイトメア", 875.0, 80.0, 2.5, 2.0, 1, 2.8, 1.4);
 
     private final String label;
     private final String title;
