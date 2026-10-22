@@ -333,9 +333,11 @@ public class StageBtnPanel extends JPanel {
         int stars = 0;
         for (Difficulty d : locked ? new Difficulty[0] : Difficulty.values())
             stars = Math.max(stars, DifficultyService.stars(stageId, d));
+        // ナイトメアをクリアしたステージは、★をシルバーにする
+        boolean silver = !locked && DifficultyService.cleared(stageId, Difficulty.NIGHTMARE);
         BufferedImage icon = image != null ? image
                 : StageNodeIcon.create(w, h, String.valueOf(stageId),
-                        StageNodeIcon.lookOf(locked, Chapters.isBoss(stageId), stars), stars);
+                        StageNodeIcon.lookOf(locked, Chapters.isBoss(stageId), stars), stars, silver);
         if (locked)
             icon = StageLockIcon.overlay(icon, lockIconImage(w), w, h);
 
