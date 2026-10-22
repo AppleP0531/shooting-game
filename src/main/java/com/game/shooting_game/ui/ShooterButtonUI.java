@@ -66,6 +66,20 @@ public class ShooterButtonUI extends BasicButtonUI {
 
     @Override
     public void paint(Graphics g, JComponent c) {
+        // アニメーションが付いたボタンは、中心を基準に拡大縮小して描く
+        Graphics2D scaled = ButtonAnimator.begin(g, c);
+        if (scaled == null) {
+            paintPlain(g, c);
+            return;
+        }
+        try {
+            paintPlain(scaled, c);
+        } finally {
+            scaled.dispose();
+        }
+    }
+
+    private void paintPlain(Graphics g, JComponent c) {
         AbstractButton b = (AbstractButton) c;
         // 画像のボタン(背景を塗らない)は、アイコンと文字だけをいつも通りに描く
         if (!b.isContentAreaFilled()) {

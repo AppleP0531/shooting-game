@@ -163,6 +163,22 @@ public class UIBuilder extends JPanel {
                     int alpha = (pixel >> 24) & 0xff;
                     return alpha > 0;
                 }
+
+                @Override
+                public void paint(Graphics g) {
+                    // アニメーションが付いていれば拡大縮小・コマ送りで描く(付いていなければ従来どおり)
+                    Graphics2D scaled = ButtonAnimator.begin(g, this);
+                    if (scaled == null) {
+                        super.paint(g);
+                        return;
+                    }
+                    try {
+                        if (!ButtonAnimator.drawSprite(scaled, this))
+                            super.paint(scaled);
+                    } finally {
+                        scaled.dispose();
+                    }
+                }
             };
 
             button.setBorderPainted(false);
@@ -177,6 +193,58 @@ public class UIBuilder extends JPanel {
     }
 
     /**
+     * コマ送りのボタンの生成(横・縦に並べたスプライトシート。ホバー・押下の拡大縮小も付く)
+     *
+     * @param grids    シートの列数・行数
+     * @param useCount 使うコマ数
+     * @param fps      1秒あたりのコマ数
+     */
+    public static JButton createSpriteBtn(String component, String sheetPath, Vector2 grids, int useCount,
+            double fps, Vector2 size, String fallbackText) {
+        try {
+            BufferedImage[] frames = cutSpriteSheet(loadImage(sheetPath), grids, useCount);
+            JButton button = createImageBtn(component, frames[0], size, fallbackText);
+            ButtonAnimator.attachSprite(button, frames, fps);
+            return button;
+        } catch (IOException | RuntimeException e) {
+            LogUtils.warn(component, "Failed to load sprite sheet: " + ANSI.YELLOW + sheetPath + ANSI.RESET + ".");
+            return new JButton(fallbackText);
+        }
+    }
+
+    /**
+     * ボタンの左上の座標(基準点が anchor の位置に来るようにする)
+     *
+     * @param anchor 部品のどこを基準点にするか
+     * @param refX   基準点の x(画素)
+     * @param refY   基準点の y(画素)
+     * @param w      部品の幅
+     * @param h      部品の高さ
+     */
+    public static java.awt.Point anchoredTopLeft(Anchor anchor, double refX, double refY, int w, int h) {
+        Vector2 a = anchor.getValue();
+        return new java.awt.Point((int) Math.round(refX - w * a.getX()), (int) Math.round(refY - h * a.getY()));
+    }
+
+    /**
+     * 画面の anchor 位置から (dx, dy) だけ離した所へ、ボタンの anchor を合わせて置く。
+     * dx, dy は基準サイズ(405x720)の長さで、画面サイズの倍率を掛ける。画面の右側・下側の anchor は、内側へ向く向きで指定する
+     * (右下の隅から 8 だけ内側なら dx=-8, dy=-8)。
+     * 例: 右下の隅から 8 離して右下を合わせる → placeBtn(btn, Anchor.BOTTOM_RIGHT, Anchor.BOTTOM_RIGHT, -8, -8)
+     *
+     * @param screenAnchor 画面のどこを基準にするか
+     * @param btnAnchor    ボタンのどこを基準点に合わせるか
+     */
+    public static void placeBtn(javax.swing.JComponent btn, Anchor screenAnchor, Anchor btnAnchor, double dx, double dy) {
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        ShootingGameMain main = ShootingGameMain.getInstance();
+        Vector2 s = screenAnchor.getValue();
+        java.awt.Point p = anchoredTopLeft(btnAnchor, main.getWidth() * s.getX() + dx * adj,
+                main.getHeight() * s.getY() + dy * adj, btn.getWidth(), btn.getHeight());
+        btn.setBounds(p.x, p.y, btn.getWidth(), btn.getHeight());
+    }
+
+    /**
      * 戻るボタン(正方形の矢印。画面の左下の隅に置く)
      *
      * @param component 呼び出しクラス名
@@ -186,9 +254,9 @@ public class UIBuilder extends JPanel {
     public static JButton createBackBtn(String component, Runnable action) {
         double adj = ShootingGameMain.getScreenSizeAdj();
         int size = (int) (40 * adj);
-        int margin = (int) (8 * adj);
         JButton btn = createImageBtn(component, "/static/img/UI/backArrow.png", new Vector2(size, size), "◀");
-        btn.setBounds(margin, ShootingGameMain.getInstance().getHeight() - margin - size, size, size);
+        btn.setSize(size, size);
+        placeBtn(btn, Anchor.BOTTOM_LEFT, Anchor.BOTTOM_LEFT, 8, -8);
         btn.addActionListener(e -> action.run());
         return btn;
     }
