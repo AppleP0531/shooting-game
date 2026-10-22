@@ -92,8 +92,9 @@ public class StageBtnPanel extends JPanel {
             getParent().setComponentZOrder(this, 0);
 
         // スクロール制限
-        maxScrollOffset = NSM.getStageBtnConfigMap().get(NSM.getStageBtnConfigMap().size())
-                .getPos().getY() * ShootingGameMain.getScreenSizeAdj() - panelSize.getY()
+        // 一番高い所にある台まで(下へ戻る配置もあるので、最後の台ではなく、最大の高さで決める)
+        double topY = NSM.getStageBtnConfigMap().values().stream().mapToDouble(d -> d.getPos().getY()).max().orElse(0);
+        maxScrollOffset = topY * ShootingGameMain.getScreenSizeAdj() - panelSize.getY()
                 + buttonMap.get(1).getHeight() * 2;
     }
 
