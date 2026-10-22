@@ -54,7 +54,6 @@ public final class LobbyManager extends JPanel implements Manager {
     private JButton backpackBtn;
     private JButton nextShipBtn;
     private JButton prevShipBtn;
-    private JButton selectShipBtn;
     private JButton unlockShipBtn;
     private JButton changeModeBtn;
     private JButton infinityBtn;
@@ -210,21 +209,6 @@ public final class LobbyManager extends JPanel implements Manager {
         prevShipBtn.setVisible(false); // 非表示
         this.add(prevShipBtn);
 
-        // セレクトボタン(船を選択)
-        Vector2 selectShipBtnSize = new Vector2(
-                180 * ShootingGameMain.getScreenSizeAdj(),
-                36 * ShootingGameMain.getScreenSizeAdj());
-        String selectShipImagePath = "/static/img/UI/lobbyScene/selectShip.png";
-        selectShipBtn = UIBuilder.createImageBtn(component, selectShipImagePath, selectShipBtnSize,
-                "SELLECT");
-        UIBuilder.placeBtn(selectShipBtn, Anchor.BOTTOM_CENTER, Anchor.CENTER, 0, -197);
-        selectShipBtn.addActionListener(e -> {
-            DataManager.getUserData().setSelectedShip(ships[viewingShipInd]);
-            updateBtnStates();
-        });
-        selectShipBtn.setVisible(false); // 非表示
-        this.add(selectShipBtn);
-
         // アンロックボタン(船を開放)
         Vector2 unlockShipBtnSize = new Vector2(
                 180 * ShootingGameMain.getScreenSizeAdj(),
@@ -337,7 +321,7 @@ public final class LobbyManager extends JPanel implements Manager {
 
         // 押す・乗せると拡大縮小する(下の列・右上・船の切り替え・選択/解放・色の切り替え)
         for (JButton b : new JButton[] { upgradeBtn, shopBtn, gachaBtn, settingBtn, dexBtn, nextShipBtn,
-                prevShipBtn, selectShipBtn, unlockShipBtn, changeModeBtn, backpackBtn, infinityBtn, selectStageBtn,
+                prevShipBtn, unlockShipBtn, changeModeBtn, backpackBtn, infinityBtn, selectStageBtn,
                 moduleBtn, convertBtn })
             ButtonAnimator.attachPop(b);
     }
@@ -492,19 +476,14 @@ public final class LobbyManager extends JPanel implements Manager {
         selectStageBtn.setVisible(true);
         changeModeBtn.setVisible(true);
 
-        selectShipBtn.setVisible(false);
         upgradeBtn.setVisible(true); // 強化ボタンは、未開放の船でもグレーアウトで見せる
         unlockShipBtn.setVisible(false);
 
         // プレビュー中の船を所有しているかどうか
         boolean isOwned = DataManager.getUserData().getShips().containsKey(ships[viewingShipInd]);
-        // プレビュー中の船が選択されているかどうか
-        boolean isSelected = DataManager.getUserData().getSelectedShip().equals(ships[viewingShipInd]);
-        // 開放しているかどうか
+        // 開放している船は、見ている船がそのまま選択中になる(選択ボタンはない)
         if (isOwned) {
-            // 未選択なら選択ボタンを表示
-            if (!isSelected)
-                selectShipBtn.setVisible(true);
+            DataManager.getUserData().setSelectedShip(ships[viewingShipInd]);
 
             upgradeBtn.setEnabled(true);
         } else {
