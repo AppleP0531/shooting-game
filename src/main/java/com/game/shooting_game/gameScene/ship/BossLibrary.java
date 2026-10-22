@@ -65,7 +65,7 @@ public final class BossLibrary {
         private List<BeamSpec> beams = new ArrayList<>(); // このゲージ中に撃つビーム
     }
 
-    private static final String COIN_BOSS_ID = "BossCoin";
+    public static final String COIN_BOSS_ID = "BossCoin";
     private static Map<String, BossDefinition> bossMap = new HashMap<>();
 
     static {

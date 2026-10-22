@@ -485,6 +485,13 @@ public final class ShipManager implements Manager {
                 if (s.getOwner() == ShipKinds.BOSS) {
                     BulletManager.getInstance().clearEnemyBullets();
                     BeamManager.getInstance().clearHostile();
+                    // 無限モードのコインボスを倒したら、引き継ぎを消して、特殊ドロップ(モジュール)を溜める
+                    if (com.game.shooting_game.gameScene.ship.types.Boss.isEndlessCoinBoss(s.getShipId())) {
+                        com.game.shooting_game.gameScene.stage.CoinBossMemory.defeated(
+                                com.game.shooting_game.gameScene.stage.StageManager.getInstance().getStage().getWaveId());
+                        LogUtils.notice(component, ANSI.YELLOW + "Coin boss defeated" + ANSI.RESET
+                                + ". A special module will be rewarded at the result.");
+                    }
                 }
             }
         }

@@ -114,6 +114,11 @@ public class Boss extends Ship {
         gaugeHp = Math.max(1, def.getGaugeHp())
                 * com.game.shooting_game.gameScene.stage.StageModifiers.enemyHpRate(); // 難易度などの硬さはゲージのHPで表す
         maxHp = hp = gaugeHp * gaugeCount;
+        // 無限モードのコインボスは、前の登場で削ったHPを引き継ぐ(再登場で満タンに戻らない)
+        if (isEndlessCoinBoss(id)) {
+            hp = Math.max(1, maxHp * com.game.shooting_game.gameScene.stage.CoinBossMemory.remainingRatio());
+            currentGauge = Math.min(gaugeCount - 1, Math.max(0, gaugeCount - (int) Math.ceil(hp / gaugeHp - 1e-9)));
+        }
 
         // 入場の設定(StageConfigの指定があればそちらを優先)
         entrance = entranceType != null ? entranceType : def.getEntrance();
@@ -278,6 +283,13 @@ public class Boss extends Ship {
         return phase == Phase.TRANSITION;
     }
 
+    /** 無限モードのコインボスか(再登場でHPを引き継ぐ対象) */
+    public static boolean isEndlessCoinBoss(String bossId) {
+        return BossLibrary.COIN_BOSS_ID.equals(bossId)
+                && com.game.shooting_game.gameScene.stage.StageManager.getInstance().getStageId()
+                        == com.game.shooting_game.gameScene.stage.EndlessWaves.STAGE_ID;
+    }
+
     /**
      * 撤収を始める(弾とビームを消して、上へ去る)
      */
@@ -288,6 +300,10 @@ public class Boss extends Ship {
         beamEmitters.clear();
         BeamManager.getInstance().clearHostile();
         BulletManager.getInstance().clearEnemyBullets();
+
+        // 撤収するコインボスは、残りHPの割合を覚えておく(次の登場に引き継ぐ)
+        if (isEndlessCoinBoss(shipId))
+            com.game.shooting_game.gameScene.stage.CoinBossMemory.save(hp / maxHp);
 
         LogUtils.info(component, "Boss retreats.");
     }
