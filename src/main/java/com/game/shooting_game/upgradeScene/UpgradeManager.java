@@ -184,6 +184,10 @@ public final class UpgradeManager extends JPanel implements Manager {
         this.add(moduleBtn);
         UnlockService.guard(moduleBtn, Feature.MODULE);
 
+        // 押す・乗せると拡大縮小する
+        for (JButton b : new JButton[] { lobbyBtn, subShipBtn, convertBtn, unitBtn, moduleBtn })
+            com.game.shooting_game.ui.ButtonAnimator.attachPop(b);
+
         this.add(subShipPanel);
         this.add(convertPanel);
         this.add(unitPanel);
@@ -283,6 +287,8 @@ public final class UpgradeManager extends JPanel implements Manager {
     @Override
     public void draw(Graphics g) {
         upgradeUI.draw(g);
+        // 上(コイン)と、下のボタン2列の帯(スキルツリーはその上に描く)
+        com.game.shooting_game.ui.SceneBars.draw(g, com.game.shooting_game.ui.SceneBars.TOP, 116);
         skillTreeBtnPanel.draw(g);
     }
 
