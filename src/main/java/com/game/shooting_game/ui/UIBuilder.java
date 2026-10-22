@@ -258,6 +258,7 @@ public class UIBuilder extends JPanel {
         btn.setSize(size, size);
         placeBtn(btn, Anchor.BOTTOM_LEFT, Anchor.BOTTOM_LEFT, 8, -8);
         btn.addActionListener(e -> action.run());
+        ButtonAnimator.attachPop(btn);
         return btn;
     }
 
