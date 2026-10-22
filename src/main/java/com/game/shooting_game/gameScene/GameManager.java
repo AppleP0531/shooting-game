@@ -327,11 +327,11 @@ public final class GameManager extends JPanel implements Manager {
     }
 
     /**
-     * プレイ中に画面の左上へ出す、ミッションの状況(ハードのときだけ。無限・スキップ・ミッションのないステージは空)
+     * プレイ中に画面の左上へ出す、ミッションの状況(★は難易度ごとに取れるので、どの難易度でも出す。無限・スキップ・ミッションのないステージは空)
      */
     private java.util.List<DifficultyService.LiveMission> liveMissions() {
         Difficulty diff = STAGE_M.getStage().getDifficulty();
-        if (diff != Difficulty.HARD || skipped || STAGE_M.getStageId() == EndlessWaves.STAGE_ID
+        if (skipped || STAGE_M.getStageId() == EndlessWaves.STAGE_ID
                 || !DifficultyService.selectable(STAGE_M.getStageId()) || SHIP_M.getPlayer() == null)
             return java.util.List.of();
         double maxHp = SHIP_M.getPlayer().getMaxHp();
