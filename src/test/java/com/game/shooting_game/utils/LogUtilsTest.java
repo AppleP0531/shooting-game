@@ -30,8 +30,18 @@ class LogUtilsTest {
         String line = LogUtils.format(Facility.USER, Severity.WARNING,
                 LocalDateTime.of(2026, 10, 5, 9, 3, 1), "[Main]", "hello")
                 .replaceAll("\\x1b\\[[0-9;]*m", "");
-        assertTrue(line.startsWith("<12>Oct  5 09:03:01 "), line);
+        assertTrue(line.startsWith("[WARN]  Oct  5 09:03:01 "), line);
         assertTrue(line.endsWith("]: hello"), line);
+    }
+
+    @Test
+    void 行頭は数字でなくレベルのラベルを出す() {
+        assertEquals("INFO", Severity.INFO.label());
+        assertEquals("DEBUG", Severity.DEBUG.label());
+        assertEquals("WARN", Severity.WARNING.label());
+        assertEquals("FATAL", Severity.CRITICAL.label());
+        // PRI の計算は残している(USER=1, INFO=6 → 14)
+        assertEquals(14, LogUtils.priority(Facility.USER, Severity.INFO));
     }
 
     @Test
