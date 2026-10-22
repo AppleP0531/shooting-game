@@ -137,8 +137,21 @@ public final class DifficultyService {
         List<String> texts = missionTexts(stageId);
         List<Mission> list = new ArrayList<>();
         for (int i = 0; i < texts.size(); i++)
-            list.add(new Mission(texts.get(i), s != null && s.containsKey(missionKey(stageId, diff, i))));
+            list.add(new Mission(texts.get(i), earned(s, stageId, diff, i)));
         return list;
+    }
+
+    /**
+     * ミッションを達成済みか。その難易度か、それより高い難易度で達成していれば、達成済みとして扱う
+     * (ハードをクリアしたら、イージー・ノーマルでも★を入手したことにする)。
+     */
+    static boolean earned(Map<String, Integer> s, int stageId, Difficulty diff, int index) {
+        if (s == null)
+            return false;
+        for (Difficulty d : Difficulty.values())
+            if (d.ordinal() >= diff.ordinal() && s.containsKey(missionKey(stageId, d, index)))
+                return true;
+        return false;
     }
 
     /**
@@ -157,7 +170,7 @@ public final class DifficultyService {
 
     /**
      * 獲得した★の合計(全ステージ・全難易度。★の累計報酬に使う)
-     * ミッションの記録キー(mission:...)の数がそのまま★の数になる。
+     * ミッションの記録キー(mission:...)の数がそのまま★の数になる(ハードで達成したものを、下の難易度でも達成済みとして見せるのは表示だけで、合計には重ねて数えない)。
      */
     public static int totalStars() {
         Map<String, Integer> s = store();
@@ -201,7 +214,7 @@ public final class DifficultyService {
         if (s != null) {
             for (int i = 0; i < ok.length; i++) {
                 String key = missionKey(stageId, diff, i);
-                if (ok[i] && !s.containsKey(key)) {
+                if (ok[i] && !earned(s, stageId, diff, i)) {
                     s.put(key, 1);
                     fresh[i] = true;
                 }
