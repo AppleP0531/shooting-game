@@ -22,7 +22,7 @@
     "pos": 0,
     "dist": 95,
     "effect": "DAMAGE",
-    "perLevel": 0.03,
+    "perLevel": 0.10,
     "maxLevel": 10,
     "unit": "%",
     "reqLevel": 1,
@@ -292,7 +292,7 @@
     "pos": 1,
     "dist": 95,
     "effect": "OOC_DAMAGE",
-    "perLevel": 0.04,
+    "perLevel": 0.10,
     "maxLevel": 5,
     "unit": "%",
     "reqLevel": 2,
@@ -495,7 +495,7 @@
     "reqLevel": 1,
     "coin": 8000,
     "coinGrowth": 1.4,
-    "detail": "自機の当たり判定が小さくなる(最大-15%)。",
+    "detail": "自機の当たり判定(白いドット)が小さくなる(半径4px→最大強化で2px)。",
     "matLevels": [
       {
         "SCREW": {
@@ -1729,5 +1729,23 @@
       { "SCREW": { "COMMON": 10, "UNCOMMON": 5 }, "LENS": { "COMMON": 7, "UNCOMMON": 1 } }
     ]
   }
-
+  ,
+  {
+    "name": "Runup",
+    "title": "助走",
+    "rootNode": "Thruster",
+    "pos": 4,
+    "dist": 95,
+    "effect": "ENDLESS_SKIP",
+    "perLevel": 50,
+    "maxLevel": 1,
+    "unit": "ウェーブ",
+    "reqLevel": 2,
+    "coin": 15000,
+    "coinGrowth": 1.5,
+    "detail": "強化すると、無限モードが、これまでに到達した最高ウェーブの50ウェーブ前から始まるようになる(道中の敵はすべて倒した扱い。最高が50以下なら、ウェーブ1から)。",
+    "matLevels": [
+      { "ENERGY_CELL": { "COMMON": 7 }, "CIRCUIT": { "COMMON": 5 } }
+    ]
+  }
 ]

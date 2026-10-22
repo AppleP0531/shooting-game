@@ -91,4 +91,35 @@ class SkillServiceTest {
         assertThat(lucky).contains("Lvごとに -").doesNotContain("Lvごとに +");
         assertThat(power).contains("Lvごとに +").doesNotContain("Lvごとに -");
     }
+
+    @Test
+    @DisplayName("setLevel は0〜最大レベルに収めて設定し、0で記録を消す")
+    void setLevelClamps() {
+        var d = SkillService.getConfig().stream().filter(x -> x.getMaxLevel() > 1).findFirst().orElseThrow();
+        assertThat(SkillService.setLevel(d, 1)).isEqualTo(1);
+        assertThat(SkillService.getLevel(d.getName())).isEqualTo(1);
+        assertThat(SkillService.setLevel(d, 9999)).isEqualTo(d.getMaxLevel());
+        assertThat(SkillService.getLevel(d.getName())).isEqualTo(d.getMaxLevel());
+        assertThat(SkillService.setLevel(d, -3)).isZero();
+        assertThat(stats().getUpgrades()).doesNotContainKey(d.getName());
+    }
+
+    @Test
+    @DisplayName("findIgnoreCase は大文字小文字を区別せず、なければnull")
+    void findIgnoreCase() {
+        String name = SkillService.getConfig().get(0).getName();
+        assertThat(SkillService.findIgnoreCase(name.toUpperCase())).isNotNull();
+        assertThat(SkillService.findIgnoreCase(name.toLowerCase()).getName()).isEqualTo(name);
+        assertThat(SkillService.findIgnoreCase("noSuchSkill")).isNull();
+    }
+
+    @Test
+    @DisplayName("効果量は最大レベルまでしか数えない(最大レベルを下げた後の古いセーブ対策)")
+    void bonusCappedAtMaxLevel() {
+        var d = SkillService.find("Runup");
+        assertThat(d.getMaxLevel()).isEqualTo(1);
+        stats().getUpgrades().put("Runup", 5);
+        SkillService.invalidate();
+        assertThat(SkillService.getBonus("ENDLESS_SKIP")).isEqualTo(d.getPerLevel());
+    }
 }

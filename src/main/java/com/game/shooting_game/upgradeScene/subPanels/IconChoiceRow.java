@@ -28,8 +28,6 @@ public class IconChoiceRow<T> extends JPanel {
     private final Function<T, BufferedImage> imageOf;
     private final Function<T, Color> colorOf;
     private final Function<T, String> labelOf;
-    private final Function<T, String> tooltipOf;
-    private final Runnable onChange;
     private int selected = 0;
 
     public IconChoiceRow(List<T> items, int chip, int gap, Function<T, BufferedImage> imageOf,
@@ -41,8 +39,6 @@ public class IconChoiceRow<T> extends JPanel {
         this.imageOf = imageOf;
         this.colorOf = colorOf;
         this.labelOf = labelOf;
-        this.tooltipOf = tooltipOf;
-        this.onChange = onChange;
         setOpaque(false);
         addMouseListener(new MouseAdapter() {
             @Override
@@ -106,9 +102,15 @@ public class IconChoiceRow<T> extends JPanel {
                 g2.drawImage(img, x + (chip - w) / 2, y + (chip - h) / 2, w, h, null);
             } else {
                 g2.setColor(c);
-                g2.setFont(new Font("SansSerif", Font.BOLD, Math.max(9, chip * 2 / 5)));
-                FontMetrics fm = g2.getFontMetrics();
                 String s = labelOf.apply(t);
+                // 文字が枠に収まるまで小さくする(★が5つ並ぶと枠からはみ出して隣と重なるため)
+                int fs = Math.max(9, chip * 2 / 5);
+                g2.setFont(new Font("SansSerif", Font.BOLD, fs));
+                FontMetrics fm = g2.getFontMetrics();
+                while (fs > 5 && fm.stringWidth(s) > chip - 6) {
+                    g2.setFont(new Font("SansSerif", Font.BOLD, --fs));
+                    fm = g2.getFontMetrics();
+                }
                 g2.drawString(s, x + (chip - fm.stringWidth(s)) / 2, y + (chip + fm.getAscent() - fm.getDescent()) / 2);
             }
             g2.setComposite(java.awt.AlphaComposite.SrcOver);

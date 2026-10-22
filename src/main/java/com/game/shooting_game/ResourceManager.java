@@ -58,6 +58,7 @@ public final class ResourceManager implements Manager {
             UPGRADE, // スキル強化用
             PART, // サブ機パーツ制作用
             MODULE, // モジュール基板(モジュールの制作にのみ使う)
+            RANK, // ランクコア(機体のランクアップにのみ使う。ボスなどが落とす)
             NONE // 素材ではない
         }
 
@@ -81,7 +82,8 @@ public final class ResourceManager implements Manager {
             ALLOY_PLATE(Family.PART, "合金板"),
             CRYSTAL_SHARD(Family.PART, "結晶片"),
             PLASMA_CORE(Family.PART, "プラズマコア"),
-            MODULE_CHIP(Family.MODULE, "モジュール基板");
+            MODULE_CHIP(Family.MODULE, "モジュール基板"),
+            RANK_CORE(Family.RANK, "ランクコア");
 
             private final Family family;
             private final String displayName;
@@ -222,9 +224,7 @@ public final class ResourceManager implements Manager {
 
         try (InputStream is = getClass().getResourceAsStream(CONFIG_PATH)) {
             // ロード開始路湯
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
+            LogUtils.debug(component,
                     "Attempting to load configuration from " + ANSI.YELLOW + CONFIG_PATH + ANSI.RESET);
 
             if (is == null)
@@ -234,12 +234,10 @@ public final class ResourceManager implements Manager {
             resourceConfigMap = mapper.readValue(is, TYPE_REF);
 
             // ロード成功ログ
-            LogUtils.systemLog("[DEBUG]", component, "Configuration loaded successfully");
+            LogUtils.debug(component, "Configuration loaded successfully");
         } catch (IOException e) {
             // ロードエラーログ
-            LogUtils.error(
-                    "[FATAL]",
-                    component,
+            LogUtils.fatal(component,
                     "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + "." + ANSI.RESET + "\n"
                             + ANSI.RED + "Application will terminate." + ANSI.RESET,
                     e);
@@ -290,24 +288,18 @@ public final class ResourceManager implements Manager {
                             resourceViewCache.computeIfAbsent(name, k -> new HashMap<>()).put(rarity,
                                     UIBuilder.cutSpriteSheet(viewSheet, resourceImagedata.getViewGrids(), viewCount));
                         } catch (IOException e) {
-                            LogUtils.systemLog(
-                                    "[WARN]",
-                                    component,
+                            LogUtils.warn(component,
                                     "Failed to load view image: " + ANSI.YELLOW + viewPath + ANSI.RESET + ".");
                         }
                     }
                 } catch (IOException e) {
                     switch (e.getMessage()) {
                         // 画像ファイル未発見ログ
-                        case "FILE_NOT_FOUND" -> LogUtils.systemLog(
-                                "[WARN]",
-                                component,
+                        case "FILE_NOT_FOUND" -> LogUtils.warn(component,
                                 "File not found: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
 
                         // 画像読み込みエラーログ
-                        case "BROKEN_FILE" -> LogUtils.systemLog(
-                                "[ERROR]",
-                                component,
+                        case "BROKEN_FILE" -> LogUtils.error(component,
                                 "Failed to load image: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
 
                         // その他エラーログ

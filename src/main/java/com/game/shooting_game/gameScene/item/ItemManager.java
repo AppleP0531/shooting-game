@@ -95,9 +95,7 @@ public final class ItemManager implements Manager {
 
         try (InputStream is = getClass().getResourceAsStream(CONFIG_PATH)) {
             // ロード開始ログ
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
+            LogUtils.debug(component,
                     "Attempting to load configuration from " + ANSI.YELLOW + CONFIG_PATH + ANSI.RESET + ".");
 
             // nullチェック
@@ -108,15 +106,11 @@ public final class ItemManager implements Manager {
             itemConfigMap = mapper.readValue(is, TYPE_REF);
 
             // ロード成功ログ
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
+            LogUtils.debug(component,
                     "Configuration loaded successfully");
         } catch (IOException e) {
             // ロードエラーログ
-            LogUtils.error(
-                    "[FATAL]",
-                    component,
+            LogUtils.fatal(component,
                     "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + "." + ANSI.RESET + "\n"
                             + ANSI.RED + "Application will terminate." + ANSI.RESET,
                     e);
@@ -147,15 +141,11 @@ public final class ItemManager implements Manager {
             } catch (IOException e) {
                 switch (e.getMessage()) {
                     // 画像ファイル未発見ログ
-                    case "FILE_NOT_FOUND" -> LogUtils.systemLog(
-                            "[WARN]",
-                            component,
+                    case "FILE_NOT_FOUND" -> LogUtils.warn(component,
                             "File not found: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
 
                     // 画像読み込みエラーログ
-                    case "BROKEN_FILE" -> LogUtils.systemLog(
-                            "[ERROR]",
-                            component,
+                    case "BROKEN_FILE" -> LogUtils.error(component,
                             "Failed to load image: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
 
                     // その他エラーログ

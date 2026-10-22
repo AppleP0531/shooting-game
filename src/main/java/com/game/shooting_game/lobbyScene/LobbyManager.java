@@ -1,12 +1,16 @@
 package com.game.shooting_game.lobbyScene;
 
+import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.util.Objects;
 
 import javax.swing.SwingUtilities;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+import com.game.shooting_game.domain.gacha.GachaService;
+import com.game.shooting_game.domain.gacha.PieceService;
 import com.game.shooting_game.domain.unlock.UnlockService;
 import com.game.shooting_game.domain.unlock.UnlockService.Feature;
 import com.game.shooting_game.SceneManager;
@@ -19,8 +23,17 @@ import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.lobbyScene.LobbySceneUI.HangarSceneUIData;
+import com.game.shooting_game.ui.Anchor;
+import com.game.shooting_game.ui.ButtonAnimator;
+import com.game.shooting_game.ui.ModeButtonImage;
+import com.game.shooting_game.ui.ShipPieceIcon;
 import com.game.shooting_game.ui.UIBuilder;
-import com.game.shooting_game.utils.LogUtils;
+import com.game.shooting_game.domain.armor.ArmorService;
+import com.game.shooting_game.upgradeScene.subPanels.ArmorPanel;
+import com.game.shooting_game.upgradeScene.subPanels.ConvertPanel;
+import com.game.shooting_game.upgradeScene.subPanels.ModulePanel;
+import com.game.shooting_game.upgradeScene.subPanels.SubShipPanel;
+import com.game.shooting_game.upgradeScene.subPanels.UnitPanel;
 import com.game.shooting_game.utils.Vector2;
 
 public final class LobbyManager extends JPanel implements Manager {
@@ -35,14 +48,25 @@ public final class LobbyManager extends JPanel implements Manager {
 
     private JButton upgradeBtn;
     private JButton shopBtn;
+    private JButton gachaBtn;
     private JButton settingBtn;
     private JButton dexBtn;
     private JButton backpackBtn;
     private JButton nextShipBtn;
     private JButton prevShipBtn;
-    private JButton selectShipBtn;
     private JButton unlockShipBtn;
     private JButton changeModeBtn;
+    private JButton infinityBtn;
+    private JButton moduleBtn;
+    private JButton convertBtn;
+    private final ModulePanel modulePanel = new ModulePanel();
+    private final ConvertPanel convertPanel = new ConvertPanel();
+    private final UnitPanel unitPanel = new UnitPanel();
+    private final SubShipPanel subShipPanel = new SubShipPanel();
+    private final ArmorPanel defensePanel = new ArmorPanel(ArmorService.Type.DEFENSE);
+    private final ArmorPanel firepowerPanel = new ArmorPanel(ArmorService.Type.FIREPOWER);
+    private Rectangle[] slotRects;
+    private JButton[] slotBtns;
     private JButton selectStageBtn;
 
     private int viewingShipInd = -1;
@@ -71,23 +95,54 @@ public final class LobbyManager extends JPanel implements Manager {
         // 強化ボタン(強化画面に遷移)
         // 下の列は、左から「鞄」「強化」(四角いアイコン)と、残りを使う「ステージ選択」
         double adj0 = ShootingGameMain.getScreenSizeAdj();
-        int iconSize = (int) (44 * adj0), iconGap = (int) (6 * adj0), edge = (int) (8 * adj0);
-        int rowY = MAIN.getHeight() - (int) (5 * adj0) - iconSize;
+        // 下は2段: 上に小さな四角いアイコン4つ(幅を6等分した中央に置く)、下に大きなモードボタン2つ
+        int iconSize = (int) (40 * adj0), edge = (int) (8 * adj0);
+        int bigH = (int) (46 * adj0);
+        int bigY = MAIN.getHeight() - edge - bigH;
+        int rowY = bigY - (int) (5 * adj0) - iconSize;
+        int cellW = MAIN.getWidth() / 6; // 6つ: 鞄・強化・モジュール・変換・ショップ・ガチャ
         Vector2 upgradeBtnSize = new Vector2(iconSize, iconSize);
         String upgradeImagePath = "/static/img/UI/lobbyScene/upgradeIcon.png";
         upgradeBtn = UIBuilder.createImageBtn(component, upgradeImagePath, upgradeBtnSize, "UPGRADE");
-        upgradeBtn.setBounds(edge + iconSize + iconGap, rowY, iconSize, iconSize);
+        upgradeBtn.setBounds(cellW + (cellW - iconSize) / 2, rowY, iconSize, iconSize);
         upgradeBtn.addActionListener(e -> SM.changeScene(SceneType.UPGRADE));
         upgradeBtn.setVisible(false); // 非表示
         this.add(upgradeBtn);
 
         // ショップボタン(ショップ画面に遷移。強化の右の四角いアイコン。解放前はグレーアウト)
         shopBtn = UIBuilder.createImageBtn(component, "/static/img/UI/lobbyScene/shopIcon.png", upgradeBtnSize, "SHOP");
-        shopBtn.setBounds(edge + (iconSize + iconGap) * 2, rowY, iconSize, iconSize);
+        shopBtn.setBounds(cellW * 4 + (cellW - iconSize) / 2, rowY, iconSize, iconSize);
         shopBtn.addActionListener(e -> SM.changeScene(SceneType.SHOP));
         shopBtn.setVisible(false); // 非表示
         this.add(shopBtn);
         UnlockService.guard(shopBtn, Feature.SHOP);
+
+        // モジュールボタン(強化画面から移した。強化の右)と、素材変換ボタン(その右)。四角い板に文字
+        moduleBtn = UIBuilder.createImageBtn(component,
+                ModeButtonImage.create(iconSize, iconSize, "モジュール", new Color(190, 130, 255),
+                        new Color(90, 40, 170), new Color(230, 200, 255), (int) (8 * adj0)),
+                new Vector2(iconSize, iconSize), "MODULE");
+        moduleBtn.setBounds(cellW * 2 + (cellW - iconSize) / 2, rowY, iconSize, iconSize);
+        moduleBtn.addActionListener(e -> modulePanel.showPanel());
+        moduleBtn.setVisible(false); // 非表示
+        this.add(moduleBtn);
+        UnlockService.guard(moduleBtn, Feature.MODULE);
+
+        convertBtn = UIBuilder.createImageBtn(component,
+                ModeButtonImage.create(iconSize, iconSize, "変換", new Color(110, 220, 160),
+                        new Color(20, 130, 90), new Color(200, 255, 225), (int) (12 * adj0)),
+                new Vector2(iconSize, iconSize), "CONVERT");
+        convertBtn.setBounds(cellW * 3 + (cellW - iconSize) / 2, rowY, iconSize, iconSize);
+        convertBtn.addActionListener(e -> convertPanel.showPanel());
+        convertBtn.setVisible(false); // 非表示
+        this.add(convertBtn);
+
+        // ガチャボタン(ガチャ画面に遷移。ショップの右)
+        gachaBtn = UIBuilder.createImageBtn(component, "/static/img/UI/lobbyScene/gachaIcon.png", upgradeBtnSize, "GACHA");
+        gachaBtn.setBounds(cellW * 5 + (cellW - iconSize) / 2, rowY, iconSize, iconSize);
+        gachaBtn.addActionListener(e -> SM.changeScene(SceneType.GACHA));
+        gachaBtn.setVisible(false); // 非表示
+        this.add(gachaBtn);
 
         // 設定ボタン(設定画面に遷移)
         Vector2 settingBtnSize = new Vector2(
@@ -95,10 +150,7 @@ public final class LobbyManager extends JPanel implements Manager {
                 36 * ShootingGameMain.getScreenSizeAdj());
         String settingImagePath = "/static/img/UI/lobbyScene/SettingImage.png";
         settingBtn = UIBuilder.createImageBtn(component, settingImagePath, settingBtnSize, "SETTING");
-        settingBtn.setBounds(
-                MAIN.getWidth() - 10 - (int) settingBtn.getWidth(),
-                (int) (10 * ShootingGameMain.getScreenSizeAdj()),
-                (int) settingBtn.getWidth(), (int) settingBtn.getHeight());
+        UIBuilder.placeBtn(settingBtn, Anchor.TOP_RIGHT, Anchor.TOP_RIGHT, -8, 4);
         settingBtn.addActionListener(e -> SM.changeScene(SceneType.SETTING));
         settingBtn.setVisible(false); // 非表示
         this.add(settingBtn);
@@ -157,52 +209,28 @@ public final class LobbyManager extends JPanel implements Manager {
         prevShipBtn.setVisible(false); // 非表示
         this.add(prevShipBtn);
 
-        // セレクトボタン(船を選択)
-        Vector2 selectShipBtnSize = new Vector2(
-                150 * ShootingGameMain.getScreenSizeAdj(),
-                30 * ShootingGameMain.getScreenSizeAdj());
-        String selectShipImagePath = "/static/img/UI/lobbyScene/selectShip.png";
-        selectShipBtn = UIBuilder.createImageBtn(component, selectShipImagePath, selectShipBtnSize,
-                "SELLECT");
-        selectShipBtn.setBounds(
-                MAIN.getWidth() / 2 - (int) selectShipBtn.getWidth() / 2,
-                MAIN.getHeight() - (int) selectShipBtn.getHeight() / 2
-                        - (int) (100 * ShootingGameMain.getScreenSizeAdj()),
-                (int) selectShipBtn.getWidth(), (int) selectShipBtn.getHeight());
-        selectShipBtn.addActionListener(e -> {
-            DataManager.getUserData().setSelectedShip(ships[viewingShipInd]);
-            updateBtnStates();
-        });
-        selectShipBtn.setVisible(false); // 非表示
-        this.add(selectShipBtn);
-
         // アンロックボタン(船を開放)
         Vector2 unlockShipBtnSize = new Vector2(
-                150 * ShootingGameMain.getScreenSizeAdj(),
-                30 * ShootingGameMain.getScreenSizeAdj());
+                180 * ShootingGameMain.getScreenSizeAdj(),
+                36 * ShootingGameMain.getScreenSizeAdj());
         String unlockShipImagePath = "/static/img/UI/lobbyScene/unlockShip.png";
         unlockShipBtn = UIBuilder.createImageBtn(component, unlockShipImagePath, unlockShipBtnSize,
                 "UNLOCK");
-        unlockShipBtn.setBounds(
-                MAIN.getWidth() / 2 - (int) unlockShipBtn.getWidth() / 2,
-                MAIN.getHeight() - (int) unlockShipBtn.getHeight() / 2
-                        - (int) (100 * ShootingGameMain.getScreenSizeAdj()),
-                (int) unlockShipBtn.getWidth(), (int) unlockShipBtn.getHeight());
+        UIBuilder.placeBtn(unlockShipBtn, Anchor.BOTTOM_CENTER, Anchor.CENTER, 0, -197);
         unlockShipBtn.addActionListener(e -> {
-            int targetShipCost = SHIP_M.getShipConfig().get(ShipKinds.PLAYER).get(ships[viewingShipInd])
-                    .getDatas()
-                    .getCost();
-            int ownedCoins = CostService.coins();
-            if (ownedCoins >= targetShipCost) {
-                DataManager.getUserData().unlockShip(ships[viewingShipInd]);
-                // 管理者モードはコインを減らさない
-                if (!DataManager.isAdminMode())
-                    DataManager.getUserData().getResources().setCoins(ownedCoins - targetShipCost);
+            String id = ships[viewingShipInd];
+            if (GachaService.unlock(id)) {
                 updateBtnStates();
-            } else {
-                LogUtils.systemLog("[INFO]", component, "There is no enough money");
-                lobbyUI.showMessage("コインが足りません（必要: " + targetShipCost + " / 所持: " + ownedCoins + "）");
+                return;
             }
+            // 足りないものを知らせる(ピースはガチャで集める)
+            int have = PieceService.owned(id);
+            int cost = GachaService.shipCost(id);
+            if (have < PieceService.UNLOCK_PIECES)
+                lobbyUI.showMessage("ピースが足りません(必要: " + PieceService.UNLOCK_PIECES + " / 所持: " + have + "。ガチャで集めます)");
+            else
+                lobbyUI.showMessage("コインが足りません(必要: " + String.format("%,d", cost) + " / 所持: "
+                        + String.format("%,d", CostService.coins()) + ")");
         });
         unlockShipBtn.setVisible(false); // 非表示
         this.add(unlockShipBtn);
@@ -214,11 +242,7 @@ public final class LobbyManager extends JPanel implements Manager {
         String changeModeImagePath = "/static/img/UI/lobbyScene/modeIcon.png";
         changeModeBtn = UIBuilder.createImageBtn(component, changeModeImagePath, changeModeBtnSize,
                 "CHANGE_MODE");
-        changeModeBtn.setBounds(
-                MAIN.getWidth() - (int) changeModeBtn.getWidth() - (int) (10 * ShootingGameMain.getScreenSizeAdj()),
-                MAIN.getHeight() - (int) changeModeBtn.getHeight()
-                        - (int) (100 * ShootingGameMain.getScreenSizeAdj()),
-                (int) changeModeBtn.getWidth(), (int) changeModeBtn.getHeight());
+        UIBuilder.placeBtn(changeModeBtn, Anchor.BOTTOM_RIGHT, Anchor.BOTTOM_RIGHT, -10, -179);
         changeModeBtn.addActionListener(e -> {
             SHIP_M.getPlayer().changeMode();
         });
@@ -229,24 +253,77 @@ public final class LobbyManager extends JPanel implements Manager {
         Vector2 backpackBtnSize = new Vector2(iconSize, iconSize);
         String backpackImagePath = "/static/img/UI/lobbyScene/bagIcon.png";
         backpackBtn = UIBuilder.createImageBtn(component, backpackImagePath, backpackBtnSize, "Bag");
-        backpackBtn.setBounds(edge, rowY, iconSize, iconSize);
+        backpackBtn.setBounds((cellW - iconSize) / 2, rowY, iconSize, iconSize);
         backpackBtn.addActionListener(e -> SM.changeScene(SceneType.BAG));
         backpackBtn.setVisible(false); // 非表示
         this.add(backpackBtn);
 
-        // ステージ選択ボタン(ステージ選択画面に遷移)
-        int stageX = edge + (iconSize + iconGap) * 3;
-        Vector2 selectStageBtnSize = new Vector2(
-                MAIN.getWidth() - stageX - edge,
-                iconSize);
-        String selectStageImagePath = "/static/img/UI/lobbyScene/selectStage.png";
-        selectStageBtn = UIBuilder.createImageBtn(component, selectStageImagePath,
-                selectStageBtnSize, "SELECT STAGE");
-        selectStageBtn.setBounds(stageX, rowY, (int) selectStageBtnSize.getX(), iconSize);
+        // 大きなモードボタン(左: 無限モード=橙、右: ステージ=黄。ステージ選択画面に遷移)
+        int bigGap = (int) (8 * adj0);
+        int bigW = (MAIN.getWidth() - edge * 2 - bigGap) / 2;
+        int fontPx = (int) (20 * adj0);
+        infinityBtn = UIBuilder.createImageBtn(component,
+                ModeButtonImage.create(bigW, bigH, "無限モード", new Color(255, 170, 60), new Color(220, 70, 20),
+                        new Color(255, 220, 150), fontPx),
+                new Vector2(bigW, bigH), "INFINITY");
+        infinityBtn.setBounds(edge, bigY, bigW, bigH);
+        infinityBtn.addActionListener(e -> SM.changeScene(SceneType.INFINITYSTAGE));
+        infinityBtn.setVisible(false); // 非表示
+        this.add(infinityBtn);
+        UnlockService.guard(infinityBtn, Feature.INFINITY);
+
+        selectStageBtn = UIBuilder.createImageBtn(component,
+                ModeButtonImage.create(bigW, bigH, "ステージ", new Color(255, 235, 90), new Color(235, 150, 20),
+                        new Color(255, 250, 190), fontPx),
+                new Vector2(bigW, bigH), "SELECT STAGE");
+        selectStageBtn.setBounds(edge + bigW + bigGap, bigY, bigW, bigH);
         selectStageBtn
                 .addActionListener(e -> SM.changeScene(SceneType.SELECTSTAGE));
         selectStageBtn.setVisible(false); // 非表示
         this.add(selectStageBtn);
+
+        // 装備スロット(帯の上に4枚のカード。押すと、強化画面と同じパネルが開く)
+        int cardGap = (int) (6 * adj0);
+        int cardW = (int) (69 * adj0);
+        int cardH = (int) (63 * adj0);
+        int cardX0 = (MAIN.getWidth() - (cardW * 4 + cardGap * 3)) / 2; // 中央寄せ
+        int cardY = MAIN.getHeight() - (int) ((104 + 6) * adj0) - cardH;
+        LobbySceneUI.Slot[] slots = LobbySceneUI.Slot.values();
+        slotRects = new Rectangle[slots.length];
+        slotBtns = new JButton[slots.length];
+        for (LobbySceneUI.Slot s : slots) {
+            JButton b = new JButton();
+            b.setContentAreaFilled(false);
+            b.setBorderPainted(false);
+            b.setFocusPainted(false);
+            slotRects[s.ordinal()] = new Rectangle(cardX0 + (cardW + cardGap) * s.ordinal(), cardY, cardW, cardH);
+            b.setBounds(slotRects[s.ordinal()]);
+            slotBtns[s.ordinal()] = b;
+            this.add(b);
+        }
+        slotBtns[LobbySceneUI.Slot.UNIT.ordinal()].addActionListener(e -> unitPanel.showPanel());
+        slotBtns[LobbySceneUI.Slot.SUBSHIP.ordinal()].addActionListener(e -> subShipPanel.showPanel());
+        slotBtns[LobbySceneUI.Slot.DEFENSE.ordinal()].addActionListener(e -> defensePanel.showPanel());
+        slotBtns[LobbySceneUI.Slot.FIREPOWER.ordinal()].addActionListener(e -> firepowerPanel.showPanel());
+        UnlockService.guard(slotBtns[LobbySceneUI.Slot.SUBSHIP.ordinal()], Feature.SUBSHIP);
+        this.add(unitPanel);
+        this.add(subShipPanel);
+        this.add(modulePanel);
+        this.add(convertPanel);
+        this.add(defensePanel);
+        this.add(firepowerPanel);
+        unitPanel.initComponents();
+        subShipPanel.initComponents();
+        modulePanel.initComponents();
+        convertPanel.initComponents();
+        defensePanel.initComponents();
+        firepowerPanel.initComponents();
+
+        // 押す・乗せると拡大縮小する(下の列・右上・船の切り替え・選択/解放・色の切り替え)
+        for (JButton b : new JButton[] { upgradeBtn, shopBtn, gachaBtn, settingBtn, dexBtn, nextShipBtn,
+                prevShipBtn, unlockShipBtn, changeModeBtn, backpackBtn, infinityBtn, selectStageBtn,
+                moduleBtn, convertBtn })
+            ButtonAnimator.attachPop(b);
     }
 
     /**
@@ -284,7 +361,57 @@ public final class LobbyManager extends JPanel implements Manager {
                 ships,
                 viewingShipInd);
         lobbyUI.draw(g, uiData);
+        drawSlots(g);
         drawModeIndicator(g);
+        drawUnlockCost(g);
+    }
+
+    /**
+     * 未開放の船を見ているとき、解放ボタンの上に必要なコインを出す(足りなければ赤)
+     */
+    private void drawUnlockCost(Graphics g) {
+        if (unlockShipBtn == null || !unlockShipBtn.isVisible() || viewingShipInd < 0)
+            return;
+        var def = SHIP_M.getShipConfig().get(ShipKinds.PLAYER).get(ships[viewingShipInd]);
+        if (def == null || def.getDatas() == null)
+            return;
+        int cost = def.getDatas().getCost();
+        boolean enough = DataManager.isAdminMode() || CostService.coins() >= cost;
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+        g2.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, Math.max(10, (int) (13 * adj))));
+        int havePieces = PieceService.owned(ships[viewingShipInd]);
+        enough = enough && havePieces >= PieceService.UNLOCK_PIECES;
+        String text = PieceService.ownedText(ships[viewingShipInd]) + " / " + PieceService.UNLOCK_PIECES + " + "
+                + String.format("%,d", cost) + " コイン";
+        java.awt.FontMetrics fm = g2.getFontMetrics();
+        int icon = (int) (26 * adj), gap = (int) (6 * adj);
+        int left = unlockShipBtn.getX() + (unlockShipBtn.getWidth() - (icon + gap + fm.stringWidth(text))) / 2;
+        int baseY = unlockShipBtn.getY() - (int) (6 * adj);
+        // 弾やビームが後ろを通っても読めるよう、暗い板を敷く
+        int padX = (int) (8 * adj), padY = (int) (4 * adj);
+        int plateH = icon + padY * 2;
+        g2.setColor(new java.awt.Color(0, 8, 24, 215));
+        g2.fillRoundRect(left - padX, baseY - icon + (int) (4 * adj) - padY,
+                icon + gap + fm.stringWidth(text) + padX * 2, plateH, 12, 12);
+        ShipPieceIcon.draw(g2, ships[viewingShipInd], left, baseY - icon + (int) (4 * adj), icon);
+        g2.setColor(enough ? new java.awt.Color(255, 214, 80) : new java.awt.Color(255, 120, 120));
+        g2.drawString(text, left + icon + gap, baseY);
+        g2.dispose();
+    }
+
+    /**
+     * 装備スロットのカードの描画(マウスが乗っているか、未解放かをボタンから読む)
+     */
+    private void drawSlots(Graphics g) {
+        if (slotBtns == null)
+            return;
+        boolean[] hovered = new boolean[slotBtns.length];
+        boolean[] locked = new boolean[slotBtns.length];
+        for (int i = 0; i < slotBtns.length; i++)
+            hovered[i] = slotBtns[i].isEnabled() && slotBtns[i].getModel().isRollover();
+        locked[LobbySceneUI.Slot.SUBSHIP.ordinal()] = !UnlockService.isUnlocked(Feature.SUBSHIP);
+        lobbyUI.drawSlots(g, slotRects, hovered, locked);
     }
 
     /**
@@ -338,30 +465,30 @@ public final class LobbyManager extends JPanel implements Manager {
     public void updateBtnStates() {
         settingBtn.setVisible(true);
         shopBtn.setVisible(true);
+        gachaBtn.setVisible(true);
         dexBtn.setVisible(true);
         nextShipBtn.setVisible(true);
         prevShipBtn.setVisible(true);
         backpackBtn.setVisible(true);
+        infinityBtn.setVisible(true);
+        moduleBtn.setVisible(true);
+        convertBtn.setVisible(true);
         selectStageBtn.setVisible(true);
         changeModeBtn.setVisible(true);
 
-        selectShipBtn.setVisible(false);
-        upgradeBtn.setVisible(false);
+        upgradeBtn.setVisible(true); // 強化ボタンは、未開放の船でもグレーアウトで見せる
         unlockShipBtn.setVisible(false);
 
         // プレビュー中の船を所有しているかどうか
         boolean isOwned = DataManager.getUserData().getShips().containsKey(ships[viewingShipInd]);
-        // プレビュー中の船が選択されているかどうか
-        boolean isSelected = DataManager.getUserData().getSelectedShip().equals(ships[viewingShipInd]);
-        // 開放しているかどうか
+        // 開放している船は、見ている船がそのまま選択中になる(選択ボタンはない)
         if (isOwned) {
-            // 未選択なら選択ボタンを表示
-            if (!isSelected)
-                selectShipBtn.setVisible(true);
+            DataManager.getUserData().setSelectedShip(ships[viewingShipInd]);
 
-            upgradeBtn.setVisible(true); // 強化ボタンを表示
+            upgradeBtn.setEnabled(true);
         } else {
             unlockShipBtn.setVisible(true); // アンロックボタンを表示
+            upgradeBtn.setEnabled(false); // 未開放の船は強化できない(隠さず、グレーアウトする)
         }
     }
 }

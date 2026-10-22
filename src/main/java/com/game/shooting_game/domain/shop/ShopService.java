@@ -55,11 +55,11 @@ public final class ShopService {
                             n.path("name").asText(kind.name()),
                             n.path("description").asText("")));
                 } catch (IllegalArgumentException e) {
-                    LogUtils.systemLog("[WARN]", component, "不明な商品を無視します: " + n.path("kind").asText(""));
+                    LogUtils.warn(component, "不明な商品を無視します: " + n.path("kind").asText(""));
                 }
             }
         } catch (Exception e) {
-            LogUtils.systemLog("[WARN]", component, "ショップの設定を読めないため既定値を使います: " + e.getMessage());
+            LogUtils.warn(component, "ショップの設定を読めないため既定値を使います: " + e.getMessage());
             loaded.clear();
         }
         if (loaded.isEmpty())

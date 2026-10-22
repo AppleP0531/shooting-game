@@ -3,6 +3,7 @@ package com.game.shooting_game.upgradeScene.subPanels;
 import com.game.shooting_game.ui.UIStyle;
 import static com.game.shooting_game.ui.UIStyle.px;
 import com.game.shooting_game.domain.cost.CostService;
+import com.game.shooting_game.domain.gacha.PieceService;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -18,6 +19,7 @@ import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.domain.unit.UnitService;
 import com.game.shooting_game.ui.CostPanel;
+import com.game.shooting_game.ui.ShipPieceIcon;
 import com.game.shooting_game.ui.UIBuilder;
 
 /**
@@ -35,8 +37,9 @@ public class UnitPanel extends JPanel {
     private JTextArea starArea;
     private JTextArea statusArea;
     private JButton levelBtn;
-    private JButton buyBtn;
+    private CostPanel rankCostPanel; // ランクアップに必要な素材
     private JButton starBtn;
+    private String pieceText; // ランクアップに使うピースの「所持 / 必要」(ランク最大ならnull)
 
     private static String shipId() {
         return DataManager.getUserData().getSelectedShip();
@@ -61,7 +64,7 @@ public class UnitPanel extends JPanel {
         setVisible(false);
 
         int w = px(385);
-        int h = px(440);
+        int h = px(520);
         setBounds(ShootingGameMain.getInstance().getWidth() / 2 - w / 2,
                 ShootingGameMain.getInstance().getHeight() / 2 - h / 2, w, h);
         int pad = px(8);
@@ -90,20 +93,20 @@ public class UnitPanel extends JPanel {
         });
         y += px(44);
 
-        // ★
+        // ランク(レベルが最大になったら、ランクコアで上げる。上げるとレベルは1に戻る)
         starArea = area(12, false);
         starArea.setBounds(pad, y, innerW, px(52));
         add(starArea);
-        y += px(56);
+        y += px(54);
 
-        buyBtn = button("予備機を買う", pad, y, innerW / 2 - px(3), px(36));
-        starBtn = button("★を上げる", pad + innerW / 2 + px(3), y, innerW / 2 - px(3), px(36));
-        buyBtn.addActionListener(e -> {
-            if (UnitService.buyCopy(shipId()))
-                refresh();
-        });
+        rankCostPanel = new CostPanel(1);
+        rankCostPanel.setBounds(pad, y, innerW, rankCostPanel.maxHeight());
+        add(rankCostPanel);
+        y += rankCostPanel.maxHeight() + px(4);
+
+        starBtn = button("ランクアップ", pad, y, innerW, px(36));
         starBtn.addActionListener(e -> {
-            if (UnitService.starUp(shipId()))
+            if (UnitService.rankUp(shipId()))
                 refresh();
         });
         y += px(42);
@@ -123,13 +126,12 @@ public class UnitPanel extends JPanel {
     private void refresh() {
         String id = shipId();
         int lv = UnitService.getLevel(id);
-        int stars = UnitService.getStars(id);
-        int copies = UnitService.getCopies(id);
+        int rank = UnitService.getRank(id);
 
-        headerArea.setText(id + "\nLv " + lv + " / " + UnitService.MAX_LEVEL + "\n" + UnitService.starText(id));
+        headerArea.setText(id + "\nLv " + lv + " / " + UnitService.MAX_LEVEL + "\n" + UnitService.rankText(id));
 
         double baseHp = UnitService.baseHp(id);
-        statArea.setText("火力  " + pct(UnitService.attackRate(id)) + "   (Lvごとに+2%、★ごとに+5%)\n"
+        statArea.setText("火力  " + pct(UnitService.attackRate(id)) + "   (Lvごとに×1.06、ランクごとに×18)\n"
                 + "耐久  " + pct(UnitService.hpRate(id)) + "   基礎HP " + Math.round(baseHp) + " → "
                 + Math.round(baseHp * UnitService.hpRate(id)) + "\n(スキル強化とは別に、掛け算で効きます)");
 
@@ -139,26 +141,28 @@ public class UnitPanel extends JPanel {
         boolean canLv = !maxLv && CostService.canAfford(UnitService.levelCost(lv));
         levelBtn.setEnabled(canLv);
 
-        int price = UnitService.copyPrice(id);
-        starArea.setText("★ " + stars + " / " + UnitService.MAX_STARS + "   予備機: " + copies + "機\n"
-                + "同じ機体の予備機を1機使うと、★が1つ上がります。\n予備機の値段: " + price + " コイン");
-        int coins = CostService.coins();
-        boolean canBuy = stars + copies < UnitService.MAX_STARS && coins >= price;
-        buyBtn.setText("予備機を買う (" + price + ")");
-        buyBtn.setEnabled(canBuy);
-        starBtn.setEnabled(stars < UnitService.MAX_STARS && copies >= 1);
+        boolean maxRank = rank >= UnitService.MAX_RANK;
+        // ピースの数は、見出しの右端に、アイコンと並べて描く(paintComponent)
+        pieceText = maxRank ? null : PieceService.ownedText(id) + " / " + PieceService.rankUpPieces(rank);
+        starArea.setText("Rank " + rank + " / " + UnitService.MAX_RANK + "\nレベルが最大(" + UnitService.MAX_LEVEL
+                + ")になると、ランクコアとピースでランクを上げられます。\n上げるとレベルは1に戻りますが、火力と耐久が大きく上がります。");
+        rankCostPanel.setCost(maxRank || !maxLv ? null : UnitService.rankUpCost(rank));
+        starBtn.setText(maxRank ? "ランク最大" : "ランクアップ  Rank " + rank + " → Rank " + (rank + 1));
+        starBtn.setEnabled(UnitService.canRankUp(id));
 
         String msg;
-        if (maxLv && stars >= UnitService.MAX_STARS)
+        if (maxLv && maxRank)
             msg = "この機体は最大まで強化されています";
         else if (!maxLv && !canLv)
             msg = "レベルアップにはコインか強化素材が足りません";
-        else if (stars >= UnitService.MAX_STARS)
-            msg = "★は最大です";
-        else if (copies < 1)
-            msg = "★を上げるには予備機が必要です";
+        else if (!maxLv)
+            msg = "レベルアップができます(最大になるとランクアップできます)";
+        else if (maxRank)
+            msg = "ランクは最大です";
+        else if (!UnitService.canRankUp(id))
+            msg = "ランクアップにはランクコアが足りません(ボスなどが落とします)";
         else
-            msg = "レベルアップや★上げができます";
+            msg = "ランクアップができます";
         statusArea.setText(msg);
         repaint();
     }
@@ -183,6 +187,17 @@ public class UnitPanel extends JPanel {
         }
         g2.setColor(GOLD);
         g2.drawRoundRect(px(8), px(8), s, s, 10, 10);
+
+        // ランクアップに使うピース(見出しの右端に、アイコンと「所持 / 必要」を縦に並べる)
+        if (pieceText != null) {
+            int icon = px(44);
+            int right = getWidth() - px(16);
+            ShipPieceIcon.draw(g2, shipId(), right - icon, px(8), icon);
+            g2.setFont(g2.getFont().deriveFont(java.awt.Font.BOLD, (float) px(12)));
+            g2.setColor(Color.WHITE);
+            java.awt.FontMetrics fm = g2.getFontMetrics();
+            g2.drawString(pieceText, right - icon / 2 - fm.stringWidth(pieceText) / 2, px(8) + icon + px(14));
+        }
         g2.dispose();
     }
 

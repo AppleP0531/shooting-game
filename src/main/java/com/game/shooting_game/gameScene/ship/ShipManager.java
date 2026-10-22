@@ -25,6 +25,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
+import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
@@ -110,9 +112,14 @@ public final class ShipManager implements Manager {
         private int imageSize;
         private double collisionSize;
         private double hp;
+        private Double shieldRate; // 自機: 最大HPに対する基本のシールド量(なければ0.15)
+        private Double invincibleTime; // 自機: 被弾後の無敵時間(秒。なければ1)
+        private Double oocTime; // 自機: 暴走状態の長さ(秒。なければ10)
+        private Double attackRate; // 自機: 火力の基本の倍率(なければ1。機体のレベル・★の倍率に、さらにかける)
         private double speed;
         private double score;
         private String coins;
+        private Double hue; // 絵の色相を、この値(0〜1)にずらす(既存の絵から色違いの敵を作る。なければ元の色)
     }
 
     /**
@@ -173,15 +180,30 @@ public final class ShipManager implements Manager {
     /**
      * config読み込み
      */
+    // 追加の船の設定(ShipConfig.json に重ねて読む。敵やボスを増やすときは、本体を触らずここに足す)
+    private static final String[] EXTRA_CONFIGS = { "/static/configs/ShipConfig_Enemy2.json",
+            "/static/configs/ShipConfig_Boss2.json" };
+
+    private void mergeExtraConfig(ObjectMapper mapper, String path) {
+        try (InputStream is = getClass().getResourceAsStream(path)) {
+            if (is == null)
+                return; // 無ければ何もしない
+            Map<ShipKinds, Map<String, ShipDefinition>> extra = mapper.readValue(is, TYPE_REF);
+            for (Map.Entry<ShipKinds, Map<String, ShipDefinition>> e : extra.entrySet())
+                shipConfigMap.computeIfAbsent(e.getKey(), k -> new java.util.LinkedHashMap<>()).putAll(e.getValue());
+            LogUtils.debug(component, "Extra configuration merged: " + ANSI.YELLOW + path + ANSI.RESET);
+        } catch (IOException e) {
+            LogUtils.error(component, "Failed to load extra configuration " + path + ": " + e.getMessage());
+        }
+    }
+
     private void loadConfig() {
         final String CONFIG_PATH = "/static/configs/ShipConfig.json";
         ObjectMapper mapper = new ObjectMapper();
 
         try (InputStream is = getClass().getResourceAsStream(CONFIG_PATH)) {
             // ロード開始ログ
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
+            LogUtils.debug(component,
                     "Attempting to load configuration from " + ANSI.YELLOW + CONFIG_PATH + ANSI.RESET + ".");
 
             // nullチェック
@@ -191,16 +213,16 @@ public final class ShipManager implements Manager {
             // データを読み込む
             shipConfigMap = mapper.readValue(is, TYPE_REF);
 
+            // 追加の設定ファイル(敵・ボスを足したもの)を重ねる。あれば、同じ種類の中に同じIDで加わる
+            for (String extra : EXTRA_CONFIGS)
+                mergeExtraConfig(mapper, extra);
+
             // ロード成功ログ
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
+            LogUtils.debug(component,
                     "Configuration loaded successfully");
         } catch (IOException e) {
             // ロードエラーログ
-            LogUtils.error(
-                    "[FATAL]",
-                    component,
+            LogUtils.fatal(component,
                     "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + "." + ANSI.RESET + "\n"
                             +
                             ANSI.RED + "Application will terminate." + ANSI.RESET,
@@ -214,7 +236,8 @@ public final class ShipManager implements Manager {
     private void loadImages() {
         final String IMAGE_BASE_PATH = "/static/img/ship";
 
-        shipImageCache = new HashMap<>();
+        shipImageCache = new java.util.concurrent.ConcurrentHashMap<>();
+        java.util.List<Runnable> tasks = new java.util.ArrayList<>();
         // ShipKindsの階層でループ
         for (Map.Entry<ShipKinds, Map<String, ShipDefinition>> ownerEntry : shipConfigMap.entrySet()) {
             ShipKinds owner = ownerEntry.getKey();
@@ -227,15 +250,14 @@ public final class ShipManager implements Manager {
 
                 if (data == null) {
                     // 船データ未定義ログ
-                    LogUtils.systemLog(
-                            "[WARN]",
-                            component,
+                    LogUtils.warn(component,
                             "data for ship " + ANSI.YELLOW + owner + ANSI.RESET + " is not defined.");
                     continue;
                 }
 
                 // ColorModeごとに処理
                 for (ColorMode mode : ColorMode.values()) {
+                    tasks.add(() -> {
                     String imagePath = IMAGE_BASE_PATH + data.getImagePath();
                     try {
                         String suffix = "";
@@ -277,29 +299,33 @@ public final class ShipManager implements Manager {
                             }
                         }
 
+                        // 色違い: 色のついた部分の色相をずらす
+                        if (data.getHue() != null)
+                            for (int fi = 0; fi < frames.length; fi++)
+                                frames[fi] = UIBuilder.hueShift(frames[fi], data.getHue().floatValue());
+
                         // 画像をキャッシュに保存
                         shipImageCache.put(shipId + suffix, frames);
                     } catch (IOException e) {
                         switch (e.getMessage()) {
                             // 画像ファイル未発見ログ
-                            case "FILE_NOT_FOUND" -> LogUtils.systemLog(
-                                    "[WARN]",
-                                    component,
+                            case "FILE_NOT_FOUND" -> LogUtils.warn(component,
                                     "File not found: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
 
                             // 画像読み込みエラーログ
-                            case "BROKEN_FILE" -> LogUtils.systemLog(
-                                    "[ERROR]",
-                                    component,
+                            case "BROKEN_FILE" -> LogUtils.error(component,
                                     "Failed to load image: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
 
                             // その他エラーログ
                             default -> System.out.println(e);
                         }
                     }
+                });
                 }
             }
         }
+        // 画像の読み込みと色違いの計算は、船・色ごとに独立しているので、並列で行う(起動を速くする)
+        tasks.parallelStream().forEach(Runnable::run);
     }
 
     @Override
@@ -459,6 +485,13 @@ public final class ShipManager implements Manager {
                 if (s.getOwner() == ShipKinds.BOSS) {
                     BulletManager.getInstance().clearEnemyBullets();
                     BeamManager.getInstance().clearHostile();
+                    // 無限モードのコインボスを倒したら、引き継ぎを消して、特殊ドロップ(モジュール)を溜める
+                    if (com.game.shooting_game.gameScene.ship.types.Boss.isEndlessCoinBoss(s.getShipId())) {
+                        com.game.shooting_game.gameScene.stage.CoinBossMemory.defeated(
+                                com.game.shooting_game.gameScene.stage.StageManager.getInstance().getStage().getWaveId());
+                        LogUtils.notice(component, ANSI.YELLOW + "Coin boss defeated" + ANSI.RESET
+                                + ". A special module will be rewarded at the result.");
+                    }
                 }
             }
         }
@@ -540,6 +573,13 @@ public final class ShipManager implements Manager {
 
             dropResource(new Vector2(pos), DropModel.BOSS_BONUS);
         }
+
+        // ランクアップ素材(ランクコア)。ゲージを壊すたびに、ダメージ報酬の回数に応じて落とす
+        int cores = Math.max(1, rolls / 3);
+        for (int i = 0; i < cores; i++)
+            IM.addItem(ResourceFactory.createResource(
+                    new Vector2(boss.getPos().getX() + rnd.nextDouble(-50, 50) * adj, boss.getPos().getY()),
+                    new ResourceKinds(ResourceName.RANK_CORE, Rarity.COMMON)));
 
         // コインドロップ
         int coinAmount = boss.getDropCoinAmount();

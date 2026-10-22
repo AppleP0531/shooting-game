@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
+import com.game.shooting_game.gameScene.GameManager;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.gameScene.beam.BeamManager;
 import com.game.shooting_game.gameScene.beam.BeamSpec;
@@ -34,6 +35,14 @@ public class Stage implements GameObject {
     private Difficulty difficulty = Difficulty.NORMAL; // 選んだ難易度(ステージを選び直すとNORMALに戻る)
     @Getter
     private int waveId;
+    @Getter
+    @Setter
+    private int startWave = 1; // 無限モードの開始ウェーブ(スキルで高くできる)
+    private int skipTarget = 1; // 無限モードで、実際に戦い始めるウェーブ(それまでは高速で飛ばす)
+    private double skipAccum; // 飛ばしの経過時間
+    private static final double SKIP_STEP = 0.03; // 1ウェーブ飛ばすのにかける時間(秒)の上限
+    private double skipStep = SKIP_STEP; // 実際の1ウェーブあたりの時間(飛ぶ数が多いほど短く、全体で数秒に収める)
+    private final WarpEffect warp = new WarpEffect(); // 飛んでいる間の演出
     private final ShootingGameMain MAIN;
     private final SceneManager SM;
     private final ShipManager SHIP_M;
@@ -60,11 +69,55 @@ public class Stage implements GameObject {
      * リセット
      */
     public void reset() {
+        // 無限モードは、最初のウェーブから始め、スキルで決まるウェーブまでは道中を高速で飛ばす
         waveId = 0;
+        skipAccum = 0;
+        skipTarget = stageId == EndlessWaves.STAGE_ID ? Math.max(1, startWave) : 1;
+        skipStep = WarpEffect.stepSeconds(skipTarget - 1, SKIP_STEP);
+    }
+
+    /**
+     * 道中を飛ばしている最中か
+     */
+    public boolean isSkipping() {
+        return stageId == EndlessWaves.STAGE_ID && waveId < skipTarget - 1;
+    }
+
+    /**
+     * 飛ばしたウェーブの敵を、すべて倒した扱いにする(スコアと、倒したときに落とすはずのコインが入る。アイテムと素材のドロップはなし)
+     */
+    private void creditSkippedWave(int wave) {
+        GameManager gm = GameManager.getInstance();
+        for (EnemyConfig e : EndlessWaves.generate(wave).enemies()) {
+            try {
+                var def = SHIP_M.getShipConfig().get(e.getOwner()).get(e.getEnemyId());
+                if (def == null || def.getDatas() == null)
+                    continue;
+                gm.addScore(def.getDatas().getScore());
+                // コインは、落ちて拾った場合と同じ量(1枚100)を、そのまま加える(飛ばす数が多いので、画面には落とさない)
+                int coins = Ship.rollCoinAmount(def.getDatas().getCoins()) * (e.getLevel() + 1);
+                if (coins > 0)
+                    gm.addCoin(100 * coins);
+            } catch (Exception ex) {
+                // 未定義の敵は数えない
+            }
+        }
     }
 
     @Override
     public void update(double dt) {
+        // 敵のいない間に、決まったウェーブまで高速で飛ばす
+        if (isSkipping()) {
+            if (SHIP_M.getEnemyList().isEmpty() && SHIP_M.getBossList().isEmpty()) {
+                skipAccum += dt;
+                while (skipAccum >= skipStep && isSkipping()) {
+                    skipAccum -= skipStep;
+                    waveId++;
+                    creditSkippedWave(waveId);
+                }
+                return;
+            }
+        }
         // 敵とボスがいなくなった時敵を更新、テストステージでない場合はウェーブを進める
         if (SHIP_M.getEnemyList().isEmpty() && SHIP_M.getBossList().isEmpty()) {
             if (SM.getSceneName() != SceneType.TEST)
@@ -76,7 +129,8 @@ public class Stage implements GameObject {
 
     @Override
     public void draw(Graphics g) {
-
+        // 飛んでいる間は光の筋とウェーブの数字、終わった瞬間は閃光を出す(WarpEffect)
+        warp.draw(g, MAIN.getWidth(), MAIN.getHeight(), isSkipping(), waveId, skipTarget);
     }
 
     /**
@@ -151,13 +205,13 @@ public class Stage implements GameObject {
             EndlessWaves.Wave wave = EndlessWaves.generate(id);
             BeamManager.getInstance().setGimmicks(wave.gimmicks());
             BeamManager.getInstance().setBlocks(wave.blocks());
-            LogUtils.systemLog("[INFO]", component,
+            LogUtils.info(component,
                     "The current wave is " + ANSI.YELLOW + "endless wave" + id + ANSI.RESET);
             for (EnemyConfig enemy : wave.enemies()) {
                 try {
                     SHIP_M.addShip(createShip(enemy));
                 } catch (Exception e) {
-                    LogUtils.systemLog("[ERROR]", component, "Failed to spawn enemy '" + enemy.getEnemyId() + "'.");
+                    LogUtils.error(component, "Failed to spawn enemy '" + enemy.getEnemyId() + "'.");
                 }
             }
             return;
@@ -176,18 +230,14 @@ public class Stage implements GameObject {
                 BeamManager.getInstance().setBlocks(blocks == null ? null : blocks.get("wave" + id));
 
                 // 現在ウェーブログ
-                LogUtils.systemLog(
-                        "[INFO]",
-                        component,
+                LogUtils.info(component,
                         "The current wave is " + ANSI.YELLOW + "wave" + id + ANSI.RESET);
 
                 for (EnemyConfig enemy : waveData) {
                     try {
                         SHIP_M.addShip(createShip(enemy));
                     } catch (Exception e) {
-                        LogUtils.systemLog(
-                                "[ERROR]",
-                                component,
+                        LogUtils.error(component,
                                 "Failed to spawn enemy '" + enemy.getEnemyId() + "''. \n" + "Skipping.");
                     }
                 }

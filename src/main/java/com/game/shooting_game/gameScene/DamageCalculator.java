@@ -75,7 +75,7 @@ public final class DamageCalculator {
     public static double bulletToEnemy(Bullet bullet, Ship target) {
         // 実数値の攻撃力(モジュール)は倍率のあとに足す
         double attack = GameUtils.attackDamage(bullet.getDamage(), bulletAttackRate(), ModuleService.stat(ModuleStat.ATK_FLAT));
-        return GameUtils.damageToEnemy(attack, colorRate(bullet.getMode(), target), StageModifiers.enemyHpRate()); // 敵が硬い条件はダメージを割って表す
+        return GameUtils.damageToEnemy(attack, colorRate(bullet.getMode(), target));
     }
 
     /**
@@ -88,8 +88,7 @@ public final class DamageCalculator {
      * @param target      当たった敵
      */
     public static double beamToEnemy(double dps, double tick, ColorMode mode, double bossRate, Ship target) {
-        double damage = GameUtils.damageToEnemy(dps * tick * beamAttackRate(), colorRate(mode, target),
-                StageModifiers.enemyHpRate());
+        double damage = GameUtils.damageToEnemy(dps * tick * beamAttackRate(), colorRate(mode, target));
         if (target.isColorless())
             damage *= bossRate;
         return damage;
@@ -118,6 +117,7 @@ public final class DamageCalculator {
 
     /**
      * 自機の攻撃を敵に当てる(会心を抽選し、当たればダメージを増やして会心表示にする)
+     * ダメージに上限は設けない。大きさは火力の伸び(BalanceConfig.json)で調整する。
      */
     public static void hitEnemy(Ship target, double damage) {
         if (Math.random() < critRate())

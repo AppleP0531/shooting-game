@@ -31,6 +31,7 @@ import com.game.shooting_game.domain.unit.UnitService;
 import com.game.shooting_game.domain.subship.SubShipService;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.ui.Anchor;
+import com.game.shooting_game.utils.GameSettings;
 import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.ui.UIBuilder;
@@ -47,14 +48,18 @@ public class Player extends Ship implements KeyListener {
     private Vector2 dragMousePos; // ドラッグ中のマウス位置
     @Getter
     private boolean up = false, down = false, left = false, right = false; // キー入力
+    private boolean shiftDown = false; // Shiftを押している間は低速で動く(速度の割合は GameSettings)
     private String lastHorizontal = ""; // 最後に押された左右
     private String lastVertical = ""; // 最後に押された上下
     private List<SubShip> subShip = new ArrayList<>();
+    private static final double HITBOX_RADIUS = 4; // 弾の当たり判定の半径(白いドット)の初期値
+    private static final double HITBOX_RADIUS_MIN = 2; // 「小型化」を最大まで強化したときの半径
+    private static final double GLOW_RADIUS = 12; // ドットの後ろの、モードの色のぼかしの半径
+    private double pickupSize; // アイテムを拾う範囲の半径(機体ごとの元の判定の大きさ)
     private double OOCTime = 10; // 暴走状態持続時間
     @Setter
     @Getter
     private double OOCTimer; // 暴走状態タイマー
-    private static final double BASE_SHIELD_RATE = 0.15; // 最大HPに対する基本のシールド量
     private static final double SHIELD_REGEN_DELAY = 3.0; // 被弾してから回復が始まるまで(秒)
     private static final double SHIELD_REGEN_RATE = 0.08; // 1秒あたりに回復するシールド量(最大値に対する割合)
     private double shieldPoints; // 今のシールド量
@@ -141,14 +146,18 @@ public class Player extends Ship implements KeyListener {
         maxHp *= StageModifiers.playerHpRate(); // ステージ条件
         hp = maxHp;
         // シールド(HPの前にダメージを受け、被弾から少し経つと回復する。モジュールで増やせる)
-        maxShield = maxHp * BASE_SHIELD_RATE * (1 + ModuleService.stat(ModuleStat.SHIELD_PCT))
+        maxShield = maxHp * UnitService.baseShieldRate(shipId) * (1 + ModuleService.stat(ModuleStat.SHIELD_PCT))
                 + ModuleService.stat(ModuleStat.SHIELD_FLAT);
         if (StageModifiers.noShield())
             maxShield = 0;
         shieldPoints = maxShield;
         speed *= 1 + SkillService.getBonus("MOVE_SPEED");
-        collisionSize *= 1 - Math.min(0.15, SkillService.getBonus("HITBOX"));
-        OOCTime = 10 + SkillService.getBonus("OOC_TIME");
+        // 弾の当たり判定は、中心の白いドットだけ(半径4px、強化で2px)。アイテムを拾う範囲は、これまでの判定の大きさのまま
+        pickupSize = collisionSize;
+        // 「小型化」(最大-15%)を最大まで強化すると、半径が初期値(4px)から最小(2px)まで小さくなる
+        double shrink = Math.min(1.0, SkillService.getBonus("HITBOX") / 0.15);
+        collisionSize = (HITBOX_RADIUS - (HITBOX_RADIUS - HITBOX_RADIUS_MIN) * shrink) * ShootingGameMain.getScreenSizeAdj();
+        OOCTime = UnitService.baseOocTime(shipId) + SkillService.getBonus("OOC_TIME");
 
         mouseHandler = new MouseAdapter() {
             @Override
@@ -171,9 +180,7 @@ public class Player extends Ship implements KeyListener {
         mode = ColorMode.BLUE;
 
         // 船タイプログ
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
+        LogUtils.info(component,
                 "Current shipId set to " + ANSI.YELLOW + shipId + "." + ANSI.RESET);
 
         // サブ機の生成(必須パーツが揃っていて、装備中のときだけ両端に付く)
@@ -201,7 +208,9 @@ public class Player extends Ship implements KeyListener {
 
                 // 船がレベル5の時は暴走モードにする
                 if (shipLevel >= 5) {
-                    OOCTimer = Math.max(0, OOCTimer - dt);
+                    // ボスが形態変化(ゲージ破壊後の移行)している間は、暴走のカウントを止める
+                    if (!SHIP_M.getBossList().stream().anyMatch(b -> b instanceof Boss boss && boss.isTransitioning()))
+                        OOCTimer = Math.max(0, OOCTimer - dt);
                     shipState = "OOC";
 
                     if (OOCTimer <= 0)
@@ -307,6 +316,10 @@ public class Player extends Ship implements KeyListener {
             }
         }
 
+        // 当たり判定の白いドットと、後ろのモードの色(赤・青)のぼかし
+        if (SM.getSceneName() != SceneType.LOBBY)
+            drawHitDot(g2);
+
         switch (animationName) {
             case "death" -> {
                 GM.result();
@@ -314,6 +327,34 @@ public class Player extends Ship implements KeyListener {
         }
 
         subShip.forEach(s -> s.draw(g));
+    }
+
+    /**
+     * 当たり判定の白いドット(半径2px)。後ろに、今のモードの色のぼかしを置いて、モードを見分けやすくする
+     */
+    private void drawHitDot(Graphics2D g2) {
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        float glow = (float) (GLOW_RADIUS * adj);
+        Color c = mode == ColorMode.RED ? new Color(255, 70, 70) : new Color(70, 140, 255);
+        java.awt.Paint oldPaint = g2.getPaint();
+        g2.setPaint(new java.awt.RadialGradientPaint((float) pos.getX(), (float) pos.getY(), glow,
+                new float[] { 0f, 0.45f, 1f },
+                new Color[] { new Color(c.getRed(), c.getGreen(), c.getBlue(), 200),
+                        new Color(c.getRed(), c.getGreen(), c.getBlue(), 90),
+                        new Color(c.getRed(), c.getGreen(), c.getBlue(), 0) }));
+        g2.fill(new java.awt.geom.Ellipse2D.Double(pos.getX() - glow, pos.getY() - glow, glow * 2, glow * 2));
+        g2.setPaint(oldPaint);
+
+        double r = Math.max(2, collisionSize); // 見た目も、実際の判定の大きさに合わせる
+        g2.setColor(Color.WHITE);
+        g2.fill(new java.awt.geom.Ellipse2D.Double(pos.getX() - r, pos.getY() - r, r * 2, r * 2));
+    }
+
+    /**
+     * アイテムを拾う範囲の半径
+     */
+    public double getPickupSize() {
+        return pickupSize;
     }
 
     @Override
@@ -338,7 +379,7 @@ public class Player extends Ship implements KeyListener {
                 // キーが何かしら押されてるときに移動
                 if (up || down || left || right) {
                     vec = GameUtils.targetVec(new Vector2(0, 0), direction);
-                    super.move(dt);
+                    moveMaybeSlow(dt);
                 }
 
                 // マウス移動処理
@@ -350,7 +391,7 @@ public class Player extends Ship implements KeyListener {
                     // 目標地点との距離が近いときは止まる（ガタつき防止）
                     if (distSq > Math.pow(5 * ShootingGameMain.getScreenSizeAdj(), 2)) {
                         vec = GameUtils.targetVec(pos, targetPos);
-                        super.move(dt);
+                        moveMaybeSlow(dt);
                     }
 
                 }
@@ -374,6 +415,20 @@ public class Player extends Ship implements KeyListener {
         }
 
         subShip.forEach(s -> s.move(dt));
+    }
+
+    /**
+     * 1フレーム分動く(Shiftを押している間は、設定の割合まで速度を下げる)
+     */
+    private void moveMaybeSlow(double dt) {
+        if (!shiftDown) {
+            super.move(dt);
+            return;
+        }
+        double base = speed;
+        speed = base * GameSettings.getSlowPercent() / 100.0;
+        super.move(dt);
+        speed = base;
     }
 
     public double getShieldPoints() {
@@ -471,6 +526,7 @@ public class Player extends Ship implements KeyListener {
                 right = true;
                 lastHorizontal = "right";
             }
+            case KeyEvent.VK_SHIFT -> shiftDown = true;
             case KeyEvent.VK_SPACE -> {
                 changeMode();
             }
@@ -507,6 +563,7 @@ public class Player extends Ship implements KeyListener {
                 if (left)
                     lastHorizontal = "left";
             }
+            case KeyEvent.VK_SHIFT -> shiftDown = false;
         }
     }
 
@@ -525,7 +582,7 @@ public class Player extends Ship implements KeyListener {
             GM.addHit();
             if (rest > 0)
                 super.addDamage(rest);
-            shieldTimer = damagedTimer = 1 + SkillService.getBonus("INVINCIBLE");
+            shieldTimer = damagedTimer = UnitService.baseInvincibleTime(shipId) + SkillService.getBonus("INVINCIBLE");
         }
     }
 
