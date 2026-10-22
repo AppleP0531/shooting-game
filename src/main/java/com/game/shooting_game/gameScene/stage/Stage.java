@@ -40,7 +40,9 @@ public class Stage implements GameObject {
     private int startWave = 1; // 無限モードの開始ウェーブ(スキルで高くできる)
     private int skipTarget = 1; // 無限モードで、実際に戦い始めるウェーブ(それまでは高速で飛ばす)
     private double skipAccum; // 飛ばしの経過時間
-    private static final double SKIP_STEP = 0.03; // 1ウェーブ飛ばすのにかける時間(秒)
+    private static final double SKIP_STEP = 0.03; // 1ウェーブ飛ばすのにかける時間(秒)の上限
+    private double skipStep = SKIP_STEP; // 実際の1ウェーブあたりの時間(飛ぶ数が多いほど短く、全体で数秒に収める)
+    private final WarpEffect warp = new WarpEffect(); // 飛んでいる間の演出
     private final ShootingGameMain MAIN;
     private final SceneManager SM;
     private final ShipManager SHIP_M;
@@ -71,6 +73,7 @@ public class Stage implements GameObject {
         waveId = 0;
         skipAccum = 0;
         skipTarget = stageId == EndlessWaves.STAGE_ID ? Math.max(1, startWave) : 1;
+        skipStep = WarpEffect.stepSeconds(skipTarget - 1, SKIP_STEP);
     }
 
     /**
@@ -103,8 +106,8 @@ public class Stage implements GameObject {
         if (isSkipping()) {
             if (SHIP_M.getEnemyList().isEmpty() && SHIP_M.getBossList().isEmpty()) {
                 skipAccum += dt;
-                while (skipAccum >= SKIP_STEP && isSkipping()) {
-                    skipAccum -= SKIP_STEP;
+                while (skipAccum >= skipStep && isSkipping()) {
+                    skipAccum -= skipStep;
                     waveId++;
                     creditSkippedWave(waveId);
                 }
@@ -122,13 +125,8 @@ public class Stage implements GameObject {
 
     @Override
     public void draw(Graphics g) {
-        if (!isSkipping())
-            return;
-        double adj = ShootingGameMain.getScreenSizeAdj();
-        g.setColor(java.awt.Color.WHITE);
-        g.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, Math.max(14, (int) (22 * adj))));
-        String s = "WAVE SKIP  " + waveId + " / " + (skipTarget - 1);
-        g.drawString(s, MAIN.getWidth() / 2 - g.getFontMetrics().stringWidth(s) / 2, (int) (MAIN.getHeight() * 0.4));
+        // 飛んでいる間は光の筋とウェーブの数字、終わった瞬間は閃光を出す(WarpEffect)
+        warp.draw(g, MAIN.getWidth(), MAIN.getHeight(), isSkipping(), waveId, skipTarget);
     }
 
     /**
