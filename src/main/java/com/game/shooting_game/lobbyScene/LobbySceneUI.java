@@ -17,6 +17,7 @@ import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.domain.subship.SubShipRenderer;
 import com.game.shooting_game.domain.subship.SubShipService;
 import com.game.shooting_game.domain.unit.UnitService;
+import com.game.shooting_game.gameScene.DamageCalculator;
 import com.game.shooting_game.gameScene.GameManager;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.beam.BeamManager;
@@ -314,6 +315,7 @@ public class LobbySceneUI {
     // ----- 機体の能力(左のバー) -----
 
     private static final double DEFAULT_BULLET_DAMAGE = 5; // 弾の設定が読めないときの値
+    private static final double STAT_BASE = 100; // 能力の基準の値(これがバーの基準の長さ)
     private static final double OVERFLOW_PER_DECADE = 0.2; // 基準を10倍超えるごとに、バーを基準の長さの何割伸ばすか
 
     /**
@@ -361,21 +363,22 @@ public class LobbySceneUI {
                 * (1 + ModuleService.stat(ModuleStat.ATK_PCT));
         // 火力は倍率ではなく、基本の弾1発のダメージ(倍率をかけ、実数値の攻撃力を足した値)
         double power = GameUtils.attackDamage(basicBulletDamage(), atk, ModuleService.stat(ModuleStat.ATK_FLAT));
-        double def = ModuleService.stat(ModuleStat.DEF_PCT);
-        double invincible = UnitService.baseInvincibleTime(shipId) + SkillService.getBonusFor(shipId, "INVINCIBLE");
-        double rampage = UnitService.baseOocTime(shipId) + SkillService.getBonusFor(shipId, "OOC_TIME");
+        // 会心(閲覧中の機体のスキルで計算する。表示は%。DamageCalculator.critRate / critMult と同じ式)
+        double critRate = Math.clamp(DamageCalculator.BASE_CRIT_RATE + SkillService.getBonusFor(shipId, "CRIT_RATE")
+                + ModuleService.stat(ModuleStat.CRIT_RATE), 0.0, 1.0) * 100;
+        double critDmg = (DamageCalculator.BASE_CRIT_MULT + SkillService.getBonusFor(shipId, "CRIT_DMG")
+                + ModuleService.stat(ModuleStat.CRIT_DMG)) * 100;
         Object[][] rows = {
-                { "火力", String.valueOf(Math.round(power)), power / (basicBulletDamage() * 4) },
-                { "装甲", String.valueOf(Math.round(hp)), hp / (baseHp * 5) },
-                { "盾", String.valueOf(Math.round(shield)), shield / (hp * 0.5) },
-                { "防御", String.format("-%.0f%%", def * 100), def / 0.5 },
-                { "無敵", String.format("%.1f秒", invincible), invincible / 5 },
-                { "暴走", String.format("%.0f秒", rampage), rampage / 30 },
+                { "火力", String.valueOf(Math.round(power)), power / STAT_BASE },
+                { "装甲", String.valueOf(Math.round(hp)), hp / STAT_BASE },
+                { "盾", String.valueOf(Math.round(shield)), shield / STAT_BASE },
+                { "会心率", String.format("%.1f%%", critRate), critRate / STAT_BASE },
+                { "会心威力", String.format("%.0f%%", critDmg), critDmg / STAT_BASE },
         };
 
         int x = (int) (10 * adj);
         int y = (int) (58 * ShootingGameMain.getScreenSizeAdj()); // 上の帯(44)の下
-        int labelW = (int) (34 * adj), valueW = (int) (54 * adj);
+        int labelW = (int) (48 * adj), valueW = (int) (54 * adj);
         int barW = (int) (96 * adj), barH = (int) (7 * adj);
         int line = (int) (20 * adj);
         Font label = new Font("SansSerif", Font.PLAIN, Math.max(7, (int) (11 * adj)));
@@ -393,8 +396,8 @@ public class LobbySceneUI {
             g2.drawString((String) rows[i][1], x + labelW, ry + (int) (9 * adj));
             // バー(灰色の下地は敷かず、中身だけ)
             double raw = (double) rows[i][2];
-            // 火力だけは、基準(長さ1)を超えた分を、対数で右へ伸ばす(他の項目は基準で止める)
-            double ratio = i == 0 ? barRatio(raw) : Math.clamp(raw, 0.0, 1.0);
+            // すべての項目で、基準(値が100=長さ1)を超えた分を、対数で右へ伸ばす
+            double ratio = barRatio(raw);
             int bx = x + labelW + valueW, by = ry + (int) (3 * adj);
             int len = (int) Math.min(barW * ratio, getBarLimit(bx));
             g2.setColor(new Color(255, 205, 40));
