@@ -170,13 +170,37 @@ public final class DifficultyService {
 
     /**
      * 獲得した★の合計(全ステージ・全難易度。★の累計報酬に使う)
-     * ミッションの記録キー(mission:...)の数がそのまま★の数になる(ハードで達成したものを、下の難易度でも達成済みとして見せるのは表示だけで、合計には重ねて数えない)。
+     * ステージ・難易度・ミッションの組み合わせごとに1つ数える。高い難易度で達成したものは、それ以下の難易度でも1つずつ数える。
      */
     public static int totalStars() {
         Map<String, Integer> s = store();
         if (s == null)
             return 0;
-        return (int) s.keySet().stream().filter(k -> k.startsWith("mission:")).count();
+        return countStars(s.keySet());
+    }
+
+    /**
+     * 記録のキーから★の数を数える(状態を読まない純粋な計算)。
+     * キーは mission:stage<番号>:<ミッション番号>(ハード)か mission:stage<番号>:<難易度>:<ミッション番号>。
+     * 難易度 d で達成したものは、イージーから d までのそれぞれで1つとして数える(重ねては数えない)。
+     */
+    static int countStars(java.util.Collection<String> keys) {
+        java.util.Set<String> counted = new java.util.HashSet<>();
+        for (String k : keys) {
+            if (!k.startsWith("mission:"))
+                continue;
+            String[] p = k.split(":");
+            try {
+                Difficulty diff = p.length >= 4 ? Difficulty.valueOf(p[2]) : Difficulty.HARD;
+                String idx = p[p.length - 1];
+                for (Difficulty d : Difficulty.values())
+                    if (d.ordinal() <= diff.ordinal())
+                        counted.add(p[1] + ":" + d.name() + ":" + idx);
+            } catch (IllegalArgumentException e) {
+                counted.add(k); // 読めないキーは、そのまま1つと数える
+            }
+        }
+        return counted.size();
     }
 
     /** HARD のミッションをすべて達成したか(NIGHTMARE の解放条件) */
