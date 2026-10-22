@@ -18,7 +18,7 @@ import com.game.shooting_game.gameScene.stage.StageManager.StageData;
  */
 public final class DifficultyService {
     /** 難易度を選べるステージの番号の上限(これ未満が通常ステージ) */
-    private static final int NORMAL_STAGE_LIMIT = 100;
+    private static final int NORMAL_STAGE_LIMIT = 1000; // これ未満が通常ステージ(1〜200。エクストラは1000以上)
     private static final double BOSS_TIME_LIMIT = 150; // ボスチャレンジの時間制限(秒)
 
     /** ミッション1つ(表示文と、達成したか) */
