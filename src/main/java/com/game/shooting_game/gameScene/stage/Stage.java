@@ -203,13 +203,13 @@ public class Stage implements GameObject {
             EndlessWaves.Wave wave = EndlessWaves.generate(id);
             BeamManager.getInstance().setGimmicks(wave.gimmicks());
             BeamManager.getInstance().setBlocks(wave.blocks());
-            LogUtils.systemLog("[INFO]", component,
+            LogUtils.info(component,
                     "The current wave is " + ANSI.YELLOW + "endless wave" + id + ANSI.RESET);
             for (EnemyConfig enemy : wave.enemies()) {
                 try {
                     SHIP_M.addShip(createShip(enemy));
                 } catch (Exception e) {
-                    LogUtils.systemLog("[ERROR]", component, "Failed to spawn enemy '" + enemy.getEnemyId() + "'.");
+                    LogUtils.error(component, "Failed to spawn enemy '" + enemy.getEnemyId() + "'.");
                 }
             }
             return;
@@ -228,18 +228,14 @@ public class Stage implements GameObject {
                 BeamManager.getInstance().setBlocks(blocks == null ? null : blocks.get("wave" + id));
 
                 // 現在ウェーブログ
-                LogUtils.systemLog(
-                        "[INFO]",
-                        component,
+                LogUtils.info(component,
                         "The current wave is " + ANSI.YELLOW + "wave" + id + ANSI.RESET);
 
                 for (EnemyConfig enemy : waveData) {
                     try {
                         SHIP_M.addShip(createShip(enemy));
                     } catch (Exception e) {
-                        LogUtils.systemLog(
-                                "[ERROR]",
-                                component,
+                        LogUtils.error(component,
                                 "Failed to spawn enemy '" + enemy.getEnemyId() + "''. \n" + "Skipping.");
                     }
                 }

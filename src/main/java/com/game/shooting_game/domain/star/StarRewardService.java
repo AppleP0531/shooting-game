@@ -62,7 +62,7 @@ public final class StarRewardService {
             for (JsonNode t : root.path("tiers"))
                 loaded.add(parseTier(t));
         } catch (Exception e) {
-            LogUtils.systemLog("[WARN]", component, "★報酬の設定を読めないため既定値を使います: " + e.getMessage());
+            LogUtils.warn(component, "★報酬の設定を読めないため既定値を使います: " + e.getMessage());
             loadedInterval = DEFAULT_INTERVAL;
             loaded.clear();
         }

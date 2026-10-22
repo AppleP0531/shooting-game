@@ -75,9 +75,7 @@ public class LoginPanel extends JPanel {
 
             if (state.equals("Login")) {
                 if (userService.authenticate(username, password)) {
-                    LogUtils.systemLog(
-                            "[INFO]",
-                            component,
+                    LogUtils.info(component,
                             ANSI.GREEN + "Login successful." + ANSI.RESET);
                     DataManager.load(username, "login");
 
@@ -99,9 +97,7 @@ public class LoginPanel extends JPanel {
                 }
 
                 if (userService.registerUser(username, password)) {
-                    LogUtils.systemLog(
-                            "[INFO]",
-                            component,
+                    LogUtils.info(component,
                             ANSI.GREEN + "Login successful." + ANSI.RESET);
                     DataManager.load(username, "create");
 

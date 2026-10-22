@@ -181,9 +181,7 @@ public class Player extends Ship implements KeyListener {
         mode = ColorMode.BLUE;
 
         // 船タイプログ
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
+        LogUtils.info(component,
                 "Current shipId set to " + ANSI.YELLOW + shipId + "." + ANSI.RESET);
 
         // サブ機の生成(必須パーツが揃っていて、装備中のときだけ両端に付く)

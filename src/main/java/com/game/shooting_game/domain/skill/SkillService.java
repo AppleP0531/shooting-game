@@ -56,7 +56,7 @@ public final class SkillService {
                 for (SkillTreeData d : config)
                     byName.put(d.getName(), d);
             } catch (IOException e) {
-                LogUtils.error("[ERROR]", component,
+                LogUtils.error(component,
                         "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + ANSI.RESET, e);
             }
         }
@@ -224,7 +224,7 @@ public final class SkillService {
         st.setResearchFinishAt(0);
         invalidate();
 
-        LogUtils.systemLog("[INFO]", component,
+        LogUtils.info(component,
                 ANSI.YELLOW + name + ANSI.RESET + " research completed. Lv" + st.getUpgrades().get(name) + ".");
         return true;
     }
@@ -299,7 +299,7 @@ public final class SkillService {
         st.setResearchSkill(name);
         st.setResearchFinishAt(System.currentTimeMillis() + sec * 1000);
 
-        LogUtils.systemLog("[INFO]", component,
+        LogUtils.info(component,
                 ANSI.YELLOW + name + ANSI.RESET + " research started (" + formatTime(sec) + ").");
         return true;
     }

@@ -222,9 +222,7 @@ public final class GameManager extends JPanel implements Manager {
     public void setup() {
         setupDone = false;
         resumeTimer = leaveTimer = -1;
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
+        LogUtils.info(component,
                 ANSI.YELLOW + "Stage " + STAGE_M.getStageId() + ANSI.RESET + " loaded.");
 
         // ステージ条件の読み込み(敵が硬い・回復なし など。プレイヤーの生成より前に行う)
@@ -414,9 +412,7 @@ public final class GameManager extends JPanel implements Manager {
         boolean isClear = endless || getGameResult();
 
         // 結果ログ
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
+        LogUtils.info(component,
                 ANSI.YELLOW + (isClear ? "Game Clear" : "Game Over") + ANSI.RESET);
 
         if (isClear) {
@@ -428,9 +424,7 @@ public final class GameManager extends JPanel implements Manager {
                 data.getProgress().setClearedStage(STAGE_M.getStageId());
 
                 // クリア進捗更新ログ
-                LogUtils.systemLog(
-                        "[INFO]",
-                        component,
+                LogUtils.info(component,
                         "Progress reached " + ANSI.YELLOW + "Stage" + STAGE_M.getStageId() + ANSI.RESET + ".");
             }
 
@@ -530,7 +524,7 @@ public final class GameManager extends JPanel implements Manager {
                         StageRewards.getInstance().getModules().add(ModuleService
                                 .addNew(kind, bumpRarity(Rarity.valueOf(r.getRarity()), diff.getRarityBump())));
                     } catch (IllegalArgumentException e) {
-                        LogUtils.systemLog("[WARN]", component, "Invalid module reward: " + r);
+                        LogUtils.warn(component, "Invalid module reward: " + r);
                     }
                 }
                 // 1日1回の報酬を受け取ったことを記録する

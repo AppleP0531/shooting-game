@@ -113,15 +113,11 @@ public class UIBuilder extends JPanel {
         } catch (IOException e) {
             switch (e.getMessage()) {
                 // 画像ファイル未発見ログ
-                case "FILE_NOT_FOUND" -> LogUtils.systemLog(
-                        "[WARN]",
-                        component,
+                case "FILE_NOT_FOUND" -> LogUtils.warn(component,
                         "File not found: " + ANSI.YELLOW + path + ANSI.RESET + ".");
 
                 // 画像読み込みエラーログ
-                case "BROKEN_FILE" -> LogUtils.systemLog(
-                        "[ERROR]",
-                        component,
+                case "BROKEN_FILE" -> LogUtils.error(component,
                         "Failed to load image: " + ANSI.YELLOW + path + ANSI.RESET + ".");
                 default -> System.out.println(e);
             }
@@ -317,9 +313,7 @@ public class UIBuilder extends JPanel {
             }
         } catch (IOException e) {
             // 画像ファイル未発見ログ
-            LogUtils.systemLog(
-                    "[WARN]",
-                    component,
+            LogUtils.warn(component,
                     "File not found: " + ANSI.YELLOW + statePath + ANSI.RESET + ".");
         }
     }

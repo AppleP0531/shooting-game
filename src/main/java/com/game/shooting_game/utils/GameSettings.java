@@ -99,7 +99,7 @@ public final class GameSettings {
         try (InputStream in = Files.newInputStream(FILE)) {
             props.load(in);
         } catch (IOException e) {
-            LogUtils.systemLog("[WARN]", component, "Failed to read " + FILE + ". Using default settings.");
+            LogUtils.warn(component, "Failed to read " + FILE + ". Using default settings.");
         }
     }
 
@@ -107,7 +107,7 @@ public final class GameSettings {
         try (OutputStream out = Files.newOutputStream(FILE)) {
             props.store(out, "ShootingGame settings");
         } catch (IOException e) {
-            LogUtils.systemLog("[WARN]", component, "Failed to write " + FILE + ".");
+            LogUtils.warn(component, "Failed to write " + FILE + ".");
         }
     }
 }

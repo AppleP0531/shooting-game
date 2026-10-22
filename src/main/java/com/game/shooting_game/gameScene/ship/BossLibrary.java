@@ -95,15 +95,11 @@ public final class BossLibrary {
                 if (!e.getKey().equals(COIN_BOSS_ID))
                     e.getValue().setGaugeHp(e.getValue().getGaugeHp() * GameBalance.bossHpRate());
 
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
+            LogUtils.debug(component,
                     "Configuration loaded successfully (" + bossMap.size() + " bosses)");
         } catch (IOException e) {
             bossMap = new HashMap<>();
-            LogUtils.systemLog(
-                    "[ERROR]",
-                    component,
+            LogUtils.error(component,
                     "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + ANSI.RESET + " (" + e.getMessage()
                             + ")");
         }
@@ -120,9 +116,7 @@ public final class BossLibrary {
         if (def != null && def.getGauges() != null && !def.getGauges().isEmpty())
             return def;
 
-        LogUtils.systemLog(
-                "[WARN]",
-                component,
+        LogUtils.warn(component,
                 "Boss " + ANSI.YELLOW + bossId + ANSI.RESET + " is not defined in BossConfig.json. Using default.");
 
         BossDefinition fallback = new BossDefinition();

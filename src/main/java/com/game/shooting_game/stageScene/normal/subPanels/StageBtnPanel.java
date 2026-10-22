@@ -108,15 +108,11 @@ public class StageBtnPanel extends JPanel {
         } catch (IOException e) {
             switch (e.getMessage()) {
                 // 画像ファイル未発見ログ
-                case "FILE_NOT_FOUND" -> LogUtils.systemLog(
-                        "[WARN]",
-                        component,
+                case "FILE_NOT_FOUND" -> LogUtils.warn(component,
                         "File not found: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
 
                 // 画像読み込みエラーログ
-                case "BROKEN_FILE" -> LogUtils.systemLog(
-                        "[ERROR]",
-                        component,
+                case "BROKEN_FILE" -> LogUtils.error(component,
                         "Failed to load image: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
 
                 // その他エラーログ

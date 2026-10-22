@@ -166,9 +166,7 @@ public final class StageManager implements Manager {
 
         try (InputStream is = getClass().getResourceAsStream(CONFIG_PATH)) {
             // ロード開始ログ
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
+            LogUtils.debug(component,
                     "Attempting to load configuration from " + ANSI.YELLOW + CONFIG_PATH + ANSI.RESET + ".");
 
             // nullチェック
@@ -180,15 +178,11 @@ public final class StageManager implements Manager {
             generateStages();
 
             // ロード成功ログ
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
+            LogUtils.debug(component,
                     "Configuration loaded successfully");
         } catch (IOException e) {
             // ロードエラーログ
-            LogUtils.error(
-                    "[FATAL]",
-                    component,
+            LogUtils.fatal(component,
                     "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + "." + ANSI.RESET + "\n"
                             + ANSI.RED + "Application will terminate." + ANSI.RESET,
                     e);

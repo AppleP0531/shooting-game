@@ -378,9 +378,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
                         }
                         default -> {
                             // 不明な値ログ
-                            LogUtils.systemLog(
-                                    "[WARN]",
-                                    component,
+                            LogUtils.warn(component,
                                     "Unexpected value assigned to " + ANSI.YELLOW + "bulletVecRef" + ANSI.RESET);
                             return;
                         }
@@ -397,9 +395,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
                             config.getDirection()));
                 } else
                     // 基準vecの未定義ログ
-                    LogUtils.systemLog(
-                            "[WARN]",
-                            component,
+                    LogUtils.warn(component,
                             "Missing refercence: " + ANSI.YELLOW + id + " - Lv" + shipLevel + " - bulletVecRef"
                                     + ANSI.RESET);
 
