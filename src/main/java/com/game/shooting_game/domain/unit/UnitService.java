@@ -86,6 +86,33 @@ public final class UnitService {
         return hp > 0 ? hp : 100;
     }
 
+    private static final double DEFAULT_SHIELD_RATE = 0.15;
+    private static final double DEFAULT_INVINCIBLE = 1;
+    private static final double DEFAULT_OOC_TIME = 10;
+
+    private static ShipManager.ShipConfig baseData(String shipId) {
+        var def = ShipManager.getInstance().getShipConfig().get(ShipKinds.PLAYER).get(shipId);
+        return def == null ? null : def.getDatas();
+    }
+
+    /** 機体ごとの、最大HPに対する基本のシールド量(ShipConfig の shieldRate。なければ0.15) */
+    public static double baseShieldRate(String shipId) {
+        var d = baseData(shipId);
+        return d != null && d.getShieldRate() != null ? d.getShieldRate() : DEFAULT_SHIELD_RATE;
+    }
+
+    /** 機体ごとの、被弾後の無敵時間・秒(ShipConfig の invincibleTime。なければ1) */
+    public static double baseInvincibleTime(String shipId) {
+        var d = baseData(shipId);
+        return d != null && d.getInvincibleTime() != null ? d.getInvincibleTime() : DEFAULT_INVINCIBLE;
+    }
+
+    /** 機体ごとの、暴走状態の長さ・秒(ShipConfig の oocTime。なければ10) */
+    public static double baseOocTime(String shipId) {
+        var d = baseData(shipId);
+        return d != null && d.getOocTime() != null ? d.getOocTime() : DEFAULT_OOC_TIME;
+    }
+
     /**
      * 機体入手に必要なコイン
      */

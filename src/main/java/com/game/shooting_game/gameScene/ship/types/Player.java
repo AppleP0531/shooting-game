@@ -60,7 +60,6 @@ public class Player extends Ship implements KeyListener {
     @Setter
     @Getter
     private double OOCTimer; // 暴走状態タイマー
-    private static final double BASE_SHIELD_RATE = 0.15; // 最大HPに対する基本のシールド量
     private static final double SHIELD_REGEN_DELAY = 3.0; // 被弾してから回復が始まるまで(秒)
     private static final double SHIELD_REGEN_RATE = 0.08; // 1秒あたりに回復するシールド量(最大値に対する割合)
     private double shieldPoints; // 今のシールド量
@@ -147,7 +146,7 @@ public class Player extends Ship implements KeyListener {
         maxHp *= StageModifiers.playerHpRate(); // ステージ条件
         hp = maxHp;
         // シールド(HPの前にダメージを受け、被弾から少し経つと回復する。モジュールで増やせる)
-        maxShield = maxHp * BASE_SHIELD_RATE * (1 + ModuleService.stat(ModuleStat.SHIELD_PCT))
+        maxShield = maxHp * UnitService.baseShieldRate(shipId) * (1 + ModuleService.stat(ModuleStat.SHIELD_PCT))
                 + ModuleService.stat(ModuleStat.SHIELD_FLAT);
         if (StageModifiers.noShield())
             maxShield = 0;
@@ -158,7 +157,7 @@ public class Player extends Ship implements KeyListener {
         // 「小型化」(最大-15%)を最大まで強化すると、半径が初期値(4px)から最小(2px)まで小さくなる
         double shrink = Math.min(1.0, SkillService.getBonus("HITBOX") / 0.15);
         collisionSize = (HITBOX_RADIUS - (HITBOX_RADIUS - HITBOX_RADIUS_MIN) * shrink) * ShootingGameMain.getScreenSizeAdj();
-        OOCTime = 10 + SkillService.getBonus("OOC_TIME");
+        OOCTime = UnitService.baseOocTime(shipId) + SkillService.getBonus("OOC_TIME");
 
         mouseHandler = new MouseAdapter() {
             @Override
@@ -583,7 +582,7 @@ public class Player extends Ship implements KeyListener {
             GM.addHit();
             if (rest > 0)
                 super.addDamage(rest);
-            shieldTimer = damagedTimer = 1 + SkillService.getBonus("INVINCIBLE");
+            shieldTimer = damagedTimer = UnitService.baseInvincibleTime(shipId) + SkillService.getBonus("INVINCIBLE");
         }
     }
 
