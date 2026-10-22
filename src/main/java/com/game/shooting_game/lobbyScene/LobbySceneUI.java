@@ -125,7 +125,7 @@ public class LobbySceneUI {
      * 機体の上に重ねるので、少し透かす。ボタンやレベル表示は、この上に描かれる。
      */
     private void drawBars(Graphics g) {
-        com.game.shooting_game.ui.SceneBars.draw(g, com.game.shooting_game.ui.SceneBars.TOP, 58);
+        com.game.shooting_game.ui.SceneBars.draw(g, com.game.shooting_game.ui.SceneBars.TOP, 104);
     }
 
     /**
@@ -194,7 +194,7 @@ public class LobbySceneUI {
     private void drawTabBar(Graphics g, int totalLength, int ind) {
         Vector2 barPos = new Vector2(
                 MAIN.getWidth() / 2,
-                MAIN.getHeight() - 150 * ShootingGameMain.getScreenSizeAdj()); // 船(と、その下の炎)にめり込まない位置
+                MAIN.getHeight() - 160 * ShootingGameMain.getScreenSizeAdj()); // 船(と、その下の炎)にめり込まない位置
         Vector2 barSize = new Vector2(
                 120,
                 10);

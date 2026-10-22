@@ -1,5 +1,6 @@
 package com.game.shooting_game.lobbyScene;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.util.Objects;
 
@@ -23,6 +24,7 @@ import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.lobbyScene.LobbySceneUI.HangarSceneUIData;
 import com.game.shooting_game.ui.Anchor;
 import com.game.shooting_game.ui.ButtonAnimator;
+import com.game.shooting_game.ui.ModeButtonImage;
 import com.game.shooting_game.ui.ShipPieceIcon;
 import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
@@ -48,6 +50,7 @@ public final class LobbyManager extends JPanel implements Manager {
     private JButton selectShipBtn;
     private JButton unlockShipBtn;
     private JButton changeModeBtn;
+    private JButton infinityBtn;
     private JButton selectStageBtn;
 
     private int viewingShipInd = -1;
@@ -76,19 +79,23 @@ public final class LobbyManager extends JPanel implements Manager {
         // 強化ボタン(強化画面に遷移)
         // 下の列は、左から「鞄」「強化」(四角いアイコン)と、残りを使う「ステージ選択」
         double adj0 = ShootingGameMain.getScreenSizeAdj();
-        int iconSize = (int) (44 * adj0), iconGap = (int) (6 * adj0), edge = (int) (8 * adj0);
-        int rowY = MAIN.getHeight() - (int) (5 * adj0) - iconSize;
+        // 下は2段: 上に小さな四角いアイコン4つ(幅を4等分した中央に置く)、下に大きなモードボタン2つ
+        int iconSize = (int) (40 * adj0), edge = (int) (8 * adj0);
+        int bigH = (int) (46 * adj0);
+        int bigY = MAIN.getHeight() - edge - bigH;
+        int rowY = bigY - (int) (5 * adj0) - iconSize;
+        int cellW = MAIN.getWidth() / 4;
         Vector2 upgradeBtnSize = new Vector2(iconSize, iconSize);
         String upgradeImagePath = "/static/img/UI/lobbyScene/upgradeIcon.png";
         upgradeBtn = UIBuilder.createImageBtn(component, upgradeImagePath, upgradeBtnSize, "UPGRADE");
-        upgradeBtn.setBounds(edge + iconSize + iconGap, rowY, iconSize, iconSize);
+        upgradeBtn.setBounds(cellW + (cellW - iconSize) / 2, rowY, iconSize, iconSize);
         upgradeBtn.addActionListener(e -> SM.changeScene(SceneType.UPGRADE));
         upgradeBtn.setVisible(false); // 非表示
         this.add(upgradeBtn);
 
         // ショップボタン(ショップ画面に遷移。強化の右の四角いアイコン。解放前はグレーアウト)
         shopBtn = UIBuilder.createImageBtn(component, "/static/img/UI/lobbyScene/shopIcon.png", upgradeBtnSize, "SHOP");
-        shopBtn.setBounds(edge + (iconSize + iconGap) * 2, rowY, iconSize, iconSize);
+        shopBtn.setBounds(cellW * 2 + (cellW - iconSize) / 2, rowY, iconSize, iconSize);
         shopBtn.addActionListener(e -> SM.changeScene(SceneType.SHOP));
         shopBtn.setVisible(false); // 非表示
         this.add(shopBtn);
@@ -96,7 +103,7 @@ public final class LobbyManager extends JPanel implements Manager {
 
         // ガチャボタン(ガチャ画面に遷移。ショップの右)
         gachaBtn = UIBuilder.createImageBtn(component, "/static/img/UI/lobbyScene/gachaIcon.png", upgradeBtnSize, "GACHA");
-        gachaBtn.setBounds(edge + (iconSize + iconGap) * 3, rowY, iconSize, iconSize);
+        gachaBtn.setBounds(cellW * 3 + (cellW - iconSize) / 2, rowY, iconSize, iconSize);
         gachaBtn.addActionListener(e -> SM.changeScene(SceneType.GACHA));
         gachaBtn.setVisible(false); // 非表示
         this.add(gachaBtn);
@@ -173,7 +180,7 @@ public final class LobbyManager extends JPanel implements Manager {
         String selectShipImagePath = "/static/img/UI/lobbyScene/selectShip.png";
         selectShipBtn = UIBuilder.createImageBtn(component, selectShipImagePath, selectShipBtnSize,
                 "SELLECT");
-        UIBuilder.placeBtn(selectShipBtn, Anchor.BOTTOM_CENTER, Anchor.CENTER, 0, -100);
+        UIBuilder.placeBtn(selectShipBtn, Anchor.BOTTOM_CENTER, Anchor.CENTER, 0, -128);
         selectShipBtn.addActionListener(e -> {
             DataManager.getUserData().setSelectedShip(ships[viewingShipInd]);
             updateBtnStates();
@@ -188,7 +195,7 @@ public final class LobbyManager extends JPanel implements Manager {
         String unlockShipImagePath = "/static/img/UI/lobbyScene/unlockShip.png";
         unlockShipBtn = UIBuilder.createImageBtn(component, unlockShipImagePath, unlockShipBtnSize,
                 "UNLOCK");
-        UIBuilder.placeBtn(unlockShipBtn, Anchor.BOTTOM_CENTER, Anchor.CENTER, 0, -100);
+        UIBuilder.placeBtn(unlockShipBtn, Anchor.BOTTOM_CENTER, Anchor.CENTER, 0, -128);
         unlockShipBtn.addActionListener(e -> {
             String id = ships[viewingShipInd];
             if (GachaService.unlock(id)) {
@@ -214,7 +221,7 @@ public final class LobbyManager extends JPanel implements Manager {
         String changeModeImagePath = "/static/img/UI/lobbyScene/modeIcon.png";
         changeModeBtn = UIBuilder.createImageBtn(component, changeModeImagePath, changeModeBtnSize,
                 "CHANGE_MODE");
-        UIBuilder.placeBtn(changeModeBtn, Anchor.BOTTOM_RIGHT, Anchor.BOTTOM_RIGHT, -10, -100);
+        UIBuilder.placeBtn(changeModeBtn, Anchor.BOTTOM_RIGHT, Anchor.BOTTOM_RIGHT, -10, -112);
         changeModeBtn.addActionListener(e -> {
             SHIP_M.getPlayer().changeMode();
         });
@@ -225,20 +232,30 @@ public final class LobbyManager extends JPanel implements Manager {
         Vector2 backpackBtnSize = new Vector2(iconSize, iconSize);
         String backpackImagePath = "/static/img/UI/lobbyScene/bagIcon.png";
         backpackBtn = UIBuilder.createImageBtn(component, backpackImagePath, backpackBtnSize, "Bag");
-        backpackBtn.setBounds(edge, rowY, iconSize, iconSize);
+        backpackBtn.setBounds((cellW - iconSize) / 2, rowY, iconSize, iconSize);
         backpackBtn.addActionListener(e -> SM.changeScene(SceneType.BAG));
         backpackBtn.setVisible(false); // 非表示
         this.add(backpackBtn);
 
-        // ステージ選択ボタン(ステージ選択画面に遷移)
-        int stageX = edge + (iconSize + iconGap) * 4;
-        Vector2 selectStageBtnSize = new Vector2(
-                MAIN.getWidth() - stageX - edge,
-                iconSize);
-        String selectStageImagePath = "/static/img/UI/lobbyScene/selectStage.png";
-        selectStageBtn = UIBuilder.createImageBtn(component, selectStageImagePath,
-                selectStageBtnSize, "SELECT STAGE");
-        selectStageBtn.setBounds(stageX, rowY, (int) selectStageBtnSize.getX(), iconSize);
+        // 大きなモードボタン(左: 無限モード=橙、右: ステージ=黄。ステージ選択画面に遷移)
+        int bigGap = (int) (8 * adj0);
+        int bigW = (MAIN.getWidth() - edge * 2 - bigGap) / 2;
+        int fontPx = (int) (20 * adj0);
+        infinityBtn = UIBuilder.createImageBtn(component,
+                ModeButtonImage.create(bigW, bigH, "無限モード", new Color(255, 170, 60), new Color(220, 70, 20),
+                        new Color(255, 220, 150), fontPx),
+                new Vector2(bigW, bigH), "INFINITY");
+        infinityBtn.setBounds(edge, bigY, bigW, bigH);
+        infinityBtn.addActionListener(e -> SM.changeScene(SceneType.INFINITYSTAGE));
+        infinityBtn.setVisible(false); // 非表示
+        this.add(infinityBtn);
+        UnlockService.guard(infinityBtn, Feature.INFINITY);
+
+        selectStageBtn = UIBuilder.createImageBtn(component,
+                ModeButtonImage.create(bigW, bigH, "ステージ", new Color(255, 235, 90), new Color(235, 150, 20),
+                        new Color(255, 250, 190), fontPx),
+                new Vector2(bigW, bigH), "SELECT STAGE");
+        selectStageBtn.setBounds(edge + bigW + bigGap, bigY, bigW, bigH);
         selectStageBtn
                 .addActionListener(e -> SM.changeScene(SceneType.SELECTSTAGE));
         selectStageBtn.setVisible(false); // 非表示
@@ -246,7 +263,7 @@ public final class LobbyManager extends JPanel implements Manager {
 
         // 押す・乗せると拡大縮小する(下の列・右上・船の切り替え・選択/解放・色の切り替え)
         for (JButton b : new JButton[] { upgradeBtn, shopBtn, gachaBtn, settingBtn, dexBtn, nextShipBtn,
-                prevShipBtn, selectShipBtn, unlockShipBtn, changeModeBtn, backpackBtn, selectStageBtn })
+                prevShipBtn, selectShipBtn, unlockShipBtn, changeModeBtn, backpackBtn, infinityBtn, selectStageBtn })
             ButtonAnimator.attachPop(b);
     }
 
@@ -373,6 +390,7 @@ public final class LobbyManager extends JPanel implements Manager {
         nextShipBtn.setVisible(true);
         prevShipBtn.setVisible(true);
         backpackBtn.setVisible(true);
+        infinityBtn.setVisible(true);
         selectStageBtn.setVisible(true);
         changeModeBtn.setVisible(true);
 
