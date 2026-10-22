@@ -161,10 +161,12 @@ public final class ShootingGameMain extends JPanel implements Runnable {
             if (onlineMode) {
                 // DataManagerをSpringから取得して初期化
                 context.getBean(DataManager.class);
+                LoadProgress.set("Loading user data", 0.38);
             } else {
                 DataManager.load("guest", "create");
             }
 
+            LoadProgress.set("Preparing UI", 0.39);
             // GlassPaneの設定
             glassPane = new CommandGlassPane(() -> {
             });
@@ -190,13 +192,13 @@ public final class ShootingGameMain extends JPanel implements Runnable {
             // リソース情報の読み込み
             LoadProgress.set("Loading resources", 0.40);
             ResourceManager.getInstance();
-            LoadProgress.set("Building screens", 0.75);
+            LoadProgress.set("Loading scenes", 0.50);
 
             // UIのセットアップ
-            List<Manager> managers = new ArrayList<>(SceneManager.getInstance().getSceneMap().values());
-            for (int i = 0; i < managers.size(); i++) {
-                managers.get(i).initComponents();
-                LoadProgress.set("Building screens", 0.75 + 0.25 * (i + 1) / managers.size());
+            var scenes = new ArrayList<>(SceneManager.getInstance().getSceneMap().entrySet());
+            for (int i = 0; i < scenes.size(); i++) {
+                LoadProgress.set("Building " + scenes.get(i).getKey().name(), 0.80 + 0.20 * i / scenes.size());
+                scenes.get(i).getValue().initComponents();
             }
 
             // すべてのマネージャーをSceneManagerから取得しカードレイアウトに登録
