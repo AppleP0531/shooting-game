@@ -221,6 +221,7 @@ public final class GameManager extends JPanel implements Manager {
     @Override
     public void setup() {
         setupDone = false;
+        com.game.shooting_game.gameScene.stage.CoinBossMemory.reset(); // 無限モードのコインボスの引き継ぎは、挑戦ごとに初期化する
         resumeTimer = leaveTimer = -1;
         LogUtils.info(component,
                 ANSI.YELLOW + "Stage " + STAGE_M.getStageId() + ANSI.RESET + " loaded.");
@@ -504,6 +505,9 @@ public final class GameManager extends JPanel implements Manager {
                     data.getResources().getEquipments().merge(e.getKey(), e.getValue(), Integer::sum);
                     StageRewards.getInstance().getResources().merge(e.getKey(), e.getValue(), Integer::sum);
                 }
+                // コインボスを倒していれば、特殊ドロップのモジュールも受け取る
+                for (Rarity rarity : com.game.shooting_game.gameScene.stage.CoinBossMemory.takeSpecialDrops())
+                    StageRewards.getInstance().getModules().add(ModuleService.addNew(null, rarity));
                 for (Rarity rarity : EndlessWaves.moduleRewards(cleared))
                     StageRewards.getInstance().getModules().add(ModuleService.addNew(null, rarity));
             }
