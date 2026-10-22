@@ -379,7 +379,7 @@ public class LobbySceneUI {
         int x = (int) (10 * adj);
         int y = (int) (58 * ShootingGameMain.getScreenSizeAdj()); // 上の帯(44)の下
         int labelW = (int) (48 * adj), valueW = (int) (54 * adj);
-        int barW = (int) (96 * adj), barH = (int) (7 * adj);
+        int barW = (int) (96 * 0.7 * adj), barH = (int) (7 * adj);
         int line = (int) (20 * adj);
         Font label = new Font("SansSerif", Font.PLAIN, Math.max(7, (int) (11 * adj)));
         Font value = new Font("SansSerif", Font.BOLD, Math.max(7, (int) (11 * adj)));
