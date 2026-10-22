@@ -80,7 +80,12 @@ public final class SkillService {
     public static int getLevel(String name) {
         tickResearch(); // 研究が終わっていればレベルに反映する
         Map<String, Integer> up = upgrades();
-        return up == null ? 0 : up.getOrDefault(name, 0);
+        if (up == null)
+            return 0;
+        int level = up.getOrDefault(name, 0);
+        // 最大レベルを下げた後の古いセーブ(Lv10 / 1 のように超えている)は、最大レベルとして扱う
+        SkillTreeData d = find(name);
+        return d == null ? level : Math.min(level, d.getMaxLevel());
     }
 
     /**
