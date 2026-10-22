@@ -291,20 +291,23 @@ public class UIBuilder extends JPanel {
      * 色のついた部分の色相を、指定した値(0〜1)にずらした絵を返す(白・灰・黒に近い部分と、明るさ・透明度はそのまま)
      */
     public static BufferedImage hueShift(BufferedImage src, float hue) {
-        BufferedImage out = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        int w = src.getWidth(), h = src.getHeight();
+        BufferedImage out = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        // 1画素ずつ getRGB / setRGB を呼ぶと遅いので、配列にまとめて読み書きする
+        int[] px = src.getRGB(0, 0, w, h, null, 0, w);
         float[] hsb = new float[3];
-        for (int y = 0; y < src.getHeight(); y++)
-            for (int x = 0; x < src.getWidth(); x++) {
-                int p = src.getRGB(x, y);
-                int a = p >>> 24;
-                if (a == 0) {
-                    out.setRGB(x, y, 0);
-                    continue;
-                }
-                Color.RGBtoHSB((p >> 16) & 255, (p >> 8) & 255, p & 255, hsb);
-                int rgb = hsb[1] > 0.12f ? Color.HSBtoRGB(hue, hsb[1], hsb[2]) : (p & 0xFFFFFF);
-                out.setRGB(x, y, (a << 24) | (rgb & 0xFFFFFF));
+        for (int i = 0; i < px.length; i++) {
+            int p = px[i];
+            int a = p >>> 24;
+            if (a == 0) {
+                px[i] = 0;
+                continue;
             }
+            Color.RGBtoHSB((p >> 16) & 255, (p >> 8) & 255, p & 255, hsb);
+            int rgb = hsb[1] > 0.12f ? Color.HSBtoRGB(hue, hsb[1], hsb[2]) : (p & 0xFFFFFF);
+            px[i] = (a << 24) | (rgb & 0xFFFFFF);
+        }
+        out.setRGB(0, 0, w, h, px, 0, w);
         return out;
     }
 
