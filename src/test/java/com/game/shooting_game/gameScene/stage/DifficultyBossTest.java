@@ -21,13 +21,13 @@ class DifficultyBossTest {
     }
 
     @Test
-    @DisplayName("通常倍率: HP は EASY 1・NORMAL 15・HARD 115・NIGHTMARE 875、被ダメは EASY 0.8・NORMAL 3・HARD 16・NIGHTMARE 80")
+    @DisplayName("通常倍率: HP は EASY 1・NORMAL 15・HARD 115・NIGHTMARE 437.5、被ダメは EASY 0.8・NORMAL 3・HARD 16・NIGHTMARE 80")
     void normalRates() {
         assertThat(Difficulty.EASY.getEnemyHpRate()).isEqualTo(1.0);
         assertThat(Difficulty.NORMAL.getEnemyHpRate()).isEqualTo(15.0);
         assertThat(Difficulty.HARD.getEnemyHpRate()).isEqualTo(115.0);
         assertThat(Difficulty.HARD.getEnemyDamageRate()).isEqualTo(16.0);
-        assertThat(Difficulty.NIGHTMARE.getEnemyHpRate()).isEqualTo(875.0);
+        assertThat(Difficulty.NIGHTMARE.getEnemyHpRate()).isEqualTo(437.5);
         assertThat(Difficulty.NIGHTMARE.getEnemyDamageRate()).isEqualTo(80.0);
     }
 
@@ -48,7 +48,7 @@ class DifficultyBossTest {
         double hardHp = Difficulty.HARD.getEnemyHpRate() * Difficulty.HARD.getBossHpRate();
         double nmHp = Difficulty.NIGHTMARE.getEnemyHpRate() * Difficulty.NIGHTMARE.getBossHpRate();
         assertThat(hardHp).isCloseTo(149.5, within(1e-9));
-        assertThat(nmHp).isCloseTo(2450.0, within(1e-9));
+        assertThat(nmHp).isCloseTo(1225.0, within(1e-9));
     }
 
     @Test
@@ -56,7 +56,7 @@ class DifficultyBossTest {
     void describeBoss() {
         assertThat(Difficulty.NORMAL.describe(null, true)).isEqualTo(Difficulty.NORMAL.describe(null, false));
         assertThat(Difficulty.HARD.describe(null, true)).contains("敵HP ×150").contains("ダメージ ×19.2");
-        assertThat(Difficulty.NIGHTMARE.describe(null, true)).contains("敵HP ×2,450").contains("ダメージ ×112")
+        assertThat(Difficulty.NIGHTMARE.describe(null, true)).contains("敵HP ×1,225").contains("ダメージ ×112")
                 .contains("レア度UP");
         assertThat(Difficulty.HARD.describe(null, true)).isNotEqualTo(Difficulty.HARD.describe(null, false));
 
