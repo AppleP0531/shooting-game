@@ -744,7 +744,14 @@ package "shooting_game" {
             - selectShipBtn: JButton
             - unlockShipBtn: JButton
             - changeModeBtn: JButton
+            - infinityBtn: JButton <<無限モード。ロビーから直接入る(Lv20解放)。ModeButtonImage で描く>>
             - selectStageBtn: JButton
+            - unitPanel: UnitPanel <<下のカードから開く機体強化>>
+            - subShipPanel: SubShipPanel <<サブ機工房>>
+            - defensePanel: ArmorPanel <<防御装甲>>
+            - firepowerPanel: ArmorPanel <<火力装甲>>
+            - slotRects: Rectangle[]
+            - slotBtns: JButton[]
             - shopBtn: JButton <<ショップ。SHOP へ遷移(バッグ画面から移動。解放前はグレーアウト)>>
             - gachaBtn: JButton <<ガチャ。GACHA へ遷移(ショップの右)>>
             - dexBtn: JButton <<図鑑。ENCYCLOPEDIA へ遷移(バッグ画面から移動)>>
@@ -758,6 +765,7 @@ package "shooting_game" {
             + update(dt: double): void
             + draw(g: Graphics): void
             - drawModeIndicator(g: Graphics): void <<いまの色(青/赤)を、切り替えボタンのまわりに出す>>
+            - drawSlots(g: Graphics): void <<LobbySceneUI.drawSlots へ矩形・ホバー・ロックを渡す>>
             - drawUnlockCost(g: Graphics): void <<未開放の船を見ているとき、解放ボタンの上に必要なピースとコインを出す(足りなければ赤)。解放は GachaService.unlock>>
             + setDefaultViewingShip(shipName: String): void
             - updateBtnStates(): void <<強化ボタンは未開放の船でも隠さず、グレーアウトする>>
@@ -771,6 +779,9 @@ package "shooting_game" {
             - latestViewingShipName: String
             - levelUpInterval: double
             - levelUpIntervalTimer: double
+            - {static} MESSAGE_DURATION: double
+            - message: String <<画面に出す通知>>
+            - messageTimer: double
             --
             + LobbySceneUI()
             + setup(): void
@@ -780,6 +791,25 @@ package "shooting_game" {
             - drawTabBar(g: Graphics, totalLength: int, ind: int): void
             - drawUserLevel(g: Graphics): void
             - drawEquipment(g: Graphics): void
+            - drawBars(g: Graphics): void <<SceneBars.draw で上下の帯を敷く>>
+            + showMessage(text: String): void
+            - drawMessage(g: Graphics): void
+            - trimmed(shipId: String, src: BufferedImage): BufferedImage
+            - drawStats(g: Graphics, shipId: String): void <<ラベル+数値+バーの能力表示。閲覧中の機体の値>>
+            + drawSlots(g: Graphics, rects: Rectangle[], hovered: boolean[], locked: boolean[]): void <<下の装備カード4枚>>
+            - {static} drawArmorIcon(g: Graphics2D, defense: boolean, cx: double, cy: double, size: double): void <<防御は青い盾、火力は橙の刃>>
+        }
+
+        enum "LobbySceneUI.Slot" as LobbySlot {
+            UNIT
+            SUBSHIP
+            DEFENSE
+            FIREPOWER
+            --
+            - label: String
+            --
+            ~ Slot(label: String)
+            + label(): String
         }
 
         class LobbySceneUIData <<record>> {
@@ -1096,6 +1126,21 @@ package "shooting_game" {
                 # paintComponent(g: Graphics): void <<◇の並び。見ているタイプは塗り、使用中は金の縁、未解放は暗い灰色>>
             }
 
+            class ArmorPanel {
+                - type: ArmorService.Type <<防御装甲 / 火力装甲>>
+                - headerArea: JTextArea
+                - effectArea: JTextArea <<いまの値と次のレベルの値を並べる>>
+                - costPanel: CostPanel
+                - levelBtn: JButton
+                - statusArea: JTextArea
+                --
+                + ArmorPanel(type: ArmorService.Type)
+                + initComponents(): void
+                ~ {static} starText(stars: int): String
+                - refresh(): void
+                + showPanel(): void
+            }
+
             class UnitPanel {
                 - headerArea: JTextArea
                 - statArea: JTextArea
@@ -1204,6 +1249,7 @@ package "shooting_game" {
                 + {static} getLevel(name: String): int
                 + {static} isUnlocked(name: String): boolean
                 + {static} getBonus(effect: String): double
+                + {static} getBonusFor(shipId: String, effect: String): double <<見ている機体のスキル・Lv・ランクで計算する(選択中の機体ではない)>>
                 + {static} invalidate(): void
                 + {static} getCost(d: SkillTreeData, level: int): Cost
                 + {static} researchSeconds(d: SkillTreeData, level: int): long
@@ -1482,6 +1528,43 @@ package "shooting_game" {
             }
         }
 
+        package "armor" {
+            class ArmorService <<Utility>> {
+                - {static} component: String
+                - {static} KEY_PREFIX: String = "armor:" <<Progress.highScores に相乗りするキーの接頭辞>>
+                + {static} MAX_LEVEL: int = 20
+                + {static} STAR_STEP: int = 4
+                + {static} MAX_STARS: int
+                --
+                - ArmorService()
+                - {static} store(): Map<String,Integer>
+                - {static} key(type: Type): String
+                + {static} level(type: Type): int
+                ~ {static} clampLevel(level: int): int
+                + {static} stars(level: int): int <<レベル4ごとに★1つ>>
+                + {static} stars(type: Type): int
+                + {static} value(type: Type, stat: ModuleStat, level: int): double
+                + {static} stat(stat: ModuleStat): double <<装着中の全種類の合計。ModuleService.stat から呼ばれる>>
+                + {static} levelCost(level: int): Cost
+                + {static} levelUp(type: Type): boolean
+                + {static} setLevel(type: Type, level: int): int <<コストを見ずに設定(管理用)>>
+            }
+
+            enum "ArmorService.Type" as ArmorType {
+                DEFENSE
+                FIREPOWER
+                --
+                - title: String
+                - detail: String
+                - perLevel: Map<ModuleStat,Double>
+                --
+                ~ Type(title: String, detail: String, perLevel: Map<ModuleStat,Double>)
+                + title(): String
+                + detail(): String
+                + perLevel(): Map<ModuleStat,Double> <<レベル1つあたりの効果>>
+            }
+        }
+
         package "module" {
             enum ModuleStat {
                 ATK_PCT
@@ -1530,7 +1613,7 @@ package "shooting_game" {
                 + {static} owned(): List<Module>
                 + {static} slotted(): Module[]
                 + {static} mainNow(m: Module): double
-                + {static} stat(stat: ModuleStat): double
+                + {static} stat(stat: ModuleStat): double <<モジュールの合計に ArmorService.stat を足す>>
                 + {static} equip(id: long): boolean
                 + {static} unequip(id: long): void
                 + {static} recipe(kind: ModuleKind, rarity: Rarity): Cost
@@ -3190,6 +3273,25 @@ package "shooting_game" {
             + {static} debugLog(format: String, messages: Object...): void
         }
 
+        enum Severity {
+            EMERGENCY
+            ALERT
+            CRITICAL
+            ERROR
+            WARNING
+            NOTICE
+            INFO
+            DEBUG
+            --
+            - code: int
+            - label: String
+            - color: String
+            --
+            - Severity(code: int, label: String, color: String)
+            + code(): int
+            + label(): String <<画面に出すラベル。EMERGENCY〜CRITICAL は FATAL>>
+        }
+
         enum LogLevel {
             DEBUG
             INFO
@@ -3231,6 +3333,47 @@ package "shooting_game" {
             # installDefaults(b: AbstractButton): void
             + paint(g: Graphics, c: JComponent): void
             # paintText(g: Graphics, b: AbstractButton, textRect: Rectangle, text: String): void
+        }
+
+        class ButtonAnimator <<Utility>> {
+            ~ {static} REST: double = 0.94
+            ~ {static} HOVER: double = 1.0
+            ~ {static} PRESS: double = 0.88
+            - {static} KEY: String
+            - {static} SPEED: double
+            - {static} ALL: Map<ButtonAnimator,Boolean>
+            - {static} timer: Timer
+            - button: JButton
+            - pop: boolean
+            - frames: BufferedImage[]
+            - fps: double
+            - scale: double
+            - lastFrame: int
+            --
+            - ButtonAnimator(button: JButton, pop: boolean)
+            + {static} attachPop(button: JButton): void <<ホバー・押下で拡大縮小>>
+            + {static} attachSprite(button: JButton, frames: BufferedImage[], fps: double): void <<コマ送り>>
+            - {static} attach(a: ButtonAnimator): void
+            - {static} tickAll(e: ActionEvent): void
+            - tick(dt: double): void
+            ~ {static} targetScale(enabled: boolean, rollover: boolean, pressed: boolean): double
+            ~ {static} approach(current: double, target: double, dt: double): double
+            ~ {static} frameAt(seconds: double, fps: double, count: int): int
+            + {static} begin(g: Graphics, c: JComponent): Graphics2D <<中心基準で拡大縮小した Graphics。なければ null>>
+            + {static} drawSprite(g: Graphics, c: JComponent): boolean
+        }
+
+        class SceneBars <<Utility>> {
+            + {static} TOP: double = 44
+            --
+            - SceneBars()
+            + {static} draw(g: Graphics, topH: double, bottomH: double): void <<画面の上下の帯(紺の板とネオンの縁)>>
+        }
+
+        class ModeButtonImage <<Utility>> {
+            - ModeButtonImage()
+            + {static} create(w: int, h: int, label: String, top: Color, bottom: Color, edge: Color, fontPx: int): BufferedImage <<大きなモードボタンの絵(板と縁取りの文字)>>
+            ~ {static} plate(x: double, y: double, w: double, h: double, cut: double): Shape
         }
 
         class StageLockIcon <<Utility>> {
@@ -3329,6 +3472,9 @@ package "shooting_game" {
             + {static} cutSpriteSheet(masterSheet: BufferedImage, grids: Vector2, useCount: int, imageSize: double): BufferedImage[]
             + {static} createImageBtn(component: String, path: String, size: Vector2, fallBackText: String): JButton
             + {static} createImageBtn(component: String, image: BufferedImage, size: Vector2, fallBackText: String): JButton
+            + {static} createSpriteBtn(component: String, sheetPath: String, grids: Vector2, useCount: int, fps: double, size: Vector2, fallbackText: String): JButton <<コマ送りのボタン。ButtonAnimator.attachSprite を付ける>>
+            + {static} anchoredTopLeft(anchor: Anchor, refX: double, refY: double, w: int, h: int): Point <<基準点が anchor に来る左上の座標>>
+            + {static} placeBtn(btn: JComponent, screenAnchor: Anchor, btnAnchor: Anchor, dx: double, dy: double): void <<画面の anchor から (dx,dy) 離して置く。基準サイズの長さ>>
             + {static} createBackBtn(component: String, action: Runnable): JButton <<左下の隅の正方形の矢印>>
             + {static} resizeImage(originImage: BufferedImage, imageSize: double): BufferedImage
             + {static} applyHighQualityRenderSettings(g2: Graphics2D): void
@@ -3352,6 +3498,14 @@ package "shooting_game" {
 
         class Anchor {
             + {static} CENTER: Anchor
+            + {static} TOP_LEFT: Anchor
+            + {static} TOP_CENTER: Anchor
+            + {static} TOP_RIGHT: Anchor
+            + {static} CENTER_LEFT: Anchor
+            + {static} CENTER_RIGHT: Anchor
+            + {static} BOTTOM_LEFT: Anchor
+            + {static} BOTTOM_CENTER: Anchor
+            + {static} BOTTOM_RIGHT: Anchor
             + horizontal: H
             + vertical: V
             --
@@ -3553,6 +3707,9 @@ shooting_game.command.CommandGlassPane +-- MoveOption
 shooting_game.command.CommandGlassPane +-- LogCellRenderer
 shooting_game.command.LogLine +-- Kind
 shooting_game.utils.animation.Animation +-- AnimationLogic
+shooting_game.utils.LogUtils +-- Severity
+shooting_game.lobbyScene.LobbySceneUI +-- LobbySlot
+shooting_game.domain.armor.ArmorService +-- ArmorType
 shooting_game.ui.Anchor +-- H
 shooting_game.ui.Anchor +-- V
 shooting_game.ResourceManager +-- ResourceKinds
@@ -3676,6 +3833,21 @@ shooting_game.domain.subship.SubShipTypeService ..> shooting_game.data.DataManag
 shooting_game.gameScene.ship.types.SubShip ..> shooting_game.domain.subship.SubShipTypeService
 shooting_game.upgradeScene.subPanels.SubShipPanel ..> shooting_game.domain.subship.SubShipTypeService
 shooting_game.lobbyScene.LobbyManager ..> shooting_game.domain.unlock.UnlockService
+shooting_game.lobbyScene.LobbyManager --> shooting_game.upgradeScene.subPanels.UnitPanel
+shooting_game.lobbyScene.LobbyManager --> shooting_game.upgradeScene.subPanels.SubShipPanel
+shooting_game.lobbyScene.LobbyManager --> shooting_game.upgradeScene.subPanels.ArmorPanel
+shooting_game.lobbyScene.LobbyManager ..> shooting_game.ui.ModeButtonImage
+shooting_game.lobbyScene.LobbyManager ..> shooting_game.ui.UIBuilder
+shooting_game.lobbyScene.LobbySceneUI ..> shooting_game.ui.SceneBars
+shooting_game.lobbyScene.LobbySceneUI ..> shooting_game.domain.skill.SkillService
+shooting_game.lobbyScene.LobbySceneUI ..> shooting_game.domain.armor.ArmorService
+shooting_game.domain.module.ModuleService ..> shooting_game.domain.armor.ArmorService
+shooting_game.domain.armor.ArmorService ..> shooting_game.data.DataManager
+shooting_game.domain.armor.ArmorService ..> shooting_game.domain.module.ModuleStat
+shooting_game.upgradeScene.subPanels.ArmorPanel ..> shooting_game.domain.armor.ArmorService
+shooting_game.upgradeScene.subPanels.ArmorPanel --|> javax.swing.JPanel
+shooting_game.ui.UIBuilder ..> shooting_game.ui.ButtonAnimator
+shooting_game.ui.UIBuilder ..> shooting_game.ui.Anchor
 shooting_game.bagScene.BagManager ..> shooting_game.domain.unlock.UnlockService
 shooting_game.upgradeScene.UpgradeManager ..> shooting_game.domain.unlock.UnlockService
 shooting_game.stageScene.SelectStageManager ..> shooting_game.domain.unlock.UnlockService
