@@ -10,7 +10,7 @@ import java.awt.image.BufferedImage;
 
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
-import com.game.shooting_game.domain.module.Module;
+import com.game.shooting_game.domain.armor.ArmorService;
 import com.game.shooting_game.domain.module.ModuleService;
 import com.game.shooting_game.domain.module.ModuleStat;
 import com.game.shooting_game.domain.skill.SkillService;
@@ -25,7 +25,6 @@ import com.game.shooting_game.gameScene.ship.ShipFactory;
 import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.gameScene.ship.types.Player;
-import com.game.shooting_game.ui.ModuleIcons;
 import com.game.shooting_game.utils.Vector2;
 
 public class LobbySceneUI {
@@ -378,7 +377,7 @@ public class LobbySceneUI {
 
     /** 下のカードの種類 */
     public enum Slot {
-        UNIT("機体"), SUBSHIP("サブ機"), MODULE("モジュール"), WINGMAN("僚機");
+        UNIT("機体"), SUBSHIP("サブ機"), DEFENSE("防御装甲"), FIREPOWER("火力装甲");
 
         private final String label;
 
@@ -389,6 +388,47 @@ public class LobbySceneUI {
         public String label() {
             return label;
         }
+    }
+
+    /**
+     * 装甲のアイコン(防御は青い盾、火力は橙の刃を3本)
+     *
+     * @param cx   中心の x
+     * @param cy   中心の y
+     * @param size 全体の大きさ
+     */
+    private static void drawArmorIcon(Graphics2D g, boolean defense, double cx, double cy, double size) {
+        double r = size / 2;
+        java.awt.geom.Path2D p = new java.awt.geom.Path2D.Double();
+        if (defense) {
+            p.moveTo(cx - r * 0.8, cy - r * 0.85);
+            p.lineTo(cx + r * 0.8, cy - r * 0.85);
+            p.lineTo(cx + r * 0.8, cy + r * 0.1);
+            p.quadTo(cx + r * 0.7, cy + r * 0.7, cx, cy + r);
+            p.quadTo(cx - r * 0.7, cy + r * 0.7, cx - r * 0.8, cy + r * 0.1);
+            p.closePath();
+            g.setPaint(new java.awt.GradientPaint(0, (float) (cy - r), new Color(120, 200, 255), 0, (float) (cy + r),
+                    new Color(40, 90, 200)));
+            g.fill(p);
+            g.setColor(new Color(220, 245, 255));
+        } else {
+            // 上向きの刃(中央が長く、左右が短い)
+            for (int i = -1; i <= 1; i++) {
+                double h = i == 0 ? 1.0 : 0.7, off = i * r * 0.62;
+                java.awt.geom.Path2D b = new java.awt.geom.Path2D.Double();
+                b.moveTo(cx + off, cy - r * h);
+                b.lineTo(cx + off + r * 0.26, cy + r * 0.8);
+                b.lineTo(cx + off - r * 0.26, cy + r * 0.8);
+                b.closePath();
+                p.append(b, false);
+            }
+            g.setPaint(new java.awt.GradientPaint(0, (float) (cy - r), new Color(255, 230, 120), 0, (float) (cy + r),
+                    new Color(230, 70, 30)));
+            g.fill(p);
+            g.setColor(new Color(255, 245, 200));
+        }
+        g.setStroke(new java.awt.BasicStroke(1.4f));
+        g.draw(p);
     }
 
     /**
@@ -451,28 +491,11 @@ public class LobbySceneUI {
                         sub = "未装備";
                     }
                 }
-                case MODULE -> {
-                    int cell = (int) (Math.min(iw, ih) / 2.0) - 2;
-                    int n = 0;
-                    for (int i = 0; i < 4; i++) {
-                        int mx = ix + (iw - cell * 2) / 2 + (i % 2) * cell;
-                        int my = iy + (ih - cell * 2) / 2 + (i / 2) * cell;
-                        Module m = ModuleService.slotted()[i];
-                        if (m == null) {
-                            c.setColor(new Color(255, 255, 255, 30));
-                            c.fillRoundRect(mx + 1, my + 1, cell - 2, cell - 2, 4, 4);
-                        } else {
-                            ModuleIcons.draw(c, m, mx + 1, my + 1, cell - 2);
-                            n++;
-                        }
-                    }
-                    sub = n + " / 4";
-                }
-                case WINGMAN -> {
-                    c.setFont(small);
-                    c.setColor(new Color(170, 170, 190));
-                    String t = "準備中";
-                    c.drawString(t, ix + (iw - c.getFontMetrics().stringWidth(t)) / 2, iy + ih / 2 + (int) (4 * adj));
+                case DEFENSE, FIREPOWER -> {
+                    ArmorService.Type t = s == Slot.DEFENSE ? ArmorService.Type.DEFENSE : ArmorService.Type.FIREPOWER;
+                    drawArmorIcon(c, s == Slot.DEFENSE, ix + iw / 2.0, iy + ih / 2.0, Math.min(iw, ih) * 0.9);
+                    int lv = ArmorService.level(t);
+                    sub = "Lv" + lv + " " + "★".repeat(ArmorService.stars(lv));
                 }
             }
             c.dispose();
