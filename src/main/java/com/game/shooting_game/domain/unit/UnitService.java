@@ -62,11 +62,11 @@ public final class UnitService {
     }
 
     /**
-     * 火力の倍率(レベルとランク)
+     * 火力の倍率(機体ごとの基本の倍率 × レベルとランク)
      */
     public static double attackRate(String shipId) {
         // レベルとランクの両方が指数的に伸びる(係数は BalanceConfig.json)。ランクが1つ上がると、レベルが1に戻っても、上がる前のLv50より強い
-        return Math.pow(GameBalance.unitAttackGrowth(), getLevel(shipId) - 1)
+        return baseAttackRate(shipId) * Math.pow(GameBalance.unitAttackGrowth(), getLevel(shipId) - 1)
                 * Math.pow(GameBalance.rankAttackGrowth(), getRank(shipId));
     }
 
@@ -93,6 +93,16 @@ public final class UnitService {
     private static ShipManager.ShipConfig baseData(String shipId) {
         var def = ShipManager.getInstance().getShipConfig().get(ShipKinds.PLAYER).get(shipId);
         return def == null ? null : def.getDatas();
+    }
+
+    /** 機体ごとの、火力の基本の倍率(ShipConfig の attackRate。なければ1。設定が読めないときも1) */
+    public static double baseAttackRate(String shipId) {
+        try {
+            var d = baseData(shipId);
+            return d != null && d.getAttackRate() != null ? d.getAttackRate() : 1.0;
+        } catch (RuntimeException e) {
+            return 1.0;
+        }
     }
 
     /** 機体ごとの、最大HPに対する基本のシールド量(ShipConfig の shieldRate。なければ0.15) */
