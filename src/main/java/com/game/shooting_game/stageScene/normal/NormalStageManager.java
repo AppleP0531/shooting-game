@@ -102,6 +102,16 @@ public final class NormalStageManager extends JPanel implements Manager {
         ButtonAnimator.attachPop(lobbyBtn);
         this.add(lobbyBtn);
 
+        // 左下の「現在地」ボタン(いま挑めるステージ=クリアした最後の次へ、台の並びを動かす)
+        JButton currentBtn = UIBuilder.createImageBtn(component,
+                ModeButtonImage.create(backW, backH, "現在地", new Color(110, 220, 160), new Color(20, 130, 90),
+                        new Color(200, 255, 225), (int) (15 * adj)),
+                new Vector2(backW, backH), "CURRENT");
+        UIBuilder.placeBtn(currentBtn, Anchor.BOTTOM_LEFT, Anchor.BOTTOM_LEFT, 8, -9);
+        currentBtn.addActionListener(e -> stageBtnPanel.scrollToCurrent());
+        ButtonAnimator.attachPop(currentBtn);
+        this.add(currentBtn);
+
         // 設定ボタン(設定画面に遷移)
         Vector2 settingBtnSize = new Vector2(
                 30 * ShootingGameMain.getScreenSizeAdj(),
