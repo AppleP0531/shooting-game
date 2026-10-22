@@ -57,6 +57,15 @@ public final class StageNodeIcon {
      * @param stars 獲得した★(0〜3)。未解放では描かない
      */
     public static BufferedImage create(int w, int h, String label, Look look, int stars) {
+        return create(w, h, label, look, stars, false);
+    }
+
+    /**
+     * 絵を描く(★の色を選べる)
+     *
+     * @param silverStars ★をシルバーで描くか(ナイトメアをクリアしたステージ。falseなら金)
+     */
+    public static BufferedImage create(int w, int h, String label, Look look, int stars, boolean silverStars) {
         BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = img.createGraphics();
         UIBuilder.applyHighQualityRenderSettings(g);
@@ -99,7 +108,7 @@ public final class StageNodeIcon {
                 double sx = cx + (i - 1) * sr * 2.5;
                 Path2D star = star(sx, sy, sr);
                 if (i < stars) {
-                    g.setColor(new Color(255, 205, 50));
+                    g.setColor(silverStars ? new Color(214, 224, 240) : new Color(255, 205, 50));
                     g.fill(star);
                 } else {
                     g.setColor(new Color(110, 130, 190, 170));

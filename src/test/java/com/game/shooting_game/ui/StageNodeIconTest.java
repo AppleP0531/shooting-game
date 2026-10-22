@@ -69,6 +69,17 @@ class StageNodeIconTest {
     }
 
     @Test
+    @DisplayName("ナイトメアをクリアした台は、★がシルバーで塗られる")
+    void silverStars() {
+        BufferedImage gold = StageNodeIcon.create(100, 115, "7", Look.NORMAL, 3, false);
+        BufferedImage silver = StageNodeIcon.create(100, 115, "7", Look.NORMAL, 3, true);
+        assertEquals(0xffcd32, gold.getRGB(50, 102) & 0xffffff);
+        assertEquals(0xd6e0f0, silver.getRGB(50, 102) & 0xffffff);
+        // 引数を省いた版は金
+        assertTrue(sameImage(gold, StageNodeIcon.create(100, 115, "7", Look.NORMAL, 3)));
+    }
+
+    @Test
     @DisplayName("ボスと通常で台の縁の色が違う(台の右端の縁)")
     void bossDiffersFromNormal() {
         BufferedImage normal = StageNodeIcon.create(100, 115, "5", Look.NORMAL, 0);
