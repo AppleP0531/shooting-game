@@ -115,6 +115,7 @@ public final class ShipManager implements Manager {
         private Double shieldRate; // 自機: 最大HPに対する基本のシールド量(なければ0.15)
         private Double invincibleTime; // 自機: 被弾後の無敵時間(秒。なければ1)
         private Double oocTime; // 自機: 暴走状態の長さ(秒。なければ10)
+        private Double attackRate; // 自機: 火力の基本の倍率(なければ1。機体のレベル・★の倍率に、さらにかける)
         private double speed;
         private double score;
         private String coins;
