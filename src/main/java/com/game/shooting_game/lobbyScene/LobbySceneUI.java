@@ -332,22 +332,22 @@ public class LobbySceneUI {
     private void drawStats(Graphics g, String shipId) {
         if (DataManager.getUserData() == null)
             return;
-        double adj = ShootingGameMain.getScreenSizeAdj();
+        double adj = ShootingGameMain.getScreenSizeAdj() * 2.0 / 3; // 能力のUIは、ふだんの2/3の大きさ
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         double baseHp = UnitService.baseHp(shipId);
         double hp = baseHp * (1 + SkillService.getBonusFor(shipId, "MAX_HP")) * UnitService.hpRate(shipId);
         hp = hp * (1 + ModuleService.stat(ModuleStat.HP_PCT)) + ModuleService.stat(ModuleStat.HP_FLAT);
-        double shield = hp * 0.15 * (1 + ModuleService.stat(ModuleStat.SHIELD_PCT))
+        double shield = hp * UnitService.baseShieldRate(shipId) * (1 + ModuleService.stat(ModuleStat.SHIELD_PCT))
                 + ModuleService.stat(ModuleStat.SHIELD_FLAT);
         double atk = (1 + SkillService.getBonusFor(shipId, "DAMAGE")) * UnitService.attackRate(shipId)
                 * (1 + ModuleService.stat(ModuleStat.ATK_PCT));
         // 火力は倍率ではなく、基本の弾1発のダメージ(倍率をかけ、実数値の攻撃力を足した値)
         double power = GameUtils.attackDamage(basicBulletDamage(), atk, ModuleService.stat(ModuleStat.ATK_FLAT));
         double def = ModuleService.stat(ModuleStat.DEF_PCT);
-        double invincible = 1 + SkillService.getBonusFor(shipId, "INVINCIBLE");
-        double rampage = 10 + SkillService.getBonusFor(shipId, "OOC_TIME");
+        double invincible = UnitService.baseInvincibleTime(shipId) + SkillService.getBonusFor(shipId, "INVINCIBLE");
+        double rampage = UnitService.baseOocTime(shipId) + SkillService.getBonusFor(shipId, "OOC_TIME");
         Object[][] rows = {
                 { "火力", String.valueOf(Math.round(power)), atk / 4 },
                 { "装甲", String.valueOf(Math.round(hp)), hp / (baseHp * 5) },
@@ -362,8 +362,8 @@ public class LobbySceneUI {
         int labelW = (int) (34 * adj), valueW = (int) (54 * adj);
         int barW = (int) (96 * adj), barH = (int) (7 * adj);
         int line = (int) (20 * adj);
-        Font label = new Font("SansSerif", Font.PLAIN, Math.max(9, (int) (11 * adj)));
-        Font value = new Font("SansSerif", Font.BOLD, Math.max(9, (int) (11 * adj)));
+        Font label = new Font("SansSerif", Font.PLAIN, Math.max(7, (int) (11 * adj)));
+        Font value = new Font("SansSerif", Font.BOLD, Math.max(7, (int) (11 * adj)));
 
         // 機体の絵に重なって読みにくくならないよう、うっすら暗い板を敷く
         g2.setColor(new Color(0, 0, 0, 90));
