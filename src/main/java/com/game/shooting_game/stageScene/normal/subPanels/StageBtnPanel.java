@@ -189,6 +189,36 @@ public class StageBtnPanel extends JPanel {
     }
 
     /**
+     * 指定したステージの台が、パネルの縦の中央に来るスクロール量(0〜最大の範囲に収める)
+     * 台の位置は、基準点(下から50)から上へ pos だけ離れている(drawPanel と同じ式)。
+     *
+     * @param posY        台の高さ(基準サイズ)
+     * @param adj         画面サイズの倍率
+     * @param panelHeight パネルの高さ(画素)
+     * @param max         最大のスクロール量
+     */
+    static double scrollToCenter(double posY, double adj, double panelHeight, double max) {
+        double bottom = panelHeight - 50 * adj;
+        return Math.clamp(panelHeight / 2 - bottom + posY * adj, 0, Math.max(0, max));
+    }
+
+    /**
+     * いま挑めるステージ(クリアした最後の次。全部クリア済みなら最後)の台が、中央に来るまで動かす
+     */
+    public void scrollToCurrent() {
+        if (panelSize == null || NSM.getStageBtnConfigMap() == null || DataManager.getUserData() == null)
+            return;
+        int cleared = DataManager.getUserData().getProgress().getClearedStage();
+        int id = Math.clamp(cleared + 1, 1, NSM.getStageBtnConfigMap().size());
+        StageBtnData data = NSM.getStageBtnConfigMap().get(id);
+        if (data == null)
+            return;
+        scrollOffset = scrollToCenter(data.getPos().getY(), ShootingGameMain.getScreenSizeAdj(), getHeight(),
+                maxScrollOffset);
+        drawPanel();
+    }
+
+    /**
      * ステージの台を番号順に点線の経路でつなぐ(ボタンより奥に描く)。章の最後のステージには、章のラベルを出す。
      * 次のステージに行ける区間(そのステージまでクリア済み)は水色の光る点、まだ行けない区間は暗い小さな点にする。
      */
