@@ -21,6 +21,8 @@ import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.lobbyScene.LobbySceneUI.HangarSceneUIData;
+import com.game.shooting_game.ui.Anchor;
+import com.game.shooting_game.ui.ButtonAnimator;
 import com.game.shooting_game.ui.ShipPieceIcon;
 import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
@@ -105,10 +107,7 @@ public final class LobbyManager extends JPanel implements Manager {
                 36 * ShootingGameMain.getScreenSizeAdj());
         String settingImagePath = "/static/img/UI/lobbyScene/SettingImage.png";
         settingBtn = UIBuilder.createImageBtn(component, settingImagePath, settingBtnSize, "SETTING");
-        settingBtn.setBounds(
-                MAIN.getWidth() - 10 - (int) settingBtn.getWidth(),
-                (int) (10 * ShootingGameMain.getScreenSizeAdj()),
-                (int) settingBtn.getWidth(), (int) settingBtn.getHeight());
+        UIBuilder.placeBtn(settingBtn, Anchor.TOP_RIGHT, Anchor.TOP_RIGHT, -8, 4);
         settingBtn.addActionListener(e -> SM.changeScene(SceneType.SETTING));
         settingBtn.setVisible(false); // 非表示
         this.add(settingBtn);
@@ -174,11 +173,7 @@ public final class LobbyManager extends JPanel implements Manager {
         String selectShipImagePath = "/static/img/UI/lobbyScene/selectShip.png";
         selectShipBtn = UIBuilder.createImageBtn(component, selectShipImagePath, selectShipBtnSize,
                 "SELLECT");
-        selectShipBtn.setBounds(
-                MAIN.getWidth() / 2 - (int) selectShipBtn.getWidth() / 2,
-                MAIN.getHeight() - (int) selectShipBtn.getHeight() / 2
-                        - (int) (100 * ShootingGameMain.getScreenSizeAdj()),
-                (int) selectShipBtn.getWidth(), (int) selectShipBtn.getHeight());
+        UIBuilder.placeBtn(selectShipBtn, Anchor.BOTTOM_CENTER, Anchor.CENTER, 0, -100);
         selectShipBtn.addActionListener(e -> {
             DataManager.getUserData().setSelectedShip(ships[viewingShipInd]);
             updateBtnStates();
@@ -193,11 +188,7 @@ public final class LobbyManager extends JPanel implements Manager {
         String unlockShipImagePath = "/static/img/UI/lobbyScene/unlockShip.png";
         unlockShipBtn = UIBuilder.createImageBtn(component, unlockShipImagePath, unlockShipBtnSize,
                 "UNLOCK");
-        unlockShipBtn.setBounds(
-                MAIN.getWidth() / 2 - (int) unlockShipBtn.getWidth() / 2,
-                MAIN.getHeight() - (int) unlockShipBtn.getHeight() / 2
-                        - (int) (100 * ShootingGameMain.getScreenSizeAdj()),
-                (int) unlockShipBtn.getWidth(), (int) unlockShipBtn.getHeight());
+        UIBuilder.placeBtn(unlockShipBtn, Anchor.BOTTOM_CENTER, Anchor.CENTER, 0, -100);
         unlockShipBtn.addActionListener(e -> {
             String id = ships[viewingShipInd];
             if (GachaService.unlock(id)) {
@@ -223,11 +214,7 @@ public final class LobbyManager extends JPanel implements Manager {
         String changeModeImagePath = "/static/img/UI/lobbyScene/modeIcon.png";
         changeModeBtn = UIBuilder.createImageBtn(component, changeModeImagePath, changeModeBtnSize,
                 "CHANGE_MODE");
-        changeModeBtn.setBounds(
-                MAIN.getWidth() - (int) changeModeBtn.getWidth() - (int) (10 * ShootingGameMain.getScreenSizeAdj()),
-                MAIN.getHeight() - (int) changeModeBtn.getHeight()
-                        - (int) (100 * ShootingGameMain.getScreenSizeAdj()),
-                (int) changeModeBtn.getWidth(), (int) changeModeBtn.getHeight());
+        UIBuilder.placeBtn(changeModeBtn, Anchor.BOTTOM_RIGHT, Anchor.BOTTOM_RIGHT, -10, -100);
         changeModeBtn.addActionListener(e -> {
             SHIP_M.getPlayer().changeMode();
         });
@@ -256,6 +243,11 @@ public final class LobbyManager extends JPanel implements Manager {
                 .addActionListener(e -> SM.changeScene(SceneType.SELECTSTAGE));
         selectStageBtn.setVisible(false); // 非表示
         this.add(selectStageBtn);
+
+        // 押す・乗せると拡大縮小する(下の列・右上・船の切り替え・選択/解放・色の切り替え)
+        for (JButton b : new JButton[] { upgradeBtn, shopBtn, gachaBtn, settingBtn, dexBtn, nextShipBtn,
+                prevShipBtn, selectShipBtn, unlockShipBtn, changeModeBtn, backpackBtn, selectStageBtn })
+            ButtonAnimator.attachPop(b);
     }
 
     /**
