@@ -34,7 +34,8 @@ public class GameSceneUI {
             int coin,
             Map<String, Double> effectList,
             double resumeTimer, // 再開カウントの経過時間(負なら数えていない)
-            double leaveFade) { // 離脱フェードの進み具合(0〜1。負ならフェードしていない)
+            double leaveFade, // 離脱フェードの進み具合(0〜1。負ならフェードしていない)
+            java.util.List<com.game.shooting_game.gameScene.stage.DifficultyService.LiveMission> missions) { // プレイ中に出すミッション(出さないなら空)
     }
 
     public GameSceneUI() {
@@ -60,6 +61,7 @@ public class GameSceneUI {
         drawActiveEffects(g, uiData.effectList);
         drawScore(g, uiData.score);
         drawCoin(g, uiData.coin);
+        drawMissions(g, uiData.missions);
         drawResumeCount(g, uiData.resumeTimer);
         drawLeaveFade(g, uiData.leaveFade);
     }
@@ -250,6 +252,44 @@ public class GameSceneUI {
      * @param g
      * @param score スコア
      */
+    /**
+     * ミッションの状況(左上のコインの下。達成見込みは緑、もう満たせないものは赤、あとで満たせるものは黄色。記録済みは★を金色に)
+     */
+    private void drawMissions(Graphics g, java.util.List<com.game.shooting_game.gameScene.stage.DifficultyService.LiveMission> missions) {
+        if (missions == null || missions.isEmpty())
+            return;
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+        g2.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING,
+                java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, Math.max(8, (int) (10 * adj))));
+        java.awt.FontMetrics fm = g2.getFontMetrics();
+        int x = (int) (8 * adj), y = (int) (34 * adj), line = fm.getHeight() + (int) (2 * adj);
+        for (var m : missions) {
+            Color c = switch (m.state()) {
+                case OK -> new Color(120, 230, 150);
+                case FAILED -> new Color(255, 110, 110);
+                case PENDING -> new Color(255, 220, 100);
+            };
+            String mark = switch (m.state()) {
+                case OK -> "○";
+                case FAILED -> "×";
+                case PENDING -> "△";
+            };
+            String text = mark + " " + m.text() + "  (" + m.progress() + ")";
+            g2.setColor(new Color(0, 0, 0, 200));
+            for (int[] d : new int[][] { { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 } })
+                g2.drawString(text, x + d[0] + (int) (14 * adj), y + d[1]);
+            g2.setColor(c);
+            g2.drawString(text, x + (int) (14 * adj), y);
+            // 記録済みの★(金)か、まだの★(うすい枠)
+            g2.setColor(m.earned() ? new Color(255, 205, 50) : new Color(150, 160, 190));
+            g2.drawString(m.earned() ? "★" : "☆", x, y);
+            y += line;
+        }
+        g2.dispose();
+    }
+
     private void drawScore(Graphics g, int score) {
         String text = "Score: " + score;
         Vector2 pos = new Vector2(

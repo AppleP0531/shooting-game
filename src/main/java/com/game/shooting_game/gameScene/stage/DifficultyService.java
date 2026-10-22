@@ -210,6 +210,62 @@ public final class DifficultyService {
         return new MissionResult(missions(stageId, diff), ok, fresh);
     }
 
+    /** プレイ中の、ミッション1つの状況 */
+    public enum LiveState {
+        /** いまの成績なら満たせる */
+        OK,
+        /** もう満たせない(被弾が多すぎる・時間切れ) */
+        FAILED,
+        /** いまは満たしていないが、クリアまでに満たせる(HPの割合は回復で戻る) */
+        PENDING
+    }
+
+    /**
+     * プレイ中に出すミッション1つ
+     *
+     * @param text     ミッションの文
+     * @param progress いまの数値(例: "被弾 1/3"、"HP 85%"、"32秒 / 60秒")
+     * @param state    いまの状況
+     * @param earned   これまでに★として記録済みか
+     */
+    public record LiveMission(String text, String progress, LiveState state, boolean earned) {
+    }
+
+    /**
+     * プレイ中のミッションの状況(状態を読まない純粋な計算)
+     *
+     * @param hits      いまの被弾回数
+     * @param hpRate    いまのHPの割合(0〜1)
+     * @param seconds   いまの経過時間(秒)
+     * @param timeLimit 制限時間(秒)
+     * @param earned    これまでに達成済みか(ミッションの並び順)
+     */
+    static List<LiveMission> live(MissionSpec m, double timeLimit, int hits, double hpRate, double seconds,
+            boolean[] earned) {
+        List<LiveMission> list = new ArrayList<>();
+        list.add(new LiveMission("被弾 " + m.getMaxHits() + "回以内", "被弾 " + hits + "/" + m.getMaxHits(),
+                hits <= m.getMaxHits() ? LiveState.OK : LiveState.FAILED, earned.length > 0 && earned[0]));
+        list.add(new LiveMission("クリア時のHPが " + Math.round(m.getMinHpRate() * 100) + "% 以上",
+                "HP " + Math.round(hpRate * 100) + "%",
+                hpRate >= m.getMinHpRate() ? LiveState.OK : LiveState.PENDING, earned.length > 1 && earned[1]));
+        list.add(new LiveMission(Math.round(timeLimit) + "秒以内にクリア",
+                Math.round(seconds) + "秒 / " + Math.round(timeLimit) + "秒",
+                seconds <= timeLimit ? LiveState.OK : LiveState.FAILED, earned.length > 2 && earned[2]));
+        return list;
+    }
+
+    /**
+     * プレイ中に画面へ出す、ミッションの状況(記録済みかも含める)
+     */
+    public static List<LiveMission> liveMissions(int stageId, Difficulty diff, int hits, double hpRate,
+            double seconds) {
+        List<Mission> done = missions(stageId, diff);
+        boolean[] earned = new boolean[done.size()];
+        for (int i = 0; i < earned.length; i++)
+            earned[i] = done.get(i).done();
+        return live(spec(stageId), timeLimit(stageId), hits, hpRate, seconds, earned);
+    }
+
     /**
      * 成績から、3つのミッションを満たしたかを判定する(状態を読まない純粋な判定)
      *

@@ -321,8 +321,22 @@ public final class GameManager extends JPanel implements Manager {
                 coin,
                 effectList,
                 resumeTimer >= 0 ? resumeTimer : -1,
-                leaveTimer >= 0 ? Math.min(1, leaveTimer / LEAVE_FADE) : -1);
+                leaveTimer >= 0 ? Math.min(1, leaveTimer / LEAVE_FADE) : -1,
+                liveMissions());
         gameSceneUI.draw(g, uiData);
+    }
+
+    /**
+     * プレイ中に画面の左上へ出す、ミッションの状況(ハードのときだけ。無限・スキップ・ミッションのないステージは空)
+     */
+    private java.util.List<DifficultyService.LiveMission> liveMissions() {
+        Difficulty diff = STAGE_M.getStage().getDifficulty();
+        if (diff != Difficulty.HARD || skipped || STAGE_M.getStageId() == EndlessWaves.STAGE_ID
+                || !DifficultyService.selectable(STAGE_M.getStageId()) || SHIP_M.getPlayer() == null)
+            return java.util.List.of();
+        double maxHp = SHIP_M.getPlayer().getMaxHp();
+        double hpRate = maxHp > 0 ? SHIP_M.getPlayer().getHp() / maxHp : 0;
+        return DifficultyService.liveMissions(STAGE_M.getStageId(), diff, hitCount, hpRate, playTime);
     }
 
     /**
