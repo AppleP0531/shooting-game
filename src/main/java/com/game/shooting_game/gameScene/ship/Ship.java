@@ -502,8 +502,13 @@ public abstract class Ship implements Moveable, GameObject, Entity {
      * @return ドロップ量
      */
     public int getDropCoinAmount() {
-        String range = coins;
+        return rollCoinAmount(coins);
+    }
 
+    /**
+     * コインの範囲("最小~最大")から、ドロップ量を決める。読めない書き方なら0。
+     */
+    public static int rollCoinAmount(String range) {
         try {
             String[] num = range.split("~");
             int min = Integer.parseInt(num[0]);

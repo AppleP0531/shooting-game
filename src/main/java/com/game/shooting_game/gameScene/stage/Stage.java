@@ -84,7 +84,7 @@ public class Stage implements GameObject {
     }
 
     /**
-     * 飛ばしたウェーブの敵を、すべて倒した扱いにする(スコアだけ入る。ドロップはなし)
+     * 飛ばしたウェーブの敵を、すべて倒した扱いにする(スコアと、倒したときに落とすはずのコインが入る。アイテムと素材のドロップはなし)
      */
     private void creditSkippedWave(int wave) {
         GameManager gm = GameManager.getInstance();
@@ -94,6 +94,10 @@ public class Stage implements GameObject {
                 if (def == null || def.getDatas() == null)
                     continue;
                 gm.addScore(def.getDatas().getScore());
+                // コインは、落ちて拾った場合と同じ量(1枚100)を、そのまま加える(飛ばす数が多いので、画面には落とさない)
+                int coins = Ship.rollCoinAmount(def.getDatas().getCoins()) * (e.getLevel() + 1);
+                if (coins > 0)
+                    gm.addCoin(100 * coins);
             } catch (Exception ex) {
                 // 未定義の敵は数えない
             }
