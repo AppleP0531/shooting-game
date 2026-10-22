@@ -373,6 +373,12 @@ public final class LobbyManager extends JPanel implements Manager {
         int icon = (int) (26 * adj), gap = (int) (6 * adj);
         int left = unlockShipBtn.getX() + (unlockShipBtn.getWidth() - (icon + gap + fm.stringWidth(text))) / 2;
         int baseY = unlockShipBtn.getY() - (int) (6 * adj);
+        // 弾やビームが後ろを通っても読めるよう、暗い板を敷く
+        int padX = (int) (8 * adj), padY = (int) (4 * adj);
+        int plateH = icon + padY * 2;
+        g2.setColor(new java.awt.Color(0, 8, 24, 215));
+        g2.fillRoundRect(left - padX, baseY - icon + (int) (4 * adj) - padY,
+                icon + gap + fm.stringWidth(text) + padX * 2, plateH, 12, 12);
         ShipPieceIcon.draw(g2, ships[viewingShipInd], left, baseY - icon + (int) (4 * adj), icon);
         g2.setColor(enough ? new java.awt.Color(255, 214, 80) : new java.awt.Color(255, 120, 120));
         g2.drawString(text, left + icon + gap, baseY);

@@ -24,6 +24,7 @@ import com.game.shooting_game.gameScene.bullet.BulletManager;
 import com.game.shooting_game.gameScene.ship.ShipFactory;
 import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
+import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.gameScene.ship.types.Player;
 import com.game.shooting_game.utils.Vector2;
 
@@ -312,6 +313,18 @@ public class LobbySceneUI {
 
     // ----- 機体の能力(左のバー) -----
 
+    private static final double DEFAULT_BULLET_DAMAGE = 5; // 弾の設定が読めないときの値
+
+    /** 自機の基本の弾(STRAIGHT の1番)のダメージ */
+    private double basicBulletDamage() {
+        try {
+            return BulletManager.getInstance().getBulletConfig().get(ShipKinds.PLAYER)
+                    .get(BulletManager.BulletKinds.STRAIGHT).get(1).getDamage();
+        } catch (RuntimeException e) {
+            return DEFAULT_BULLET_DAMAGE;
+        }
+    }
+
     /**
      * 閲覧中の機体の能力のバー(装甲・盾・火力・防御・無敵・暴走)を、ラベル+数値+バーで描く。
      * バーの長さは目安(それぞれの値を、おおよその上限で割った割合)。
@@ -330,11 +343,13 @@ public class LobbySceneUI {
                 + ModuleService.stat(ModuleStat.SHIELD_FLAT);
         double atk = (1 + SkillService.getBonusFor(shipId, "DAMAGE")) * UnitService.attackRate(shipId)
                 * (1 + ModuleService.stat(ModuleStat.ATK_PCT));
+        // 火力は倍率ではなく、基本の弾1発のダメージ(倍率をかけ、実数値の攻撃力を足した値)
+        double power = GameUtils.attackDamage(basicBulletDamage(), atk, ModuleService.stat(ModuleStat.ATK_FLAT));
         double def = ModuleService.stat(ModuleStat.DEF_PCT);
         double invincible = 1 + SkillService.getBonusFor(shipId, "INVINCIBLE");
         double rampage = 10 + SkillService.getBonusFor(shipId, "OOC_TIME");
         Object[][] rows = {
-                { "火力", String.format("×%.2f", atk), atk / 4 },
+                { "火力", String.valueOf(Math.round(power)), atk / 4 },
                 { "装甲", String.valueOf(Math.round(hp)), hp / (baseHp * 5) },
                 { "盾", String.valueOf(Math.round(shield)), shield / (hp * 0.5) },
                 { "防御", String.format("-%.0f%%", def * 100), def / 0.5 },
