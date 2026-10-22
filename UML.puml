@@ -470,8 +470,8 @@ package "shooting_game" {
                 - stageBtnPanel: StageBtnPanel
                 - MAIN: ShootingGameMain
                 - SM: SceneManager
-                - lobbyBtn: JButton
-                - settingBtn: JButton
+                - lobbyBtn: JButton <<右下の「戻る」。ModeButtonImage の青い板、UIBuilder.placeBtn で置き、ButtonAnimator.attachPop を付ける>>
+                - settingBtn: JButton <<右上。placeBtn で置き、attachPop を付ける>>
                 - starBtn: JButton <<★の合計と次の目標。受け取れるときは黄色>>
                 - starRewardPanel: StarRewardPanel
                 - stageBtnConfigList: List<StageBtnData>
@@ -486,7 +486,7 @@ package "shooting_game" {
                 - loadImages(): void
                 + setup(): void
                 + update(dt: double): void
-                + draw(g: Graphics): void
+                + draw(g: Graphics): void <<背景は lobbyUI.draw(g, スクロール量)>>
                 + reload(): void
                 - reloadConfigs(): void
                 - reloadScreen(): void
@@ -504,8 +504,34 @@ package "shooting_game" {
             }
 
             class NormalStageSceneUI {
+                - {static} STAR_COUNT: int = 110
+                - {static} LAYER_SPEED: double[]
+                - stars: Star[]
+                --
                 + NormalStageSceneUI()
-                + draw(g: Graphics): void
+                + draw(g: Graphics, scroll: double): void <<紺の宇宙に、スクロールで流れる星(層ごとに速さが違う)と、上の帯(SceneBars)を描く>>
+            }
+
+            class Star <<record>> {
+                ~ x: double
+                ~ y: double
+                ~ layer: int
+                ~ size: double
+                ~ phase: double
+            }
+
+            NormalStageSceneUI +-- Star
+
+            class Chapters <<Utility>> {
+                + {static} STAGES_PER_CHAPTER: int = 20
+                + {static} BOSS_INTERVAL: int = 5
+                - {static} NAMES: String[] <<星座の名前(12)>>
+                - Chapters()
+                + {static} chapterOf(stageId: int): int
+                + {static} isChapterEnd(stageId: int): boolean
+                + {static} isBoss(stageId: int): boolean
+                + {static} name(chapter: int): String
+                + {static} label(chapter: int): String
             }
 
             package "subPanels" {
@@ -515,6 +541,8 @@ package "shooting_game" {
                     - MAIN: ShootingGameMain
                     - NSM: NormalStageManager
                     - STAGE_M: StageManager
+                    - {static} NODE_H: double = 64
+                    - {static} NODE_W: double = 56
                     - lockImage: BufferedImage
                     - panelSize: Vector2
                     - originPos: Vector2
@@ -523,7 +551,7 @@ package "shooting_game" {
                     - buttonMap: Map<Integer, JButton>
                     --
                     + StageBtnPanel()
-                    - createStageButton(stageId: int, image: BufferedImage, locked: boolean): JButton <<画像がなければ StageLockIcon.placeholder、ロック中は鍵を重ねる>>
+                    - createStageButton(stageId: int, image: BufferedImage, locked: boolean): JButton <<画像がなければ StageNodeIcon.create(台の絵と★)、ロック中は鍵を重ねる>>
                     - lockIconImage(buttonSize: int): BufferedImage
                     + initComponents(): void
                     + setup(): void
@@ -531,8 +559,9 @@ package "shooting_game" {
                     - loadImages(): void
                     - drawPanel(): void
                     - drawBtn(): void
-                    - buttonCenter(data: StageBtnData): Vector2
-                    # paintComponent(g: Graphics): void <<ステージ間を線でつなぐ>>
+                    - buttonCenter(data: StageBtnData): Vector2 <<台の中心(PLATFORM_CENTER の分だけ下)>>
+                    + getScrollOffset(): double <<背景の星を流すのに使う>>
+                    # paintComponent(g: Graphics): void <<台を点線の経路でつなぎ、章の最後に「第N章」と星座名のラベルを出す>>
                 }
 
                 class StageInfoView {
@@ -3376,6 +3405,25 @@ package "shooting_game" {
             ~ {static} plate(x: double, y: double, w: double, h: double, cut: double): Shape
         }
 
+        class StageNodeIcon <<Utility>> {
+            + {static} PLATFORM_CENTER: double = 0.66
+            - StageNodeIcon()
+            + {static} lookOf(locked: boolean, boss: boolean, stars: int): Look
+            + {static} create(w: int, h: int, label: String, look: Look, stars: int): BufferedImage <<光る丸い台に番号と★。ボスはドクロ>>
+            - {static} alpha(c: Color, a: int): Color
+            ~ {static} star(cx: double, cy: double, r: double): Path2D
+            - {static} drawSkull(g: Graphics2D, cx: double, cy: double, r: double, c: Color): void
+        }
+
+        enum "StageNodeIcon.Look" as StageNodeIconLook {
+            NORMAL
+            GOLD
+            BOSS
+            LOCKED
+        }
+
+        StageNodeIcon +-- StageNodeIconLook
+
         class StageLockIcon <<Utility>> {
             - {static} NEON: Color
             --
@@ -3878,6 +3926,14 @@ shooting_game.stageScene.StarRewardPanel --|> javax.swing.JPanel
 shooting_game.stageScene.normal.subPanels.StageInfoView ..> shooting_game.gameScene.stage.DifficultyService
 shooting_game.stageScene.normal.subPanels.StageDetailPanel ..> shooting_game.gameScene.stage.DifficultyService
 shooting_game.stageScene.normal.subPanels.StageBtnPanel ..> shooting_game.ui.StageLockIcon
+shooting_game.stageScene.normal.subPanels.StageBtnPanel ..> shooting_game.ui.StageNodeIcon
+shooting_game.stageScene.normal.subPanels.StageBtnPanel ..> shooting_game.stageScene.normal.Chapters
+shooting_game.stageScene.normal.subPanels.StageBtnPanel ..> shooting_game.gameScene.stage.DifficultyService
+shooting_game.stageScene.normal.subPanels.StageBtnPanel ..> shooting_game.gameScene.stage.Difficulty
+shooting_game.stageScene.normal.NormalStageSceneUI ..> shooting_game.ui.SceneBars
+shooting_game.stageScene.normal.NormalStageManager ..> shooting_game.ui.ModeButtonImage
+shooting_game.stageScene.normal.NormalStageManager ..> shooting_game.ui.ButtonAnimator
+shooting_game.stageScene.normal.NormalStageManager ..> shooting_game.ui.UIBuilder
 shooting_game.model.StageRewards --> shooting_game.gameScene.stage.MissionResult
 shooting_game.gameScene.GameManager ..> shooting_game.model.StageRewards
 shooting_game.gameResultScene.GameResultSceneUI ..> shooting_game.model.StageRewards
