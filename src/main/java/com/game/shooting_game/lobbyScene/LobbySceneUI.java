@@ -113,10 +113,33 @@ public class LobbySceneUI {
      */
     public void draw(Graphics g, HangarSceneUIData uiData) {
         drawPreviewShip(g, uiData.ships[uiData.ind]);
+        drawBars(g);
         drawTabBar(g, uiData.ships.length, uiData.ind);
         drawUserLevel(g);
         drawEquipment(g);
         drawMessage(g);
+    }
+
+    /**
+     * 上のステータスバーと下のボタン列の帯(暗い紺の板と、ネオンの水色の縁)
+     * 機体の上に重ねるので、少し透かす。ボタンやレベル表示は、この上に描かれる。
+     */
+    private void drawBars(Graphics g) {
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        int w = MAIN.getWidth(), h = MAIN.getHeight();
+        int topH = (int) (44 * adj);
+        int bottomH = (int) (58 * adj);
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setPaint(new java.awt.GradientPaint(0, 0, new Color(18, 34, 72, 235), 0, topH, new Color(8, 16, 38, 200)));
+        g2.fillRect(0, 0, w, topH);
+        g2.setPaint(new java.awt.GradientPaint(0, h - bottomH, new Color(8, 16, 38, 200), 0, h,
+                new Color(18, 34, 72, 235)));
+        g2.fillRect(0, h - bottomH, w, bottomH);
+        g2.setColor(new Color(70, 215, 255, 200));
+        g2.setStroke(new java.awt.BasicStroke(Math.max(1f, (float) (1.5 * adj))));
+        g2.drawLine(0, topH, w, topH);
+        g2.drawLine(0, h - bottomH, w, h - bottomH);
+        g2.dispose();
     }
 
     /**
@@ -318,7 +341,7 @@ public class LobbySceneUI {
 
         String shipId = DataManager.getUserData().getSelectedShip();
         int x = (int) (6 * adj);
-        int y = (int) (30 * adj);
+        int y = (int) (50 * adj); // 上のステータスバーの下
         int w = (int) (150 * adj);
         int h = (int) (226 * adj);
         int pad = (int) (6 * adj);
