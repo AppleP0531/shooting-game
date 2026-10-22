@@ -51,25 +51,32 @@ public class LogUtils {
      * Severity(重大度。数値が小さいほど重大)。
      */
     public enum Severity {
-        EMERGENCY(0, ANSI.BOLD + ANSI.RED), // システムが使えない
-        ALERT(1, ANSI.BOLD + ANSI.RED), // 直ちに対処が必要
-        CRITICAL(2, ANSI.BOLD + ANSI.RED), // 致命的(続行できない)
-        ERROR(3, ANSI.RED), // エラー
-        WARNING(4, ANSI.YELLOW), // 警告(既定値で続行するなど)
-        NOTICE(5, ANSI.GREEN), // 正常だが注目すべき出来事
-        INFO(6, ANSI.GREEN), // 通常の情報
-        DEBUG(7, ANSI.CYAN); // デバッグ
+        EMERGENCY(0, "FATAL", ANSI.BOLD + ANSI.RED), // システムが使えない
+        ALERT(1, "FATAL", ANSI.BOLD + ANSI.RED), // 直ちに対処が必要
+        CRITICAL(2, "FATAL", ANSI.BOLD + ANSI.RED), // 致命的(続行できない)
+        ERROR(3, "ERROR", ANSI.RED), // エラー
+        WARNING(4, "WARN", ANSI.YELLOW), // 警告(既定値で続行するなど)
+        NOTICE(5, "NOTICE", ANSI.GREEN), // 正常だが注目すべき出来事
+        INFO(6, "INFO", ANSI.GREEN), // 通常の情報
+        DEBUG(7, "DEBUG", ANSI.CYAN); // デバッグ
 
         private final int code;
+        private final String label;
         private final String color;
 
-        private Severity(int code, String color) {
+        private Severity(int code, String label, String color) {
             this.code = code;
+            this.label = label;
             this.color = color;
         }
 
         public int code() {
             return code;
+        }
+
+        /** 画面に出すラベル(数字では INFO か DEBUG か分からないため。EMERGENCY〜CRITICAL は FATAL) */
+        public String label() {
+            return label;
         }
     }
 
@@ -179,8 +186,9 @@ public class LogUtils {
      * RFC 3164 形式の1行を作る(色つき。テストしやすいよう時刻は引数で受ける)。
      */
     static String format(Facility facility, Severity severity, LocalDateTime time, String component, String msg) {
-        return String.format("%s<%d>%s%s %s %s[%d]: %s",
-                severity.color, priority(facility, severity), ANSI.RESET,
+        // 行頭は PRI の数字ではなく [INFO] などのラベルにする(PRI は priority() で計算できる)
+        return String.format("%s%-8s%s%s %s %s[%d]: %s",
+                severity.color, "[" + severity.label() + "]", ANSI.RESET,
                 TIMESTAMP.format(time),
                 HOSTNAME,
                 ANSI.CYAN + toTag(component) + ANSI.RESET, PID,
