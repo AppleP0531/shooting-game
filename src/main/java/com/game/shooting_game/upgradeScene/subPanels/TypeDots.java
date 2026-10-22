@@ -49,7 +49,8 @@ public class TypeDots extends JPanel {
             dia.lineTo(cx - d / 2, cy);
             dia.closePath();
             boolean own = SubShipTypeService.isUnlocked(t);
-            Color line = t.equals(current) ? new Color(255, 205, 70) : own ? new Color(70, 215, 255) : new Color(90, 100, 115);
+            Color line = t.equals(current) ? new Color(255, 205, 70)
+                    : own ? new Color(70, 215, 255) : new Color(90, 100, 115);
             if (t.equals(viewing)) {
                 g2.setColor(line);
                 g2.fill(dia);
