@@ -41,4 +41,19 @@ class StarInheritTest {
         assertThat(DifficultyService.earned(Map.of(), 1, Difficulty.EASY, 0)).isFalse();
     }
 
+
+    @Test
+    void 星の合計は高い難易度の達成を下の難易度の分も数える() {
+        // ハード1つ → イージー・ノーマル・ハードで3つ
+        assertThat(DifficultyService.countStars(java.util.List.of("mission:stage3:0"))).isEqualTo(3);
+        // ナイトメア1つ → 4つ
+        assertThat(DifficultyService.countStars(java.util.List.of("mission:stage3:NIGHTMARE:0"))).isEqualTo(4);
+        // 同じミッションをハードとナイトメアで取っても、重ねて数えない
+        assertThat(DifficultyService.countStars(java.util.List.of("mission:stage3:0", "mission:stage3:NIGHTMARE:0")))
+                .isEqualTo(4);
+        // 別のミッションは別に数える
+        assertThat(DifficultyService.countStars(java.util.List.of("mission:stage3:0", "mission:stage3:1"))).isEqualTo(6);
+        // ミッションのキー以外は数えない
+        assertThat(DifficultyService.countStars(java.util.List.of("endless:wave", "daily:x"))).isEqualTo(0);
+    }
 }

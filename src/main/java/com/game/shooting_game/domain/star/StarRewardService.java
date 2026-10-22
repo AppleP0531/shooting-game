@@ -20,7 +20,7 @@ import com.game.shooting_game.utils.LogUtils;
 /**
  * ★(ミッション達成数)のマイルストーン報酬
  * <p>
- * ★が interval(既定12)個たまるごとに報酬を受け取れる。受け取りは手動で、
+ * ★が interval(既定36)個たまるごとに報酬を受け取れる。受け取りは手動で、
  * 受取済みは progress.highScores のキー {@code "starReward:" + n}(値1)に記録する。
  * 注意: "mission:" で始まるキーは★の数に数えられるので、受取済みキーはその接頭辞にしないこと。
  */
@@ -28,7 +28,7 @@ public final class StarRewardService {
     private static final String component = "[StarRewardService]";
     private static final String CONFIG_PATH = "/static/configs/StarRewardConfig.json";
     private static final String CLAIMED_PREFIX = "starReward:";
-    private static final int DEFAULT_INTERVAL = 12;
+    private static final int DEFAULT_INTERVAL = 36;
 
     /** 報酬(コインと素材、研究スキップ券) */
     public record Reward(int coins, Map<ResourceKinds, Integer> resources, int skipTickets) {

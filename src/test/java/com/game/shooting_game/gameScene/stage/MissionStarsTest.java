@@ -45,7 +45,7 @@ class MissionStarsTest {
     }
 
     @Test
-    @DisplayName("totalStars は mission: で始まるキーの数")
+    @DisplayName("totalStars は全難易度の★を数える(高い難易度の達成は、下の難易度の分も数える)")
     void totalStars() {
         assertThat(DifficultyService.totalStars()).isZero();
         store().put("mission:stage1:0", 1);
@@ -53,6 +53,7 @@ class MissionStarsTest {
         store().put("mission:stage2:EASY:2", 1);
         store().put("stage1", 100);
         store().put("stage1:HARD", 100);
-        assertThat(DifficultyService.totalStars()).isEqualTo(3);
+        // HARD(従来のキー)1つ=EASY・NORMAL・HARD の3つ、NORMAL は重なる、EASY の別ステージで1つ
+        assertThat(DifficultyService.totalStars()).isEqualTo(4);
     }
 }
