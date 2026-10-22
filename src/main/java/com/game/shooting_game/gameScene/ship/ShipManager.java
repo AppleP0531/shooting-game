@@ -236,7 +236,8 @@ public final class ShipManager implements Manager {
     private void loadImages() {
         final String IMAGE_BASE_PATH = "/static/img/ship";
 
-        shipImageCache = new HashMap<>();
+        shipImageCache = new java.util.concurrent.ConcurrentHashMap<>();
+        java.util.List<Runnable> tasks = new java.util.ArrayList<>();
         // ShipKindsの階層でループ
         for (Map.Entry<ShipKinds, Map<String, ShipDefinition>> ownerEntry : shipConfigMap.entrySet()) {
             ShipKinds owner = ownerEntry.getKey();
@@ -256,6 +257,7 @@ public final class ShipManager implements Manager {
 
                 // ColorModeごとに処理
                 for (ColorMode mode : ColorMode.values()) {
+                    tasks.add(() -> {
                     String imagePath = IMAGE_BASE_PATH + data.getImagePath();
                     try {
                         String suffix = "";
@@ -318,9 +320,12 @@ public final class ShipManager implements Manager {
                             default -> System.out.println(e);
                         }
                     }
+                });
                 }
             }
         }
+        // 画像の読み込みと色違いの計算は、船・色ごとに独立しているので、並列で行う(起動を速くする)
+        tasks.parallelStream().forEach(Runnable::run);
     }
 
     @Override
