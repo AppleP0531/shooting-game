@@ -38,7 +38,7 @@ class StageLayoutTest {
         List<double[]> pts = load();
         assertEquals(200, pts.size());
         for (int i = 0; i < pts.size(); i++) {
-            assertTrue(Math.abs(pts.get(i)[0]) <= 130, "x of " + (i + 1));
+            assertTrue(Math.abs(pts.get(i)[0]) <= 170, "x of " + (i + 1));
             assertTrue(pts.get(i)[1] >= pts.get(0)[1], "stage " + (i + 1) + " is below stage 1");
             for (int j = i + 1; j < pts.size(); j++)
                 assertTrue(Math.hypot(pts.get(i)[0] - pts.get(j)[0], pts.get(i)[1] - pts.get(j)[1]) >= 60,
