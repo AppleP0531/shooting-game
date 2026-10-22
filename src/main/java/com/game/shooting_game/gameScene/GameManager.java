@@ -242,6 +242,8 @@ public final class GameManager extends JPanel implements Manager {
         hitCount = 0;
         playTime = 0;
         skipped = false;
+        LogUtils.debug(component, "Mission HUD: stage=" + STAGE_M.getStageId() + ", difficulty="
+                + STAGE_M.getStage().getDifficulty() + ", selectable=" + DifficultyService.selectable(STAGE_M.getStageId()) + ".");
         collectedResources.clear();
 
         // 各マネージャーのセットアップ
