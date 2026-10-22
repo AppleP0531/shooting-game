@@ -253,7 +253,7 @@ public class GameSceneUI {
      * @param score スコア
      */
     /**
-     * ミッションの状況(左上のコインの下。達成見込みは緑、もう満たせないものは赤、あとで満たせるものは黄色。記録済みは★を金色に)
+     * ミッションの状況(左上。HPのゲージの下。達成見込みは緑、もう満たせないものは赤、あとで満たせるものは黄色。記録済みは★を金色に)
      */
     private void drawMissions(Graphics g, java.util.List<com.game.shooting_game.gameScene.stage.DifficultyService.LiveMission> missions) {
         if (missions == null || missions.isEmpty())
@@ -264,7 +264,7 @@ public class GameSceneUI {
                 java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, Math.max(8, (int) (10 * adj))));
         java.awt.FontMetrics fm = g2.getFontMetrics();
-        int x = (int) (8 * adj), y = (int) (34 * adj), line = fm.getHeight() + (int) (2 * adj);
+        int x = (int) (8 * adj), y = (int) (54 * adj), line = fm.getHeight() + (int) (2 * adj);
         for (var m : missions) {
             Color c = switch (m.state()) {
                 case OK -> new Color(120, 230, 150);
