@@ -10,7 +10,15 @@ import java.util.Locale;
  * <p>
  * 1行は {@code <PRI>Mmm dd hh:mm:ss HOSTNAME TAG[PID]: MSG} の形で、
  * PRI = Facility × 8 + Severity。出力先はコンソールのみ(ネットワーク送信はしない)。
+ * 行頭には PRI の数字ではなく、次のラベルを出す。
  * </p>
+ * <ul>
+ * <li>[INFO] 正常な進行</li>
+ * <li>[WARN] 特に問題なく継続可能</li>
+ * <li>[ERROR] 異常事態(一部機能不全)</li>
+ * <li>[FATAL] 致命的(継続不可)</li>
+ * <li>[DEBUG] 開発者用。コードが意図した状態で動いているか</li>
+ * </ul>
  */
 public class LogUtils {
     private static final boolean ENABLE_LOG = true; // ログ全体のON/OFF
@@ -51,14 +59,14 @@ public class LogUtils {
      * Severity(重大度。数値が小さいほど重大)。
      */
     public enum Severity {
-        EMERGENCY(0, "FATAL", ANSI.BOLD + ANSI.RED), // システムが使えない
-        ALERT(1, "FATAL", ANSI.BOLD + ANSI.RED), // 直ちに対処が必要
-        CRITICAL(2, "FATAL", ANSI.BOLD + ANSI.RED), // 致命的(続行できない)
-        ERROR(3, "ERROR", ANSI.RED), // エラー
-        WARNING(4, "WARN", ANSI.YELLOW), // 警告(既定値で続行するなど)
-        NOTICE(5, "NOTICE", ANSI.GREEN), // 正常だが注目すべき出来事
-        INFO(6, "INFO", ANSI.GREEN), // 通常の情報
-        DEBUG(7, "DEBUG", ANSI.CYAN); // デバッグ
+        EMERGENCY(0, "FATAL", ANSI.BOLD + ANSI.RED), // FATAL: システムが使えない
+        ALERT(1, "FATAL", ANSI.BOLD + ANSI.RED), // FATAL: 直ちに対処が必要
+        CRITICAL(2, "FATAL", ANSI.BOLD + ANSI.RED), // FATAL: 致命的(継続不可)。fatal() が出す
+        ERROR(3, "ERROR", ANSI.RED), // ERROR: 異常事態(一部の機能が働かない)。例: 設定・画像の読み込み失敗
+        WARNING(4, "WARN", ANSI.YELLOW), // WARN: 特に問題なく継続できる。例: 画像が無く代替表示にした、既定値で続行
+        NOTICE(5, "NOTICE", ANSI.GREEN), // NOTICE: 正常だが注目すべき出来事(メモの区分にはない補助)
+        INFO(6, "INFO", ANSI.GREEN), // INFO: 正常な進行。例: 設定を読み込めた、シーンが読み込めた
+        DEBUG(7, "DEBUG", ANSI.CYAN); // DEBUG: 開発者用。コードが意図した状態で動いているかの確認
 
         private final int code;
         private final String label;
