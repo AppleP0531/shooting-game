@@ -22,17 +22,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import com.game.shooting_game.domain.unlock.UnlockService;
-import com.game.shooting_game.domain.unlock.UnlockService.Feature;
 import com.game.shooting_game.SceneManager;
-import com.game.shooting_game.SceneManager.SceneType;
-import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.upgradeScene.subPanels.SkillTreeBtnPanel;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.ui.UIBuilder;
-import com.game.shooting_game.utils.Vector2;
 
 public final class UpgradeManager extends JPanel implements Manager {
     private static final String component = "[UpgradeManager]";
@@ -41,7 +37,6 @@ public final class UpgradeManager extends JPanel implements Manager {
     @Getter
     private final SkillTreeBtnPanel skillTreeBtnPanel;
 
-    private final ShootingGameMain MAIN;
 
     // ----- データクラスの定義 -----
     /**
@@ -93,7 +88,6 @@ public final class UpgradeManager extends JPanel implements Manager {
         upgradeUI = new UpgradeSceneUI();
         skillTreeBtnPanel = new SkillTreeBtnPanel();
 
-        MAIN = ShootingGameMain.getInstance();
 
         reloadConfigs();
     }
