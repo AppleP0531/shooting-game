@@ -30,6 +30,8 @@ import com.game.shooting_game.ui.ShipPieceIcon;
 import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.domain.armor.ArmorService;
 import com.game.shooting_game.upgradeScene.subPanels.ArmorPanel;
+import com.game.shooting_game.upgradeScene.subPanels.ConvertPanel;
+import com.game.shooting_game.upgradeScene.subPanels.ModulePanel;
 import com.game.shooting_game.upgradeScene.subPanels.SubShipPanel;
 import com.game.shooting_game.upgradeScene.subPanels.UnitPanel;
 import com.game.shooting_game.utils.Vector2;
@@ -56,6 +58,10 @@ public final class LobbyManager extends JPanel implements Manager {
     private JButton unlockShipBtn;
     private JButton changeModeBtn;
     private JButton infinityBtn;
+    private JButton moduleBtn;
+    private JButton convertBtn;
+    private final ModulePanel modulePanel = new ModulePanel();
+    private final ConvertPanel convertPanel = new ConvertPanel();
     private final UnitPanel unitPanel = new UnitPanel();
     private final SubShipPanel subShipPanel = new SubShipPanel();
     private final ArmorPanel defensePanel = new ArmorPanel(ArmorService.Type.DEFENSE);
@@ -90,12 +96,12 @@ public final class LobbyManager extends JPanel implements Manager {
         // 強化ボタン(強化画面に遷移)
         // 下の列は、左から「鞄」「強化」(四角いアイコン)と、残りを使う「ステージ選択」
         double adj0 = ShootingGameMain.getScreenSizeAdj();
-        // 下は2段: 上に小さな四角いアイコン4つ(幅を4等分した中央に置く)、下に大きなモードボタン2つ
+        // 下は2段: 上に小さな四角いアイコン4つ(幅を6等分した中央に置く)、下に大きなモードボタン2つ
         int iconSize = (int) (40 * adj0), edge = (int) (8 * adj0);
         int bigH = (int) (46 * adj0);
         int bigY = MAIN.getHeight() - edge - bigH;
         int rowY = bigY - (int) (5 * adj0) - iconSize;
-        int cellW = MAIN.getWidth() / 4;
+        int cellW = MAIN.getWidth() / 6; // 6つ: 鞄・強化・モジュール・変換・ショップ・ガチャ
         Vector2 upgradeBtnSize = new Vector2(iconSize, iconSize);
         String upgradeImagePath = "/static/img/UI/lobbyScene/upgradeIcon.png";
         upgradeBtn = UIBuilder.createImageBtn(component, upgradeImagePath, upgradeBtnSize, "UPGRADE");
@@ -106,15 +112,35 @@ public final class LobbyManager extends JPanel implements Manager {
 
         // ショップボタン(ショップ画面に遷移。強化の右の四角いアイコン。解放前はグレーアウト)
         shopBtn = UIBuilder.createImageBtn(component, "/static/img/UI/lobbyScene/shopIcon.png", upgradeBtnSize, "SHOP");
-        shopBtn.setBounds(cellW * 2 + (cellW - iconSize) / 2, rowY, iconSize, iconSize);
+        shopBtn.setBounds(cellW * 4 + (cellW - iconSize) / 2, rowY, iconSize, iconSize);
         shopBtn.addActionListener(e -> SM.changeScene(SceneType.SHOP));
         shopBtn.setVisible(false); // 非表示
         this.add(shopBtn);
         UnlockService.guard(shopBtn, Feature.SHOP);
 
+        // モジュールボタン(強化画面から移した。強化の右)と、素材変換ボタン(その右)。四角い板に文字
+        moduleBtn = UIBuilder.createImageBtn(component,
+                ModeButtonImage.create(iconSize, iconSize, "モジュール", new Color(190, 130, 255),
+                        new Color(90, 40, 170), new Color(230, 200, 255), (int) (8 * adj0)),
+                new Vector2(iconSize, iconSize), "MODULE");
+        moduleBtn.setBounds(cellW * 2 + (cellW - iconSize) / 2, rowY, iconSize, iconSize);
+        moduleBtn.addActionListener(e -> modulePanel.showPanel());
+        moduleBtn.setVisible(false); // 非表示
+        this.add(moduleBtn);
+        UnlockService.guard(moduleBtn, Feature.MODULE);
+
+        convertBtn = UIBuilder.createImageBtn(component,
+                ModeButtonImage.create(iconSize, iconSize, "変換", new Color(110, 220, 160),
+                        new Color(20, 130, 90), new Color(200, 255, 225), (int) (12 * adj0)),
+                new Vector2(iconSize, iconSize), "CONVERT");
+        convertBtn.setBounds(cellW * 3 + (cellW - iconSize) / 2, rowY, iconSize, iconSize);
+        convertBtn.addActionListener(e -> convertPanel.showPanel());
+        convertBtn.setVisible(false); // 非表示
+        this.add(convertBtn);
+
         // ガチャボタン(ガチャ画面に遷移。ショップの右)
         gachaBtn = UIBuilder.createImageBtn(component, "/static/img/UI/lobbyScene/gachaIcon.png", upgradeBtnSize, "GACHA");
-        gachaBtn.setBounds(cellW * 3 + (cellW - iconSize) / 2, rowY, iconSize, iconSize);
+        gachaBtn.setBounds(cellW * 5 + (cellW - iconSize) / 2, rowY, iconSize, iconSize);
         gachaBtn.addActionListener(e -> SM.changeScene(SceneType.GACHA));
         gachaBtn.setVisible(false); // 非表示
         this.add(gachaBtn);
@@ -298,16 +324,21 @@ public final class LobbyManager extends JPanel implements Manager {
         UnlockService.guard(slotBtns[LobbySceneUI.Slot.SUBSHIP.ordinal()], Feature.SUBSHIP);
         this.add(unitPanel);
         this.add(subShipPanel);
+        this.add(modulePanel);
+        this.add(convertPanel);
         this.add(defensePanel);
         this.add(firepowerPanel);
         unitPanel.initComponents();
         subShipPanel.initComponents();
+        modulePanel.initComponents();
+        convertPanel.initComponents();
         defensePanel.initComponents();
         firepowerPanel.initComponents();
 
         // 押す・乗せると拡大縮小する(下の列・右上・船の切り替え・選択/解放・色の切り替え)
         for (JButton b : new JButton[] { upgradeBtn, shopBtn, gachaBtn, settingBtn, dexBtn, nextShipBtn,
-                prevShipBtn, selectShipBtn, unlockShipBtn, changeModeBtn, backpackBtn, infinityBtn, selectStageBtn })
+                prevShipBtn, selectShipBtn, unlockShipBtn, changeModeBtn, backpackBtn, infinityBtn, selectStageBtn,
+                moduleBtn, convertBtn })
             ButtonAnimator.attachPop(b);
     }
 
@@ -456,6 +487,8 @@ public final class LobbyManager extends JPanel implements Manager {
         prevShipBtn.setVisible(true);
         backpackBtn.setVisible(true);
         infinityBtn.setVisible(true);
+        moduleBtn.setVisible(true);
+        convertBtn.setVisible(true);
         selectStageBtn.setVisible(true);
         changeModeBtn.setVisible(true);
 
