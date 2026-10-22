@@ -103,9 +103,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                 System.out.flush();
             }
         } catch (Exception e) {
-            LogUtils.systemLog(
-                    "[WARN]",
-                    component,
+            LogUtils.warn(component,
                     ANSI.YELLOW + "Fail to reset logs" + ANSI.RESET);
         }
 
@@ -128,9 +126,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
             ConfigurableApplicationContext context = null;
             try {
                 // サーバー接続開始ログ
-                LogUtils.systemLog(
-                        "[INFO]",
-                        component,
+                LogUtils.info(component,
                         ANSI.GREEN + "Connecting to game server..." + ANSI.RESET);
                 LoadProgress.creep("Server connecting", 0, 0.30);
 
@@ -146,27 +142,19 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                 DataManager.setContext(context);
 
                 // サーバー接続成功ログ
-                LogUtils.systemLog(
-                        "[INFO]",
-                        component,
+                LogUtils.notice(component,
                         ANSI.GREEN + "Connected to game server successfully." + ANSI.RESET);
             } catch (Exception e) {
                 // サーバー接続失敗ログ
-                LogUtils.systemLog(
-                        "[ERROR]",
-                        component,
+                LogUtils.error(component,
                         ANSI.RED + "Server connect error" + ANSI.RESET);
                 // オフライン起動ログ
-                LogUtils.systemLog(
-                        "[ERROR]",
-                        component,
+                LogUtils.warn(component,
                         ANSI.YELLOW + "Starting in OFFLINE MODE." + ANSI.RESET);
                 onlineMode = false;
             }
             // 初期設定開始ログ
-            LogUtils.systemLog(
-                    "[INFO]",
-                    component,
+            LogUtils.notice(component,
                     ANSI.GREEN + "Initializing Game Setup..." + ANSI.RESET);
             LoadProgress.set("Loading game configs", 0.35);
 
@@ -228,14 +216,10 @@ public final class ShootingGameMain extends JPanel implements Runnable {
             }
 
             // 初期設定完了ログ
-            LogUtils.systemLog(
-                    "[INFO]",
-                    component,
+            LogUtils.notice(component,
                     ANSI.GREEN + "Game configuration loaded successfully." + ANSI.RESET);
             // 起動ログ
-            LogUtils.systemLog(
-                    "[INFO]",
-                    component,
+            LogUtils.notice(component,
                     ANSI.GREEN + "Game launching." + ANSI.RESET);
 
             // 最初の画面をTITLEに設定
@@ -249,9 +233,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                 // 保存のあいだ画面が固まって見えないよう、先にウィンドウを隠す(保存と終了はそのあと)
                 e.getWindow().setVisible(false);
                 // データセーブ開始ログ
-                LogUtils.systemLog(
-                        "[INFO]",
-                        component,
+                LogUtils.info(component,
                         ANSI.GREEN + "Saving game data..." + ANSI.RESET);
 
                 if (onlineMode) {
@@ -260,9 +242,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                 }
 
                 // Goodbyeログ
-                LogUtils.systemLog(
-                        "[INFO]",
-                        component,
+                LogUtils.notice(component,
                         ANSI.GREEN + "Goodbye!" + ANSI.RESET);
 
                 System.exit(0);
@@ -305,9 +285,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                 waitUntil(frameStart + (long) (1_000_000_000.0 / fps));
             } catch (Exception e) {
                 // ゲームループエラー
-                LogUtils.error(
-                        "[ERROR]",
-                        component,
+                LogUtils.error(component,
                         "Game Loop Error.",
                         e);
             }

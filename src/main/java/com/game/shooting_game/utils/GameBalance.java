@@ -39,7 +39,7 @@ public final class GameBalance {
             endlessHpPerWave = Math.max(0.0, n.path("endlessHpPerWave").asDouble(endlessHpPerWave));
             bossHpRate = Math.max(1.0, n.path("bossHpRate").asDouble(bossHpRate));
         } catch (Exception e) {
-            LogUtils.systemLog("[WARN]", component, "バランスの設定を読めないため既定値を使います: " + e.getMessage());
+            LogUtils.warn(component, "バランスの設定を読めないため既定値を使います: " + e.getMessage());
         }
     }
 

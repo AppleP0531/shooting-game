@@ -55,7 +55,7 @@ final class PlayerDataCommands extends CommandGroup {
             } catch (NumberFormatException ne) {
                 error("Unknown param: " + param);
             } catch (Exception e) {
-                LogUtils.systemLog("[WARN]", component, "Command Error");
+                LogUtils.warn(component, "Command Error");
             }
         }).setSyntax("<shipId>");
 
@@ -98,7 +98,7 @@ final class PlayerDataCommands extends CommandGroup {
             } catch (NumberFormatException ne) {
                 error("Unknown param: " + param);
             } catch (Exception e) {
-                LogUtils.systemLog("[WARN]", component, "Command Error");
+                LogUtils.warn(component, "Command Error");
             }
         }).setSyntax("<shipId|all>");
 
@@ -246,7 +246,7 @@ final class PlayerDataCommands extends CommandGroup {
             } catch (IllegalArgumentException iae) {
                 error("Unknown resName: '" + args[0] + "'");
             } catch (Exception e) {
-                LogUtils.systemLog("[WARN]", component, "Command Error");
+                LogUtils.warn(component, "Command Error");
             }
         }).setSyntax("<resourceName>", "<amount>");
 

@@ -128,7 +128,7 @@ public final class UnitService {
             return false;
         CostService.pay(ud, cost);
         s.setLevel(getLevel(shipId) + 1);
-        LogUtils.systemLog("[INFO]", component,
+        LogUtils.info(component,
                 ANSI.YELLOW + shipId + ANSI.RESET + " reached Lv" + s.getLevel() + ".");
         return true;
     }
@@ -184,7 +184,7 @@ public final class UnitService {
         PieceService.consume(shipId, PieceService.rankUpPieces(getRank(shipId)));
         s.setStars(getRank(shipId) + 1);
         s.setLevel(1);
-        LogUtils.systemLog("[INFO]", component,
+        LogUtils.info(component,
                 ANSI.YELLOW + shipId + ANSI.RESET + " is now " + rankText(shipId) + ".");
         return true;
     }

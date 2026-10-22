@@ -124,9 +124,7 @@ public class Boss extends Ship {
         animation("admission");
 
         // 船タイプログ
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
+        LogUtils.info(component,
                 "Current shipId set to " + ANSI.YELLOW + shipId + ANSI.RESET + " (" + gaugeCount + " gauges).");
     }
 
@@ -291,7 +289,7 @@ public class Boss extends Ship {
         BeamManager.getInstance().clearHostile();
         BulletManager.getInstance().clearEnemyBullets();
 
-        LogUtils.systemLog("[INFO]", component, "Boss retreats.");
+        LogUtils.info(component, "Boss retreats.");
     }
 
     /**
@@ -368,9 +366,7 @@ public class Boss extends Ship {
         BulletManager.getInstance().clearEnemyBullets();
         SHIP_M.dropBossBonus(this, def.getGauges().get(clearedGauge).getDropRolls());
 
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
+        LogUtils.info(component,
                 "Gauge " + (clearedGauge + 1) + "/" + gaugeCount + " broken.");
     }
 
@@ -542,7 +538,7 @@ public class Boss extends Ship {
                 BufferedImage sheet = UIBuilder.loadImage(String.format(BODY_IMAGE_PATH, bossId, f));
                 frames = UIBuilder.cutSpriteSheet(sheet, new Vector2(4, 2), BODY_FRAMES);
             } catch (java.io.IOException e) {
-                LogUtils.systemLog("[WARN]", component, "Boss image not found: " + ANSI.YELLOW + key + ANSI.RESET
+                LogUtils.warn(component, "Boss image not found: " + ANSI.YELLOW + key + ANSI.RESET
                         + ". Using placeholder.");
             }
             BODY_IMAGES.put(key, frames);

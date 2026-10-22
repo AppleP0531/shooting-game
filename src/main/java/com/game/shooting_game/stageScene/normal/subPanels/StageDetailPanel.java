@@ -205,9 +205,7 @@ public class StageDetailPanel extends JPanel {
             return new LinkedHashMap<>(stageData.getRewardList());
         } catch (NullPointerException e) {
             // 報酬情報の取得に失敗した場合
-            LogUtils.systemLog(
-                    "[WARN]",
-                    component,
+            LogUtils.warn(component,
                     "Failed to get reward list for Stage" + ANSI.YELLOW + stageId + ANSI.RESET + ".");
         }
         return new LinkedHashMap<>();

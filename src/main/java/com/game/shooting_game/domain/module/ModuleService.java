@@ -186,7 +186,7 @@ public final class ModuleService {
         CostService.pay(ud, cost);
 
         Module m = addNew(kind, rarity);
-        LogUtils.systemLog("[INFO]", component,
+        LogUtils.info(component,
                 "Crafted " + ANSI.YELLOW + kind.getId() + ANSI.RESET + " (" + rarity + ").");
         return m;
     }
@@ -293,7 +293,7 @@ public final class ModuleService {
         // 以前の仕様で最初から4つ持っているモジュールは、サブ能力が増えない
         if (m.getLevel() % SUB_STEP == 0 && m.getSubs().size() < m.getLevel() / SUB_STEP)
             addRandomSub(m);
-        LogUtils.systemLog("[INFO]", component,
+        LogUtils.info(component,
                 ANSI.YELLOW + m.getKind().getId() + ANSI.RESET + " reached Lv" + m.getLevel() + ".");
         return true;
     }

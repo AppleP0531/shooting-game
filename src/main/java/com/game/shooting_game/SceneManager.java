@@ -100,9 +100,7 @@ public final class SceneManager implements Manager {
     @Override
     public void setup() {
         // シーンロード開始ログ
-        LogUtils.systemLog(
-                "[DEBUG]",
-                component,
+        LogUtils.debug(component,
                 "loading Scene...");
 
         // マネージャーのセットアップ
@@ -111,9 +109,7 @@ public final class SceneManager implements Manager {
             current.setup();
 
         // シーンロード完了ログ
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
+        LogUtils.info(component,
                 ANSI.YELLOW + sceneName + " Scene" + ANSI.RESET + " loaded.");
     }
 

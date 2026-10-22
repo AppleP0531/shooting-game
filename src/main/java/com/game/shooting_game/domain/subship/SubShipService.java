@@ -204,7 +204,7 @@ public final class SubShipService {
             return false;
         CostService.pay(ud, cost);
         ud.getSubShipParts().put(LEVEL_PREFIX + t.id(), level(t) + 1);
-        LogUtils.systemLog("[INFO]", component,
+        LogUtils.info(component,
                 ANSI.YELLOW + t.id() + ANSI.RESET + " upgraded: Lv" + level(t) + ".");
         return true;
     }

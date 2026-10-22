@@ -81,9 +81,7 @@ public final class DataManager implements Manager {
      */
     public static void load(String username, String mode) {
         // ロード開始ログ
-        LogUtils.systemLog(
-                "[DEBUG]",
-                component,
+        LogUtils.debug(component,
                 "Attempting to load user data...");
 
         sessionStartTime = LocalDateTime.now();
@@ -104,9 +102,7 @@ public final class DataManager implements Manager {
      */
     public static synchronized void save() {
         if (userData == null || userRepository == null) {
-            LogUtils.systemLog(
-                    "[ERROR]",
-                    component,
+            LogUtils.error(component,
                     "Cannot save user data: UserData or UserRepository is not initialized.");
             return;
         }
@@ -131,15 +127,11 @@ public final class DataManager implements Manager {
             userRepository.save(entity);
 
             // セーブ成功ログ
-            LogUtils.systemLog(
-                    "[INFO]",
-                    component,
+            LogUtils.info(component,
                     "User data saved successfully. (" + (System.currentTimeMillis() - startedAt) + " ms)");
         } catch (Exception e) {
             // セーブ失敗ログ
-            LogUtils.systemLog(
-                    "[ERROR]",
-                    component,
+            LogUtils.error(component,
                     "Failed to persist user data.");
         }
     }
@@ -149,9 +141,7 @@ public final class DataManager implements Manager {
      */
     public static void create(String username) {
         // 新規作成開始ログ
-        LogUtils.systemLog(
-                "[DEBUG]",
-                component,
+        LogUtils.debug(component,
                 "Initializing a new profile...");
 
         userData = new UserData();
@@ -227,9 +217,7 @@ public final class DataManager implements Manager {
         try (
                 InputStream is = DataManager.class.getClassLoader().getResourceAsStream(CONFIG_PATH)) {
             // ロード開始ログ
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
+            LogUtils.debug(component,
                     "Attempting to load configuration from " + ANSI.YELLOW + CONFIG_PATH + ANSI.RESET + ".");
 
             // nullチェック
@@ -240,15 +228,11 @@ public final class DataManager implements Manager {
             expData = mapper.readValue(is, TYPE_REF);
 
             // ロード成功ログ
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
+            LogUtils.debug(component,
                     "Configuration loaded successfully");
         } catch (IOException e) {
             // ロードエラーログ
-            LogUtils.error(
-                    "[FATAL]",
-                    component,
+            LogUtils.fatal(component,
                     "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + "." + ANSI.RESET + "\n"
                             + ANSI.RED + "Application will terminate." + ANSI.RESET,
                     e);
@@ -263,9 +247,7 @@ public final class DataManager implements Manager {
 
         // 初回プレイ時
         if (lastPlayTimeStr == null || lastPlayTimeStr.isEmpty()) {
-            LogUtils.systemLog(
-                    "[INFO]",
-                    component,
+            LogUtils.info(component,
                     ANSI.YELLOW + "Welcome to your first flight!" + ANSI.RESET);
             return;
         }
@@ -283,18 +265,14 @@ public final class DataManager implements Manager {
             long minutes = duration.toMinutesPart();
             long seconds = duration.toSecondsPart();
 
-            LogUtils.systemLog(
-                    "[INFO]",
-                    component,
+            LogUtils.info(component,
                     String.format(
                             "Welcome back! It has been"
                                     + ANSI.YELLOW + " %d days %02d:%02d:%02d" + ANSI.RESET
                                     + " since your last session.",
                             days, hours, minutes, seconds));
         } catch (Exception e) {
-            LogUtils.systemLog(
-                    "[WARN]",
-                    component,
+            LogUtils.warn(component,
                     "Could not calculate elapsed time.");
         }
     }

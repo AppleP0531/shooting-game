@@ -37,7 +37,7 @@ public final class UserDataMapper {
                 data.setModules(new com.fasterxml.jackson.databind.ObjectMapper().readValue(entity.getModuleData(),
                         com.game.shooting_game.domain.module.ModuleInventory.class));
             } catch (Exception e) {
-                LogUtils.systemLog("[ERROR]", component, "Failed to read module data.");
+                LogUtils.error(component, "Failed to read module data.");
             }
         }
 
@@ -89,7 +89,7 @@ public final class UserDataMapper {
         try {
             entity.setModuleData(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(userData.getModules()));
         } catch (Exception e) {
-            LogUtils.systemLog("[ERROR]", component, "Failed to write module data.");
+            LogUtils.error(component, "Failed to write module data.");
         }
 
         // 進捗
