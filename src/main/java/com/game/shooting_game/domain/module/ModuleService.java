@@ -113,7 +113,7 @@ public final class ModuleService {
      * 装着中のモジュールの、ある能力の合計
      */
     public static double stat(ModuleStat stat) {
-        double sum = 0;
+        double sum = com.game.shooting_game.domain.armor.ArmorService.stat(stat); // 装甲の効果も合わせる
         for (Module m : slotted()) {
             if (m == null)
                 continue;

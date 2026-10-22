@@ -28,7 +28,8 @@ import com.game.shooting_game.ui.ButtonAnimator;
 import com.game.shooting_game.ui.ModeButtonImage;
 import com.game.shooting_game.ui.ShipPieceIcon;
 import com.game.shooting_game.ui.UIBuilder;
-import com.game.shooting_game.upgradeScene.subPanels.ModulePanel;
+import com.game.shooting_game.domain.armor.ArmorService;
+import com.game.shooting_game.upgradeScene.subPanels.ArmorPanel;
 import com.game.shooting_game.upgradeScene.subPanels.SubShipPanel;
 import com.game.shooting_game.upgradeScene.subPanels.UnitPanel;
 import com.game.shooting_game.utils.Vector2;
@@ -57,7 +58,8 @@ public final class LobbyManager extends JPanel implements Manager {
     private JButton infinityBtn;
     private final UnitPanel unitPanel = new UnitPanel();
     private final SubShipPanel subShipPanel = new SubShipPanel();
-    private final ModulePanel modulePanel = new ModulePanel();
+    private final ArmorPanel defensePanel = new ArmorPanel(ArmorService.Type.DEFENSE);
+    private final ArmorPanel firepowerPanel = new ArmorPanel(ArmorService.Type.FIREPOWER);
     private Rectangle[] slotRects;
     private JButton[] slotBtns;
     private JButton selectStageBtn;
@@ -291,16 +293,17 @@ public final class LobbyManager extends JPanel implements Manager {
         }
         slotBtns[LobbySceneUI.Slot.UNIT.ordinal()].addActionListener(e -> unitPanel.showPanel());
         slotBtns[LobbySceneUI.Slot.SUBSHIP.ordinal()].addActionListener(e -> subShipPanel.showPanel());
-        slotBtns[LobbySceneUI.Slot.MODULE.ordinal()].addActionListener(e -> modulePanel.showPanel());
-        slotBtns[LobbySceneUI.Slot.WINGMAN.ordinal()].addActionListener(e -> lobbyUI.showMessage("僚機は準備中です"));
+        slotBtns[LobbySceneUI.Slot.DEFENSE.ordinal()].addActionListener(e -> defensePanel.showPanel());
+        slotBtns[LobbySceneUI.Slot.FIREPOWER.ordinal()].addActionListener(e -> firepowerPanel.showPanel());
         UnlockService.guard(slotBtns[LobbySceneUI.Slot.SUBSHIP.ordinal()], Feature.SUBSHIP);
-        UnlockService.guard(slotBtns[LobbySceneUI.Slot.MODULE.ordinal()], Feature.MODULE);
         this.add(unitPanel);
         this.add(subShipPanel);
-        this.add(modulePanel);
+        this.add(defensePanel);
+        this.add(firepowerPanel);
         unitPanel.initComponents();
         subShipPanel.initComponents();
-        modulePanel.initComponents();
+        defensePanel.initComponents();
+        firepowerPanel.initComponents();
 
         // 押す・乗せると拡大縮小する(下の列・右上・船の切り替え・選択/解放・色の切り替え)
         for (JButton b : new JButton[] { upgradeBtn, shopBtn, gachaBtn, settingBtn, dexBtn, nextShipBtn,
@@ -387,7 +390,6 @@ public final class LobbyManager extends JPanel implements Manager {
         for (int i = 0; i < slotBtns.length; i++)
             hovered[i] = slotBtns[i].isEnabled() && slotBtns[i].getModel().isRollover();
         locked[LobbySceneUI.Slot.SUBSHIP.ordinal()] = !UnlockService.isUnlocked(Feature.SUBSHIP);
-        locked[LobbySceneUI.Slot.MODULE.ordinal()] = !UnlockService.isUnlocked(Feature.MODULE);
         lobbyUI.drawSlots(g, slotRects, hovered, locked);
     }
 
