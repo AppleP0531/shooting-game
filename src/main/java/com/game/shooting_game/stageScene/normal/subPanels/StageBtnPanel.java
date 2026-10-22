@@ -19,11 +19,15 @@ import lombok.Getter;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.gameScene.stage.StageManager;
+import com.game.shooting_game.gameScene.stage.Difficulty;
+import com.game.shooting_game.gameScene.stage.DifficultyService;
+import com.game.shooting_game.stageScene.normal.Chapters;
 import com.game.shooting_game.stageScene.normal.NormalStageManager;
 import com.game.shooting_game.stageScene.normal.NormalStageManager.StageBtnData;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.ui.StageLockIcon;
+import com.game.shooting_game.ui.StageNodeIcon;
 import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
@@ -35,6 +39,9 @@ public class StageBtnPanel extends JPanel {
     private final ShootingGameMain MAIN;
     private final NormalStageManager NSM;
     private final StageManager STAGE_M;
+
+    private static final double NODE_H = 64; // ステージの台の絵の高さ(基準サイズ)
+    private static final double NODE_W = 56;
 
     private BufferedImage lockImage; // ロックアイコン
     private Vector2 panelSize; // パネルサイズ
@@ -55,12 +62,14 @@ public class StageBtnPanel extends JPanel {
      * UIコンポーネントの初期化
      */
     public void initComponents() {
-        panelSize = new Vector2(MAIN.getWidth(), MAIN.getHeight() * 4 / 5);
+        // 上下の帯(上44・下56)の間いっぱいに使う
+        double adj0 = ShootingGameMain.getScreenSizeAdj();
+        panelSize = new Vector2(MAIN.getWidth(), MAIN.getHeight() - (44 + 56) * adj0);
         setLayout(null);
         setOpaque(false);
         setBounds(
                 MAIN.getWidth() / 2 - (int) panelSize.getX() / 2,
-                MAIN.getHeight() / 2 - (int) panelSize.getY() / 2,
+                (int) (44 * adj0),
                 (int) panelSize.getX(), (int) panelSize.getY());
 
         addMouseWheelListener(e -> {
@@ -164,18 +173,23 @@ public class StageBtnPanel extends JPanel {
     }
 
     /**
-     * ステージボタンの中心(ステージ選択パネルの中の座標)
+     * ステージの台の中心(ステージ選択パネルの中の座標。ボタンの中心より、台の分だけ下)
      */
     private Vector2 buttonCenter(StageBtnData data) {
         double adj = ShootingGameMain.getScreenSizeAdj();
         return new Vector2(
                 originPos.getX() + data.getPos().getX() * adj,
-                originPos.getY() - data.getPos().getY() * adj);
+                originPos.getY() - data.getPos().getY() * adj + (StageNodeIcon.PLATFORM_CENTER - 0.5) * NODE_H * adj);
+    }
+
+    /** 今のスクロール量(背景の星を、同じ向きにゆっくり流すのに使う) */
+    public double getScrollOffset() {
+        return scrollOffset;
     }
 
     /**
-     * ステージボタンを番号順に線でつなぐ(ボタンより奥に描く)
-     * 次のステージに行ける区間(そのステージまでクリア済み)は水色の光る線、まだ行けない区間は暗い灰色の細い点線にする。
+     * ステージの台を番号順に点線の経路でつなぐ(ボタンより奥に描く)。章の最後のステージには、章のラベルを出す。
+     * 次のステージに行ける区間(そのステージまでクリア済み)は水色の光る点、まだ行けない区間は暗い小さな点にする。
      */
     @Override
     protected void paintComponent(Graphics g) {
@@ -185,6 +199,7 @@ public class StageBtnPanel extends JPanel {
 
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         double adj = ShootingGameMain.getScreenSizeAdj();
         int cleared = DataManager.getUserData().getProgress().getClearedStage();
         Map<Integer, StageBtnData> configs = NSM.getStageBtnConfigMap();
@@ -198,19 +213,51 @@ public class StageBtnPanel extends JPanel {
 
             Line2D line = new Line2D.Double(a.getX(), a.getY(), b.getX(), b.getY());
             if (id <= cleared) {
-                g2.setStroke(new BasicStroke((float) (7 * adj), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                g2.setColor(new Color(70, 215, 255, 40));
+                // 光のにじみ + 水色の点
+                g2.setStroke(new BasicStroke((float) (8 * adj), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 10f,
+                        new float[] { 0.1f, (float) (9 * adj) }, 0f));
+                g2.setColor(new Color(70, 215, 255, 60));
                 g2.draw(line);
-                g2.setStroke(new BasicStroke((float) (2.5 * adj), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                g2.setColor(new Color(70, 215, 255, 200));
+                g2.setStroke(new BasicStroke((float) (4 * adj), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 10f,
+                        new float[] { 0.1f, (float) (9 * adj) }, 0f));
+                g2.setColor(new Color(130, 235, 255, 230));
                 g2.draw(line);
             } else {
-                float dash = (float) (6 * adj);
-                g2.setStroke(new BasicStroke((float) (1.5 * adj), BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10f,
-                        new float[] { dash, dash }, 0f));
-                g2.setColor(new Color(120, 130, 150, 110));
+                g2.setStroke(new BasicStroke((float) (2.5 * adj), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 10f,
+                        new float[] { 0.1f, (float) (9 * adj) }, 0f));
+                g2.setColor(new Color(110, 125, 160, 120));
                 g2.draw(line);
             }
+        }
+
+        // 章のラベル(章の最後のステージの台の、画面の端の側。上に「第N章」、下に星座の名前の2行)
+        java.awt.Font big = new java.awt.Font("SansSerif", java.awt.Font.BOLD, Math.max(10, (int) (14 * adj)));
+        java.awt.Font small = new java.awt.Font("SansSerif", java.awt.Font.PLAIN, Math.max(9, (int) (11 * adj)));
+        for (StageBtnData data : configs.values()) {
+            if (!Chapters.isChapterEnd(data.getId()))
+                continue;
+            Vector2 c = buttonCenter(data);
+            if (c.getY() < -NODE_H * adj || c.getY() > getHeight() + NODE_H * adj)
+                continue;
+            int chapter = Chapters.chapterOf(data.getId());
+            String top = "第" + chapter + "章", bottom = Chapters.name(chapter);
+            g2.setFont(big);
+            int tw = g2.getFontMetrics().stringWidth(top);
+            int th = g2.getFontMetrics().getHeight();
+            g2.setFont(small);
+            int bw = g2.getFontMetrics().stringWidth(bottom);
+            int w = Math.max(tw, bw);
+            int gap = (int) ((NODE_W / 2 + 8) * adj);
+            // 台が左側なら左に、右側なら右に置く(中央側の経路と重ならない)
+            int x = c.getX() < getWidth() / 2.0 ? (int) c.getX() - gap - w : (int) c.getX() + gap;
+            x = Math.clamp(x, (int) (4 * adj), getWidth() - w - (int) (4 * adj));
+            int y = (int) c.getY() - th / 2;
+            g2.setFont(big);
+            g2.setColor(Color.WHITE);
+            g2.drawString(top, x + (w - tw) / 2, y + g2.getFontMetrics().getAscent());
+            g2.setFont(small);
+            g2.setColor(new Color(130, 235, 255));
+            g2.drawString(bottom, x + (w - bw) / 2, y + th + g2.getFontMetrics().getAscent() - (int) (2 * adj));
         }
         g2.dispose();
     }
@@ -248,11 +295,16 @@ public class StageBtnPanel extends JPanel {
      * @param locked  ロック中かどうか
      */
     private JButton createStageButton(int stageId, BufferedImage image, boolean locked) {
-        int w = (int) (50 * ShootingGameMain.getScreenSizeAdj());
-        int h = (int) (50 * ShootingGameMain.getScreenSizeAdj());
+        int w = (int) (NODE_W * ShootingGameMain.getScreenSizeAdj());
+        int h = (int) (NODE_H * ShootingGameMain.getScreenSizeAdj());
 
         // アイコン(画像がなければコードで描いた番号つきの四角)。ロック中は鍵を重ねる
-        BufferedImage icon = image != null ? image : StageLockIcon.placeholder(w, h, String.valueOf(stageId));
+        int stars = 0;
+        for (Difficulty d : locked ? new Difficulty[0] : Difficulty.values())
+            stars = Math.max(stars, DifficultyService.stars(stageId, d));
+        BufferedImage icon = image != null ? image
+                : StageNodeIcon.create(w, h, String.valueOf(stageId),
+                        StageNodeIcon.lookOf(locked, Chapters.isBoss(stageId), stars), stars);
         if (locked)
             icon = StageLockIcon.overlay(icon, lockIconImage(w), w, h);
 
