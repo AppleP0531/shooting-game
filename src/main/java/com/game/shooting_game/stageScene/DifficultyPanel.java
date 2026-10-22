@@ -28,7 +28,7 @@ public class DifficultyPanel extends JPanel {
     private final JLabel info = new JLabel();
     private final Consumer<Difficulty> onChange;
     private int stageId;
-    private Difficulty selected = Difficulty.NORMAL;
+    private Difficulty selected = null; // 選んでいないときは null(開くたびに未選択から始まる)
 
     /**
      * @param width    パネルの幅
@@ -63,16 +63,19 @@ public class DifficultyPanel extends JPanel {
         return px(112);
     }
 
+    /** 選んでいる難易度(まだ選んでいなければ null) */
     public Difficulty getSelected() {
         return selected;
     }
 
     /**
-     * ステージを開いたときに表示する(NORMALを選んだ状態から始まる)
+     * ステージを開いたときに表示する(何も選んでいない状態から始まる。onChange には null が渡る)
      */
     public void show(int stageId) {
         this.stageId = stageId;
-        select(Difficulty.NORMAL);
+        selected = null;
+        refreshButtons();
+        onChange.accept(null);
     }
 
     private void select(Difficulty d) {
@@ -99,6 +102,8 @@ public class DifficultyPanel extends JPanel {
     }
 
     private String infoText() {
+        if (selected == null)
+            return "<html>難易度を選んでください</html>";
         var sd = com.game.shooting_game.gameScene.stage.StageManager.getInstance().getStageConfig().get("stage" + stageId);
         StringBuilder sb = new StringBuilder("<html>").append(selected.describe(sd == null ? null : sd.getModifiers(), isBossStage(),
                 stageId < 1000 ? stageId : Math.max(1, sd == null ? 1 : sd.getUnlock())));

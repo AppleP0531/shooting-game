@@ -137,8 +137,11 @@ public final class ExtraStageManager extends JPanel implements Manager {
         detailPanel.add(detailScroll);
         if (pickDifficulty) {
             difficultyPanel = new DifficultyPanel(dw - px(16), d -> {
-                STAGE_M.getStage().setDifficulty(d);
-                renderDetail(d);
+                // 難易度を選ぶまでは、STARTを押せない(未選択のときは、ノーマルの内容を見せるだけ)
+                Difficulty shown = d == null ? Difficulty.NORMAL : d;
+                STAGE_M.getStage().setDifficulty(shown);
+                renderDetail(shown);
+                startBtn.setEnabled(d != null);
             });
             difficultyPanel.setLocation(px(8), dh - px(62) - DifficultyPanel.height());
             detailPanel.add(difficultyPanel);
@@ -149,7 +152,8 @@ public final class ExtraStageManager extends JPanel implements Manager {
                 startBtn.getWidth(), startBtn.getHeight());
         startBtn.addActionListener(e -> {
             UIBuilder.closePanel(detailPanel);
-            Difficulty diff = difficultyPanel == null ? Difficulty.NORMAL : difficultyPanel.getSelected();
+            Difficulty diff = difficultyPanel == null || difficultyPanel.getSelected() == null ? Difficulty.NORMAL
+                    : difficultyPanel.getSelected();
             STAGE_M.getStage().setStageId(selectedId);
             STAGE_M.getStage().setDifficulty(diff);
             SM.changeScene(SceneType.GAME);
@@ -282,8 +286,10 @@ public final class ExtraStageManager extends JPanel implements Manager {
         StageData d = STAGE_M.getStageConfig().get("stage" + id);
         if (difficultyPanel != null)
             difficultyPanel.show(id); // 選ばれた難易度で renderDetail が呼ばれる
-        else
+        else {
             renderDetail(Difficulty.NORMAL);
+            startBtn.setEnabled(true); // 難易度を選ばないステージは、いつでも押せる
+        }
         UIBuilder.openPanel(detailPanel, d.getTitle(), true, null);
     }
 
