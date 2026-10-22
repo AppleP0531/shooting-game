@@ -29,10 +29,6 @@ import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.upgradeScene.subPanels.SkillTreeBtnPanel;
-import com.game.shooting_game.upgradeScene.subPanels.ConvertPanel;
-import com.game.shooting_game.upgradeScene.subPanels.SubShipPanel;
-import com.game.shooting_game.upgradeScene.subPanels.UnitPanel;
-import com.game.shooting_game.upgradeScene.subPanels.ModulePanel;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.ui.UIBuilder;
@@ -44,10 +40,6 @@ public final class UpgradeManager extends JPanel implements Manager {
     private final UpgradeSceneUI upgradeUI;
     @Getter
     private final SkillTreeBtnPanel skillTreeBtnPanel;
-    private final SubShipPanel subShipPanel;
-    private final ConvertPanel convertPanel;
-    private final UnitPanel unitPanel;
-    private final ModulePanel modulePanel;
 
     private final ShootingGameMain MAIN;
 
@@ -80,10 +72,6 @@ public final class UpgradeManager extends JPanel implements Manager {
     }
 
     private JButton lobbyBtn;
-    private JButton subShipBtn;
-    private JButton convertBtn;
-    private JButton unitBtn;
-    private JButton moduleBtn;
 
     @Getter
     private List<SkillTreeData> skillTreeConfigMap; // ボタンデータ
@@ -104,10 +92,6 @@ public final class UpgradeManager extends JPanel implements Manager {
         UpgradeManager.instance = this;
         upgradeUI = new UpgradeSceneUI();
         skillTreeBtnPanel = new SkillTreeBtnPanel();
-        subShipPanel = new SubShipPanel();
-        convertPanel = new ConvertPanel();
-        unitPanel = new UnitPanel();
-        modulePanel = new ModulePanel();
 
         MAIN = ShootingGameMain.getInstance();
 
@@ -120,84 +104,14 @@ public final class UpgradeManager extends JPanel implements Manager {
 
         this.add(skillTreeBtnPanel);
 
-        // ロビーボタン(ロビー画面に戻るボタン)
-        Vector2 lobbyBtnSize = new Vector2(
-                185 * ShootingGameMain.getScreenSizeAdj(),
-                50 * ShootingGameMain.getScreenSizeAdj());
-        String lobbyImagePath = "/static/img/UI/upgradeScene/lobbyImage.png";
-        lobbyBtn = UIBuilder.createImageBtn(component, lobbyImagePath, lobbyBtnSize, "HANGER");
-        lobbyBtn.setBounds(
-                MAIN.getWidth() / 2 - (int) lobbyBtn.getWidth() - (int) (4 * ShootingGameMain.getScreenSizeAdj()),
-                MAIN.getHeight() - (int) lobbyBtn.getHeight() - (int) (10 * ShootingGameMain.getScreenSizeAdj()),
-                (int) lobbyBtn.getWidth(), (int) lobbyBtn.getHeight());
-        lobbyBtn.addActionListener(e -> {
+        // 戻るボタン(共通の左下の矢印。スキルツリーの操作を片づけてから、一つ前の画面へ)
+        lobbyBtn = UIBuilder.createBackBtn(component, () -> {
             skillTreeBtnPanel.removeHandler();
-            SceneManager.getInstance().changeScene(SceneType.LOBBY);
+            SceneManager.getInstance().changeToPrevScene();
         });
         this.add(lobbyBtn);
 
-        // サブ機工房ボタン(パーツの制作と装備)
-        Vector2 subShipBtnSize = new Vector2(
-                185 * ShootingGameMain.getScreenSizeAdj(),
-                50 * ShootingGameMain.getScreenSizeAdj());
-        String subShipImagePath = "/static/img/UI/upgradeScene/subShipImage.png";
-        subShipBtn = UIBuilder.createImageBtn(component, subShipImagePath, subShipBtnSize, "SUB SHIP");
-        subShipBtn.setBounds(
-                MAIN.getWidth() / 2 + (int) (4 * ShootingGameMain.getScreenSizeAdj()),
-                lobbyBtn.getY(),
-                (int) subShipBtn.getWidth(), (int) subShipBtn.getHeight());
-        subShipBtn.addActionListener(e -> subShipPanel.showPanel());
-        this.add(subShipBtn);
-        UnlockService.guard(subShipBtn, Feature.SUBSHIP);
-
-        // 素材変換ボタン(5個 → 1つ上のレア度)。下のボタン2つの上に並べる
-        Vector2 convertBtnSize = new Vector2(
-                122 * ShootingGameMain.getScreenSizeAdj(),
-                44 * ShootingGameMain.getScreenSizeAdj());
-        String convertImagePath = "/static/img/UI/upgradeScene/convertImage.png";
-        convertBtn = UIBuilder.createImageBtn(component, convertImagePath, convertBtnSize, "CONVERT");
-        convertBtn.setBounds(
-                MAIN.getWidth() / 2 - (int) (189 * ShootingGameMain.getScreenSizeAdj()),
-                lobbyBtn.getY() - (int) convertBtn.getHeight() - (int) (6 * ShootingGameMain.getScreenSizeAdj()),
-                (int) convertBtn.getWidth(), (int) convertBtn.getHeight());
-        convertBtn.addActionListener(e -> convertPanel.showPanel());
-        this.add(convertBtn);
-
-        // 機体強化ボタン(機体のレベルと★)。変換ボタンの隣
-        Vector2 unitBtnSize = new Vector2(convertBtnSize);
-        unitBtn = UIBuilder.createImageBtn(component, "/static/img/UI/upgradeScene/unitImage.png", unitBtnSize, "UNIT");
-        unitBtn.setBounds(
-                MAIN.getWidth() / 2 - (int) (61 * ShootingGameMain.getScreenSizeAdj()),
-                convertBtn.getY(),
-                (int) unitBtn.getWidth(), (int) unitBtn.getHeight());
-        unitBtn.addActionListener(e -> unitPanel.showPanel());
-        this.add(unitBtn);
-
-        // モジュールボタン(モジュールの制作と装着)
-        moduleBtn = UIBuilder.createImageBtn(component, "/static/img/UI/upgradeScene/moduleImage.png",
-                new Vector2(convertBtnSize), "MODULE");
-        moduleBtn.setBounds(
-                MAIN.getWidth() / 2 + (int) (67 * ShootingGameMain.getScreenSizeAdj()),
-                convertBtn.getY(),
-                (int) moduleBtn.getWidth(), (int) moduleBtn.getHeight());
-        moduleBtn.addActionListener(e -> modulePanel.showPanel());
-        this.add(moduleBtn);
-        UnlockService.guard(moduleBtn, Feature.MODULE);
-
-        // 押す・乗せると拡大縮小する
-        for (JButton b : new JButton[] { lobbyBtn, subShipBtn, convertBtn, unitBtn, moduleBtn })
-            com.game.shooting_game.ui.ButtonAnimator.attachPop(b);
-
-        this.add(subShipPanel);
-        this.add(convertPanel);
-        this.add(unitPanel);
-        this.add(modulePanel);
-
         skillTreeBtnPanel.initComponents();
-        subShipPanel.initComponents();
-        convertPanel.initComponents();
-        unitPanel.initComponents();
-        modulePanel.initComponents();
     }
 
     /**
@@ -287,8 +201,8 @@ public final class UpgradeManager extends JPanel implements Manager {
     @Override
     public void draw(Graphics g) {
         upgradeUI.draw(g);
-        // 上(コイン)と、下のボタン2列の帯(スキルツリーはその上に描く)
-        com.game.shooting_game.ui.SceneBars.draw(g, com.game.shooting_game.ui.SceneBars.TOP, 116);
+        // 上(コイン)と、下の帯(戻るボタン)(スキルツリーはその上に描く)
+        com.game.shooting_game.ui.SceneBars.draw(g, com.game.shooting_game.ui.SceneBars.TOP, 56);
         skillTreeBtnPanel.draw(g);
     }
 
