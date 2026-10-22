@@ -456,6 +456,16 @@ public class UIBuilder extends JPanel {
      */
     public static void openPanel(JPanel p, String title, Boolean focus, CloseBtnAction closeAction,
             boolean closeOnOutsideClick) {
+        openPanel(p, title, focus, closeAction, closeOnOutsideClick, true);
+    }
+
+    /**
+     * パネル(閉じるボタンの有無を選べる)
+     *
+     * @param closable 閉じるボタンを出すか(falseなら、タイトルバーの閉じるボタンを隠す。ログインのように、操作を終えるまで閉じさせないパネル用)
+     */
+    public static void openPanel(JPanel p, String title, Boolean focus, CloseBtnAction closeAction,
+            boolean closeOnOutsideClick, boolean closable) {
         p.setLayout(null);
         p.setBackground(new Color(0, 0, 0, 220));
         p.setBorder(BorderFactory.createLineBorder(Color.CYAN, 2));
@@ -588,6 +598,7 @@ public class UIBuilder extends JPanel {
         // 開くたびに、閉じる対象を今のパネルに更新する
         closePanelBtn.putClientProperty("closeTarget", p);
         closePanelBtn.putClientProperty("closeAction", closeAction);
+        closePanelBtn.setVisible(closable); // 使い回すボタンなので、開くたびに有無を更新する
         closePanelBtn.setBounds(
                 (int) titlePanel.getWidth() - (int) closePanelBtn.getWidth(),
                 (int) titlePanelSize / 2 - (int) closePanelBtn.getHeight() / 2,
