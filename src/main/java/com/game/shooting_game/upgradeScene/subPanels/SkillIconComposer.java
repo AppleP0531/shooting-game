@@ -32,7 +32,7 @@ public final class SkillIconComposer {
     /**
      * @param glyph    模様の画像(透明な背景)
      * @param level    いまのレベル
-     * @param maxLevel 最大レベル(根のボタンなど強化できないものは 1 以下)
+     * @param maxLevel 最大レベル(0 以下は強化できないものとして札を付けない)
      * @param root     根のボタン(札を付けない)
      */
     public static BufferedImage compose(BufferedImage glyph, int level, int maxLevel, boolean root) {
@@ -42,7 +42,7 @@ public final class SkillIconComposer {
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-        boolean max = !root && maxLevel > 1 && level >= maxLevel;
+        boolean max = !root && maxLevel >= 1 && level >= maxLevel; // 最大レベル1のスキル(助走など)も、取れば最大
         boolean idle = !root && level <= 0;
         Color frame = max ? GOLD : idle ? IDLE : CYAN;
 
@@ -79,7 +79,7 @@ public final class SkillIconComposer {
         g.draw(new RoundRectangle2D.Double(pad + 6, pad + 6, SIZE - 2 * pad - 12, SIZE - 2 * pad - 12, 26, 26));
 
         // 札(強化できるボタンだけ)
-        if (!root && maxLevel > 1) {
+        if (!root && maxLevel >= 1) {
             String text = max ? "MAX" : "Lv" + level;
             g.setFont(new Font("SansSerif", Font.BOLD, max ? 24 : 26));
             FontMetrics fm = g.getFontMetrics();
