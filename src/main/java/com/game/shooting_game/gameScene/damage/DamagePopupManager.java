@@ -19,14 +19,13 @@ import com.game.shooting_game.utils.GameSettings;
 /**
  * ダメージ数字の表示
  * 船がダメージを受けたとき、機体の上に数字を出し、上へ浮かびながら薄く消える。
- * 同じ船への被弾は、出てすぐなら1つの数字にまとめる。大きい数は「万」「億」にまとめる。会心は大きく橙色で「!」付き。
+ * 累計にはせず、1回の被弾ごとに1つの数字を出す。大きい数は「万」「億」にまとめる。会心は大きく橙色で「!」付き。
  * 設定画面の「ダメージ表記」がOFFのときは出さない。
  */
 public final class DamagePopupManager implements Manager {
     private static final double LIFETIME = 0.9; // 数字が出ている時間(秒)
     private static final double FADE_START = 0.5; // 薄くなり始める時間(秒)
     private static final int MAX_POPUPS = 30; // 同時に出す数字の上限
-    private static final double MERGE_WINDOW = 0.25; // 同じ船への被弾を、1つの数字にまとめる時間(秒。出てからこの間に当たったものを足す)
 
     private static DamagePopupManager instance;
 
@@ -37,13 +36,11 @@ public final class DamagePopupManager implements Manager {
         double x;
         double y;
         final ShipKinds owner;
-        final Ship target;
-        double amount;
-        boolean crit;
+        final double amount;
+        final boolean crit;
         double age = 0;
 
         Popup(double x, double y, Ship target, double amount, boolean crit) {
-            this.target = target;
             this.crit = crit;
             this.x = x;
             this.y = y;
@@ -76,15 +73,7 @@ public final class DamagePopupManager implements Manager {
         if (amount <= 0 || !GameSettings.isDamageTextEnabled())
             return;
 
-        // 同じ船への被弾は、出てすぐなら1つの数字にまとめる(連続して当たっても、数字が重なって読めなくならない)
-        for (Popup p : popups) {
-            if (p.target == target && p.age <= MERGE_WINDOW) {
-                p.amount += amount;
-                p.crit |= crit;
-                p.age = Math.min(p.age, 0.1); // まとめた数字は、少し長く出す
-                return;
-            }
-        }
+        // 累計にせず、1回の被弾ごとに数字を出す
         double adj = ShootingGameMain.getScreenSizeAdj();
         // 機体のまわりに、同じ船に出ている数字とできるだけ離れた位置へ出す(重なって読めなくならないように)
         double bx = target.getPos().getX();
