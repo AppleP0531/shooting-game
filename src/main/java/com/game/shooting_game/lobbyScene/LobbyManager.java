@@ -189,7 +189,7 @@ public final class LobbyManager extends JPanel implements Manager {
         String selectShipImagePath = "/static/img/UI/lobbyScene/selectShip.png";
         selectShipBtn = UIBuilder.createImageBtn(component, selectShipImagePath, selectShipBtnSize,
                 "SELLECT");
-        UIBuilder.placeBtn(selectShipBtn, Anchor.BOTTOM_CENTER, Anchor.CENTER, 0, -218);
+        UIBuilder.placeBtn(selectShipBtn, Anchor.BOTTOM_CENTER, Anchor.CENTER, 0, -197);
         selectShipBtn.addActionListener(e -> {
             DataManager.getUserData().setSelectedShip(ships[viewingShipInd]);
             updateBtnStates();
@@ -204,7 +204,7 @@ public final class LobbyManager extends JPanel implements Manager {
         String unlockShipImagePath = "/static/img/UI/lobbyScene/unlockShip.png";
         unlockShipBtn = UIBuilder.createImageBtn(component, unlockShipImagePath, unlockShipBtnSize,
                 "UNLOCK");
-        UIBuilder.placeBtn(unlockShipBtn, Anchor.BOTTOM_CENTER, Anchor.CENTER, 0, -218);
+        UIBuilder.placeBtn(unlockShipBtn, Anchor.BOTTOM_CENTER, Anchor.CENTER, 0, -197);
         unlockShipBtn.addActionListener(e -> {
             String id = ships[viewingShipInd];
             if (GachaService.unlock(id)) {
@@ -230,7 +230,7 @@ public final class LobbyManager extends JPanel implements Manager {
         String changeModeImagePath = "/static/img/UI/lobbyScene/modeIcon.png";
         changeModeBtn = UIBuilder.createImageBtn(component, changeModeImagePath, changeModeBtnSize,
                 "CHANGE_MODE");
-        UIBuilder.placeBtn(changeModeBtn, Anchor.BOTTOM_RIGHT, Anchor.BOTTOM_RIGHT, -10, -200);
+        UIBuilder.placeBtn(changeModeBtn, Anchor.BOTTOM_RIGHT, Anchor.BOTTOM_RIGHT, -10, -179);
         changeModeBtn.addActionListener(e -> {
             SHIP_M.getPlayer().changeMode();
         });
@@ -272,8 +272,9 @@ public final class LobbyManager extends JPanel implements Manager {
 
         // 装備スロット(帯の上に4枚のカード。押すと、強化画面と同じパネルが開く)
         int cardGap = (int) (6 * adj0);
-        int cardW = (MAIN.getWidth() - edge * 2 - cardGap * 3) / 4;
-        int cardH = (int) (84 * adj0);
+        int cardW = (int) (69 * adj0);
+        int cardH = (int) (63 * adj0);
+        int cardX0 = (MAIN.getWidth() - (cardW * 4 + cardGap * 3)) / 2; // 中央寄せ
         int cardY = MAIN.getHeight() - (int) ((104 + 6) * adj0) - cardH;
         LobbySceneUI.Slot[] slots = LobbySceneUI.Slot.values();
         slotRects = new Rectangle[slots.length];
@@ -283,7 +284,7 @@ public final class LobbyManager extends JPanel implements Manager {
             b.setContentAreaFilled(false);
             b.setBorderPainted(false);
             b.setFocusPainted(false);
-            slotRects[s.ordinal()] = new Rectangle(edge + (cardW + cardGap) * s.ordinal(), cardY, cardW, cardH);
+            slotRects[s.ordinal()] = new Rectangle(cardX0 + (cardW + cardGap) * s.ordinal(), cardY, cardW, cardH);
             b.setBounds(slotRects[s.ordinal()]);
             slotBtns[s.ordinal()] = b;
             this.add(b);

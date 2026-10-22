@@ -125,6 +125,22 @@ public final class SkillService {
         });
     }
 
+    /**
+     * 効果量の合計(指定した機体。選択中でなくてもよい。持っていない機体は0)
+     */
+    public static double getBonusFor(String shipId, String effect) {
+        UserData ud = DataManager.getUserData();
+        var stats = ud == null ? null : ud.getShips().get(shipId);
+        if (stats == null)
+            return 0;
+        double sum = 0;
+        for (SkillTreeData d : getConfig()) {
+            if (effect.equals(d.getEffect()))
+                sum += Math.min(stats.getUpgrades().getOrDefault(d.getName(), 0), d.getMaxLevel()) * d.getPerLevel();
+        }
+        return sum;
+    }
+
     public static synchronized void invalidate() {
         bonusCache.clear();
     }

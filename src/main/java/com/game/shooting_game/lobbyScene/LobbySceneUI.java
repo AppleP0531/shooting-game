@@ -117,7 +117,7 @@ public class LobbySceneUI {
         drawBars(g);
         drawTabBar(g, uiData.ships.length, uiData.ind);
         drawUserLevel(g);
-        drawStats(g);
+        drawStats(g, uiData.ships[uiData.ind]);
         drawMessage(g);
     }
 
@@ -179,7 +179,7 @@ public class LobbySceneUI {
             SHIP_M.setPlayer(new Player(
                     shipName,
                     ColorMode.BLUE,
-                    new Vector2(MAIN.getWidth() / 2, MAIN.getHeight() - 330 * ShootingGameMain.getScreenSizeAdj())));
+                    new Vector2(MAIN.getWidth() / 2, MAIN.getHeight() - 310 * ShootingGameMain.getScreenSizeAdj())));
         }
 
         BM.draw(g);
@@ -195,7 +195,7 @@ public class LobbySceneUI {
     private void drawTabBar(Graphics g, int totalLength, int ind) {
         Vector2 barPos = new Vector2(
                 MAIN.getWidth() / 2,
-                MAIN.getHeight() - 246 * ShootingGameMain.getScreenSizeAdj()); // 船(と、その下の炎)にめり込まない位置
+                MAIN.getHeight() - 225 * ShootingGameMain.getScreenSizeAdj()); // 船(と、その下の炎)にめり込まない位置
         Vector2 barSize = new Vector2(
                 120,
                 10);
@@ -314,28 +314,26 @@ public class LobbySceneUI {
     // ----- 機体の能力(左のバー) -----
 
     /**
-     * 能力のバー(装甲・盾・火力・防御・無敵・暴走)を、ラベル+数値+バーで描く。
+     * 閲覧中の機体の能力のバー(装甲・盾・火力・防御・無敵・暴走)を、ラベル+数値+バーで描く。
      * バーの長さは目安(それぞれの値を、おおよその上限で割った割合)。
      */
-    private void drawStats(Graphics g) {
+    private void drawStats(Graphics g, String shipId) {
         if (DataManager.getUserData() == null)
             return;
         double adj = ShootingGameMain.getScreenSizeAdj();
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
-        String shipId = DataManager.getUserData().getSelectedShip();
         double baseHp = UnitService.baseHp(shipId);
-        double hp = baseHp * (1 + SkillService.getBonus("MAX_HP")) * UnitService.hpRate(shipId);
+        double hp = baseHp * (1 + SkillService.getBonusFor(shipId, "MAX_HP")) * UnitService.hpRate(shipId);
         hp = hp * (1 + ModuleService.stat(ModuleStat.HP_PCT)) + ModuleService.stat(ModuleStat.HP_FLAT);
         double shield = hp * 0.15 * (1 + ModuleService.stat(ModuleStat.SHIELD_PCT))
                 + ModuleService.stat(ModuleStat.SHIELD_FLAT);
-        double atk = (1 + SkillService.getBonus("DAMAGE")) * UnitService.attackRate(shipId)
+        double atk = (1 + SkillService.getBonusFor(shipId, "DAMAGE")) * UnitService.attackRate(shipId)
                 * (1 + ModuleService.stat(ModuleStat.ATK_PCT));
         double def = ModuleService.stat(ModuleStat.DEF_PCT);
-        double invincible = 1 + SkillService.getBonus("INVINCIBLE");
-        double rampage = 10 + SkillService.getBonus("OOC_TIME");
+        double invincible = 1 + SkillService.getBonusFor(shipId, "INVINCIBLE");
+        double rampage = 10 + SkillService.getBonusFor(shipId, "OOC_TIME");
         Object[][] rows = {
                 { "火力", String.format("×%.2f", atk), atk / 4 },
                 { "装甲", String.valueOf(Math.round(hp)), hp / (baseHp * 5) },
@@ -407,8 +405,8 @@ public class LobbySceneUI {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        Font title = new Font("SansSerif", Font.BOLD, Math.max(9, (int) (11 * adj)));
-        Font small = new Font("SansSerif", Font.BOLD, Math.max(8, (int) (10 * adj)));
+        Font title = new Font("SansSerif", Font.BOLD, Math.max(8, (int) (8.5 * adj)));
+        Font small = new Font("SansSerif", Font.BOLD, Math.max(7, (int) (7.5 * adj)));
         String shipId = DataManager.getUserData().getSelectedShip();
 
         for (Slot s : Slot.values()) {
@@ -423,9 +421,9 @@ public class LobbySceneUI {
             g2.drawRoundRect(r.x, r.y, r.width, r.height, 12, 12);
 
             // 中身
-            int pad = (int) (6 * adj);
-            int ix = r.x + pad, iy = r.y + pad + (int) (4 * adj);
-            int iw = r.width - 2 * pad, ih = r.height - 2 * pad - (int) (26 * adj);
+            int pad = (int) (4 * adj);
+            int ix = r.x + pad, iy = r.y + pad + (int) (3 * adj);
+            int iw = r.width - 2 * pad, ih = r.height - 2 * pad - (int) (20 * adj);
             Graphics2D c = (Graphics2D) g2.create();
             c.clipRect(ix, iy, iw, ih);
             String sub = ""; // 下の小さな文字
@@ -438,7 +436,7 @@ public class LobbySceneUI {
                         int dw = (int) (img.getWidth() * k), dh = (int) (img.getHeight() * k);
                         c.drawImage(img, ix + (iw - dw) / 2, iy + (ih - dh) / 2, dw, dh, null);
                     }
-                    sub = "Lv" + UnitService.getLevel(shipId) + " " + UnitService.rankText(shipId);
+                    sub = "Lv" + UnitService.getLevel(shipId) + " " + "★".repeat(UnitService.getRank(shipId));
                 }
                 case SUBSHIP -> {
                     if (SubShipService.isEquipped()) {
@@ -482,11 +480,11 @@ public class LobbySceneUI {
             // 名前(上の左)と、下の小さな文字
             g2.setFont(title);
             g2.setColor(lock ? new Color(150, 150, 165) : Color.WHITE);
-            g2.drawString(s.label(), r.x + pad, r.y + pad + (int) (6 * adj));
+            g2.drawString(s.label(), r.x + pad, r.y + pad + (int) (5 * adj));
             g2.setFont(small);
             g2.setColor(lock ? new Color(150, 150, 165) : new Color(255, 214, 80));
             FontMetrics fm = g2.getFontMetrics();
-            g2.drawString(sub, r.x + (r.width - fm.stringWidth(sub)) / 2, r.y + r.height - (int) (7 * adj));
+            g2.drawString(sub, r.x + (r.width - fm.stringWidth(sub)) / 2, r.y + r.height - (int) (5 * adj));
             if (lock) {
                 g2.setColor(new Color(0, 0, 0, 120));
                 g2.fillRoundRect(r.x, r.y, r.width, r.height, 12, 12);
