@@ -332,7 +332,7 @@ public class LobbySceneUI {
     private void drawStats(Graphics g, String shipId) {
         if (DataManager.getUserData() == null)
             return;
-        double adj = ShootingGameMain.getScreenSizeAdj() * 2.0 / 3; // 能力のUIは、ふだんの2/3の大きさ
+        double adj = ShootingGameMain.getScreenSizeAdj() * 0.8; // 能力のUIは、ふだんの0.8倍の大きさ
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -358,30 +358,26 @@ public class LobbySceneUI {
         };
 
         int x = (int) (10 * adj);
-        int y = (int) (56 * adj);
+        int y = (int) (58 * ShootingGameMain.getScreenSizeAdj()); // 上の帯(44)の下
         int labelW = (int) (34 * adj), valueW = (int) (54 * adj);
         int barW = (int) (96 * adj), barH = (int) (7 * adj);
         int line = (int) (20 * adj);
         Font label = new Font("SansSerif", Font.PLAIN, Math.max(7, (int) (11 * adj)));
         Font value = new Font("SansSerif", Font.BOLD, Math.max(7, (int) (11 * adj)));
 
-        // 機体の絵に重なって読みにくくならないよう、うっすら暗い板を敷く
-        g2.setColor(new Color(0, 0, 0, 90));
-        g2.fillRoundRect(x - (int) (4 * adj), y - (int) (6 * adj), labelW + valueW + barW + (int) (14 * adj),
-                rows.length * line + (int) (6 * adj), 10, 10);
         for (int i = 0; i < rows.length; i++) {
             int ry = y + i * line;
             g2.setFont(label);
             g2.setColor(new Color(170, 200, 220));
             g2.drawString((String) rows[i][0], x, ry + (int) (9 * adj));
             g2.setFont(value);
+            g2.setColor(new Color(0, 0, 0, 160)); // 背景の板がないので、文字には影をつける
+            g2.drawString((String) rows[i][1], x + labelW + 1, ry + (int) (9 * adj) + 1);
             g2.setColor(Color.WHITE);
             g2.drawString((String) rows[i][1], x + labelW, ry + (int) (9 * adj));
-            // バー(背景 → 中身)
+            // バー(灰色の下地は敷かず、中身だけ)
             double ratio = Math.clamp((double) rows[i][2], 0.0, 1.0);
             int bx = x + labelW + valueW, by = ry + (int) (3 * adj);
-            g2.setColor(new Color(255, 255, 255, 40));
-            g2.fillRect(bx, by, barW, barH);
             g2.setColor(new Color(255, 205, 40));
             g2.fillRect(bx, by, (int) (barW * ratio), barH);
         }
