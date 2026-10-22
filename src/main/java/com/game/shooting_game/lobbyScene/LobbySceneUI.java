@@ -399,10 +399,6 @@ public class LobbySceneUI {
             int len = (int) Math.min(barW * ratio, getBarLimit(bx));
             g2.setColor(new Color(255, 205, 40));
             g2.fillRect(bx, by, len, barH);
-            if (i == 0 && raw > 1) { // 基準の位置に細い印
-                g2.setColor(new Color(255, 255, 255, 200));
-                g2.fillRect(bx + barW - 1, by - 1, 2, barH + 2);
-            }
         }
         g2.dispose();
     }
