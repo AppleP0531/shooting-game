@@ -135,8 +135,9 @@ public final class InfinityStageManager extends JPanel implements Manager {
         drawCentered(g, target > 1 ? "ウェーブ " + target + " まで自動スキップ" : "ウェーブ 1 から開始", cx, textY);
         g.setFont(new Font("SansSerif", Font.PLAIN, Math.max(9, (int) (11 * adj))));
         g.setColor(new Color(190, 220, 255));
-        drawCentered(g, "スキル「助走」を強化すると、最高到達ウェーブの50ウェーブ前から始められる(道中の敵は倒した扱い)", cx,
-                textY + (int) (18 * adj));
+        // 画面の幅に収まるよう、2行に分ける
+        drawCentered(g, "スキル「助走」を強化すると、最高到達ウェーブの50ウェーブ前から", cx, textY + (int) (18 * adj));
+        drawCentered(g, "始められる(道中の敵は倒した扱い)", cx, textY + (int) (34 * adj));
     }
 
     /**
