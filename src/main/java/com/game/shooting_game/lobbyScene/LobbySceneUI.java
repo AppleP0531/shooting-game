@@ -314,6 +314,22 @@ public class LobbySceneUI {
     // ----- 機体の能力(左のバー) -----
 
     private static final double DEFAULT_BULLET_DAMAGE = 5; // 弾の設定が読めないときの値
+    private static final double OVERFLOW_PER_DECADE = 0.2; // 基準を10倍超えるごとに、バーを基準の長さの何割伸ばすか
+
+    /**
+     * バーの長さの割合(基準=1)。基準までは比例し、超えた分は対数(常用対数 × OVERFLOW_PER_DECADE)で伸ばす。
+     * 0以下は0。
+     */
+    static double barRatio(double raw) {
+        if (raw <= 0)
+            return 0;
+        return raw <= 1 ? raw : 1 + Math.log10(raw) * OVERFLOW_PER_DECADE;
+    }
+
+    /** バーの右端が画面からはみ出さないための、バーの長さの上限(バーの左端 bx から画面の右端まで) */
+    private int getBarLimit(int bx) {
+        return MAIN.getWidth() - bx - (int) (4 * ShootingGameMain.getScreenSizeAdj());
+    }
 
     /** 自機の基本の弾(STRAIGHT の1番)のダメージ */
     private double basicBulletDamage() {
@@ -349,7 +365,7 @@ public class LobbySceneUI {
         double invincible = UnitService.baseInvincibleTime(shipId) + SkillService.getBonusFor(shipId, "INVINCIBLE");
         double rampage = UnitService.baseOocTime(shipId) + SkillService.getBonusFor(shipId, "OOC_TIME");
         Object[][] rows = {
-                { "火力", String.valueOf(Math.round(power)), atk / 4 },
+                { "火力", String.valueOf(Math.round(power)), power / (basicBulletDamage() * 4) },
                 { "装甲", String.valueOf(Math.round(hp)), hp / (baseHp * 5) },
                 { "盾", String.valueOf(Math.round(shield)), shield / (hp * 0.5) },
                 { "防御", String.format("-%.0f%%", def * 100), def / 0.5 },
@@ -376,10 +392,17 @@ public class LobbySceneUI {
             g2.setColor(Color.WHITE);
             g2.drawString((String) rows[i][1], x + labelW, ry + (int) (9 * adj));
             // バー(灰色の下地は敷かず、中身だけ)
-            double ratio = Math.clamp((double) rows[i][2], 0.0, 1.0);
+            double raw = (double) rows[i][2];
+            // 火力だけは、基準(長さ1)を超えた分を、対数で右へ伸ばす(他の項目は基準で止める)
+            double ratio = i == 0 ? barRatio(raw) : Math.clamp(raw, 0.0, 1.0);
             int bx = x + labelW + valueW, by = ry + (int) (3 * adj);
+            int len = (int) Math.min(barW * ratio, getBarLimit(bx));
             g2.setColor(new Color(255, 205, 40));
-            g2.fillRect(bx, by, (int) (barW * ratio), barH);
+            g2.fillRect(bx, by, len, barH);
+            if (i == 0 && raw > 1) { // 基準の位置に細い印
+                g2.setColor(new Color(255, 255, 255, 200));
+                g2.fillRect(bx + barW - 1, by - 1, 2, barH + 2);
+            }
         }
         g2.dispose();
     }
