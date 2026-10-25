@@ -53,6 +53,7 @@ import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.LogUtils;
+import com.game.shooting_game.ui.NullImage;
 import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
@@ -311,8 +312,23 @@ public final class ShipManager implements Manager {
                     } catch (IOException e) {
                         switch (e.getMessage()) {
                             // 画像ファイル未発見ログ
-                            case "FILE_NOT_FOUND" -> LogUtils.warn(component,
-                                    "File not found: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
+                            case "FILE_NOT_FOUND" -> {
+                                LogUtils.warn(component, "File not found: " + ANSI.YELLOW + imagePath + ANSI.RESET
+                                        + ". Using the null image.");
+                                int total = 0;
+                                if (data.getSheets() != null)
+                                    for (SheetConfig sh : data.getSheets())
+                                        total += sh.getUseCount();
+                                String sfx = shipId.equals("explosion") || owner == ShipKinds.PLAYER ? ""
+                                        : "_" + mode.toString().toLowerCase();
+                                NullImage.Kind nullKind = switch (owner) {
+                                    case ENEMY -> NullImage.Kind.ENEMY;
+                                    case BOSS -> NullImage.Kind.BOSS;
+                                    case PLAYER -> NullImage.Kind.PLAYER;
+                                    default -> NullImage.Kind.OBJECT;
+                                };
+                                shipImageCache.put(shipId + sfx, NullImage.frames(nullKind, total));
+                            }
 
                             // 画像読み込みエラーログ
                             case "BROKEN_FILE" -> LogUtils.error(component,
