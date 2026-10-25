@@ -57,6 +57,7 @@ package "shooting_game" {
         GACHA
         ENCYCLOPEDIA
         ACHIEVEMENT
+        CHEST
         SELECTSTAGE
         NORMALSTAGE
         INFINITYSTAGE
@@ -790,6 +791,7 @@ package "shooting_game" {
             - gachaBtn: JButton <<ガチャ。GACHA へ遷移(ショップの右)>>
             - dexBtn: JButton <<図鑑。ENCYCLOPEDIA へ遷移(バッグ画面から移動)>>
             - achievementBtn: JButton <<実績。ACHIEVEMENT へ遷移(図鑑ボタンの下)>>
+            - chestBtn: JButton <<宝箱。CHEST へ遷移(実績ボタンの下)>>
             - viewingShipInd: int
             - ships: String[]
             --
@@ -963,6 +965,32 @@ package "shooting_game" {
             - listArea(): Rectangle
             + draw(g: Graphics): void
             - drawRow(g2: Graphics2D, a: Achievement, x: int, y: int, w: int, h: int): void
+        }
+    }
+
+    package "chestScene" {
+        class ChestManager <<Singleton>> {
+            - {static} component: String
+            - {static} instance: ChestManager
+            - {static} RANK_COLORS: Color[]
+            - MAIN: ShootingGameMain
+            - goBackBtn: JButton
+            - message: String <<開ける・受け取りの結果>>
+            - repaintTimer: double
+            - rnd: Random
+            - hitAreas: List<Object[]> <<{判定の四角, 種類(open/skip/claim), 値}。描画のたびに作り直す>>
+            --
+            - ChestManager()
+            + {static} getInstance(): ChestManager
+            - {static} px(base: double): int
+            + initComponents(): void
+            - handle(kind: String, value: int): void
+            + setup(): void
+            + update(dt: double): void
+            + draw(g: Graphics): void
+            - drawSlot(g2: Graphics2D, slot: int, x: int, y: int, w: int, h: int, now: int): void
+            - drawCard(g2: Graphics2D, x: int, y: int, w: int, h: int, edge: Color): void
+            - drawButton(g2: Graphics2D, x: int, y: int, w: int, h: int, label: String, enabled: boolean): void
         }
     }
 
@@ -1458,6 +1486,84 @@ package "shooting_game" {
             }
         }
 
+        package "chest" {
+            class ChestService <<Utility>> {
+                - {static} component: String
+                - {static} CONFIG_PATH: String <<ChestConfig.json>>
+                - {static} KEY_PREFIX: String = "key:" <<鍵の所持数(key:ランク)>>
+                - {static} CHEST_PREFIX: String = "chest:" <<スロットの宝箱(chest:番号:rank|at)>>
+                + {static} MAX_SLOTS: int = 10 <<同時に開けられる数>>
+                + {static} BASE_EPOCH_SEC: long <<開く時刻の基準(2026-01-01 00:00 UTC)>>
+                + {static} BOSS_KEY_CHANCE: double = 0.35 <<ボス撃破で鍵が出る確率>>
+                + {static} MISSION_KEY_CAP: int = 3 <<1回のクリアでミッションの★からもらえる鍵の最大数>>
+                - {static} tables: Map<Rank,Table>
+                --
+                - ChestService()
+                - {static} ensureLoaded(): void
+                + {static} reload(): void
+                - {static} clamp01(v: double): double
+                + {static} table(rank: Rank): Table
+                + {static} openSeconds(rank: Rank): int
+                + {static} firstClearKey(diff: Difficulty): Rank <<難易度が高いほどよい鍵>>
+                + {static} bossKey(diff: Difficulty): Rank
+                - {static} rankOf(diff: Difficulty): Rank
+                - {static} store(): Map<String,Integer> <<progress.highScores を流用>>
+                + {static} nowSec(): int <<基準からの秒数>>
+                + {static} keyCount(rank: Rank): int
+                + {static} addKey(rank: Rank, n: int): void
+                + {static} slotRank(slot: int): Rank <<空なら null>>
+                + {static} remaining(slot: int, now: int): int
+                + {static} isReady(slot: int, now: int): boolean
+                + {static} usedSlots(): int
+                + {static} freeSlot(): int <<なければ -1>>
+                + {static} readyCount(now: int): int
+                + {static} open(rank: Rank, now: int): int <<鍵を1つ使って開け始める。使ったスロット(失敗は -1)>>
+                + {static} skip(slot: int, now: int): boolean <<研究スキップ券で開き終わらせる>>
+                + {static} roll(rank: Rank, rnd: Random): Loot
+                + {static} claim(slot: int, now: int, rnd: Random): Opened <<中身を所持品へ入れてスロットを空ける>>
+                + {static} formatTime(sec: int): String
+            }
+
+            enum Rank {
+                COPPER
+                SILVER
+                GOLD
+                + getLabel(): String
+            }
+
+            class Table <<record>> {
+                ~ openSeconds: int
+                ~ coinMin: int
+                ~ coinMax: int
+                ~ resources: List<ResourceEntry>
+                ~ modules: List<ModuleEntry>
+            }
+
+            class ResourceEntry <<record>> {
+                ~ name: ResourceName
+                ~ rarity: Rarity
+                ~ min: int
+                ~ max: int
+                ~ chance: double
+            }
+
+            class ModuleEntry <<record>> {
+                ~ rarity: Rarity
+                ~ chance: double
+            }
+
+            class Loot <<record>> {
+                ~ coins: int
+                ~ resources: Map<ResourceKinds,Integer>
+                ~ moduleRarities: List<Rarity>
+            }
+
+            class Opened <<record>> {
+                ~ loot: Loot
+                ~ modules: List<Module>
+            }
+        }
+
         package "farm" {
             class MaterialFarmService <<Utility>> {
                 + {static} STAGE_BASE: int = 1300 <<周回ステージ番号の起点>>
@@ -1837,6 +1943,7 @@ package "shooting_game" {
             - coin: int
             - managers: List<Manager> <<DamagePopupManager を最前面に含む。BeamManager の次に MeteorManager>>
             - effectList: Map<String, Double>
+            - bossKills: int <<倒したボスの数(宝箱の鍵のドロップ用)>>
             - hitCount: int <<被弾回数(HARDミッション用)>>
             - playTime: double
             - skipped: boolean <<スキップ報酬のみ(ミッション対象外)>>
@@ -1861,6 +1968,8 @@ package "shooting_game" {
             + addScore(value: double): void
             + addCoin(value: int): void
             + addHit(): void
+            + addBossKill(): void <<ボスを倒したことの記録(宝箱の鍵用)>>
+            - dropChestKeys(diff: Difficulty, firstClear: boolean, newStars: int): void <<初回クリア・ボス(確率)・ミッションの★で鍵を入れる>>
             + skipResult(): void
             - {static} bumpRarity(rarity: Rarity, bump: int): Rarity
             + getGameResult(): boolean
@@ -3936,6 +4045,7 @@ package "shooting_game" {
             - {static} instance: StageRewards
             - resources: Map<ResourceKinds, Integer>
             - modules: List<Module>
+            - keys: Map<Rank,Integer> <<クリアで手に入った宝箱の鍵>>
             - score: int
             - difficultyLabel: String
             - newMissions: List<String>
@@ -4162,6 +4272,12 @@ shooting_game.upgradeScene.SkillTreeLayout +-- SkillTreeLayoutNode
 shooting_game.domain.star.StarRewardService +-- StarReward
 shooting_game.domain.achievement.AchievementService +-- Tier
 shooting_game.domain.achievement.AchievementService +-- Achievement
+shooting_game.domain.chest.ChestService +-- Rank
+shooting_game.domain.chest.ChestService +-- Table
+shooting_game.domain.chest.ChestService +-- ResourceEntry
+shooting_game.domain.chest.ChestService +-- ModuleEntry
+shooting_game.domain.chest.ChestService +-- Loot
+shooting_game.domain.chest.ChestService +-- Opened
 shooting_game.shopScene.ShopSceneUI +-- CardData
 shooting_game.gameScene.stage.DifficultyService +-- MissionResult
 shooting_game.gameScene.bullet.barrage.AnchorMarkers +-- Marker
@@ -4194,6 +4310,20 @@ shooting_game.domain.achievement.AchievementService ..> shooting_game.domain.sta
 shooting_game.domain.achievement.AchievementService ..> shooting_game.gameScene.stage.DifficultyService
 shooting_game.gameScene.ship.ShipManager ..> shooting_game.domain.achievement.AchievementService
 shooting_game.gameScene.GameManager ..> shooting_game.domain.achievement.AchievementService
+
+' 宝箱と鍵
+shooting_game.lobbyScene.LobbyManager ..> shooting_game.chestScene.ChestManager
+shooting_game.SceneManager --> shooting_game.chestScene.ChestManager
+shooting_game.chestScene.ChestManager ..> shooting_game.domain.chest.ChestService
+shooting_game.chestScene.ChestManager ..> shooting_game.domain.shop.ShopService
+shooting_game.domain.chest.ChestService ..> shooting_game.data.DataManager
+shooting_game.domain.chest.ChestService ..> shooting_game.domain.shop.ShopService
+shooting_game.domain.chest.ChestService ..> shooting_game.domain.star.StarRewardService
+shooting_game.domain.chest.ChestService ..> shooting_game.domain.module.ModuleService
+shooting_game.domain.chest.ChestService ..> shooting_game.gameScene.stage.Difficulty
+shooting_game.gameScene.GameManager ..> shooting_game.domain.chest.ChestService
+shooting_game.gameScene.ship.ShipManager ..> shooting_game.gameScene.GameManager
+shooting_game.model.StageRewards ..> shooting_game.domain.chest.ChestService
 shooting_game.SceneManager ..> shooting_game.ui.CoinHud
 shooting_game.SceneManager --> shooting_game.gachaScene.GachaManager
 shooting_game.gachaScene.GachaManager ..> shooting_game.domain.gacha.GachaService
@@ -4364,6 +4494,7 @@ shooting_game.testScene.TestManager --|> javax.swing.JPanel
 shooting_game.bagScene.BagManager --|> javax.swing.JPanel
 shooting_game.encyclopediaScene.EncyclopediaManager --|> javax.swing.JPanel
 shooting_game.achievementScene.AchievementManager --|> javax.swing.JPanel
+shooting_game.chestScene.ChestManager --|> javax.swing.JPanel
 shooting_game.stageScene.DifficultyPanel --|> javax.swing.JPanel
 shooting_game.stageScene.extra.ExtraStageManager --|> javax.swing.JPanel
 shooting_game.ui.ShooterScrollBarUI --|> javax.swing.plaf.basic.BasicScrollBarUI
@@ -4411,6 +4542,7 @@ shooting_game.data.DataManager ..|> shooting_game.interfaces.Manager
 shooting_game.bagScene.BagManager ..|> shooting_game.interfaces.Manager
 shooting_game.encyclopediaScene.EncyclopediaManager ..|> shooting_game.interfaces.Manager
 shooting_game.achievementScene.AchievementManager ..|> shooting_game.interfaces.Manager
+shooting_game.chestScene.ChestManager ..|> shooting_game.interfaces.Manager
 shooting_game.stageScene.extra.ExtraStageManager ..|> shooting_game.interfaces.Manager
 shooting_game.gameScene.damage.DamagePopupManager ..|> shooting_game.interfaces.Manager
 shooting_game.shopScene.ShopManager ..|> shooting_game.interfaces.Manager
