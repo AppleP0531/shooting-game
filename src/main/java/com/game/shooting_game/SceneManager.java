@@ -123,6 +123,11 @@ public final class SceneManager implements Manager {
         if (current != null)
             current.setup();
 
+        // 初めて入った画面なら、操作のガイドを出す
+        var guide = com.game.shooting_game.domain.tutorial.TutorialService.forScene(sceneName.name());
+        if (guide != null)
+            com.game.shooting_game.ui.TutorialOverlay.getInstance().show(guide, null);
+
         // シーンロード完了ログ
         LogUtils.info(component,
                 ANSI.YELLOW + sceneName + " Scene" + ANSI.RESET + " loaded.");

@@ -250,6 +250,21 @@ final class PlayerDataCommands extends CommandGroup {
             }
         }).setSyntax("<resourceName>", "<amount>");
 
+        // チュートリアルの見た記録のリセット /tutorial
+        register(rootCommands, "/tutorial", "Show or reset the tutorial guides you have seen.", false, (node, args) -> {
+            if (args.length == 0) {
+                com.game.shooting_game.domain.tutorial.TutorialService.status()
+                        .forEach((id, seen) -> info(id + ": " + (seen ? "seen" : "not seen")));
+                return;
+            }
+            if (args.length == 1 && args[0].equalsIgnoreCase("reset")) {
+                int n = com.game.shooting_game.domain.tutorial.TutorialService.reset();
+                success("Reset " + n + " tutorial guide(s). They will show again.");
+                return;
+            }
+            usage(node);
+        }).setSyntax("[reset]");
+
         // データリセット /deleteuser
         register(rootCommands, "/deleteuser", "Reset data.", true, (node, args) -> {
             // オフラインモードの場合

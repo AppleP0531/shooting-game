@@ -95,6 +95,7 @@ public final class GameManager extends JPanel implements Manager {
     private int killCountSinceLastLevelUp; // 最近のレベルアップドロップからのキル数
     private int score;
     private int coin;
+    private boolean tutorialHold; // チュートリアルの説明を出している間、ゲームを止める
     private int bossKills; // このステージで倒したボスの数(宝箱の鍵のドロップ用)
     private int hitCount; // このステージで受けた被弾の回数(HARDのミッション用)
     private double playTime; // このステージの経過時間(秒。ポーズ中は進まない)
@@ -231,6 +232,7 @@ public final class GameManager extends JPanel implements Manager {
     @Override
     public void setup() {
         setupDone = false;
+        tutorialHold = false;
         com.game.shooting_game.gameScene.stage.CoinBossMemory.reset(); // 無限モードのコインボスの引き継ぎは、挑戦ごとに初期化する
         resumeTimer = leaveTimer = -1;
         LogUtils.info(component,
@@ -271,7 +273,7 @@ public final class GameManager extends JPanel implements Manager {
         if (!setupDone)
             return;
         updateResumeAndLeave(dt);
-        if (!pause) {
+        if (!pause && !tutorialHold) {
             switch (animationName) {
                 case "start" -> {
                     SHIP_M.getPlayer().animation("admission");
@@ -282,10 +284,12 @@ public final class GameManager extends JPanel implements Manager {
                     if (4 < animateTimer) {
                         SHIP_M.getPlayer().animation("none");
                         animation("none");
+                        fireTutorial("stage1.start");
                     }
                 }
                 case "none" -> {
                     playTime += dt;
+                    checkTutorialEvents();
                     checkCollisions();
 
                     // プレイヤーのHPがなくなったらゲームオーバーフラグを立ててリザルト画面に遷移
@@ -425,6 +429,33 @@ public final class GameManager extends JPanel implements Manager {
      */
     public void addHit() {
         hitCount++;
+        fireTutorial("stage1.hit");
+    }
+
+    /**
+     * ステージ1の、場面ごとのチュートリアル(最初の敵・最初のアイテム)のきっかけを調べる
+     */
+    private void checkTutorialEvents() {
+        if (STAGE_M.getStageId() != 1)
+            return;
+        if (SHIP_M.getEnemyList().stream().anyMatch(e -> e.inScreen()))
+            fireTutorial("stage1.enemy");
+        if (!IM.getItemList().isEmpty())
+            fireTutorial("stage1.item");
+    }
+
+    /**
+     * ステージ1のチュートリアルを出す(まだ見ていなければ。出している間はゲームを止める)
+     */
+    private void fireTutorial(String event) {
+        if (STAGE_M.getStageId() != 1 || SM.getSceneName() != SceneType.GAME || tutorialHold)
+            return;
+        var guide = com.game.shooting_game.domain.tutorial.TutorialService.forEvent(event);
+        if (guide == null)
+            return;
+        tutorialHold = true;
+        if (!com.game.shooting_game.ui.TutorialOverlay.getInstance().show(guide, () -> tutorialHold = false))
+            tutorialHold = false;
     }
 
     /**
