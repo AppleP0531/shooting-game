@@ -1982,12 +1982,14 @@ package "shooting_game" {
                 - {static} endlessDamage: double
                 - {static} bossStage: boolean <<ボスチャレンジか。難易度のボス用倍率をかける>>
                 - {static} stageHp: double <<ステージ番号に応じた敵HPの倍率(GameBalance)>>
+                - {static} stageDamage: double <<ステージが進むほど敵から受けるダメージが増える倍率(GameBalance.stageDamageGrowth)>>
                 + {static} load(spec: Spec): void
                 + {static} load(spec: Spec, diff: Difficulty): void
                 + {static} load(spec: Spec, diff: Difficulty, stageIndex: int): void <<GameManager がステージ番号を渡す>>
                 + {static} load(spec: Spec, diff: Difficulty, stageIndex: int, boss: boolean): void <<ボスチャレンジなら bossStage を立てる>>
                 + {static} setEndlessScale(wave: int): void
                 + {static} enemyHpRate(): double
+                + {static} enemyLevelHpRate(level: int): double <<敵レベルに応じた敵HPの倍率(ゲーム中だけ。ボスは対象外)>>
                 + {static} enemyDamageRate(): double
                 + {static} playerHpRate(): double
                 + {static} coinRate(): double
@@ -3473,6 +3475,8 @@ package "shooting_game" {
             - {static} rankAttackGrowth: double = 18.0
             - {static} stageHpGrowth: double = 1.07
             - {static} endlessHpPerWave: double = 0.015
+            - {static} enemyLevelHp: double = 0.2
+            - {static} stageDamageGrowth: double = 1.004
             - {static} loaded: boolean
             --
             - {static} ensureLoaded(): void
@@ -3480,7 +3484,11 @@ package "shooting_game" {
             + {static} rankAttackGrowth(): double <<ランク1つごとの火力の倍率(指数)>>
             + {static} stageHpGrowth(): double
             + {static} endlessHpPerWave(): double
+            + {static} enemyLevelHp(): double <<敵レベル1つごとに増える敵HPの割合>>
+            + {static} stageDamageGrowth(): double <<ステージ1つごとの、敵から受けるダメージの倍率(指数)>>
             + {static} stageHpRate(stageIndex: double): double <<ステージ番号に応じた敵HPの倍率>>
+            + {static} enemyLevelHpRate(level: int): double <<敵レベルに応じた敵HPの倍率(1 + enemyLevelHp × level)>>
+            + {static} stageDamageRate(stageIndex: double): double <<ステージ番号に応じた、敵から受けるダメージの倍率>>
         }
 
         class GameUtils {
@@ -3569,6 +3577,32 @@ package "shooting_game" {
     }
 
     package "ui" {
+        class NullImage <<Utility>> {
+            - {static} SIZE: int = 96
+            - {static} CACHE: Map<Kind, BufferedImage>
+            --
+            + {static} of(kind: Kind): BufferedImage <<ダミー画像(1枚)。img/null/<要素>.png があればそれ、なければ render>>
+            + {static} frames(kind: Kind, count: int): BufferedImage[] <<使うコマ数ぶんに並べたダミー(同じ絵)>>
+            + {static} render(kind: Kind): BufferedImage <<「?」入りの市松模様をコードで描く>>
+        }
+
+        enum NullImage.Kind {
+            BULLET
+            ITEM
+            RESOURCE
+            ENEMY
+            BOSS
+            PLAYER
+            OBJECT
+            MODULE
+            UI
+            --
+            - color: Color
+            + getColor(): Color
+        }
+
+        NullImage +-- NullImage.Kind
+
         class ShooterButtonUI <<Utility>> {
             + {static} createUI(c: JComponent): ComponentUI
             + {static} install(): void
@@ -4114,6 +4148,12 @@ shooting_game.upgradeScene.subPanels.ArmorPanel ..> shooting_game.domain.armor.A
 shooting_game.upgradeScene.subPanels.ArmorPanel --|> javax.swing.JPanel
 shooting_game.ui.UIBuilder ..> shooting_game.ui.ButtonAnimator
 shooting_game.ui.UIBuilder ..> shooting_game.ui.Anchor
+shooting_game.ui.NullImage ..> shooting_game.ui.UIBuilder
+shooting_game.ResourceManager ..> shooting_game.ui.NullImage
+shooting_game.gameScene.item.ItemManager ..> shooting_game.ui.NullImage
+shooting_game.gameScene.bullet.BulletManager ..> shooting_game.ui.NullImage
+shooting_game.gameScene.ship.ShipManager ..> shooting_game.ui.NullImage
+shooting_game.gameScene.ship.Ship ..> shooting_game.gameScene.stage.StageModifiers
 shooting_game.bagScene.BagManager ..> shooting_game.domain.unlock.UnlockService
 shooting_game.upgradeScene.UpgradeManager ..> shooting_game.domain.unlock.UnlockService
 shooting_game.stageScene.SelectStageManager ..> shooting_game.domain.unlock.UnlockService
