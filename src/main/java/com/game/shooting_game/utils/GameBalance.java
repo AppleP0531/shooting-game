@@ -22,6 +22,7 @@ public final class GameBalance {
     private static double bossHpRate = 5.0;
     private static double enemyLevelHp = 0.2;
     private static double stageDamageGrowth = 1.004;
+    private static double requiredBase = 100.0;
     private static boolean loaded = false;
 
     private GameBalance() {
@@ -42,6 +43,7 @@ public final class GameBalance {
             bossHpRate = Math.max(1.0, n.path("bossHpRate").asDouble(bossHpRate));
             enemyLevelHp = Math.max(0.0, n.path("enemyLevelHp").asDouble(enemyLevelHp));
             stageDamageGrowth = Math.max(1.0, n.path("stageDamageGrowth").asDouble(stageDamageGrowth));
+            requiredBase = Math.max(0.0, n.path("requiredBase").asDouble(requiredBase));
         } catch (Exception e) {
             LogUtils.warn(component, "バランスの設定を読めないため既定値を使います: " + e.getMessage());
         }
@@ -69,6 +71,12 @@ public final class GameBalance {
     public static double endlessHpPerWave() {
         ensureLoaded();
         return endlessHpPerWave;
+    }
+
+    /** ステージ1・ノーマルでの推定必要戦力値(戦力値の基準。ここを動かすと、全ステージの必要戦力値が比例して動く) */
+    public static double requiredBase() {
+        ensureLoaded();
+        return requiredBase;
     }
 
     /** 敵のレベルが1つ上がるごとに増える敵HPの割合(レベル2なら 1 + 2×この値 倍) */
