@@ -5,7 +5,10 @@ import java.util.Map;
 import java.util.Random;
 
 import com.game.shooting_game.gameScene.item.ItemManager.ItemKinds;
+import com.game.shooting_game.gameScene.item.types.AtkUp;
 import com.game.shooting_game.gameScene.item.types.Bomb;
+import com.game.shooting_game.gameScene.item.types.Rampage;
+import com.game.shooting_game.gameScene.item.types.Regen;
 import com.game.shooting_game.gameScene.item.types.Freeze;
 import com.game.shooting_game.gameScene.item.types.Heal;
 import com.game.shooting_game.gameScene.item.types.LevelUp;
@@ -22,6 +25,9 @@ public class ItemFactory {
         ITEM_DROP_TABLE.put(ItemKinds.LEVEL_UP, 5.0); // レベルアップのドロップ率
         ITEM_DROP_TABLE.put(ItemKinds.SHIELD, 3.0); // シールドのドロップ率
         ITEM_DROP_TABLE.put(ItemKinds.MAGNET, 1.5); // マグネットのドロップ率
+        ITEM_DROP_TABLE.put(ItemKinds.REGEN, 1.5); // 継続回復のドロップ率
+        ITEM_DROP_TABLE.put(ItemKinds.RAMPAGE, 1.0); // 暴走のドロップ率
+        ITEM_DROP_TABLE.put(ItemKinds.ATK_UP, 1.5); // 攻撃力アップのドロップ率
         // BOMB と FREEZE はショップ専売(ドロップしない)
     }
 
@@ -42,6 +48,9 @@ public class ItemFactory {
             case ItemKinds.BOMB -> new Bomb(pos);
             case ItemKinds.MAGNET -> new Magnet(pos);
             case ItemKinds.FREEZE -> new Freeze(pos);
+            case ItemKinds.REGEN -> new Regen(pos);
+            case ItemKinds.RAMPAGE -> new Rampage(pos);
+            case ItemKinds.ATK_UP -> new AtkUp(pos);
             case null -> null;
             default -> null;
         };
@@ -62,6 +71,9 @@ public class ItemFactory {
             case BOMB -> new Bomb(pos);
             case MAGNET -> new Magnet(pos);
             case FREEZE -> new Freeze(pos);
+            case REGEN -> new Regen(pos);
+            case RAMPAGE -> new Rampage(pos);
+            case ATK_UP -> new AtkUp(pos);
             case SKIP_TICKET -> null;
         };
     }

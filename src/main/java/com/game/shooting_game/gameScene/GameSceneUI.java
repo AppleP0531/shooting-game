@@ -173,6 +173,8 @@ public class GameSceneUI {
             switch (effectName) {
                 case "OOC" -> originImage = IM.getItemImage().get(ItemKinds.LEVEL_UP)[0];
                 case "Shield" -> originImage = IM.getItemImage().get(ItemKinds.SHIELD)[0];
+                case "Regen" -> originImage = IM.getItemImage().get(ItemKinds.REGEN)[0];
+                case "AtkUp" -> originImage = IM.getItemImage().get(ItemKinds.ATK_UP)[0];
             }
 
             // 画像のリサイズ
@@ -189,6 +191,8 @@ public class GameSceneUI {
             switch (effectName) {
                 case "OOC" -> g.setColor(new Color(1, 1, 0, alpha));
                 case "Shield" -> g.setColor(new Color(0, 1, 1, alpha));
+                case "Regen" -> g.setColor(new Color(0.5f, 1f, 0.6f, alpha));
+                case "AtkUp" -> g.setColor(new Color(1, 0.2f, 0.2f, alpha));
             }
             g.fillOval((int) pos.getX() - (int) iconSize / 2,
                     (int) pos.getY() + ind * (int) distance - (int) iconSize / 2,

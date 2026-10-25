@@ -19,6 +19,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.interfaces.Collectible;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.utils.ANSI;
@@ -35,6 +36,42 @@ public final class ItemManager implements Manager {
     @lombok.Getter
     @lombok.Setter
     private double magnetTimer; // マグネット効果の残り時間(0より大きい間は全アイテムを引き寄せる)
+    @lombok.Getter
+    private double regenTimer; // 継続回復の残り時間
+    private double regenPerSec; // 継続回復の毎秒の回復量
+    // 攻撃力アップ(ダメージ計算から、インスタンスなしで読めるように static)
+    private static double atkUpTimer; // 攻撃力アップの残り時間
+    private static double atkUpRate; // 攻撃力アップの倍率(例: 1.3)
+
+    /**
+     * 継続回復を始める(重ねて取ると、時間と毎秒の回復量を取り直す)
+     */
+    public void startRegen(double totalHeal, double seconds) {
+        regenTimer = seconds;
+        regenPerSec = totalHeal / seconds;
+    }
+
+    /**
+     * 攻撃力アップを始める(重ねて取ると、時間と倍率を取り直す)
+     */
+    public static void startAtkUp(double rate, double seconds) {
+        atkUpRate = rate;
+        atkUpTimer = seconds;
+    }
+
+    /**
+     * 攻撃力アップの残り時間
+     */
+    public static double getAtkUpTimer() {
+        return atkUpTimer;
+    }
+
+    /**
+     * 攻撃力アップの今の倍率(効果中でなければ1)
+     */
+    public static double atkUpMultiplier() {
+        return atkUpTimer > 0 ? atkUpRate : 1.0;
+    }
 
     // アイテムの種類
     public static enum ItemKinds implements Collectible {
@@ -44,6 +81,9 @@ public final class ItemManager implements Manager {
         BOMB,
         MAGNET,
         FREEZE,
+        REGEN, // 少量継続回復
+        RAMPAGE, // 一時的に暴走状態になる
+        ATK_UP, // 一定時間、攻撃力アップ
         SKIP_TICKET // ショップ専用(研究スキップ券。ステージには出ない)
     }
 
@@ -160,11 +200,21 @@ public final class ItemManager implements Manager {
         itemListToRemove.clear();
         itemList.clear();
         magnetTimer = 0;
+        regenTimer = 0;
+        atkUpTimer = 0;
     }
 
     @Override
     public void update(double dt) {
         magnetTimer = Math.max(0, magnetTimer - dt);
+        atkUpTimer = Math.max(0, atkUpTimer - dt);
+        if (regenTimer > 0) {
+            double step = Math.min(dt, regenTimer);
+            regenTimer -= step;
+            var player = ShipManager.getInstance().getPlayer();
+            if (player != null)
+                player.heal(regenPerSec * step);
+        }
         new ArrayList<>(itemList).forEach(item -> item.update(dt));
 
         // 削除待ちリストのアイテムをメインリストから削除してから、削除待ちリストを初期化

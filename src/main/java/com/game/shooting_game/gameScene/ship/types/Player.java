@@ -602,6 +602,18 @@ public class Player extends Ship implements KeyListener {
     }
 
     /**
+     * 一時的に暴走状態にする(アイテム用。機体の暴走時間ぶん続く)
+     */
+    public void startRampage() {
+        // 常時暴走状態の場合処理をスキップ
+        if (OOCTimer == Double.POSITIVE_INFINITY)
+            return;
+
+        shipLevel = 5;
+        setOOCTimer(OOCTime);
+    }
+
+    /**
      * シールド時間の設定
      * 
      * @param time 時間
