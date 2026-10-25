@@ -496,6 +496,8 @@ public final class ShipManager implements Manager {
                 if (SceneManager.getInstance().getSceneName() == SceneType.GAME)
                     AchievementService.add(
                             s.getOwner() == ShipKinds.BOSS ? AchievementService.BOSS_KILLS : AchievementService.KILLS, 1);
+                if (s.getOwner() == ShipKinds.BOSS)
+                    GM.addBossKill();
                 // キル数カウントアップ
                 GM.setKillCountSinceLastLevelUp(GM.getKillCountSinceLastLevelUp() + 1);
                 if (s.isAllowDropItem()) {
