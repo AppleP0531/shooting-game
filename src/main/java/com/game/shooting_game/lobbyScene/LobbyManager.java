@@ -51,6 +51,7 @@ public final class LobbyManager extends JPanel implements Manager {
     private JButton gachaBtn;
     private JButton settingBtn;
     private JButton dexBtn;
+    private JButton achievementBtn;
     private JButton backpackBtn;
     private JButton nextShipBtn;
     private JButton prevShipBtn;
@@ -167,6 +168,17 @@ public final class LobbyManager extends JPanel implements Manager {
         dexBtn.addActionListener(e -> SM.changeScene(SceneType.ENCYCLOPEDIA));
         dexBtn.setVisible(false); // 非表示
         this.add(dexBtn);
+
+        // 実績ボタン(実績の画面に遷移。図鑑ボタンの下)
+        achievementBtn = UIBuilder.createImageBtn(component, "/static/img/UI/lobbyScene/achievementIcon.png", dexBtnSize,
+                "実績");
+        achievementBtn.setBounds(
+                MAIN.getWidth() - 10 - (int) achievementBtn.getWidth(),
+                dexBtn.getY() + (int) dexBtn.getHeight() + (int) (5 * ShootingGameMain.getScreenSizeAdj()),
+                (int) achievementBtn.getWidth(), (int) achievementBtn.getHeight());
+        achievementBtn.addActionListener(e -> SM.changeScene(SceneType.ACHIEVEMENT));
+        achievementBtn.setVisible(false); // 非表示
+        this.add(achievementBtn);
 
         // ネクストシップボタン(次の船にシフト)
         Vector2 nextShipBtnSize = new Vector2(
@@ -320,7 +332,7 @@ public final class LobbyManager extends JPanel implements Manager {
         firepowerPanel.initComponents();
 
         // 押す・乗せると拡大縮小する(下の列・右上・船の切り替え・選択/解放・色の切り替え)
-        for (JButton b : new JButton[] { upgradeBtn, shopBtn, gachaBtn, settingBtn, dexBtn, nextShipBtn,
+        for (JButton b : new JButton[] { upgradeBtn, shopBtn, gachaBtn, settingBtn, dexBtn, achievementBtn, nextShipBtn,
                 prevShipBtn, unlockShipBtn, changeModeBtn, backpackBtn, infinityBtn, selectStageBtn,
                 moduleBtn, convertBtn })
             ButtonAnimator.attachPop(b);
@@ -467,6 +479,7 @@ public final class LobbyManager extends JPanel implements Manager {
         shopBtn.setVisible(true);
         gachaBtn.setVisible(true);
         dexBtn.setVisible(true);
+        achievementBtn.setVisible(true);
         nextShipBtn.setVisible(true);
         prevShipBtn.setVisible(true);
         backpackBtn.setVisible(true);

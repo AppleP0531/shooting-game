@@ -31,6 +31,7 @@ import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
+import com.game.shooting_game.domain.achievement.AchievementService;
 import com.game.shooting_game.domain.dex.DexService;
 import com.game.shooting_game.gameScene.GameManager;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
@@ -491,6 +492,10 @@ public final class ShipManager implements Manager {
 
             // 死亡処理
             if (s.isDead()) {
+                // 実績の累計(ゲーム中だけ。ボスと通常の敵を分けて数える)
+                if (SceneManager.getInstance().getSceneName() == SceneType.GAME)
+                    AchievementService.add(
+                            s.getOwner() == ShipKinds.BOSS ? AchievementService.BOSS_KILLS : AchievementService.KILLS, 1);
                 // キル数カウントアップ
                 GM.setKillCountSinceLastLevelUp(GM.getKillCountSinceLastLevelUp() + 1);
                 if (s.isAllowDropItem()) {
