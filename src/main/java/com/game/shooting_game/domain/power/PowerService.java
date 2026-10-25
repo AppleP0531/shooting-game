@@ -14,7 +14,9 @@ import com.game.shooting_game.utils.GameBalance;
  * 自分の戦力値 = 100 × 火力の倍率 × √(耐久 ÷ 100)。火力は弾の火力倍率(機体のレベル・ランク・スキル・モジュール)、
  * 耐久は最大HPとシールドの合計。
  * 推定必要戦力値 = 基準 × ステージ番号の敵HP倍率 × (難易度の敵HP倍率 ÷ ノーマルの値) × √(ステージ番号のダメージ倍率 × 難易度のダメージ倍率 ÷ ノーマルの値)。
+ * さらに、ステージ番号に応じた上乗せ(requiredStageGrowth の指数)をかける。
  * 難易度はノーマルを1として比べる。基準は BalanceConfig.json の requiredBase(ステージ1・ノーマルでの必要戦力値)。
+ * ステージ200・ナイトメアが約3000万(実際にぎりぎりだった自機の戦力値 29,240,901 に合わせた)になるように調整してある。
  */
 public final class PowerService {
     /** 足りている目安(自分の戦力値が必要戦力値のこの割合以上なら「ぎりぎり」) */
@@ -47,7 +49,8 @@ public final class PowerService {
         Difficulty n = Difficulty.NORMAL;
         double hp = GameBalance.stageHpRate(stageIndex) * d.getEnemyHpRate() / n.getEnemyHpRate();
         double dmg = GameBalance.stageDamageRate(stageIndex) * d.getEnemyDamageRate() / n.getEnemyDamageRate();
-        return GameBalance.requiredBase() * hp * Math.sqrt(dmg);
+        return GameBalance.requiredBase() * hp * Math.sqrt(dmg)
+                * Math.pow(GameBalance.requiredStageGrowth(), Math.max(0, stageIndex - 1));
     }
 
     /** 自分の戦力値が必要戦力値に足りているか */

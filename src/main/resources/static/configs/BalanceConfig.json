@@ -6,5 +6,6 @@
   "bossHpRate": 5.0,
   "enemyLevelHp": 0.2,
   "stageDamageGrowth": 1.004,
-  "requiredBase": 100
+  "requiredBase": 100,
+  "requiredStageGrowth": 1.00275
 }
