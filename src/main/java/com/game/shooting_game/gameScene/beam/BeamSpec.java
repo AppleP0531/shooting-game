@@ -52,5 +52,7 @@ public class BeamSpec {
     private int count = 0; // 発射回数。0なら無制限(intervalが0より大きいとき)
     private int minLevel = 0; // 自機のビーム: 撃てる機体レベル
     private double bossRate = 0.5; // 自機のビーム: ボスに対するダメージ倍率
+    private String effect = null; // 当たった自機にかける特殊効果(POISON / BURN / SLOW / SHOCK。なければなし)
+    private double effectTime = 0; // 特殊効果の時間(秒。0なら効果の標準の時間)
     private double lock = 0.65; // 予兆のうち、追従をやめて狙いを固定する割合
 }

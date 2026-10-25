@@ -403,6 +403,13 @@ public final class GameManager extends JPanel implements Manager {
                         : null);
         effectList.compute("AtkUp",
                 (k, v) -> ItemManager.getAtkUpTimer() > 0 ? ItemManager.getAtkUpTimer() : null);
+        // 自機にかかっている特殊効果(毒・炎・鈍足・感電)
+        for (com.game.shooting_game.gameScene.status.StatusEffect e : com.game.shooting_game.gameScene.status.StatusEffect.values()) {
+            final var eff = e;
+            effectList.compute("Status:" + e.name(), (k, v) -> SHIP_M.getPlayer().getStatus().remaining(eff) > 0
+                    ? SHIP_M.getPlayer().getStatus().remaining(eff)
+                    : null);
+        }
         effectList.compute("Shield",
                 (k, v) -> SHIP_M.getPlayer().getShieldTimer() > 0 || SHIP_M.getPlayer().getDamagedTimer() > 0
                         ? Math.max(SHIP_M.getPlayer().getShieldTimer(), SHIP_M.getPlayer().getDamagedTimer())
@@ -654,6 +661,8 @@ public final class GameManager extends JPanel implements Manager {
                         double damage = DamageCalculator.bulletToEnemy(bullet, enemy);
 
                         DamageCalculator.hitEnemy(enemy, damage);
+                        bullet.applyStatusTo(enemy);
+                        com.game.shooting_game.domain.unit.UnitService.rollOnHit(SHIP_M.getPlayer().getShipId(), enemy, 1.0);
 
                         // 貫通数が残っていれば通り抜ける
                         if (bullet.consumeHit()) {
@@ -672,6 +681,7 @@ public final class GameManager extends JPanel implements Manager {
                         continue;
 
                     SHIP_M.getPlayer().addDamage(DamageCalculator.toPlayer(bullet.getDamage()));
+                    bullet.applyStatusTo(SHIP_M.getPlayer());
                     break;
                 }
             }
