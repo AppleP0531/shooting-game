@@ -1378,6 +1378,26 @@ package "shooting_game" {
             }
         }
 
+        package "farm" {
+            class MaterialFarmService <<Utility>> {
+                + {static} STAGE_BASE: int = 1300 <<周回ステージ番号の起点>>
+                - {static} GOT_PREFIX: String = "got:"
+                - {static} FIRST_UNLOCK: int = 31
+                - {static} UNLOCK_STEP: int = 14
+                - {static} WAVES: int = 6
+                + {static} MATERIALS: List<ResourceName> <<価値の低い順>>
+                --
+                + {static} wavesOf(): int
+                + {static} stageId(res: ResourceName): int
+                + {static} isFarmStage(stageId: int): boolean
+                + {static} resourceOf(stageId: int): ResourceName
+                + {static} unlockStage(res: ResourceName): int
+                + {static} rewards(res: ResourceName): Map<ResourceName,Map<Rarity,String>>
+                + {static} markObtained(res: ResourceName): void <<progress.highScores を流用>>
+                + {static} obtained(res: ResourceName): boolean
+            }
+        }
+
         package "subship" {
             class SubShipService <<Utility>> {
                 + {static} BASE_DAMAGE_SCALE: double
@@ -1858,6 +1878,7 @@ package "shooting_game" {
                 + putStage(key: String, data: StageData): void
                 + getStageId(): int
                 + setStageId(id: int): void
+                - generateFarmStages(enemies: List<String>, bosses: List<String>): void <<素材周回ステージを生成>>
             }
 
             class Stage {
@@ -3955,6 +3976,9 @@ shooting_game.shopScene.ShopSceneUI ..> shooting_game.domain.shop.ShopService
 shooting_game.domain.shop.ShopService ..> shooting_game.gameScene.item.ItemManager
 shooting_game.gameScene.GameManager --> shooting_game.gameScene.ItemSlotButton
 shooting_game.gameScene.GameManager ..> shooting_game.domain.shop.ShopService
+shooting_game.gameScene.GameManager ..> shooting_game.domain.farm.MaterialFarmService
+shooting_game.gameScene.stage.StageManager ..> shooting_game.domain.farm.MaterialFarmService
+shooting_game.stageScene.extra.ExtraStageManager ..> shooting_game.domain.farm.MaterialFarmService
 shooting_game.gameScene.GameManager ..> shooting_game.gameScene.item.ItemFactory
 shooting_game.gameScene.ItemSlotButton ..> shooting_game.domain.shop.ShopService
 shooting_game.gameScene.ItemSlotButton --|> javax.swing.JButton
