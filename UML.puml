@@ -1706,7 +1706,7 @@ package "shooting_game" {
                 + {static} BARELY_RATE: double = 0.8 <<自分の戦力値が必要戦力値のこの割合以上なら「ぎりぎり」>>
                 --
                 + {static} power(attackRate: double, durability: double): double <<100 × 火力倍率 × √(耐久 ÷ 100)>>
-                + {static} required(stageIndex: int, diff: Difficulty): double <<推定必要戦力値(基準 × ステージ・難易度のHP倍率 × √ダメージ倍率)>>
+                + {static} required(stageIndex: int, diff: Difficulty): double <<推定必要戦力値(基準 × ステージ・難易度のHP倍率 × √ダメージ倍率 × requiredStageGrowth^(ステージ-1))>>
                 + {static} verdict(own: double, required: double): Verdict
                 + {static} durability(shipId: String): double <<最大HPとシールドの合計>>
                 + {static} attackRate(shipId: String): double <<火力の倍率(レベル・ランク・スキル・モジュール)>>
@@ -2380,12 +2380,10 @@ package "shooting_game" {
             class StageGenerator <<自動生成ステージ>> {
                 - {static} FENCE_FROM: int <<36: レーザー柵が入り始める>>
                 - {static} METEOR_FROM: int <<45: 隕石>>
-                - {static} WALL_FROM: int <<60: 動く壁>>
                 --
                 - {static} addGimmicks(d: StageData, stageId: int, waves: int, hasBoss: boolean): void
                 ~ {static} fence(stageId: int, rnd: Random): BeamSpec[]
                 ~ {static} meteorShower(stageId: int, rnd: Random): MeteorSpec[]
-                ~ {static} movingWall(rnd: Random): BlockSpec[]
             }
 
             class EnemyConfig <<Lomboc @Data>> {
@@ -3246,8 +3244,6 @@ package "shooting_game" {
                 - y: double
                 - vx: double
                 - vy: double
-                - swing: double <<横の往復の幅。動く壁用>>
-                - swingPeriod: double <<往復の周期(秒)>>
                 - size: double
                 - angle: double <<出現時の向き(度)>>
                 - spin: double <<回転の速さ(度/秒)>>
@@ -3267,8 +3263,6 @@ package "shooting_game" {
                 - emitter: BeamEmitter
                 - pos: Vector2
                 - mode: ColorMode
-                - baseX: double <<揺れを除いた横の位置>>
-                - age: double <<出現してからの経過時間(秒)。swingの往復に使う>>
                 - angle: double <<今の向き(ラジアン)。spinで回る>>
                 - ghosts: Set<Object> <<押し潰された船。重なりが解けるまで当たり判定なし>>
                 --
@@ -3807,6 +3801,7 @@ package "shooting_game" {
             - {static} enemyLevelHp: double = 0.2
             - {static} stageDamageGrowth: double = 1.004
             - {static} requiredBase: double = 100.0
+            - {static} requiredStageGrowth: double = 1.00275
             - {static} loaded: boolean
             --
             - {static} ensureLoaded(): void
@@ -3817,6 +3812,7 @@ package "shooting_game" {
             + {static} enemyLevelHp(): double <<敵レベル1つごとに増える敵HPの割合>>
             + {static} stageDamageGrowth(): double <<ステージ1つごとの、敵から受けるダメージの倍率(指数)>>
             + {static} requiredBase(): double <<ステージ1・ノーマルでの推定必要戦力値(戦力値の基準)>>
+            + {static} requiredStageGrowth(): double <<推定必要戦力値の、ステージ1つごとの上乗せ(指数)。ステージ200・ナイトメアが約3000万になるよう実測に合わせた>>
             + {static} stageHpRate(stageIndex: double): double <<ステージ番号に応じた敵HPの倍率>>
             + {static} enemyLevelHpRate(level: int): double <<敵レベルに応じた敵HPの倍率(1 + enemyLevelHp × level)>>
             + {static} stageDamageRate(stageIndex: double): double <<ステージ番号に応じた、敵から受けるダメージの倍率>>
