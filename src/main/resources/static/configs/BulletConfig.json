@@ -412,6 +412,8 @@
     },
     "CURVE": {
       "1": {
+        "effect": "POISON",
+        "effectChance": 0.5,
         "imagePath": "/enemy/Normal_1.png",
         "grids": [4, 1],
         "useCount": 4,
@@ -450,6 +452,8 @@
     },
     "WAVE": {
       "1": {
+        "effect": "BURN",
+        "effectChance": 0.5,
         "imagePath": "/enemy/Normal_1.png",
         "grids": [4, 1],
         "useCount": 4,
@@ -474,6 +478,8 @@
         "Normal": 3
       },
       "2": {
+        "effect": "SLOW",
+        "effectChance": 0.6,
         "imagePath": "/enemy/Tracking_1.png",
         "grids": [4, 1],
         "useCount": 4,
@@ -649,6 +655,8 @@
     },
     "SPLIT": {
       "1": {
+        "effect": "VULNERABLE",
+        "effectChance": 0.5,
         "imagePath": "/enemy/Normal_4.png",
         "grids": [4, 1],
         "useCount": 4,
@@ -785,6 +793,8 @@
         "Normal": 3
       },
       "2": {
+        "effect": "SHOCK",
+        "effectChance": 0.3,
         "imagePath": "/enemy/Normal_2.png",
         "grids": [4, 1],
         "useCount": 4,
@@ -867,6 +877,8 @@
     },
     "ACCEL": {
       "1": {
+        "effect": "BURN",
+        "effectChance": 0.4,
         "imagePath": "/enemy/Normal_2.png",
         "grids": [4, 1],
         "useCount": 4,
@@ -897,6 +909,8 @@
     },
     "SPLIT": {
       "1": {
+        "effect": "POISON",
+        "effectChance": 0.4,
         "imagePath": "/enemy/Normal_4.png",
         "grids": [4, 1],
         "useCount": 4,

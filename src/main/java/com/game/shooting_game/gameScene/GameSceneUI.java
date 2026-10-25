@@ -193,6 +193,14 @@ public class GameSceneUI {
                 case "Shield" -> g.setColor(new Color(0, 1, 1, alpha));
                 case "Regen" -> g.setColor(new Color(0.5f, 1f, 0.6f, alpha));
                 case "AtkUp" -> g.setColor(new Color(1, 0.2f, 0.2f, alpha));
+                default -> {
+                    // 特殊効果(Status:名前)は、効果の色で出す
+                    if (effectName.startsWith("Status:")) {
+                        Color c = com.game.shooting_game.gameScene.status.StatusEffect
+                                .valueOf(effectName.substring(7)).getColor();
+                        g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (alpha * 255)));
+                    }
+                }
             }
             g.fillOval((int) pos.getX() - (int) iconSize / 2,
                     (int) pos.getY() + ind * (int) distance - (int) iconSize / 2,

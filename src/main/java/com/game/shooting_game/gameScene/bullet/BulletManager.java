@@ -66,6 +66,9 @@ public final class BulletManager implements Manager {
         private double diff; // Curve用: 変角量
         private double startSpeed; // 初速(0なら最初から speed)。accel と組み合わせて加速する弾にする
         private double accel; // 加速度(1秒あたりの速度の増加)。speed まで加速する
+        private String effect; // 当たった相手にかける特殊効果(POISON / BURN / SLOW / SHOCK。なければなし)
+        private double effectTime; // 特殊効果の時間(秒。0なら効果の標準の時間)
+        private double effectChance = 1.0; // 特殊効果がかかる確率(0〜1)
         private int pierce; // 貫通数(当たった敵を何体まで通り抜けるか。0なら当たって消える)
         private double amplitude; // Spiral用: らせんの振れ幅
         private double frequency; // Spiral用: らせんの速さ(rad/秒)

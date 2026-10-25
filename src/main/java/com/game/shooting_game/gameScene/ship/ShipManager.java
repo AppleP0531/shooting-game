@@ -116,6 +116,8 @@ public final class ShipManager implements Manager {
         private Double invincibleTime; // 自機: 被弾後の無敵時間(秒。なければ1)
         private Double oocTime; // 自機: 暴走状態の長さ(秒。なければ10)
         private Double attackRate; // 自機: 火力の基本の倍率(なければ1。機体のレベル・★の倍率に、さらにかける)
+        private String onHitEffect; // 自機: 弾・ビームが当たった敵にかける特殊効果(POISON / BURN / SLOW / SHOCK。なければなし)
+        private Double onHitChance; // 自機: その効果がかかる確率(0〜1。なければ0.1)
         private double speed;
         private double score;
         private String coins;
@@ -345,8 +347,10 @@ public final class ShipManager implements Manager {
         freezeTimer = Math.max(0, freezeTimer - dt);
 
         // プレイヤーの更新
-        if (player != null)
+        if (player != null) {
+            player.tickStatus(dt);
             player.update(dt);
+        }
 
         // 敵の更新
         updateAndClean(enemyList, dt);
@@ -458,7 +462,8 @@ public final class ShipManager implements Manager {
         Iterator<Ship> iterator = ships.iterator();
         while (iterator.hasNext()) {
             Ship s = iterator.next();
-            double step = frozenStep(dt, s.getOwner(), freezeTimer);
+            s.tickStatus(dt); // 特殊効果の時間と継続ダメージは、止まっていても進む
+            double step = frozenStep(dt, s.getOwner(), freezeTimer) * s.getStatus().speedRate();
             if (step > 0)
                 s.update(step); // 更新(凍結中の敵は動かない)
 

@@ -28,6 +28,8 @@ import com.game.shooting_game.gameScene.bullet.BulletManager;
 import com.game.shooting_game.gameScene.bullet.BulletManager.BulletConfig;
 import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
 import com.game.shooting_game.gameScene.stage.StageModifiers;
+import com.game.shooting_game.gameScene.status.StatusEffect;
+import com.game.shooting_game.gameScene.status.StatusSet;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipConfig;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipDefinition;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
@@ -234,6 +236,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
         // 透明度を1に戻す
         g2.setComposite(AlphaComposite.SrcOver);
         drawAffixRing(g2);
+        drawStatusRing(g2);
     }
 
     @Override
@@ -289,6 +292,79 @@ public abstract class Ship implements Moveable, GameObject, Entity {
     /**
      * エフェクトによる毎フレームの効果(再生・連射)
      */
+    protected final StatusSet status = new StatusSet(); // かかっている特殊効果(毒・炎・鈍足・感電)
+
+    public StatusSet getStatus() {
+        return status;
+    }
+
+    /**
+     * 特殊効果を受ける
+     * 
+     * @param effect  効果
+     * @param seconds 時間(秒)
+     */
+    public void applyStatus(StatusEffect effect, double seconds) {
+        applyStatus(effect, seconds, 1.0);
+    }
+
+    /**
+     * 特殊効果を受ける(強さつき)
+     * 
+     * @param power 強さの倍率(継続ダメージ・脆弱の増え幅)
+     */
+    public void applyStatus(StatusEffect effect, double seconds, double power) {
+        status.apply(effect, seconds * statusResist(effect), power);
+    }
+
+    /**
+     * 特殊効果への耐性(時間にかける倍率。0なら効かない)。ボスは効きにくい
+     */
+    protected double statusResist(StatusEffect effect) {
+        return 1.0;
+    }
+
+    /**
+     * 特殊効果の時間を進め、継続ダメージを与える(実際の経過時間で呼ぶ。動きが止まっていても進む)
+     */
+    public void tickStatus(double dt) {
+        if (status.isEmpty())
+            return;
+        double fraction = status.update(dt);
+        if (fraction > 0 && hp > 0)
+            dotDamage(maxHp * fraction);
+    }
+
+    /**
+     * 継続ダメージ(毒・炎。無敵時間やシールドを使わない)
+     */
+    protected void dotDamage(double amount) {
+        addDamage(amount);
+    }
+
+    /**
+     * 特殊効果の輪(かかっている効果の色で、機体のまわりを光らせる)
+     */
+    private void drawStatusRing(Graphics2D g2) {
+        if (status.isEmpty())
+            return;
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        double r = imageSize.getOrDefault("ship", 30) / 2.0 + 8 * adj;
+        float pulse = (float) (0.6 + 0.4 * Math.sin(System.nanoTime() / 1.0e8));
+        g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+        int i = 0;
+        for (StatusEffect e : status.active()) {
+            Color c = e.getColor();
+            double rr = r + i * 3 * adj;
+            g2.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (60 * pulse)));
+            g2.fill(new java.awt.geom.Ellipse2D.Double(pos.getX() - rr, pos.getY() - rr, rr * 2, rr * 2));
+            g2.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (220 * pulse)));
+            g2.setStroke(new java.awt.BasicStroke((float) (1.5 * adj)));
+            g2.draw(new java.awt.geom.Ellipse2D.Double(pos.getX() - rr, pos.getY() - rr, rr * 2, rr * 2));
+            i++;
+        }
+    }
+
     private void updateAffix(double dt) {
         if (affix == EnemyAffix.REGEN && hp > 0)
             hp = Math.min(maxHp, hp + maxHp * EnemyAffix.REGEN_RATE_PER_SEC * dt);
@@ -526,6 +602,8 @@ public abstract class Ship implements Moveable, GameObject, Entity {
      * @param amount 回復量
      */
     public void heal(double amount) {
+        if (status.blocksHeal())
+            return; // 毒の間は回復できない
         hp += amount;
         hp = Math.min(hp, maxHp);
     }
@@ -538,6 +616,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
     public void addDamage(double damage) {
         // シールドを持っていなければダメージを受ける
         if (shieldTimer <= 0) {
+            damage *= status.damageTakenRate(); // 脆弱の間は増える
             hp -= damage;
             DamagePopupManager.getInstance().add(this, damage, critHit);
         }

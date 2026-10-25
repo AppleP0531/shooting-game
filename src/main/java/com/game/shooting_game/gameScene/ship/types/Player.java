@@ -361,7 +361,9 @@ public class Player extends Ship implements KeyListener {
     }
 
     @Override
-    public void move(double dt) {
+    public void move(double rawDt) {
+        // 鈍足・感電の間は、動く速さが落ちる(ステージの中だけ。登場や退場の演出は変えない)
+        final double dt = "none".equals(animationName) ? rawDt * status.speedRate() : rawDt;
         switch (animationName) {
             case "admission" -> {
                 animateTimer += dt;
@@ -581,8 +583,26 @@ public class Player extends Ship implements KeyListener {
         }
     }
 
+    /**
+     * 自機への特殊効果の時間は、スキルの耐性(RES_効果名)の分だけ短くなる(最大9割)
+     */
+    @Override
+    public void applyStatus(com.game.shooting_game.gameScene.status.StatusEffect effect, double seconds, double power) {
+        double resist = Math.min(0.9, SkillService.getBonus("RES_" + effect.name()));
+        super.applyStatus(effect, seconds * (1 - resist), power);
+    }
+
+    @Override
+    protected void dotDamage(double amount) {
+        // 毒・炎は、シールドと無敵時間を通さず、HPを直接減らす(常時無敵のときは受けない)
+        if (shieldTimer == Double.POSITIVE_INFINITY)
+            return;
+        hp -= amount;
+    }
+
     @Override
     public void addDamage(double damage) {
+        damage *= status.damageTakenRate(); // 脆弱の間は増える
         // シールドを持っていなかった場合はダメージを負って、1秒のダメージクールタイムを設ける
         if (shieldTimer <= 0) {
             // 耐久シールドが一番先に吸う(全部吸えたら被弾扱いにならず、無敵時間も付かない)
