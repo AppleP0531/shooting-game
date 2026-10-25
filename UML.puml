@@ -1687,6 +1687,7 @@ package "shooting_game" {
             + {static} defenseRate(): double
             + {static} toPlayer(raw: double): double <<GameUtils.damageToPlayer を使う>>
             + {static} ramToPlayer(p: Player): double
+            + {static} absorbDurable(durability: double, damage: double): DurableAbsorb <<耐久シールドが吸った残り耐久と、回るダメージ>>
             + {static} critRate(): double <<基礎+スキルCRIT_RATE+モジュール。0〜1に収める>>
             + {static} critMult(): double <<基礎+スキルCRIT_DMG+モジュール>>
             + {static} hitEnemy(target: Ship, damage: double): void <<確率で addCritDamage、そうでなければ addDamage>>
@@ -1723,6 +1724,7 @@ package "shooting_game" {
             - leaveTimer: double <<負ならフェードしていない>>
             - bombBtn: ItemSlotButton <<ショップで買ったボム(キー1)>>
             - freezeBtn: ItemSlotButton <<ショップで買ったフリーズ(キー2)>>
+            - shieldBtn: ItemSlotButton <<ショップで買った耐久シールド(キー3)>>
             --
             - GameManager()
             + initComponents(): void
@@ -2336,6 +2338,8 @@ package "shooting_game" {
                     - shieldPoints: double
                     - maxShield: double
                     - shieldRegenWait: double
+                    - durableShield: double <<耐久シールド(アイテム)の残り耐久。回復なし・クールタイムなし>>
+                    - durableShieldMax: double <<張った時の耐久(バーの長さの基準)>>
                     + getShieldPoints(): double
                     + getMaxShield(): double
                     - mouseHandler: MouseAdapter
@@ -2376,6 +2380,8 @@ package "shooting_game" {
                     + setOOCTimer(time: double): void
                     + getOOCTimer(): double
                     + startRampage(): void <<アイテム用。Lv5にして機体の暴走時間ぶん暴走状態にする>>
+                    + startDurableShield(durability: double): void <<アイテム用。重ねて使うと張り直す>>
+                    + getDurableShield(): double
                     + getDamagedTimer(): double
                     + setShieldTimer(time: double): void
                     + addHandler(): void
@@ -3017,6 +3023,7 @@ package "shooting_game" {
                 RAMPAGE <<一時的に暴走状態になる>>
                 ATK_UP <<一定時間、攻撃力アップ>>
                 SKIP_TICKET <<ショップ専用の研究スキップ券>>
+                DURABLE_SHIELD <<ショップ専用。耐久が尽きるまで被弾を吸う>>
             }
 
             class ItemConfig <<lomboc @Data>> {
@@ -3057,7 +3064,7 @@ package "shooting_game" {
             }
 
             class ItemFactory {
-                - {static} ITEM_DROP_TABLE: Map<ItemKinds, Double> <<BOMB と FREEZE は含まない(ショップ専用)。REGEN/RAMPAGE/ATK_UP を含む>>
+                - {static} ITEM_DROP_TABLE: Map<ItemKinds, Double> <<BOMB・FREEZE・DURABLE_SHIELD は含まない(ショップ専用)。REGEN/RAMPAGE/ATK_UP を含む>>
                 --
                 + {static} createItem(pos: Vector2): Item
                 + {static} createItem(pos: Vector2, kind: ItemKinds): Item
@@ -3126,6 +3133,14 @@ package "shooting_game" {
                     + AtkUp(pos: Vector2)
                     + draw(g: Graphics): void
                     + effect(): void <<8秒間、ダメージ1.3倍(ItemManager.startAtkUp)>>
+                }
+
+                class DurableShield {
+                    - {static} DURABILITY_RATE: double = 0.5 <<耐久(最大HPに対する割合)>>
+                    --
+                    + DurableShield(pos: Vector2)
+                    + draw(g: Graphics): void
+                    + effect(): void <<Player.startDurableShield(最大HP×0.5)を呼ぶ>>
                 }
 
                 class Freeze {
@@ -3895,6 +3910,7 @@ shooting_game.gameScene.item.types.Freeze ..> shooting_game.gameScene.ship.ShipM
 shooting_game.gameScene.item.types.Regen ..> shooting_game.gameScene.item.ItemManager
 shooting_game.gameScene.item.types.AtkUp ..> shooting_game.gameScene.item.ItemManager
 shooting_game.gameScene.item.types.Rampage ..> shooting_game.gameScene.ship.types.Player
+shooting_game.gameScene.item.types.DurableShield ..> shooting_game.gameScene.ship.types.Player
 shooting_game.gameScene.DamageCalculator ..> shooting_game.gameScene.item.ItemManager
 shooting_game.gameScene.ship.ShipFactory ..> shooting_game.gameScene.ship.ShipManager
 

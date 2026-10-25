@@ -41,6 +41,25 @@ public final class DamageCalculator {
         return DataManager.getUserData() == null ? null : DataManager.getUserData().getSelectedShip();
     }
 
+    // ----- 自機が受ける -----
+    /**
+     * 耐久シールドが吸ったあとの結果
+     *
+     * @param durability 吸ったあとの残りの耐久
+     * @param restDamage 吸いきれずに、シールド・HPへ回るダメージ
+     */
+    public record DurableAbsorb(double durability, double restDamage) {
+    }
+
+    /**
+     * 耐久シールドにダメージを吸わせる(耐久が尽きるまで吸い、残りを返す)
+     */
+    public static DurableAbsorb absorbDurable(double durability, double damage) {
+        double d = Math.max(durability, 0);
+        double absorbed = Math.min(d, Math.max(damage, 0));
+        return new DurableAbsorb(d - absorbed, damage - absorbed);
+    }
+
     // ----- 自機が敵に与える -----
     /**
      * 弾の火力倍率(スキル + 機体のレベル・★)
