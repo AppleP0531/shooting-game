@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import com.game.shooting_game.domain.farm.MaterialFarmService;
+import com.game.shooting_game.domain.trial.TrialService;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
@@ -215,6 +216,30 @@ public final class StageManager implements Manager {
         for (int id = StageGenerator.FIRST_GENERATED; id <= StageGenerator.LAST_STAGE; id++)
             stageConfigMap.put("stage" + id, StageGenerator.generate(id, enemies, bosses));
         generateFarmStages(enemies, bosses);
+        generateTrialStage(enemies, bosses);
+    }
+
+    /**
+     * お試し出撃のトレーニングステージを作る(短い・ボスなし・報酬なし。エクストラの一覧には出ない)
+     */
+    private void generateTrialStage(List<String> enemies, List<String> bosses) {
+        StageData d = StageGenerator.generate(33, enemies, bosses);
+        Map<String, EnemyConfig[]> waves = new java.util.LinkedHashMap<>();
+        for (Map.Entry<String, EnemyConfig[]> e : d.getEnemyList().entrySet()) {
+            if (waves.size() >= TrialService.TRIAL_WAVES)
+                break;
+            waves.put(e.getKey(), e.getValue());
+        }
+        d.setEnemyList(waves);
+        d.setRewardList(new java.util.LinkedHashMap<>());
+        d.setGimmicks(null);
+        d.setMeteors(null);
+        d.setBlocks(null);
+        d.setCategory("TRIAL");
+        d.setUnlock(10);
+        d.setTitle("お試し出撃");
+        d.setDescription("まだ持っていない機体を試すトレーニング。報酬や記録はない。");
+        stageConfigMap.put("stage" + TrialService.TRIAL_STAGE_ID, d);
     }
 
     /**

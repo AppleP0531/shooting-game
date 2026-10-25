@@ -11,7 +11,10 @@ import javax.swing.JPanel;
 
 import com.game.shooting_game.domain.gacha.GachaService;
 import com.game.shooting_game.domain.gacha.PieceService;
+import com.game.shooting_game.domain.trial.TrialService;
 import com.game.shooting_game.domain.unlock.UnlockService;
+import com.game.shooting_game.gameScene.stage.Difficulty;
+import com.game.shooting_game.gameScene.stage.StageManager;
 import com.game.shooting_game.domain.unlock.UnlockService.Feature;
 import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
@@ -57,6 +60,7 @@ public final class LobbyManager extends JPanel implements Manager {
     private JButton nextShipBtn;
     private JButton prevShipBtn;
     private JButton unlockShipBtn;
+    private JButton trialShipBtn;
     private JButton changeModeBtn;
     private JButton infinityBtn;
     private JButton moduleBtn;
@@ -258,6 +262,20 @@ public final class LobbyManager extends JPanel implements Manager {
         unlockShipBtn.setVisible(false); // 非表示
         this.add(unlockShipBtn);
 
+        // お試しボタン(持っていない船を、トレーニングステージで試す。アンロックボタンの下)
+        trialShipBtn = UIBuilder.createImageBtn(component, "/static/img/UI/lobbyScene/trialShip.png", unlockShipBtnSize,
+                "TRIAL");
+        UIBuilder.placeBtn(trialShipBtn, Anchor.BOTTOM_CENTER, Anchor.CENTER, 0, -153);
+        trialShipBtn.addActionListener(e -> {
+            if (TrialService.begin(ships[viewingShipInd])) {
+                StageManager.getInstance().getStage().setStageId(TrialService.TRIAL_STAGE_ID);
+                StageManager.getInstance().getStage().setDifficulty(Difficulty.NORMAL);
+                SM.changeScene(SceneType.GAME);
+            }
+        });
+        trialShipBtn.setVisible(false); // 非表示
+        this.add(trialShipBtn);
+
         // モード変更ボタン(モードを変更)
         Vector2 changeModeBtnSize = new Vector2(
                 40 * ShootingGameMain.getScreenSizeAdj(),
@@ -344,7 +362,7 @@ public final class LobbyManager extends JPanel implements Manager {
 
         // 押す・乗せると拡大縮小する(下の列・右上・船の切り替え・選択/解放・色の切り替え)
         for (JButton b : new JButton[] { upgradeBtn, shopBtn, gachaBtn, settingBtn, dexBtn, achievementBtn, chestBtn, nextShipBtn,
-                prevShipBtn, unlockShipBtn, changeModeBtn, backpackBtn, infinityBtn, selectStageBtn,
+                prevShipBtn, unlockShipBtn, trialShipBtn, changeModeBtn, backpackBtn, infinityBtn, selectStageBtn,
                 moduleBtn, convertBtn })
             ButtonAnimator.attachPop(b);
     }
@@ -503,6 +521,7 @@ public final class LobbyManager extends JPanel implements Manager {
 
         upgradeBtn.setVisible(true); // 強化ボタンは、未開放の船でもグレーアウトで見せる
         unlockShipBtn.setVisible(false);
+        trialShipBtn.setVisible(false);
 
         // プレビュー中の船を所有しているかどうか
         boolean isOwned = DataManager.getUserData().getShips().containsKey(ships[viewingShipInd]);
@@ -513,6 +532,7 @@ public final class LobbyManager extends JPanel implements Manager {
             upgradeBtn.setEnabled(true);
         } else {
             unlockShipBtn.setVisible(true); // アンロックボタンを表示
+            trialShipBtn.setVisible(TrialService.canTry(ships[viewingShipInd])); // お試しボタン
             upgradeBtn.setEnabled(false); // 未開放の船は強化できない(隠さず、グレーアウトする)
         }
     }

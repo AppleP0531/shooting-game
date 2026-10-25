@@ -34,6 +34,7 @@ import com.game.shooting_game.gameScene.bullet.BulletManager;
 import com.game.shooting_game.gameScene.item.Item;
 import com.game.shooting_game.domain.achievement.AchievementService;
 import com.game.shooting_game.domain.chest.ChestService;
+import com.game.shooting_game.domain.trial.TrialService;
 import com.game.shooting_game.domain.farm.MaterialFarmService;
 import com.game.shooting_game.gameScene.item.ItemManager;
 import com.game.shooting_game.gameScene.ship.Ship;
@@ -388,7 +389,11 @@ public final class GameManager extends JPanel implements Manager {
             if (leaveTimer >= LEAVE_FADE) {
                 leaveTimer = -1;
                 pause = false;
-                SM.changeScene(SceneType.NORMALSTAGE);
+                if (TrialService.isActive()) {
+                    TrialService.end();
+                    SM.changeToPrevScene(); // お試し出撃は、ロビーへ戻る
+                } else
+                    SM.changeScene(SceneType.NORMALSTAGE);
             }
         }
     }
@@ -478,6 +483,13 @@ public final class GameManager extends JPanel implements Manager {
      * リザルト処理
      */
     public void result() {
+        // お試し出撃は、報酬・記録なしでロビーへ戻る
+        if (TrialService.isActive()) {
+            SHIP_M.getPlayer().removeHandler();
+            TrialService.end();
+            SM.changeToPrevScene();
+            return;
+        }
         // 無限モードはゲームオーバーまで続くので、終わったときに到達したウェーブに応じた報酬を出す
         boolean endless = STAGE_M.getStageId() == EndlessWaves.STAGE_ID;
         boolean isClear = endless || getGameResult();
