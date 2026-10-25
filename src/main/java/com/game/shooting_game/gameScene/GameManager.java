@@ -121,6 +121,7 @@ public final class GameManager extends JPanel implements Manager {
         managers.add(STAGE_M);
         managers.add(BM);
         managers.add(BEAM_M); // 船より後ろに描くので船より前に置く
+        managers.add(com.game.shooting_game.gameScene.hazard.MeteorManager.getInstance()); // 隕石(船より後ろに描く)
         managers.add(SHIP_M);
         managers.add(IM);
         managers.add(DamagePopupManager.getInstance()); // ダメージ数字は一番手前に描く
