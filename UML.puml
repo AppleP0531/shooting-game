@@ -778,6 +778,7 @@ package "shooting_game" {
             - prevShipBtn: JButton
             - selectShipBtn: JButton
             - unlockShipBtn: JButton
+            - trialShipBtn: JButton <<お試し出撃(TRIAL)。持っていない船を見ているとき、UNLOCK の下に出る>>
             - changeModeBtn: JButton
             - infinityBtn: JButton <<無限モード。ロビーから直接入る(Lv20解放)。ModeButtonImage で描く>>
             - selectStageBtn: JButton
@@ -1615,6 +1616,27 @@ package "shooting_game" {
             }
         }
 
+        package "trial" {
+            class TrialService <<Utility>> {
+                + {static} TRIAL_STAGE_ID: int = 1990 <<トレーニングステージの番号>>
+                + {static} TRIAL_WAVES: int = 3
+                - {static} component: String
+                - {static} active: boolean
+                - {static} trialShip: String
+                - {static} previousShip: String <<お試し前に選んでいた船>>
+                --
+                + {static} isActive(): boolean
+                + {static} trialShip(): String <<お試し中でなければ null>>
+                + {static} canTry(shipId: String): boolean <<設定にある、まだ持っていない船。お試し中でない>>
+                + {static} canTry(shipId: String, configuredShips: Set<String>): boolean
+                - {static} configuredShips(): Set<String>
+                + {static} bestLevelAndRank(ships: Map<String,ShipStats>): int[] <<持っている船の最高レベルとランク。なければ レベル1・ランク0>>
+                + {static} begin(shipId: String): boolean <<一時的な ShipStats を作って選択中にする>>
+                + {static} begin(shipId: String, configuredShips: Set<String>): boolean
+                + {static} end(): void <<一時データを消してもとの船に戻す。何度呼んでもよい>>
+            }
+        }
+
         package "power" {
             class PowerService <<Utility>> {
                 + {static} BARELY_RATE: double = 0.8 <<自分の戦力値が必要戦力値のこの割合以上なら「ぎりぎり」>>
@@ -2124,6 +2146,7 @@ package "shooting_game" {
                 + getStageId(): int
                 + setStageId(id: int): void
                 - generateFarmStages(enemies: List<String>, bosses: List<String>): void <<素材周回ステージを生成>>
+                - generateTrialStage(enemies: List<String>, bosses: List<String>): void <<お試し出撃のトレーニングステージ(1990番。TRIAL_WAVES ウェーブ・ボスなし・報酬なし・ギミックなし)を生成>>
             }
 
             class Stage {
@@ -4479,6 +4502,13 @@ shooting_game.domain.power.PowerService ..> shooting_game.domain.unit.UnitServic
 shooting_game.domain.power.PowerService ..> shooting_game.domain.skill.SkillService
 shooting_game.domain.power.PowerService ..> shooting_game.domain.module.ModuleService
 shooting_game.domain.power.PowerService ..> shooting_game.data.DataManager
+shooting_game.domain.trial.TrialService ..> shooting_game.data.DataManager
+shooting_game.domain.trial.TrialService ..> shooting_game.gameScene.ship.ShipManager
+shooting_game.gameScene.GameManager ..> shooting_game.domain.trial.TrialService
+shooting_game.gameScene.stage.StageManager ..> shooting_game.domain.trial.TrialService
+shooting_game.lobbyScene.LobbyManager ..> shooting_game.domain.trial.TrialService
+shooting_game.data.DataManager ..> shooting_game.domain.trial.TrialService
+shooting_game.domain.achievement.AchievementService ..> shooting_game.domain.trial.TrialService
 shooting_game.stageScene.normal.subPanels.StageDetailPanel ..> shooting_game.domain.power.PowerService
 shooting_game.stageScene.normal.subPanels.StageInfoView ..> shooting_game.domain.power.PowerService
 shooting_game.lobbyScene.LobbySceneUI ..> shooting_game.domain.power.PowerService
