@@ -13,6 +13,7 @@ import lombok.Getter;
 import com.game.shooting_game.bagScene.BagManager;
 import com.game.shooting_game.achievementScene.AchievementManager;
 import com.game.shooting_game.chestScene.ChestManager;
+import com.game.shooting_game.idleScene.IdleManager;
 import com.game.shooting_game.encyclopediaScene.EncyclopediaManager;
 import com.game.shooting_game.gameResultScene.GameResultManager;
 import com.game.shooting_game.gameScene.GameManager;
@@ -50,6 +51,7 @@ public final class SceneManager implements Manager {
         ENCYCLOPEDIA,
         ACHIEVEMENT,
         CHEST,
+        IDLE,
         SELECTSTAGE,
         NORMALSTAGE,
         INFINITYSTAGE,
@@ -82,6 +84,7 @@ public final class SceneManager implements Manager {
         register(SceneType.ENCYCLOPEDIA, EncyclopediaManager::getInstance);
         register(SceneType.ACHIEVEMENT, AchievementManager::getInstance);
         register(SceneType.CHEST, ChestManager::getInstance);
+        register(SceneType.IDLE, IdleManager::getInstance);
         register(SceneType.SELECTSTAGE, SelectStageManager::getInstance);
         register(SceneType.NORMALSTAGE, NormalStageManager::getInstance);
         register(SceneType.INFINITYSTAGE, InfinityStageManager::getInstance);

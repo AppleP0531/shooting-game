@@ -56,6 +56,7 @@ public final class LobbyManager extends JPanel implements Manager {
     private JButton dexBtn;
     private JButton achievementBtn;
     private JButton chestBtn;
+    private JButton idleBtn;
     private JButton backpackBtn;
     private JButton nextShipBtn;
     private JButton prevShipBtn;
@@ -194,6 +195,16 @@ public final class LobbyManager extends JPanel implements Manager {
         chestBtn.addActionListener(e -> SM.changeScene(SceneType.CHEST));
         chestBtn.setVisible(false); // 非表示
         this.add(chestBtn);
+
+        // 放置ボタン(放置の画面に遷移。宝箱ボタンの下)
+        idleBtn = UIBuilder.createImageBtn(component, "/static/img/UI/lobbyScene/idleIcon.png", dexBtnSize, "放置");
+        idleBtn.setBounds(
+                MAIN.getWidth() - 10 - (int) idleBtn.getWidth(),
+                chestBtn.getY() + (int) chestBtn.getHeight() + (int) (5 * ShootingGameMain.getScreenSizeAdj()),
+                (int) idleBtn.getWidth(), (int) idleBtn.getHeight());
+        idleBtn.addActionListener(e -> SM.changeScene(SceneType.IDLE));
+        idleBtn.setVisible(false); // 非表示
+        this.add(idleBtn);
 
         // ネクストシップボタン(次の船にシフト)
         Vector2 nextShipBtnSize = new Vector2(
@@ -361,7 +372,7 @@ public final class LobbyManager extends JPanel implements Manager {
         firepowerPanel.initComponents();
 
         // 押す・乗せると拡大縮小する(下の列・右上・船の切り替え・選択/解放・色の切り替え)
-        for (JButton b : new JButton[] { upgradeBtn, shopBtn, gachaBtn, settingBtn, dexBtn, achievementBtn, chestBtn, nextShipBtn,
+        for (JButton b : new JButton[] { upgradeBtn, shopBtn, gachaBtn, settingBtn, dexBtn, achievementBtn, chestBtn, idleBtn, nextShipBtn,
                 prevShipBtn, unlockShipBtn, trialShipBtn, changeModeBtn, backpackBtn, infinityBtn, selectStageBtn,
                 moduleBtn, convertBtn })
             ButtonAnimator.attachPop(b);
@@ -510,6 +521,7 @@ public final class LobbyManager extends JPanel implements Manager {
         dexBtn.setVisible(true);
         achievementBtn.setVisible(true);
         chestBtn.setVisible(true);
+        idleBtn.setVisible(true);
         nextShipBtn.setVisible(true);
         prevShipBtn.setVisible(true);
         backpackBtn.setVisible(true);
