@@ -16,6 +16,7 @@ import lombok.Setter;
 
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.gameScene.DamageCalculator;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.beam.BeamEmitter;
 import com.game.shooting_game.gameScene.beam.BeamManager;
@@ -586,9 +587,9 @@ public class Player extends Ship implements KeyListener {
         if (shieldTimer <= 0) {
             // 耐久シールドが一番先に吸う(全部吸えたら被弾扱いにならず、無敵時間も付かない)
             if (durableShield > 0) {
-                double absorbed = Math.min(durableShield, damage);
-                durableShield -= absorbed;
-                damage -= absorbed;
+                var r = DamageCalculator.absorbDurable(durableShield, damage);
+                durableShield = r.durability();
+                damage = r.restDamage();
                 if (damage <= 0)
                     return;
             }
