@@ -58,6 +58,9 @@ public class StageInfoView extends JPanel {
     private int enemyHeadingY;
     private int scoreY;
     private int totalHeight;
+    private int powerY; // 戦力値の行のY(requiredPower が0以下なら出さない)
+    private int requiredPower; // 推定必要戦力値(0以下なら出さない)
+    private int ownPower; // 自分の戦力値
 
     public StageInfoView(int viewWidth) {
         this.viewWidth = viewWidth;
@@ -74,6 +77,18 @@ public class StageInfoView extends JPanel {
         this.rewards.addAll(rewards);
         this.enemies.clear();
         this.enemies.addAll(enemies);
+        layoutItems();
+        setPreferredSize(new Dimension(viewWidth, totalHeight));
+        revalidate();
+        repaint();
+    }
+
+    /**
+     * 戦力値の表示の設定(推定必要戦力値が0以下なら、この行を出さない)
+     */
+    public void setPower(int required, int own) {
+        this.requiredPower = required;
+        this.ownPower = own;
         layoutItems();
         setPreferredSize(new Dimension(viewWidth, totalHeight));
         revalidate();
@@ -111,6 +126,11 @@ public class StageInfoView extends JPanel {
         // ハイスコア
         scoreY = y;
         y += px(26);
+
+        // 戦力値(推定必要戦力値と自分の戦力値)
+        powerY = y;
+        if (requiredPower > 0)
+            y += px(26);
 
         // ミッション
         missionRowYs.clear();
@@ -180,6 +200,30 @@ public class StageInfoView extends JPanel {
         g2.setColor(Color.WHITE);
         String score = highScore > 0 ? String.format("%,d", highScore) : "-";
         g2.drawString(score, px(8) + g2.getFontMetrics().stringWidth("ハイスコア") + px(10), scoreY + px(16));
+
+        // 戦力値(足りる=緑 / ぎりぎり=黄 / 不足=赤)
+        if (requiredPower > 0) {
+            g2.setFont(headingFont());
+            g2.setColor(new Color(255, 214, 80));
+            String head = "推定必要戦力値";
+            g2.drawString(head, px(8), powerY + px(16));
+            int x = px(8) + g2.getFontMetrics().stringWidth(head) + px(10);
+            g2.setColor(Color.WHITE);
+            String req = String.format("%,d", requiredPower);
+            g2.drawString(req, x, powerY + px(16));
+            x += g2.getFontMetrics().stringWidth(req) + px(10);
+            var verdict = com.game.shooting_game.domain.power.PowerService.verdict(ownPower, requiredPower);
+            g2.setColor(switch (verdict) {
+                case ENOUGH -> new Color(110, 220, 140);
+                case BARELY -> new Color(255, 214, 80);
+                case SHORT -> new Color(255, 110, 110);
+            });
+            g2.drawString("あなた " + String.format("%,d", ownPower) + switch (verdict) {
+                case ENOUGH -> "  十分";
+                case BARELY -> "  ぎりぎり";
+                case SHORT -> "  不足";
+            }, x, powerY + px(16));
+        }
 
         // ミッション(★は黄色、☆は灰色。フォントに依存しないよう多角形で描く)
         if (!missions.isEmpty()) {
