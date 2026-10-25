@@ -51,18 +51,17 @@ class StageGeneratorGimmickTest {
     }
 
     @Test
-    @DisplayName("進んだステージには、3種類のギミックがどれも現れる")
+    @DisplayName("進んだステージには、レーザー柵と隕石が現れる(降ってくるブロックは生成しない)")
     void allKindsAppear() {
-        boolean fence = false, meteor = false, wall = false;
+        boolean fence = false, meteor = false;
         for (int id = 60; id <= StageGenerator.LAST_STAGE; id++) {
             StageData d = gen(id);
             fence |= d.getGimmicks() != null;
             meteor |= d.getMeteors() != null;
-            wall |= d.getBlocks() != null;
+            assertThat(d.getBlocks()).isNull(); // 降ってくるブロックは、自動生成のステージに入れない
         }
         assertThat(fence).isTrue();
         assertThat(meteor).isTrue();
-        assertThat(wall).isTrue();
     }
 
     @Test
@@ -85,18 +84,5 @@ class StageGeneratorGimmickTest {
             for (String k : used)
                 assertThat(d.getEnemyList()).containsKey(k);
         }
-    }
-
-    @Test
-    @DisplayName("動く壁は、左右の壁の間に隙間があり、ビームは撃たない")
-    void wallHasGap() {
-        var blocks = StageGenerator.movingWall(new java.util.Random(1));
-        double minAbsX = Double.MAX_VALUE;
-        for (var b : blocks) {
-            minAbsX = Math.min(minAbsX, Math.abs(b.getX()));
-            assertThat(b.getDirs()).isEmpty();
-            assertThat(b.getSwing()).isPositive();
-        }
-        assertThat(minAbsX).isGreaterThan(40); // 隙間(両側の最も内側のブロックの外側)
     }
 }

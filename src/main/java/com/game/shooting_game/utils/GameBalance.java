@@ -23,6 +23,7 @@ public final class GameBalance {
     private static double enemyLevelHp = 0.2;
     private static double stageDamageGrowth = 1.004;
     private static double requiredBase = 100.0;
+    private static double requiredStageGrowth = 1.00275;
     private static boolean loaded = false;
 
     private GameBalance() {
@@ -44,6 +45,7 @@ public final class GameBalance {
             enemyLevelHp = Math.max(0.0, n.path("enemyLevelHp").asDouble(enemyLevelHp));
             stageDamageGrowth = Math.max(1.0, n.path("stageDamageGrowth").asDouble(stageDamageGrowth));
             requiredBase = Math.max(0.0, n.path("requiredBase").asDouble(requiredBase));
+            requiredStageGrowth = Math.max(1.0, n.path("requiredStageGrowth").asDouble(requiredStageGrowth));
         } catch (Exception e) {
             LogUtils.warn(component, "バランスの設定を読めないため既定値を使います: " + e.getMessage());
         }
@@ -77,6 +79,15 @@ public final class GameBalance {
     public static double requiredBase() {
         ensureLoaded();
         return requiredBase;
+    }
+
+    /**
+     * 推定必要戦力値の、ステージが1つ進むごとの上乗せ(指数)。敵のHPとダメージの伸びだけでは、
+     * 実際に要る自機の強さに足りなかったので、ステージ200・ナイトメアが約3000万になるよう合わせた値
+     */
+    public static double requiredStageGrowth() {
+        ensureLoaded();
+        return requiredStageGrowth;
     }
 
     /** 敵のレベルが1つ上がるごとに増える敵HPの割合(レベル2なら 1 + 2×この値 倍) */

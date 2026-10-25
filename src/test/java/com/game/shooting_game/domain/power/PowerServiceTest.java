@@ -38,6 +38,16 @@ class PowerServiceTest {
     }
 
     @Test
+    @DisplayName("実測に合わせた調整: ステージ200・ナイトメアは約3000万で、戦力値29,240,901の自機がぎりぎり")
+    void calibratedToNightmare200() {
+        double req = PowerService.required(200, Difficulty.NIGHTMARE);
+        assertThat(req).isBetween(29_000_000.0, 31_000_000.0);
+        assertThat(PowerService.verdict(29_240_901, req)).isEqualTo(Verdict.BARELY);
+        // ステージ1・ノーマルは、基準のまま
+        assertThat(PowerService.required(1, Difficulty.NORMAL)).isCloseTo(GameBalance.requiredBase(), within(1e-9));
+    }
+
+    @Test
     @DisplayName("足りる/ぎりぎり(80%以上)/不足の判定")
     void verdict() {
         assertThat(PowerService.verdict(100, 100)).isEqualTo(Verdict.ENOUGH);
