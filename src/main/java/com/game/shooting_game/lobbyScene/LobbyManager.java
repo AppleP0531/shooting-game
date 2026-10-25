@@ -273,10 +273,16 @@ public final class LobbyManager extends JPanel implements Manager {
         unlockShipBtn.setVisible(false); // 非表示
         this.add(unlockShipBtn);
 
-        // お試しボタン(持っていない船を、トレーニングステージで試す。アンロックボタンの下)
-        trialShipBtn = UIBuilder.createImageBtn(component, "/static/img/UI/lobbyScene/trialShip.png", unlockShipBtnSize,
+        // お試しボタン(持っていない船を、トレーニングステージで試す。アンロックボタンの左)
+        Vector2 trialShipBtnSize = new Vector2(
+                88 * ShootingGameMain.getScreenSizeAdj(),
+                36 * ShootingGameMain.getScreenSizeAdj());
+        trialShipBtn = UIBuilder.createImageBtn(component, "/static/img/UI/lobbyScene/trialShip.png", trialShipBtnSize,
                 "TRIAL");
-        UIBuilder.placeBtn(trialShipBtn, Anchor.BOTTOM_CENTER, Anchor.CENTER, 0, -153);
+        // アンロックボタンの左(下のカードに重ならない場所)
+        trialShipBtn.setBounds(
+                unlockShipBtn.getX() - (int) trialShipBtn.getWidth() - (int) (6 * ShootingGameMain.getScreenSizeAdj()),
+                unlockShipBtn.getY(), (int) trialShipBtn.getWidth(), (int) trialShipBtn.getHeight());
         trialShipBtn.addActionListener(e -> {
             if (TrialService.begin(ships[viewingShipInd])) {
                 StageManager.getInstance().getStage().setStageId(TrialService.TRIAL_STAGE_ID);

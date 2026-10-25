@@ -205,6 +205,16 @@ public class GameSceneUI {
             g.fillOval((int) pos.getX() - (int) iconSize / 2,
                     (int) pos.getY() + ind * (int) distance - (int) iconSize / 2,
                     (int) iconSize, (int) iconSize);
+            // 特殊効果の円には、効果の名前の頭文字を入れる(色だけでは見分けにくいため)
+            if (effectName.startsWith("Status:")) {
+                String mark = com.game.shooting_game.gameScene.status.StatusEffect
+                        .valueOf(effectName.substring(7)).getDisplayName().substring(0, 1);
+                g.setFont(new Font("SansSerif", Font.BOLD, Math.max(10, (int) (iconSize * 0.5))));
+                g.setColor(new Color(1f, 1f, 1f, alpha));
+                java.awt.FontMetrics fm = g.getFontMetrics();
+                g.drawString(mark, (int) pos.getX() - fm.stringWidth(mark) / 2,
+                        (int) pos.getY() + ind * (int) distance + (fm.getAscent() - fm.getDescent()) / 2);
+            }
         }
         // 透明度を1に戻す
 
