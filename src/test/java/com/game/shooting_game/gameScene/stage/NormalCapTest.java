@@ -20,9 +20,12 @@ class NormalCapTest {
 
     @Test
     void ダメージの上限はナイトメアの値() {
-        assertThat(StageModifiers.normalDamageCap(false)).isEqualTo(Difficulty.NIGHTMARE.getEnemyDamageRate());
+        // ステージ200までに増える分(stageDamageRate)も込みの、ナイトメアの値
+        double stage = GameBalance.stageDamageRate(StageModifiers.NORMAL_STAGE_COUNT);
+        assertThat(StageModifiers.normalDamageCap(false))
+                .isCloseTo(stage * Difficulty.NIGHTMARE.getEnemyDamageRate(), within(1e-9));
         assertThat(StageModifiers.normalDamageCap(true))
-                .isCloseTo(Difficulty.NIGHTMARE.getEnemyDamageRate() * Difficulty.NIGHTMARE.getBossDamageRate(),
+                .isCloseTo(stage * Difficulty.NIGHTMARE.getEnemyDamageRate() * Difficulty.NIGHTMARE.getBossDamageRate(),
                         within(1e-9));
     }
 
@@ -31,7 +34,8 @@ class NormalCapTest {
         for (Difficulty d : Difficulty.values()) {
             assertThat(d.getEnemyHpRate() * GameBalance.stageHpRate(StageModifiers.NORMAL_STAGE_COUNT))
                     .isLessThanOrEqualTo(StageModifiers.normalHpCap(false) + 1e-6);
-            assertThat(d.getEnemyDamageRate()).isLessThanOrEqualTo(StageModifiers.normalDamageCap(false));
+            assertThat(d.getEnemyDamageRate() * GameBalance.stageDamageRate(StageModifiers.NORMAL_STAGE_COUNT))
+                    .isLessThanOrEqualTo(StageModifiers.normalDamageCap(false) + 1e-6);
         }
     }
 }

@@ -3,5 +3,7 @@
   "rankAttackGrowth": 4.0,
   "stageHpGrowth": 1.034,
   "endlessHpPerWave": 0.015,
-  "bossHpRate": 5.0
+  "bossHpRate": 5.0,
+  "enemyLevelHp": 0.2,
+  "stageDamageGrowth": 1.004
 }
