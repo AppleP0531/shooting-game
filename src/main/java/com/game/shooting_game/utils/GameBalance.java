@@ -20,6 +20,8 @@ public final class GameBalance {
     private static double stageHpGrowth = 1.034;
     private static double endlessHpPerWave = 0.015;
     private static double bossHpRate = 5.0;
+    private static double enemyLevelHp = 0.2;
+    private static double stageDamageGrowth = 1.004;
     private static boolean loaded = false;
 
     private GameBalance() {
@@ -38,6 +40,8 @@ public final class GameBalance {
             stageHpGrowth = Math.max(1.0, n.path("stageHpGrowth").asDouble(stageHpGrowth));
             endlessHpPerWave = Math.max(0.0, n.path("endlessHpPerWave").asDouble(endlessHpPerWave));
             bossHpRate = Math.max(1.0, n.path("bossHpRate").asDouble(bossHpRate));
+            enemyLevelHp = Math.max(0.0, n.path("enemyLevelHp").asDouble(enemyLevelHp));
+            stageDamageGrowth = Math.max(1.0, n.path("stageDamageGrowth").asDouble(stageDamageGrowth));
         } catch (Exception e) {
             LogUtils.warn(component, "バランスの設定を読めないため既定値を使います: " + e.getMessage());
         }
@@ -65,6 +69,32 @@ public final class GameBalance {
     public static double endlessHpPerWave() {
         ensureLoaded();
         return endlessHpPerWave;
+    }
+
+    /** 敵のレベルが1つ上がるごとに増える敵HPの割合(レベル2なら 1 + 2×この値 倍) */
+    public static double enemyLevelHp() {
+        ensureLoaded();
+        return enemyLevelHp;
+    }
+
+    /** ステージが1つ進むごとの、敵から受けるダメージの倍率(指数。HPより緩やか) */
+    public static double stageDamageGrowth() {
+        ensureLoaded();
+        return stageDamageGrowth;
+    }
+
+    /**
+     * 敵のレベルに応じた敵HPの倍率(レベル0で1、レベルごとに enemyLevelHp ずつ増える)
+     */
+    public static double enemyLevelHpRate(int level) {
+        return 1 + enemyLevelHp() * Math.max(0, level);
+    }
+
+    /**
+     * ステージの番号に応じた、敵から受けるダメージの倍率(1から始まり、指数的に増える)
+     */
+    public static double stageDamageRate(double stageIndex) {
+        return Math.pow(stageDamageGrowth(), Math.max(0, stageIndex - 1));
     }
 
     /** ボスのゲージHP(BossConfig の gaugeHp)にかける倍率。コインボスには掛けない */
