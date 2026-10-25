@@ -1486,6 +1486,37 @@ package "shooting_game" {
             }
         }
 
+        package "tutorial" {
+            class TutorialService <<Utility>> {
+                - {static} component: String
+                - {static} CONFIG_PATH: String <<TutorialConfig.json>>
+                - {static} SEEN_PREFIX: String = "tutorial:" <<見たガイド(tutorial:ID)。★の数に混ざらない>>
+                - {static} guides: List<Guide>
+                --
+                - TutorialService()
+                - {static} ensureLoaded(): void
+                + {static} reload(): void
+                - {static} blankToNull(s: String): String
+                + {static} all(): List<Guide>
+                - {static} store(): Map<String,Integer> <<progress.highScores を流用>>
+                + {static} seen(g: Guide): boolean
+                + {static} markSeen(g: Guide): void
+                + {static} reset(): int <<見た記録を消す。消した数を返す>>
+                + {static} forScene(sceneName: String): Guide <<その画面のまだ見ていないガイド(なければ null)>>
+                + {static} forEvent(event: String): Guide <<そのできごとのまだ見ていないガイド(なければ null)>>
+                + {static} unseenCount(): int
+                + {static} status(): Map<String,Boolean> <<ID → 見たか。/tutorial の表示用>>
+            }
+
+            class Guide <<record>> {
+                ~ id: String
+                ~ scene: String
+                ~ event: String
+                ~ title: String
+                ~ pages: List<String>
+            }
+        }
+
         package "chest" {
             class ChestService <<Utility>> {
                 - {static} component: String
@@ -1951,6 +1982,7 @@ package "shooting_game" {
             - {static} LEAVE_FADE: double <<離脱時に暗くなる長さ(秒)>>
             - resumeTimer: double <<負なら数えていない。数えている間もゲームは止まる>>
             - leaveTimer: double <<負ならフェードしていない>>
+            - tutorialHold: boolean <<チュートリアルの説明を出している間、ゲームを止める(ポーズ画面は出さない)>>
             - bombBtn: ItemSlotButton <<ショップで買ったボム(キー1)>>
             - freezeBtn: ItemSlotButton <<ショップで買ったフリーズ(キー2)>>
             - shieldBtn: ItemSlotButton <<ショップで買った耐久シールド(キー3)>>
@@ -1968,6 +2000,8 @@ package "shooting_game" {
             + addScore(value: double): void
             + addCoin(value: int): void
             + addHit(): void
+            - checkTutorialEvents(): void <<ステージ1の最初の敵・最初のアイテムを調べる>>
+            - fireTutorial(event: String): void <<まだ見ていなければ出す。出している間は tutorialHold>>
             + addBossKill(): void <<ボスを倒したことの記録(宝箱の鍵用)>>
             - dropChestKeys(diff: Difficulty, firstClear: boolean, newStars: int): void <<初回クリア・ボス(確率)・ミッションの★で鍵を入れる>>
             + skipResult(): void
@@ -3972,6 +4006,25 @@ package "shooting_game" {
             + getToolTipText(ev: MouseEvent): String
         }
 
+        class TutorialOverlay <<Singleton>> {
+            - {static} instance: TutorialOverlay
+            - guide: Guide
+            - page: int
+            - onClose: Runnable
+            - nextBtn: Rectangle
+            - skipBtn: Rectangle
+            --
+            - TutorialOverlay()
+            + {static} getInstance(): TutorialOverlay
+            + isShowingGuide(): boolean
+            + show(g: Guide, onClose: Runnable): boolean <<出せたら true。出ている間は下の画面へのクリックを受け止める>>
+            - next(): void
+            - close(): void <<markSeen して onClose を呼ぶ>>
+            # paintComponent(g: Graphics): void <<画面を暗くして下に説明パネル>>
+            - drawButton(g: Graphics2D, r: Rectangle, label: String, bg: Color, fg: Color): void
+            ~ {static} wrap(text: String, fm: FontMetrics, width: int): List<String>
+        }
+
         class UIBuilder {
             + {static} loadImage(path: String): BufferedImage
             + {static} cutSpriteSheet(masterSheet: BufferedImage, grids: Vector2, useCount: int, imageSize: double): BufferedImage[]
@@ -4301,6 +4354,18 @@ shooting_game.encyclopediaScene.EncyclopediaManager ..> shooting_game.domain.dex
 shooting_game.encyclopediaScene.EncyclopediaManager ..> shooting_game.gameScene.ship.ShipManager
 shooting_game.lobbyScene.LobbyManager ..> shooting_game.encyclopediaScene.EncyclopediaManager
 shooting_game.SceneManager --> shooting_game.encyclopediaScene.EncyclopediaManager
+
+' チュートリアル
+shooting_game.domain.tutorial.TutorialService +-- Guide
+shooting_game.SceneManager ..> shooting_game.domain.tutorial.TutorialService
+shooting_game.SceneManager ..> shooting_game.ui.TutorialOverlay
+shooting_game.ShootingGameMain ..> shooting_game.ui.TutorialOverlay
+shooting_game.gameScene.GameManager ..> shooting_game.domain.tutorial.TutorialService
+shooting_game.gameScene.GameManager ..> shooting_game.ui.TutorialOverlay
+shooting_game.command.PlayerDataCommands ..> shooting_game.domain.tutorial.TutorialService
+shooting_game.ui.TutorialOverlay ..> shooting_game.domain.tutorial.TutorialService
+shooting_game.domain.tutorial.TutorialService ..> shooting_game.data.DataManager
+shooting_game.ui.TutorialOverlay --|> javax.swing.JComponent
 
 ' 実績
 shooting_game.lobbyScene.LobbyManager ..> shooting_game.achievementScene.AchievementManager
