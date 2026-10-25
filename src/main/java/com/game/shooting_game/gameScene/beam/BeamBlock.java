@@ -30,6 +30,8 @@ public final class BeamBlock {
     private final Vector2 pos;
     private final double half; // 一辺の半分(画面倍率込み)
     private final ColorMode mode; // 出現したときに決まる色(変わらない)
+    private double baseX; // 揺れを除いた横の位置
+    private double age = 0; // 出現してからの経過時間(秒)
     private double warnLeft = 0; // 次の発射までの予兆の光らせ用
     @Getter
     private double angle; // 今の向き(ラジアン、時計回りが正)。回るブロックは少しずつ変わる
@@ -40,6 +42,7 @@ public final class BeamBlock {
         this.spec = spec;
         this.angle = Math.toRadians(spec.getAngle());
         this.pos = new Vector2(main.getWidth() / 2.0 + spec.getX() * adj, spec.getY() * adj);
+        this.baseX = pos.getX();
         this.half = spec.getSize() * adj / 2;
 
         this.beamSpec = new BeamSpec();
@@ -77,7 +80,12 @@ public final class BeamBlock {
      */
     public void update(double dt, BeamManager shooter) {
         double adj = ShootingGameMain.getScreenSizeAdj();
-        pos.setX(pos.getX() + spec.getVx() * adj * dt);
+        // 往復する壁は、動いた分を引いてから足し直す(いまの揺れの位置 = 基準位置 + 揺れ幅 × sin)
+        age += dt;
+        double swingX = spec.getSwing() == 0 ? 0
+                : spec.getSwing() * adj * Math.sin(2 * Math.PI * age / Math.max(0.1, spec.getSwingPeriod()));
+        baseX += spec.getVx() * adj * dt;
+        pos.setX(baseX + swingX);
         pos.setY(pos.getY() + spec.getVy() * adj * dt);
         angle += Math.toRadians(spec.getSpin()) * dt;
 

@@ -25,6 +25,7 @@ import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.ship.EntranceType;
 import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.gameScene.beam.BeamSpec;
+import com.game.shooting_game.gameScene.hazard.MeteorSpec;
 import com.game.shooting_game.gameScene.beam.BlockSpec;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipDefinition;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
@@ -82,6 +83,7 @@ public final class StageManager implements Manager {
         private Map<String, EnemyConfig[]> enemyList;
         private Map<String, BlockSpec[]> blocks; // ウェーブごとのビームブロック(四角ブロック。流れながらビームを撃つ)
         private Map<String, BeamSpec[]> gimmicks; // ウェーブごとのビームギミック(壁・上からのビーム)
+        private Map<String, MeteorSpec[]> meteors; // ウェーブごとの隕石(上から降ってくる障害物。自機の弾で壊せる)
 
         /**
          * 獲得リソース量の決定

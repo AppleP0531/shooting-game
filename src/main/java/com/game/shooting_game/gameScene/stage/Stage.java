@@ -228,6 +228,10 @@ public class Stage implements GameObject {
                 BeamManager.getInstance().setGimmicks(gimmicks == null ? null : gimmicks.get("wave" + id));
                 Map<String, BlockSpec[]> blocks = STAGE_M.getStageConfig().get("stage" + stageId).getBlocks();
                 BeamManager.getInstance().setBlocks(blocks == null ? null : blocks.get("wave" + id));
+                Map<String, com.game.shooting_game.gameScene.hazard.MeteorSpec[]> meteors = STAGE_M.getStageConfig()
+                        .get("stage" + stageId).getMeteors();
+                com.game.shooting_game.gameScene.hazard.MeteorManager.getInstance()
+                        .setMeteors(meteors == null ? null : meteors.get("wave" + id));
 
                 // 現在ウェーブログ
                 LogUtils.info(component,
@@ -243,6 +247,7 @@ public class Stage implements GameObject {
                 }
             } else {
                 BeamManager.getInstance().setGimmicks(null);
+                com.game.shooting_game.gameScene.hazard.MeteorManager.getInstance().setMeteors(null);
                 SHIP_M.getPlayer().animation("breakAway");
             }
 
