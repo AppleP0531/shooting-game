@@ -1733,7 +1733,7 @@ package "shooting_game" {
             - pause: boolean
             - score: int
             - coin: int
-            - managers: List<Manager> <<DamagePopupManager を最前面に含む>>
+            - managers: List<Manager> <<DamagePopupManager を最前面に含む。BeamManager の次に MeteorManager>>
             - effectList: Map<String, Double>
             - hitCount: int <<被弾回数(HARDミッション用)>>
             - playTime: double
@@ -2038,8 +2038,20 @@ package "shooting_game" {
                 - modifiers: StageModifiersSpec
                 - missions: MissionSpec <<HARDのミッション>>
                 - gimmicks: Map<String, BeamSpec[]>
+                - meteors: Map<String, MeteorSpec[]> <<ウェーブごとの隕石>>
                 --
                 + getRandomResourceAmount(resKind: ResourceKinds): int
+            }
+
+            class StageGenerator <<自動生成ステージ>> {
+                - {static} FENCE_FROM: int <<36: レーザー柵が入り始める>>
+                - {static} METEOR_FROM: int <<45: 隕石>>
+                - {static} WALL_FROM: int <<60: 動く壁>>
+                --
+                - {static} addGimmicks(d: StageData, stageId: int, waves: int, hasBoss: boolean): void
+                ~ {static} fence(stageId: int, rnd: Random): BeamSpec[]
+                ~ {static} meteorShower(stageId: int, rnd: Random): MeteorSpec[]
+                ~ {static} movingWall(rnd: Random): BlockSpec[]
             }
 
             class EnemyConfig <<Lomboc @Data>> {
@@ -2881,6 +2893,8 @@ package "shooting_game" {
                 - y: double
                 - vx: double
                 - vy: double
+                - swing: double <<横の往復の幅。動く壁用>>
+                - swingPeriod: double <<往復の周期(秒)>>
                 - size: double
                 - angle: double <<出現時の向き(度)>>
                 - spin: double <<回転の速さ(度/秒)>>
@@ -2900,6 +2914,8 @@ package "shooting_game" {
                 - emitter: BeamEmitter
                 - pos: Vector2
                 - mode: ColorMode
+                - baseX: double <<揺れを除いた横の位置>>
+                - age: double <<出現してからの経過時間(秒)。swingの往復に使う>>
                 - angle: double <<今の向き(ラジアン)。spinで回る>>
                 - ghosts: Set<Object> <<押し潰された船。重なりが解けるまで当たり判定なし>>
                 --
@@ -2996,6 +3012,68 @@ package "shooting_game" {
                 + firePlayer(spec: BeamSpec, originSupplier: Supplier<Vector2>, modeSupplier: Supplier<ColorMode>, damageScale: double): void
                 - damageEnemies(beam: Beam): void
             }
+        }
+
+        package "hazard" {
+            class MeteorSpec <<lombok @Data>> {
+                - x: Double <<省略ならランダム>>
+                - y: double
+                - vx: double
+                - vy: double
+                - radius: double
+                - hp: double
+                - damage: double
+                - delay: double
+                - interval: double
+                - count: int
+            }
+
+            class Meteor {
+                - pos: Vector2
+                - vx: double
+                - vy: double
+                - radius: double
+                - damage: double
+                - spinSpeed: double
+                - maxHp: double
+                - hp: double
+                - angle: double
+                - dead: boolean
+                --
+                + Meteor(spec: MeteorSpec)
+                + update(dt: double): void
+                + hit(amount: double): boolean
+                + shatter(): void
+                + isDead(): boolean
+                + isGone(): boolean
+                + draw(g2: Graphics2D): void
+            }
+
+            class MeteorManager <<Singleton>> {
+                - {static} instance: MeteorManager
+                - spawners: List<Spawner>
+                - meteors: List<Meteor>
+                --
+                + {static} getInstance(): MeteorManager
+                + setup(): void
+                + setMeteors(specs: MeteorSpec[]): void
+                + update(dt: double): void
+                + draw(g: Graphics): void
+                - collide(player: Player): void
+            }
+
+            class Spawner <<MeteorManager の内部クラス>> {
+                ~ spec: MeteorSpec
+                ~ timer: double
+                ~ fired: int
+                --
+                ~ done(): boolean
+            }
+
+            MeteorManager o-- Meteor
+            MeteorManager *-- Spawner
+            Spawner --> MeteorSpec
+            Meteor --> MeteorSpec
         }
 
         package "item" {
@@ -4085,6 +4163,14 @@ shooting_game.gameScene.item.Item ..|> shooting_game.interfaces.Entity
 shooting_game.gameScene.item.Item ..|> shooting_game.interfaces.Moveable
 shooting_game.gameScene.bullet.BulletManager ..|> shooting_game.interfaces.Manager
 shooting_game.gameScene.beam.BeamManager ..|> shooting_game.interfaces.Manager
+shooting_game.gameScene.hazard.MeteorManager ..|> shooting_game.interfaces.Manager
+shooting_game.gameScene.GameManager ..> shooting_game.gameScene.hazard.MeteorManager
+shooting_game.gameScene.stage.Stage ..> shooting_game.gameScene.hazard.MeteorManager
+shooting_game.gameScene.stage.StageGenerator ..> shooting_game.gameScene.stage.StageManager.StageData
+shooting_game.gameScene.stage.StageGenerator ..> shooting_game.gameScene.beam.BeamSpec
+shooting_game.gameScene.stage.StageGenerator ..> shooting_game.gameScene.beam.BlockSpec
+shooting_game.gameScene.stage.StageGenerator ..> shooting_game.gameScene.hazard.MeteorSpec
+shooting_game.gameScene.stage.StageManager.StageData --> shooting_game.gameScene.hazard.MeteorSpec
 shooting_game.gameScene.item.ItemManager ..|> shooting_game.interfaces.Manager
 ItemKinds ..|> shooting_game.interfaces.Collectible
 shooting_game.gameResultScene.GameResultManager ..|> shooting_game.interfaces.Manager
