@@ -97,6 +97,7 @@ public final class GameManager extends JPanel implements Manager {
     private boolean skipped; // スキップで報酬だけ受け取ったか(ミッションの対象外)
     private ItemSlotButton bombBtn; // ショップで買ったボム(キー1)
     private ItemSlotButton freezeBtn; // ショップで買ったフリーズ(キー2)
+    private ItemSlotButton shieldBtn; // ショップで買った耐久シールド(キー3)
     private final Map<ResourceKinds, Integer> collectedResources = new LinkedHashMap<>(); // このステージで拾った素材
 
     private final List<Manager> managers = new ArrayList<>();
@@ -157,6 +158,8 @@ public final class GameManager extends JPanel implements Manager {
         // ショップで買った特殊アイテム: 数字キー(テンキー可)とボタンで使う
         bombBtn = createItemSlot(ItemKinds.BOMB, "1", new java.awt.Color(255, 150, 40), 0);
         freezeBtn = createItemSlot(ItemKinds.FREEZE, "2", new java.awt.Color(80, 200, 255), 1);
+        shieldBtn = createItemSlot(ItemKinds.DURABLE_SHIELD, "3", new java.awt.Color(255, 205, 70), 2);
+        bindItemKey(im, am, KeyEvent.VK_3, KeyEvent.VK_NUMPAD3, ItemKinds.DURABLE_SHIELD);
         bindItemKey(im, am, KeyEvent.VK_1, KeyEvent.VK_NUMPAD1, ItemKinds.BOMB);
         bindItemKey(im, am, KeyEvent.VK_2, KeyEvent.VK_NUMPAD2, ItemKinds.FREEZE);
     }
@@ -206,6 +209,8 @@ public final class GameManager extends JPanel implements Manager {
             bombBtn.refresh();
         if (freezeBtn != null)
             freezeBtn.refresh();
+        if (shieldBtn != null)
+            shieldBtn.refresh();
     }
 
     /**

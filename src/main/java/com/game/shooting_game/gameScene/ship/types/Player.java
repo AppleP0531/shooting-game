@@ -65,6 +65,8 @@ public class Player extends Ship implements KeyListener {
     private double shieldPoints; // 今のシールド量
     private double maxShield; // シールドの最大量
     private double shieldRegenWait; // 回復が始まるまでの待ち時間
+    private double durableShield; // 耐久シールド(アイテム)の残り耐久。0になるまで被弾を全部吸う(回復なし・クールタイムなし)
+    private double durableShieldMax; // 耐久シールドを張った時の耐久(バーの長さの基準)
     @Getter
     private double damagedTimer; // 被弾時の無敵タイマー
     private double breakawaySpeed; // 離脱速度
@@ -499,6 +501,17 @@ public class Player extends Ship implements KeyListener {
             g2.setColor(new Color(90, 200, 255));
             g2.fillRect((int) barPos.getX() + skewX / 2, sy, (int) (barSize.getX() * (shieldPoints / maxShield)), sh);
         }
+
+        // 耐久シールドのバー(シールドのバーの下に、金色で)
+        if (durableShield > 0 && durableShieldMax > 0) {
+            int sh = Math.max(3, (int) (4 * ShootingGameMain.getScreenSizeAdj()));
+            int sy = (int) barPos.getY() + (int) barSize.getY() + 2 + (maxShield > 0 ? sh + 2 : 0);
+            g2.setColor(new Color(50, 50, 50, 150));
+            g2.fillRect((int) barPos.getX() + skewX / 2, sy, (int) barSize.getX(), sh);
+            g2.setColor(new Color(255, 205, 70));
+            g2.fillRect((int) barPos.getX() + skewX / 2, sy,
+                    (int) (barSize.getX() * Math.min(1.0, durableShield / durableShieldMax)), sh);
+        }
     }
 
     /*
@@ -571,6 +584,14 @@ public class Player extends Ship implements KeyListener {
     public void addDamage(double damage) {
         // シールドを持っていなかった場合はダメージを負って、1秒のダメージクールタイムを設ける
         if (shieldTimer <= 0) {
+            // 耐久シールドが一番先に吸う(全部吸えたら被弾扱いにならず、無敵時間も付かない)
+            if (durableShield > 0) {
+                double absorbed = Math.min(durableShield, damage);
+                durableShield -= absorbed;
+                damage -= absorbed;
+                if (damage <= 0)
+                    return;
+            }
             // シールドが先にダメージを受け、残りがHPに入る
             double rest = damage;
             if (shieldPoints > 0) {
@@ -599,6 +620,19 @@ public class Player extends Ship implements KeyListener {
 
         if (shipLevel == 5)
             setOOCTimer(OOCTime);
+    }
+
+    /**
+     * 耐久シールドを張る(アイテム用。重ねて使うと、耐久を張り直す)
+     *
+     * @param durability 耐久
+     */
+    public void startDurableShield(double durability) {
+        durableShield = durableShieldMax = durability;
+    }
+
+    public double getDurableShield() {
+        return durableShield;
     }
 
     /**
