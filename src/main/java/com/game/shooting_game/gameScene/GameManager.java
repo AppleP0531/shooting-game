@@ -32,6 +32,7 @@ import com.game.shooting_game.gameScene.bullet.Bullet;
 import com.game.shooting_game.gameScene.beam.BeamManager;
 import com.game.shooting_game.gameScene.bullet.BulletManager;
 import com.game.shooting_game.gameScene.item.Item;
+import com.game.shooting_game.domain.farm.MaterialFarmService;
 import com.game.shooting_game.gameScene.item.ItemManager;
 import com.game.shooting_game.gameScene.ship.Ship;
 import com.game.shooting_game.gameScene.ship.ShipManager;
@@ -537,6 +538,12 @@ public final class GameManager extends JPanel implements Manager {
                 for (Rarity rarity : EndlessWaves.moduleRewards(cleared))
                     StageRewards.getInstance().getModules().add(ModuleService.addNew(null, rarity));
             }
+
+            // 手に入れた素材を記録(素材周回ステージの一覧に出るようになる)
+            StageRewards.getInstance().getResources().forEach((k, v) -> {
+                if (v > 0)
+                    MaterialFarmService.markObtained(k.getResName());
+            });
 
             // モジュールの報酬(確率で手に入る。種類を決めていなければランダム)
             if (currentStageData.getModuleRewards() != null) {
