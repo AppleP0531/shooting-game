@@ -41,4 +41,15 @@ class TutorialOverlayWrapTest {
         List<String> lines = TutorialOverlay.wrap("あいう", metrics(), 1);
         assertThat(String.join("", lines)).isEqualTo("あいう");
     }
+
+    @Test
+    @DisplayName("句読点・閉じ括弧が行の先頭に来ない(前の行にはみ出して付く)")
+    void noLineStartPunctuation() {
+        FontMetrics fm = metrics();
+        String text = "あいうえおかきくけこ。さしすせそ、たちつてと」なにぬねの";
+        for (int width = 20; width <= 200; width += 7)
+            for (String l : TutorialOverlay.wrap(text, fm, width))
+                if (!l.isEmpty())
+                    assertThat("。、」").doesNotContain(l.substring(0, 1));
+    }
 }

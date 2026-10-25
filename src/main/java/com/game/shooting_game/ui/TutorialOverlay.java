@@ -204,7 +204,9 @@ public final class TutorialOverlay extends JComponent {
         for (String para : text.split("\n", -1)) {
             StringBuilder cur = new StringBuilder();
             for (char c : para.toCharArray()) {
-                if (fm.stringWidth(cur.toString() + c) > width && cur.length() > 0) {
+                // 行頭に来てはいけない句読点・閉じ括弧は、前の行にはみ出して付ける
+                boolean noLineStart = "。、」』）)！？!?…ー".indexOf(c) >= 0;
+                if (fm.stringWidth(cur.toString() + c) > width && cur.length() > 0 && !noLineStart) {
                     lines.add(cur.toString());
                     cur.setLength(0);
                 }
