@@ -3,6 +3,7 @@ package com.game.shooting_game.gameScene;
 import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.bullet.Bullet;
+import com.game.shooting_game.gameScene.item.ItemManager;
 import com.game.shooting_game.gameScene.ship.Ship;
 import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.gameScene.ship.types.Player;
@@ -50,14 +51,16 @@ public final class DamageCalculator {
         Player p = player();
         if (p != null && p.getShipLevel() >= 5)
             rate *= 1 + SkillService.getBonus("OOC_DAMAGE");
-        return rate * UnitService.attackRate(shipId()) * (1 + ModuleService.stat(ModuleStat.ATK_PCT));
+        return rate * UnitService.attackRate(shipId()) * (1 + ModuleService.stat(ModuleStat.ATK_PCT))
+                * ItemManager.atkUpMultiplier();
     }
 
     /**
      * ビームの火力倍率(機体のレベル・★。ビーム自体の強化は発射時に反映済み)
      */
     public static double beamAttackRate() {
-        return UnitService.attackRate(shipId()) * (1 + ModuleService.stat(ModuleStat.ATK_PCT));
+        return UnitService.attackRate(shipId()) * (1 + ModuleService.stat(ModuleStat.ATK_PCT))
+                * ItemManager.atkUpMultiplier();
     }
 
     /**

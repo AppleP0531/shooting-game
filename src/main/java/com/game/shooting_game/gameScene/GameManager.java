@@ -391,6 +391,11 @@ public final class GameManager extends JPanel implements Manager {
     private void updateEffectData() {
         effectList.compute("OOC",
                 (k, v) -> SHIP_M.getPlayer().getOOCTimer() > 0 ? SHIP_M.getPlayer().getOOCTimer() : null);
+        effectList.compute("Regen",
+                (k, v) -> ItemManager.getInstance().getRegenTimer() > 0 ? ItemManager.getInstance().getRegenTimer()
+                        : null);
+        effectList.compute("AtkUp",
+                (k, v) -> ItemManager.getAtkUpTimer() > 0 ? ItemManager.getAtkUpTimer() : null);
         effectList.compute("Shield",
                 (k, v) -> SHIP_M.getPlayer().getShieldTimer() > 0 || SHIP_M.getPlayer().getDamagedTimer() > 0
                         ? Math.max(SHIP_M.getPlayer().getShieldTimer(), SHIP_M.getPlayer().getDamagedTimer())
