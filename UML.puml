@@ -1316,6 +1316,9 @@ package "shooting_game" {
                 + {static} canRankUp(shipId: String): boolean <<レベル最大・ランクコアと機体のピースが足りる>>
                 + {static} rankUp(shipId: String): boolean <<素材とピースを払い、ランク+1、レベルは1に戻る>>
                 + {static} rankText(shipId: String): String
+                + {static} onHitEffect(shipId: String): StatusEffect <<ShipConfig の onHitEffect。なければnull>>
+                + {static} onHitChance(shipId: String): double <<ShipConfig の onHitChance。なければ0.1>>
+                + {static} rollOnHit(shipId: String, target: Ship, scale: double): void <<確率(×ELEM_CHANCE×scale)で、時間(×ELEM_TIME)・強さ(×ELEM_POWER)つきでかける>>
             }
         }
 
@@ -2093,7 +2096,7 @@ package "shooting_game" {
                 + update(dt: double): void
                 + draw(g: Graphics): void
                 + reload(): void
-                + updateAndClean(List<Ship>, double): void
+                + updateAndClean(List<Ship>, double): void <<各船で tickStatus を呼び、凍結の進み具合に status.speedRate() をかけて update>>
                 - dropItem(ship: Ship): void
                 - dropResource(ship: Ship): void
                 - dropResource(pos: Vector2): void
@@ -2142,6 +2145,8 @@ package "shooting_game" {
                 - speed: double
                 - score: double
                 - coins: String
+                - onHitEffect: String <<自機: 弾・ビームが当たった敵にかける特殊効果(POISON/BURN/SLOW/SHOCK/VULNERABLE)>>
+                - onHitChance: Double <<自機: その効果がかかる確率(なければ0.1)>>
             }
 
             class SheetConfig <<lomboc @Data>> {
@@ -2193,6 +2198,7 @@ package "shooting_game" {
                 # animateTimer: double
                 # removeRequested: boolean
                 - affix: EnemyAffix <<ナイトメアで付くエフェクト。なければnull>>
+                # status: StatusSet <<かかっている特殊効果(毒・炎・鈍足・感電・脆弱)>>
                 - shotData: List<ShotConfig>
                 - shotBullet: Map<BulletKinds, List<Integer>>
                 --
@@ -2210,10 +2216,17 @@ package "shooting_game" {
                 + applyAffix(affix: EnemyAffix): void <<SWIFTは速度、ARMOREDはHPを上げる>>
                 - updateAffix(dt: double): void <<REGENは回復、RAPIDは冷却を短くする>>
                 - drawAffixRing(g2: Graphics2D): void
+                + getStatus(): StatusSet
+                + applyStatus(effect: StatusEffect, seconds: double): void
+                + applyStatus(effect: StatusEffect, seconds: double, power: double): void <<時間に statusResist をかけて StatusSet.apply>>
+                # statusResist(effect: StatusEffect): double <<時間にかける倍率。0なら効かない>>
+                + tickStatus(dt: double): void <<実際の経過時間で呼ぶ。継続ダメージは dotDamage>>
+                # dotDamage(amount: double): void <<継続ダメージ(毒・炎)。既定は addDamage>>
+                - drawStatusRing(g2: Graphics2D): void <<かかっている効果の色で機体のまわりを光らせる>>
                 + changeMode(): void
                 + addScore(): void
-                + heal(damage: double): void
-                + addDamage(damage: double): void <<DamagePopupManager.add を呼ぶ>>
+                + heal(damage: double): void <<毒の間(StatusSet.blocksHeal)は回復しない>>
+                + addDamage(damage: double): void <<DamagePopupManager.add を呼ぶ。脆弱の間は damageTakenRate 倍>>
                 + addCritDamage(damage: double): void <<会心表示つきでダメージを与える>>
                 + isColorless(): boolean
                 + collidesWithCircle(center: Vector2, radius: double): boolean
@@ -2399,7 +2412,7 @@ package "shooting_game" {
                     + update(dt: double): void
                     - updateSubBeams(dt: double): void
                     + draw(g: Graphics): void
-                    + move(dt: double): void
+                    + move(dt: double): void <<ステージの中は鈍足・感電の speedRate をかける>>
                     - moveMaybeSlow(dt: double): void <<Shift中は速度を設定の割合に下げて動く>>
                     + drawHpBar(g: Graphics): void
                     + keyPressed(e: KeyEvent): void
@@ -2407,7 +2420,9 @@ package "shooting_game" {
                     + keyReleased(e: KeyEvent): void
                     + mouseMoved(e: MouseEvent): void
                     + mouseDragged(e: MouseEvent): void
-                    + addDamage(damage: double): void
+                    + addDamage(damage: double): void <<脆弱の間は damageTakenRate 倍>>
+                    + applyStatus(effect: StatusEffect, seconds: double, power: double): void <<override。スキル RES_効果名 の分だけ時間を短くする(最大9割)>>
+                    # dotDamage(amount: double): void <<override。シールドと無敵時間を通さずHPを直接減らす(常時無敵なら受けない)>>
                     + levelUp(): void
                     + setShieldTimer(time: double): void
                     + setOOCTimer(time: double): void
@@ -2509,6 +2524,7 @@ package "shooting_game" {
                     + draw(g: Graphics): void
                     + move(dt: double): void
                     + addDamage(damage: double): void <<戦闘中のみ。受けたダメージを coinCarry にためる。1回で削れるのは今のゲージの残りまで>>
+                    # statusResist(effect: StatusEffect): double <<override。感電は0、ほかは0.5(時間が半分)>>
                     - payCoins(): void <<たまったダメージを coinStep ごとのコインにして落とす(1フレーム4つまで)>>
                     + getRamDamage(): double
                     + isTransitioning(): boolean <<形態変化中か。この間、自機の暴走のカウントは止まる>>
@@ -2608,6 +2624,9 @@ package "shooting_game" {
                 - accelStart: double <<Accel用: 初速の倍率>>
                 - accelEnd: double
                 - accelTime: double
+                - effect: String <<当たった相手にかける特殊効果(なければなし)>>
+                - effectTime: double <<特殊効果の時間(0なら効果の標準)>>
+                - effectChance: double <<特殊効果がかかる確率(0〜1。既定1)>>
                 - cooldowns: Map<String, Double>
             }
 
@@ -2647,6 +2666,7 @@ package "shooting_game" {
                 + isPiercing(): boolean
                 + getKind(): BulletKinds
                 + destroySelf(): void
+                + applyStatusTo(target: Ship): void <<config.effect を effectChance の確率でかける>>
                 + registerHit(target: Object): boolean
                 + consumeHit(): boolean
                 + getPos(): Vector2
@@ -2873,6 +2893,8 @@ package "shooting_game" {
                 - count: int
                 - minLevel: int
                 - bossRate: double
+                - effect: String <<当たった自機にかける特殊効果(なければなし)>>
+                - effectTime: double <<特殊効果の時間(0なら効果の標準)>>
                 - lock: double
             }
 
@@ -2963,6 +2985,8 @@ package "shooting_game" {
                 - damage: double
                 - bossRate: double
                 - damageScale: double
+                - effect: StatusEffect <<当たった自機にかける特殊効果。なければnull>>
+                - effectTime: double
                 - origin: Vector2
                 - angle: double
                 - sweep: double
@@ -3010,8 +3034,52 @@ package "shooting_game" {
                 + hasTargetAhead(origin: Vector2, halfWidth: double): boolean
                 + fireHostile(spec: BeamSpec, source: Ship, mode: ColorMode): void
                 + firePlayer(spec: BeamSpec, originSupplier: Supplier<Vector2>, modeSupplier: Supplier<ColorMode>, damageScale: double): void
-                - damageEnemies(beam: Beam): void
+                - damageEnemies(beam: Beam): void <<ダメージのあと UnitService.rollOnHit(自機の機体ID, 敵, TICK)。敵のビームは自機に beam.effect をかける>>
             }
+        }
+
+        package "status" {
+            enum StatusEffect {
+                POISON : 毒(6秒・毎秒最大HPの2%・回復不可)
+                BURN : 炎(3秒・毎秒最大HPの5%)
+                SLOW : 鈍足(3秒・速さ半分)
+                SHOCK : 感電(0.8秒・動けない)
+                VULNERABLE : 脆弱(5秒・受けるダメージ1.25倍)
+                --
+                + {static} VULNERABLE_RATE: double = 1.25 <<脆弱の間に受けるダメージの倍率(強さ1)>>
+                - displayName: String
+                - color: Color
+                - defaultSeconds: double
+                - tickRate: double <<毎秒の継続ダメージ(最大HPに対する割合)>>
+                - speedRate: double <<かかっている間の動く速さの倍率(0なら止まる)>>
+                - blocksHeal: boolean
+                --
+                + {static} parse(name: String): StatusEffect <<設定ファイルの名前から。なければnull>>
+                + getDisplayName(): String
+                + getColor(): Color
+                + getDefaultSeconds(): double
+                + getTickRate(): double
+                + getSpeedRate(): double
+                + isBlocksHeal(): boolean
+            }
+
+            class StatusSet <<純ロジック>> {
+                - timers: Map<StatusEffect, Double> <<効果ごとの残り時間>>
+                - powers: Map<StatusEffect, Double> <<効果ごとの強さの倍率>>
+                --
+                + apply(effect: StatusEffect, seconds: double): void
+                + apply(effect: StatusEffect, seconds: double, power: double): void <<重ねがけは時間も強さも大きい方>>
+                + update(dt: double): double <<時間を進め、継続ダメージ(最大HPに対する割合)を返す>>
+                + isActive(effect: StatusEffect): boolean
+                + remaining(effect: StatusEffect): double
+                + isEmpty(): boolean
+                + active(): Set<StatusEffect>
+                + speedRate(): double <<かかっている効果のうち最も遅いもの>>
+                + damageTakenRate(): double <<脆弱の間は増える>>
+                + blocksHeal(): boolean <<毒など>>
+                + clear(): void
+            }
+            StatusSet o-- StatusEffect
         }
 
         package "hazard" {
@@ -4183,5 +4251,20 @@ shooting_game.gameScene.damage.DamagePopupManager ..|> shooting_game.interfaces.
 shooting_game.shopScene.ShopManager ..|> shooting_game.interfaces.Manager
 shooting_game.gameScene.ship.types.Player ..|> java.awt.event.KeyListener
 shooting_game.utils.animation.AnimationManager ..|> shooting_game.interfaces.Manager
+
+' 特殊効果
+shooting_game.gameScene.ship.Ship --> shooting_game.gameScene.status.StatusSet
+shooting_game.gameScene.ship.Ship ..> shooting_game.gameScene.status.StatusEffect
+shooting_game.gameScene.ship.types.Player ..> shooting_game.domain.skill.SkillService
+shooting_game.gameScene.ship.types.Player ..> shooting_game.gameScene.status.StatusEffect
+shooting_game.gameScene.ship.types.Boss ..> shooting_game.gameScene.status.StatusEffect
+shooting_game.gameScene.ship.ShipManager ..> shooting_game.gameScene.status.StatusSet
+shooting_game.gameScene.bullet.Bullet ..> shooting_game.gameScene.status.StatusEffect
+shooting_game.gameScene.beam.Beam ..> shooting_game.gameScene.status.StatusEffect
+shooting_game.gameScene.beam.BeamManager ..> shooting_game.domain.unit.UnitService
+shooting_game.gameScene.GameManager ..> shooting_game.domain.unit.UnitService
+shooting_game.gameScene.GameManager ..> shooting_game.gameScene.status.StatusEffect
+shooting_game.domain.unit.UnitService ..> shooting_game.gameScene.status.StatusEffect
+shooting_game.domain.unit.UnitService ..> shooting_game.domain.skill.SkillService
 
 @enduml
