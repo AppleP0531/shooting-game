@@ -33,6 +33,7 @@ import com.game.shooting_game.interfaces.Collectible;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
+import com.game.shooting_game.ui.NullImage;
 import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 
@@ -295,8 +296,12 @@ public final class ResourceManager implements Manager {
                 } catch (IOException e) {
                     switch (e.getMessage()) {
                         // 画像ファイル未発見ログ
-                        case "FILE_NOT_FOUND" -> LogUtils.warn(component,
-                                "File not found: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
+                        case "FILE_NOT_FOUND" -> {
+                            LogUtils.warn(component, "File not found: " + ANSI.YELLOW + imagePath + ANSI.RESET
+                                    + ". Using the null image.");
+                            resourceImageCache.computeIfAbsent(name, k -> new HashMap<>()).put(rarity,
+                                    NullImage.frames(NullImage.Kind.RESOURCE, resourceImagedata.getUseCount()));
+                        }
 
                         // 画像読み込みエラーログ
                         case "BROKEN_FILE" -> LogUtils.error(component,
