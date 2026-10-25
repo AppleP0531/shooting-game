@@ -56,6 +56,7 @@ package "shooting_game" {
         SHOP
         GACHA
         ENCYCLOPEDIA
+        ACHIEVEMENT
         SELECTSTAGE
         NORMALSTAGE
         INFINITYSTAGE
@@ -784,6 +785,7 @@ package "shooting_game" {
             - shopBtn: JButton <<ショップ。SHOP へ遷移(バッグ画面から移動。解放前はグレーアウト)>>
             - gachaBtn: JButton <<ガチャ。GACHA へ遷移(ショップの右)>>
             - dexBtn: JButton <<図鑑。ENCYCLOPEDIA へ遷移(バッグ画面から移動)>>
+            - achievementBtn: JButton <<実績。ACHIEVEMENT へ遷移(図鑑ボタンの下)>>
             - viewingShipInd: int
             - ships: String[]
             --
@@ -934,6 +936,29 @@ package "shooting_game" {
             - getSprite(id: String): BufferedImage
             - drawDetail(g2: Graphics2D): void
             - buildStats(id: String): List<String>
+        }
+    }
+
+    package "achievementScene" {
+        class AchievementManager <<Singleton>> {
+            - {static} component: String
+            - {static} instance: AchievementManager
+            - MAIN: ShootingGameMain
+            - goBackBtn: JButton
+            - scrollOffset: double
+            - maxScroll: double
+            - message: String <<受け取りの結果>>
+            --
+            - AchievementManager()
+            - {static} px(base: double): int
+            + initComponents(): void
+            + {static} getInstance(): AchievementManager
+            - claim(a: Achievement): void
+            + setup(): void
+            + update(dt: double): void
+            - listArea(): Rectangle
+            + draw(g: Graphics): void
+            - drawRow(g2: Graphics2D, a: Achievement, x: int, y: int, w: int, h: int): void
         }
     }
 
@@ -1381,6 +1406,54 @@ package "shooting_game" {
             }
         }
 
+        package "achievement" {
+            class AchievementService <<Utility>> {
+                - {static} component: String
+                - {static} CONFIG_PATH: String <<AchievementConfig.json>>
+                - {static} CLAIMED_PREFIX: String = "ach:" <<受け取り済みの段の数。"mission:" と同じ接頭辞にしない>>
+                + {static} STAT_PREFIX: String = "stat:"
+                - {static} DERIVED_PREFIX: String = "derived:"
+                + {static} KILLS: String
+                + {static} BOSS_KILLS: String
+                + {static} ITEMS: String
+                + {static} COINS: String
+                + {static} PLAY_SECONDS: String
+                + {static} GAME_OVERS: String
+                - {static} achievements: List<Achievement>
+                --
+                - AchievementService()
+                - {static} ensureLoaded(): void
+                + {static} reload(): void
+                + {static} all(): List<Achievement>
+                - {static} store(): Map<String,Integer> <<progress.highScores を流用>>
+                + {static} add(metric: String, amount: int): void <<累計の指標に足す>>
+                + {static} value(metric: String): int
+                + {static} value(a: Achievement): int
+                + {static} reachedTiers(a: Achievement): int
+                + {static} claimedTiers(a: Achievement): int
+                + {static} canClaim(a: Achievement): boolean
+                + {static} claimableCount(): int
+                + {static} nextTier(a: Achievement): Tier
+                + {static} claim(a: Achievement): Reward <<届いた段をまとめて受け取る>>
+                + {static} shown(a: Achievement, raw: int): int <<divisor で割る表示用の値>>
+            }
+
+            class Tier <<record>> {
+                ~ goal: int
+                ~ reward: Reward
+            }
+
+            class Achievement <<record>> {
+                ~ id: String
+                ~ title: String
+                ~ description: String
+                ~ metric: String
+                ~ unit: String
+                ~ divisor: int
+                ~ tiers: List<Tier>
+            }
+        }
+
         package "farm" {
             class MaterialFarmService <<Utility>> {
                 + {static} STAGE_BASE: int = 1300 <<周回ステージ番号の起点>>
@@ -1568,7 +1641,9 @@ package "shooting_game" {
                 + {static} isClaimed(n: int): boolean
                 + {static} canClaim(n: int): boolean
                 + {static} claimableCount(): int
+                + {static} parseTier(t: JsonNode): Reward <<設定の1段分を報酬にする>>
                 + {static} claim(n: int): Reward
+                + {static} grant(r: Reward): void <<報酬を所持品へ入れる(★報酬・実績で共通)>>
                 + {static} claimAll(): Reward
                 - {static} store(): Map<String,Integer> <<progress.highScores を流用>>
             }
@@ -4059,6 +4134,8 @@ shooting_game.domain.unlock.UnlockService +-- Feature
 shooting_game.upgradeScene.SkillTreeLayout +-- Pattern
 shooting_game.upgradeScene.SkillTreeLayout +-- SkillTreeLayoutNode
 shooting_game.domain.star.StarRewardService +-- StarReward
+shooting_game.domain.achievement.AchievementService +-- Tier
+shooting_game.domain.achievement.AchievementService +-- Achievement
 shooting_game.shopScene.ShopSceneUI +-- CardData
 shooting_game.gameScene.stage.DifficultyService +-- MissionResult
 shooting_game.gameScene.bullet.barrage.AnchorMarkers +-- Marker
@@ -4082,6 +4159,15 @@ shooting_game.encyclopediaScene.EncyclopediaManager ..> shooting_game.domain.dex
 shooting_game.encyclopediaScene.EncyclopediaManager ..> shooting_game.gameScene.ship.ShipManager
 shooting_game.lobbyScene.LobbyManager ..> shooting_game.encyclopediaScene.EncyclopediaManager
 shooting_game.SceneManager --> shooting_game.encyclopediaScene.EncyclopediaManager
+
+' 実績
+shooting_game.lobbyScene.LobbyManager ..> shooting_game.achievementScene.AchievementManager
+shooting_game.SceneManager --> shooting_game.achievementScene.AchievementManager
+shooting_game.achievementScene.AchievementManager ..> shooting_game.domain.achievement.AchievementService
+shooting_game.domain.achievement.AchievementService ..> shooting_game.domain.star.StarRewardService
+shooting_game.domain.achievement.AchievementService ..> shooting_game.gameScene.stage.DifficultyService
+shooting_game.gameScene.ship.ShipManager ..> shooting_game.domain.achievement.AchievementService
+shooting_game.gameScene.GameManager ..> shooting_game.domain.achievement.AchievementService
 shooting_game.SceneManager ..> shooting_game.ui.CoinHud
 shooting_game.SceneManager --> shooting_game.gachaScene.GachaManager
 shooting_game.gachaScene.GachaManager ..> shooting_game.domain.gacha.GachaService
@@ -4240,6 +4326,7 @@ shooting_game.gameResultScene.subPanels.RewardListPanel --|> javax.swing.JPanel
 shooting_game.testScene.TestManager --|> javax.swing.JPanel
 shooting_game.bagScene.BagManager --|> javax.swing.JPanel
 shooting_game.encyclopediaScene.EncyclopediaManager --|> javax.swing.JPanel
+shooting_game.achievementScene.AchievementManager --|> javax.swing.JPanel
 shooting_game.stageScene.DifficultyPanel --|> javax.swing.JPanel
 shooting_game.stageScene.extra.ExtraStageManager --|> javax.swing.JPanel
 shooting_game.ui.ShooterScrollBarUI --|> javax.swing.plaf.basic.BasicScrollBarUI
@@ -4286,6 +4373,7 @@ shooting_game.testScene.TestManager ..|> shooting_game.interfaces.Manager
 shooting_game.data.DataManager ..|> shooting_game.interfaces.Manager
 shooting_game.bagScene.BagManager ..|> shooting_game.interfaces.Manager
 shooting_game.encyclopediaScene.EncyclopediaManager ..|> shooting_game.interfaces.Manager
+shooting_game.achievementScene.AchievementManager ..|> shooting_game.interfaces.Manager
 shooting_game.stageScene.extra.ExtraStageManager ..|> shooting_game.interfaces.Manager
 shooting_game.gameScene.damage.DamagePopupManager ..|> shooting_game.interfaces.Manager
 shooting_game.shopScene.ShopManager ..|> shooting_game.interfaces.Manager
