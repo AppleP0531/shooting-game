@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
+import com.game.shooting_game.domain.farm.MaterialFarmService;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
@@ -211,6 +212,33 @@ public final class StageManager implements Manager {
             return;
         for (int id = StageGenerator.FIRST_GENERATED; id <= StageGenerator.LAST_STAGE; id++)
             stageConfigMap.put("stage" + id, StageGenerator.generate(id, enemies, bosses));
+        generateFarmStages(enemies, bosses);
+    }
+
+    /**
+     * 素材周回ステージ(素材ごとに1つ)を作る。中身は同じ価値の通常ステージと同じ作りで、ウェーブを絞り、報酬をその素材だけにする
+     */
+    private void generateFarmStages(List<String> enemies, List<String> bosses) {
+        for (ResourceName res : MaterialFarmService.MATERIALS) {
+            int unlock = MaterialFarmService.unlockStage(res);
+            int base = Math.max(StageGenerator.FIRST_GENERATED, Math.min(StageGenerator.LAST_STAGE, unlock));
+            if (base % 5 == 0)
+                base++; // ボスのいないステージを土台にする
+            StageData d = StageGenerator.generate(base, enemies, bosses);
+            Map<String, EnemyConfig[]> waves = new java.util.LinkedHashMap<>();
+            for (Map.Entry<String, EnemyConfig[]> e : d.getEnemyList().entrySet()) {
+                if (waves.size() >= MaterialFarmService.wavesOf())
+                    break;
+                waves.put(e.getKey(), e.getValue());
+            }
+            d.setEnemyList(waves);
+            d.setRewardList(MaterialFarmService.rewards(res));
+            d.setCategory("MATERIAL");
+            d.setUnlock(unlock);
+            d.setTitle(res.getDisplayName() + "の周回");
+            d.setDescription(res.getDisplayName() + "を集めるための周回ステージ。\n手に入れたことのある素材だけが並ぶ。");
+            stageConfigMap.put("stage" + MaterialFarmService.stageId(res), d);
+        }
     }
 
     @Override
