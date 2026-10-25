@@ -84,6 +84,7 @@ public final class ItemManager implements Manager {
         REGEN, // 少量継続回復
         RAMPAGE, // 一時的に暴走状態になる
         ATK_UP, // 一定時間、攻撃力アップ
+        DURABLE_SHIELD, // ショップ専用(耐久シールド。耐久が尽きるまで被弾を吸う)
         SKIP_TICKET // ショップ専用(研究スキップ券。ステージには出ない)
     }
 

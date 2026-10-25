@@ -9,6 +9,7 @@ import com.game.shooting_game.gameScene.item.types.AtkUp;
 import com.game.shooting_game.gameScene.item.types.Bomb;
 import com.game.shooting_game.gameScene.item.types.Rampage;
 import com.game.shooting_game.gameScene.item.types.Regen;
+import com.game.shooting_game.gameScene.item.types.DurableShield;
 import com.game.shooting_game.gameScene.item.types.Freeze;
 import com.game.shooting_game.gameScene.item.types.Heal;
 import com.game.shooting_game.gameScene.item.types.LevelUp;
@@ -51,6 +52,7 @@ public class ItemFactory {
             case ItemKinds.REGEN -> new Regen(pos);
             case ItemKinds.RAMPAGE -> new Rampage(pos);
             case ItemKinds.ATK_UP -> new AtkUp(pos);
+            case ItemKinds.DURABLE_SHIELD -> new DurableShield(pos);
             case null -> null;
             default -> null;
         };
@@ -74,6 +76,7 @@ public class ItemFactory {
             case REGEN -> new Regen(pos);
             case RAMPAGE -> new Rampage(pos);
             case ATK_UP -> new AtkUp(pos);
+            case DURABLE_SHIELD -> new DurableShield(pos);
             case SKIP_TICKET -> null;
         };
     }
