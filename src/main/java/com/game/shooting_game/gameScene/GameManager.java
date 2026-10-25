@@ -33,6 +33,7 @@ import com.game.shooting_game.gameScene.beam.BeamManager;
 import com.game.shooting_game.gameScene.bullet.BulletManager;
 import com.game.shooting_game.gameScene.item.Item;
 import com.game.shooting_game.domain.achievement.AchievementService;
+import com.game.shooting_game.domain.chest.ChestService;
 import com.game.shooting_game.domain.farm.MaterialFarmService;
 import com.game.shooting_game.gameScene.item.ItemManager;
 import com.game.shooting_game.gameScene.ship.Ship;
@@ -94,6 +95,7 @@ public final class GameManager extends JPanel implements Manager {
     private int killCountSinceLastLevelUp; // 最近のレベルアップドロップからのキル数
     private int score;
     private int coin;
+    private int bossKills; // このステージで倒したボスの数(宝箱の鍵のドロップ用)
     private int hitCount; // このステージで受けた被弾の回数(HARDのミッション用)
     private double playTime; // このステージの経過時間(秒。ポーズ中は進まない)
     private boolean skipped; // スキップで報酬だけ受け取ったか(ミッションの対象外)
@@ -248,6 +250,7 @@ public final class GameManager extends JPanel implements Manager {
         score = 0;
         coin = 0;
         hitCount = 0;
+        bossKills = 0;
         playTime = 0;
         skipped = false;
         LogUtils.debug(component, "Mission HUD: stage=" + STAGE_M.getStageId() + ", difficulty="
@@ -491,6 +494,7 @@ public final class GameManager extends JPanel implements Manager {
             StageRewards.getInstance().setDifficultyLabel(diff == Difficulty.NORMAL ? "" : diff.getLabel());
 
             // 難易度ごとのミッション(スキップ・エンドレス・難易度を選べないステージでは判定しない)
+            int newStars = 0; // 今回新しく達成したミッション(★)の数
             if (!skipped && !endless && DifficultyService.selectable(STAGE_M.getStageId())) {
                 int starsBefore = DifficultyService.totalStars();
                 double hpRate = SHIP_M.getPlayer().getMaxHp() > 0
@@ -499,12 +503,18 @@ public final class GameManager extends JPanel implements Manager {
                 DifficultyService.MissionResult missionResult = DifficultyService.recordMissions(STAGE_M.getStageId(), diff,
                         hitCount, hpRate, playTime);
                 for (int i = 0; i < missionResult.newlyEarned().length; i++)
-                    if (missionResult.newlyEarned()[i])
+                    if (missionResult.newlyEarned()[i]) {
                         StageRewards.getInstance().getNewMissions().add(missionResult.missions().get(i).text());
+                        newStars++;
+                    }
                 StageRewards.getInstance().setMissionResult(missionResult);
                 StageRewards.getInstance().setStarsBefore(starsBefore);
                 StageRewards.getInstance().setStarsAfter(DifficultyService.totalStars());
             }
+
+            // 宝箱の鍵(初回クリア・ボス撃破・ミッションの★。スキップと無限モードでは出ない)
+            if (!skipped && !endless)
+                dropChestKeys(diff, firstClear, newStars);
 
             // コインの加算(難易度で増える)
             int coinGain = (int) Math.round(coin * diff.getRewardRate());
@@ -608,6 +618,29 @@ public final class GameManager extends JPanel implements Manager {
      */
     public double playerBulletDamage(Bullet bullet) {
         return bullet.getDamage() * DamageCalculator.bulletAttackRate();
+    }
+
+    /**
+     * ボスを倒したことの記録(宝箱の鍵のドロップ用)
+     */
+    public void addBossKill() {
+        bossKills++;
+    }
+
+    /**
+     * 宝箱の鍵のドロップ(初回クリアは確実、ボスは確率、ミッションの★は1つにつき銅の鍵1つ。結果の画面用にも記録する)
+     */
+    private void dropChestKeys(Difficulty diff, boolean firstClear, int newStars) {
+        java.util.Map<ChestService.Rank, Integer> got = StageRewards.getInstance().getKeys();
+        if (firstClear)
+            got.merge(ChestService.firstClearKey(diff), 1, Integer::sum);
+        if (bossKills > 0 && Math.random() < ChestService.BOSS_KEY_CHANCE)
+            got.merge(ChestService.bossKey(diff), 1, Integer::sum);
+        if (newStars > 0)
+            got.merge(ChestService.Rank.COPPER, Math.min(newStars, ChestService.MISSION_KEY_CAP), Integer::sum);
+        got.forEach(ChestService::addKey);
+        if (!got.isEmpty())
+            LogUtils.info(component, "Chest keys dropped: " + got);
     }
 
     /**
