@@ -32,6 +32,7 @@ import com.game.shooting_game.gameScene.bullet.Bullet;
 import com.game.shooting_game.gameScene.beam.BeamManager;
 import com.game.shooting_game.gameScene.bullet.BulletManager;
 import com.game.shooting_game.gameScene.item.Item;
+import com.game.shooting_game.domain.achievement.AchievementService;
 import com.game.shooting_game.domain.farm.MaterialFarmService;
 import com.game.shooting_game.gameScene.item.ItemManager;
 import com.game.shooting_game.gameScene.ship.Ship;
@@ -451,6 +452,13 @@ public final class GameManager extends JPanel implements Manager {
         LogUtils.info(component,
                 ANSI.YELLOW + (isClear ? "Game Clear" : "Game Over") + ANSI.RESET);
 
+        // 実績の累計(スキップは遊んでいないので数えない)
+        if (!skipped) {
+            AchievementService.add(AchievementService.PLAY_SECONDS, (int) playTime);
+            if (!isClear)
+                AchievementService.add(AchievementService.GAME_OVERS, 1);
+        }
+
         if (isClear) {
             UserData data = DataManager.getUserData();
 
@@ -502,6 +510,8 @@ public final class GameManager extends JPanel implements Manager {
             int coinGain = (int) Math.round(coin * diff.getRewardRate());
             data.getResources().setCoins(data.getResources().getCoins() + coinGain);
             StageRewards.getInstance().getResources().put(ResourceKinds.COIN, coinGain);
+            if (!skipped)
+                AchievementService.add(AchievementService.COINS, coinGain);
 
             // ステージ中に拾った素材をバックパックに追加
             for (Map.Entry<ResourceKinds, Integer> e : collectedResources.entrySet()) {
@@ -695,6 +705,7 @@ public final class GameManager extends JPanel implements Manager {
                     < Math.pow(picker.getPickupSize() + item.getCollisionSize(), 2)) {
                 item.effect();
                 item.destroySelf();
+                AchievementService.add(AchievementService.ITEMS, 1);
             }
         }
     }
