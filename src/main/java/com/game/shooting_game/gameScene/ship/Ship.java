@@ -346,8 +346,8 @@ public abstract class Ship implements Moveable, GameObject, Entity {
      * 特殊効果の輪(かかっている効果の色で、機体のまわりを光らせる)
      */
     private void drawStatusRing(Graphics2D g2) {
-        if (status.isEmpty())
-            return;
+        if (status.isEmpty() || (SM.getSceneName() != SceneType.GAME && SM.getSceneName() != SceneType.TEST))
+            return; // 特殊効果の輪は、ステージの中だけ
         double adj = ShootingGameMain.getScreenSizeAdj();
         double r = imageSize.getOrDefault("ship", 30) / 2.0 + 8 * adj;
         float pulse = (float) (0.6 + 0.4 * Math.sin(System.nanoTime() / 1.0e8));

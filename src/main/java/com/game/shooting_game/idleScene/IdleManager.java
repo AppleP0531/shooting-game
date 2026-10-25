@@ -242,7 +242,9 @@ public final class IdleManager extends JPanel implements Manager {
         g2.setColor(new Color(150, 170, 190));
         int ny = top2 + h2 + px(18);
         g2.drawString("たまる量は実際の周回の" + Math.round(IdleService.EFFICIENCY * 100) + "%、上限は" + IdleService.MAX_SECONDS / 3600
-                + "時間。レア素材は出ません。アプリを閉じていてもたまります。", margin, ny);
+                + "時間です。", margin, ny);
+        g2.drawString("レア素材は出ません。アプリを閉じていてもたまります。", margin, ny + px(14));
+        ny += px(14);
         if (!message.isEmpty()) {
             g2.setFont(new Font("SansSerif", Font.BOLD, Math.max(10, px(12))));
             g2.setColor(new Color(255, 230, 120));

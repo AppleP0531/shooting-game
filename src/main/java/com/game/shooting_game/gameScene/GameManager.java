@@ -264,6 +264,8 @@ public final class GameManager extends JPanel implements Manager {
         for (Manager m : managers) {
             m.setup();
         }
+        if (SHIP_M.getPlayer() != null)
+            SHIP_M.getPlayer().getStatus().clear(); // 前のステージの特殊効果を持ち越さない
 
         animation("start");
         setupDone = true;
@@ -409,6 +411,8 @@ public final class GameManager extends JPanel implements Manager {
      * @param g
      */
     private void updateEffectData() {
+        if (SHIP_M.getPlayer() == null)
+            return; // シーンの切り替え中など、自機がいない間は何もしない
         effectList.compute("OOC",
                 (k, v) -> SHIP_M.getPlayer().getOOCTimer() > 0 ? SHIP_M.getPlayer().getOOCTimer() : null);
         effectList.compute("Regen",
