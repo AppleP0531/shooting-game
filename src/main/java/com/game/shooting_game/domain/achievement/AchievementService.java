@@ -98,8 +98,8 @@ public final class AchievementService {
     /** 累計の指標に足す(int の上限で止まる。データがなければ何もしない) */
     public static void add(String metric, int amount) {
         Map<String, Integer> s = store();
-        if (s == null || amount <= 0)
-            return;
+        if (s == null || amount <= 0 || com.game.shooting_game.domain.trial.TrialService.isActive())
+            return; // お試し出撃では数えない
         s.merge(metric, amount, (a, b) -> (int) Math.min(Integer.MAX_VALUE, (long) a + b));
     }
 

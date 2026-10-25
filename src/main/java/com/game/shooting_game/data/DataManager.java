@@ -101,6 +101,8 @@ public final class DataManager implements Manager {
      * データ保存
      */
     public static synchronized void save() {
+        // お試し出撃の一時的な船データは、保存に入れない
+        com.game.shooting_game.domain.trial.TrialService.end();
         if (userData == null || userRepository == null) {
             LogUtils.error(component,
                     "Cannot save user data: UserData or UserRepository is not initialized.");
