@@ -574,9 +574,13 @@ package "shooting_game" {
                     - enemyChips: List<Rectangle>
                     - missions: List<Mission> <<空なら非表示>>
                     - missionStars: int
+                    - powerY: int
+                    - requiredPower: int <<0以下なら戦力値の行を出さない>>
+                    - ownPower: int
                     --
                     + StageInfoView(viewWidth: int)
                     + setData(highScore: int, rewards: List<Reward>, enemies: List<String>): void
+                    + setPower(required: int, own: int): void <<推定必要戦力値と自分の戦力値(足りる=緑/ぎりぎり=黄/不足=赤)>>
                     + setMissions(missions: List<Mission>, stars: int): void
                     - drawStar(g2: Graphics2D, x: int, y: int, size: int, filled: boolean): void
                     - layoutItems(): void
@@ -1471,6 +1475,26 @@ package "shooting_game" {
                 + {static} rewards(res: ResourceName): Map<ResourceName,Map<Rarity,String>>
                 + {static} markObtained(res: ResourceName): void <<progress.highScores を流用>>
                 + {static} obtained(res: ResourceName): boolean
+            }
+        }
+
+        package "power" {
+            class PowerService <<Utility>> {
+                + {static} BARELY_RATE: double = 0.8 <<自分の戦力値が必要戦力値のこの割合以上なら「ぎりぎり」>>
+                --
+                + {static} power(attackRate: double, durability: double): double <<100 × 火力倍率 × √(耐久 ÷ 100)>>
+                + {static} required(stageIndex: int, diff: Difficulty): double <<推定必要戦力値(基準 × ステージ・難易度のHP倍率 × √ダメージ倍率)>>
+                + {static} verdict(own: double, required: double): Verdict
+                + {static} durability(shipId: String): double <<最大HPとシールドの合計>>
+                + {static} attackRate(shipId: String): double <<火力の倍率(レベル・ランク・スキル・モジュール)>>
+                + {static} powerOf(shipId: String): double
+                + {static} currentPower(): double <<選んでいる機体の戦力値(データがなければ0)>>
+            }
+
+            enum Verdict <<PowerService>> {
+                ENOUGH <<足りる>>
+                BARELY <<ぎりぎり(80%以上)>>
+                SHORT <<不足>>
             }
         }
 
@@ -3552,6 +3576,7 @@ package "shooting_game" {
             - {static} endlessHpPerWave: double = 0.015
             - {static} enemyLevelHp: double = 0.2
             - {static} stageDamageGrowth: double = 1.004
+            - {static} requiredBase: double = 100.0
             - {static} loaded: boolean
             --
             - {static} ensureLoaded(): void
@@ -3561,6 +3586,7 @@ package "shooting_game" {
             + {static} endlessHpPerWave(): double
             + {static} enemyLevelHp(): double <<敵レベル1つごとに増える敵HPの割合>>
             + {static} stageDamageGrowth(): double <<ステージ1つごとの、敵から受けるダメージの倍率(指数)>>
+            + {static} requiredBase(): double <<ステージ1・ノーマルでの推定必要戦力値(戦力値の基準)>>
             + {static} stageHpRate(stageIndex: double): double <<ステージ番号に応じた敵HPの倍率>>
             + {static} enemyLevelHpRate(level: int): double <<敵レベルに応じた敵HPの倍率(1 + enemyLevelHp × level)>>
             + {static} stageDamageRate(stageIndex: double): double <<ステージ番号に応じた、敵から受けるダメージの倍率>>
@@ -4251,6 +4277,17 @@ shooting_game.gameScene.GameManager ..> shooting_game.domain.shop.ShopService
 shooting_game.gameScene.GameManager ..> shooting_game.domain.farm.MaterialFarmService
 shooting_game.gameScene.stage.StageManager ..> shooting_game.domain.farm.MaterialFarmService
 shooting_game.stageScene.extra.ExtraStageManager ..> shooting_game.domain.farm.MaterialFarmService
+shooting_game.domain.power.PowerService +-- Verdict
+shooting_game.domain.power.PowerService ..> shooting_game.gameScene.stage.Difficulty
+shooting_game.domain.power.PowerService ..> shooting_game.utils.GameBalance
+shooting_game.domain.power.PowerService ..> shooting_game.domain.unit.UnitService
+shooting_game.domain.power.PowerService ..> shooting_game.domain.skill.SkillService
+shooting_game.domain.power.PowerService ..> shooting_game.domain.module.ModuleService
+shooting_game.domain.power.PowerService ..> shooting_game.data.DataManager
+shooting_game.stageScene.normal.subPanels.StageDetailPanel ..> shooting_game.domain.power.PowerService
+shooting_game.stageScene.normal.subPanels.StageInfoView ..> shooting_game.domain.power.PowerService
+shooting_game.lobbyScene.LobbySceneUI ..> shooting_game.domain.power.PowerService
+shooting_game.stageScene.extra.ExtraStageManager ..> shooting_game.domain.power.PowerService
 shooting_game.gameScene.GameManager ..> shooting_game.gameScene.item.ItemFactory
 shooting_game.gameScene.ItemSlotButton ..> shooting_game.domain.shop.ShopService
 shooting_game.gameScene.ItemSlotButton --|> javax.swing.JButton
