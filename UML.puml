@@ -58,6 +58,7 @@ package "shooting_game" {
         ENCYCLOPEDIA
         ACHIEVEMENT
         CHEST
+        IDLE
         SELECTSTAGE
         NORMALSTAGE
         INFINITYSTAGE
@@ -793,6 +794,7 @@ package "shooting_game" {
             - dexBtn: JButton <<図鑑。ENCYCLOPEDIA へ遷移(バッグ画面から移動)>>
             - achievementBtn: JButton <<実績。ACHIEVEMENT へ遷移(図鑑ボタンの下)>>
             - chestBtn: JButton <<宝箱。CHEST へ遷移(実績ボタンの下)>>
+            - idleBtn: JButton <<放置。IDLE へ遷移(宝箱ボタンの下)>>
             - viewingShipInd: int
             - ships: String[]
             --
@@ -990,6 +992,33 @@ package "shooting_game" {
             + update(dt: double): void
             + draw(g: Graphics): void
             - drawSlot(g2: Graphics2D, slot: int, x: int, y: int, w: int, h: int, now: int): void
+            - drawCard(g2: Graphics2D, x: int, y: int, w: int, h: int, edge: Color): void
+            - drawButton(g2: Graphics2D, x: int, y: int, w: int, h: int, label: String, enabled: boolean): void
+        }
+    }
+
+    package "idleScene" {
+        class IdleManager <<Singleton>> {
+            - {static} component: String
+            - {static} instance: IdleManager
+            - MAIN: ShootingGameMain
+            - goBackBtn: JButton
+            - candidate: int <<選ぶ欄で見ているステージ>>
+            - message: String <<選ぶ・受け取りの結果>>
+            - repaintTimer: double
+            - hitAreas: List<Object[]> <<{判定の四角, 種類, 値}。描画のたびに作り直す>>
+            --
+            - IdleManager()
+            + {static} getInstance(): IdleManager
+            - {static} px(base: double): int
+            + initComponents(): void
+            - maxStage(): int
+            - handle(kind: String, value: int): void
+            - {static} describe(r: Reward): String
+            + setup(): void
+            + update(dt: double): void
+            + draw(g: Graphics): void
+            - {static} format(sec: int): String
             - drawCard(g2: Graphics2D, x: int, y: int, w: int, h: int, edge: Color): void
             - drawButton(g2: Graphics2D, x: int, y: int, w: int, h: int, label: String, enabled: boolean): void
         }
@@ -1613,6 +1642,41 @@ package "shooting_game" {
                 + {static} rewards(res: ResourceName): Map<ResourceName,Map<Rarity,String>>
                 + {static} markObtained(res: ResourceName): void <<progress.highScores を流用>>
                 + {static} obtained(res: ResourceName): boolean
+            }
+        }
+
+        package "idle" {
+            class IdleService <<Utility>> {
+                + {static} BASE_EPOCH_SEC: long = 1767225600 <<時刻の基準(2026-01-01 00:00 UTC)>>
+                + {static} MAX_SECONDS: int = 28800 <<たまる時間の上限(8時間)>>
+                + {static} EFFICIENCY: double = 0.3 <<実際の周回に対する効率>>
+                + {static} SECONDS_PER_WAVE: double = 25 <<1ウェーブの周回時間の見積もり(秒)>>
+                - {static} STAGE_KEY: String = "idle:stage" <<放置先のステージ番号>>
+                - {static} SINCE_KEY: String = "idle:since" <<数え始めた時刻(基準からの秒数)>>
+                --
+                - IdleService()
+                + {static} averageOf(range: String): double <<「最小~最大」の平均>>
+                + {static} cappedSeconds(elapsedSec: long): int <<上限で止まる。負は0>>
+                + {static} runsPerHour(waves: int): double
+                + {static} compute(elapsedSec: long, per: PerRun): Reward
+                + {static} estimate(stageId: int): PerRun <<1周ぶんの見積もり>>
+                - {static} coinsOf(e: EnemyConfig): double <<敵1体のコインの期待値>>
+                - {static} store(): Map<String,Integer> <<progress.highScores を流用>>
+                + {static} nowSec(): int <<基準からの秒数>>
+                + {static} stage(): int <<放置していなければ0>>
+                + {static} since(): int
+                + {static} elapsed(now: int): int
+                + {static} pending(now: int): Reward
+                + {static} canSelect(stageId: int): boolean <<クリア済み・戦力値が必要戦力値以上>>
+                + {static} select(stageId: int, now: int): boolean <<たまった分を先に受け取る>>
+                + {static} stop(now: int): void
+                + {static} claim(now: int): Reward <<数え直す。放置していなければ null>>
+            }
+
+            class PerRun <<record>> {
+                ~ coins: double
+                ~ resources: Map<ResourceKinds,Double>
+                ~ runsPerHour: double
             }
         }
 
@@ -4402,6 +4466,8 @@ shooting_game.gameScene.GameManager ..> shooting_game.domain.achievement.Achieve
 ' 宝箱と鍵
 shooting_game.lobbyScene.LobbyManager ..> shooting_game.chestScene.ChestManager
 shooting_game.SceneManager --> shooting_game.chestScene.ChestManager
+shooting_game.lobbyScene.LobbyManager ..> shooting_game.idleScene.IdleManager
+shooting_game.SceneManager --> shooting_game.idleScene.IdleManager
 shooting_game.chestScene.ChestManager ..> shooting_game.domain.chest.ChestService
 shooting_game.chestScene.ChestManager ..> shooting_game.domain.shop.ShopService
 shooting_game.domain.chest.ChestService ..> shooting_game.data.DataManager
@@ -4495,6 +4561,17 @@ shooting_game.gameScene.GameManager ..> shooting_game.domain.shop.ShopService
 shooting_game.gameScene.GameManager ..> shooting_game.domain.farm.MaterialFarmService
 shooting_game.gameScene.stage.StageManager ..> shooting_game.domain.farm.MaterialFarmService
 shooting_game.stageScene.extra.ExtraStageManager ..> shooting_game.domain.farm.MaterialFarmService
+shooting_game.domain.idle.IdleService +-- PerRun
+shooting_game.idleScene.IdleManager ..> shooting_game.domain.idle.IdleService
+shooting_game.idleScene.IdleManager ..> shooting_game.domain.power.PowerService
+shooting_game.idleScene.IdleManager ..> shooting_game.domain.star.StarRewardService
+shooting_game.idleScene.IdleManager ..> shooting_game.gameScene.stage.Difficulty
+shooting_game.domain.idle.IdleService ..> shooting_game.data.DataManager
+shooting_game.domain.idle.IdleService ..> shooting_game.domain.power.PowerService
+shooting_game.domain.idle.IdleService ..> shooting_game.domain.star.StarRewardService
+shooting_game.domain.idle.IdleService ..> shooting_game.gameScene.stage.Difficulty
+shooting_game.domain.idle.IdleService ..> shooting_game.gameScene.stage.StageManager
+shooting_game.domain.idle.IdleService ..> shooting_game.gameScene.ship.ShipManager
 shooting_game.domain.power.PowerService +-- Verdict
 shooting_game.domain.power.PowerService ..> shooting_game.gameScene.stage.Difficulty
 shooting_game.domain.power.PowerService ..> shooting_game.utils.GameBalance
@@ -4590,6 +4667,7 @@ shooting_game.bagScene.BagManager --|> javax.swing.JPanel
 shooting_game.encyclopediaScene.EncyclopediaManager --|> javax.swing.JPanel
 shooting_game.achievementScene.AchievementManager --|> javax.swing.JPanel
 shooting_game.chestScene.ChestManager --|> javax.swing.JPanel
+shooting_game.idleScene.IdleManager --|> javax.swing.JPanel
 shooting_game.stageScene.DifficultyPanel --|> javax.swing.JPanel
 shooting_game.stageScene.extra.ExtraStageManager --|> javax.swing.JPanel
 shooting_game.ui.ShooterScrollBarUI --|> javax.swing.plaf.basic.BasicScrollBarUI
@@ -4638,6 +4716,7 @@ shooting_game.bagScene.BagManager ..|> shooting_game.interfaces.Manager
 shooting_game.encyclopediaScene.EncyclopediaManager ..|> shooting_game.interfaces.Manager
 shooting_game.achievementScene.AchievementManager ..|> shooting_game.interfaces.Manager
 shooting_game.chestScene.ChestManager ..|> shooting_game.interfaces.Manager
+shooting_game.idleScene.IdleManager ..|> shooting_game.interfaces.Manager
 shooting_game.stageScene.extra.ExtraStageManager ..|> shooting_game.interfaces.Manager
 shooting_game.gameScene.damage.DamagePopupManager ..|> shooting_game.interfaces.Manager
 shooting_game.shopScene.ShopManager ..|> shooting_game.interfaces.Manager
