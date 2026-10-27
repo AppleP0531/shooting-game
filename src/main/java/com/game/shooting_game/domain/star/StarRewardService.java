@@ -72,7 +72,8 @@ public final class StarRewardService {
         tiers = loaded;
     }
 
-    private static Reward parseTier(JsonNode t) {
+    /** 設定の1段分(coins / skipTickets / resources)を報酬にする */
+    public static Reward parseTier(JsonNode t) {
         int coins = Math.max(0, t.path("coins").asInt(0));
         Map<ResourceKinds, Integer> res = new LinkedHashMap<>();
         JsonNode r = t.path("resources");
@@ -151,16 +152,21 @@ public final class StarRewardService {
     public static Reward claim(int n) {
         if (!canClaim(n))
             return null;
-        UserData ud = DataManager.getUserData();
         Reward r = rewardOf(n);
+        grant(r);
+        store().put(CLAIMED_PREFIX + n, 1);
+        return r;
+    }
+
+    /** 報酬を所持品へ入れる(★報酬・実績など、受け取りの共通の処理) */
+    public static void grant(Reward r) {
+        UserData ud = DataManager.getUserData();
         ud.getResources().setCoins(ud.getResources().getCoins() + r.coins());
         Map<ResourceKinds, Integer> eq = ud.getResources().getEquipments();
         for (Map.Entry<ResourceKinds, Integer> e : r.resources().entrySet())
             eq.merge(e.getKey(), e.getValue(), Integer::sum);
         if (r.skipTickets() > 0)
             store().merge("inv:" + ItemKinds.SKIP_TICKET.name(), r.skipTickets(), Integer::sum);
-        store().put(CLAIMED_PREFIX + n, 1);
-        return r;
     }
 
     /** 受け取れるものをすべて受け取る(合計を返す。無ければ null) */

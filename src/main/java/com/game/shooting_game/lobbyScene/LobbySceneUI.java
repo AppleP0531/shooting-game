@@ -16,6 +16,7 @@ import com.game.shooting_game.domain.module.ModuleStat;
 import com.game.shooting_game.domain.skill.SkillService;
 import com.game.shooting_game.domain.subship.SubShipRenderer;
 import com.game.shooting_game.domain.subship.SubShipService;
+import com.game.shooting_game.domain.power.PowerService;
 import com.game.shooting_game.domain.unit.UnitService;
 import com.game.shooting_game.gameScene.DamageCalculator;
 import com.game.shooting_game.gameScene.GameManager;
@@ -374,6 +375,7 @@ public class LobbySceneUI {
                 { "盾", String.valueOf(Math.round(shield)), shield / STAT_BASE },
                 { "会心率", String.format("%.1f%%", critRate), critRate / STAT_BASE },
                 { "会心威力", String.format("%.0f%%", critDmg), critDmg / STAT_BASE },
+                { "戦力値", String.format("%,d", Math.round(PowerService.powerOf(shipId))), 0.0 }, // バーなし(ステージ詳細の推定必要戦力値と比べる)
         };
 
         int x = (int) (10 * adj);

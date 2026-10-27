@@ -9,6 +9,8 @@ import java.util.Random;
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
+import com.game.shooting_game.gameScene.beam.BeamSpec;
+import com.game.shooting_game.gameScene.hazard.MeteorSpec;
 import com.game.shooting_game.gameScene.ship.EntranceType;
 import com.game.shooting_game.gameScene.stage.StageManager.EnemyConfig;
 import com.game.shooting_game.gameScene.stage.StageManager.StageData;
@@ -69,7 +71,77 @@ public final class StageGenerator {
                 list.put("wave" + w, wave(rnd, enemies, open, stageId, w == waves));
         }
         d.setEnemyList(list);
+        addGimmicks(d, stageId, waves, boss != null);
         return d;
+    }
+
+    // ギミックが入り始めるステージ番号
+    private static final int FENCE_FROM = 36; // レーザー柵
+    private static final int METEOR_FROM = 45; // 隕石
+
+    /**
+     * 通常ステージにギミック(レーザー柵・隕石)を混ぜる。ウェーブごとに、起きるかと種類を決める。
+     * 敵の並びの乱数とは別の乱数を使うので、敵の中身は変わらない。最初のウェーブとボスのウェーブには入れない。
+     */
+    private static void addGimmicks(StageData d, int stageId, int waves, boolean hasBoss) {
+        Random rnd = new Random(stageId * 104729L);
+        double chance = Math.min(0.5, 0.2 + (stageId - FIRST_GENERATED) / 400.0); // 進むほど増える
+        Map<String, BeamSpec[]> gimmicks = new LinkedHashMap<>();
+        Map<String, MeteorSpec[]> meteors = new LinkedHashMap<>();
+        int last = hasBoss ? waves - 1 : waves;
+        for (int w = 2; w <= last; w++) {
+            if (rnd.nextDouble() >= chance)
+                continue;
+            List<Integer> kinds = new ArrayList<>();
+            if (stageId >= FENCE_FROM)
+                kinds.add(0);
+            if (stageId >= METEOR_FROM)
+                kinds.add(1);
+            if (kinds.isEmpty())
+                continue;
+            if (kinds.get(rnd.nextInt(kinds.size())) == 0)
+                gimmicks.put("wave" + w, fence(stageId, rnd));
+            else
+                meteors.put("wave" + w, meteorShower(stageId, rnd));
+        }
+        if (!gimmicks.isEmpty())
+            d.setGimmicks(gimmicks);
+        if (!meteors.isEmpty())
+            d.setMeteors(meteors);
+    }
+
+    /** レーザー柵: 左右の壁から画面を横切るレーザーが、高さを変えて交互に、一定の間隔で光る(色が同じなら当たらない) */
+    static BeamSpec[] fence(int stageId, Random rnd) {
+        BeamSpec[] out = new BeamSpec[2];
+        double interval = Math.max(3.0, 4.6 - (stageId - FENCE_FROM) / 100.0);
+        double y = 230 + rnd.nextInt(80);
+        for (int i = 0; i < 2; i++) {
+            BeamSpec s = new BeamSpec();
+            s.setOrigin(i == 0 ? BeamSpec.Origin.WALL_LEFT : BeamSpec.Origin.WALL_RIGHT);
+            s.setY(i == 0 ? y : y + 120 + rnd.nextInt(50));
+            s.setColor("ALT");
+            s.setWarn(1.4);
+            s.setDuration(1.0);
+            s.setWidth(30);
+            s.setDamage(10 + stageId / 12.0);
+            s.setDelay(2.0 + i * interval / 2);
+            s.setInterval(interval);
+            out[i] = s;
+        }
+        return out;
+    }
+
+    /** 隕石: 上からランダムな位置に、一定の間隔で降ってくる(弾で壊せる) */
+    static MeteorSpec[] meteorShower(int stageId, Random rnd) {
+        MeteorSpec m = new MeteorSpec();
+        m.setDelay(2.0);
+        m.setInterval(Math.max(0.8, 1.7 - (stageId - METEOR_FROM) / 150.0));
+        m.setCount(0);
+        m.setRadius(15 + rnd.nextInt(10));
+        m.setVy(95 + stageId / 3.0);
+        m.setHp(25 + stageId / 2.0);
+        m.setDamage(14 + stageId / 8.0);
+        return new MeteorSpec[] { m };
     }
 
     private static EnemyConfig[] wave(Random rnd, List<String> enemies, int open, int stageId, boolean last) {

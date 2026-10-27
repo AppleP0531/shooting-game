@@ -37,4 +37,22 @@ class GameBalanceTest {
         assertThat(GameBalance.stageHpRate(3))
                 .isCloseTo(Math.pow(GameBalance.stageHpGrowth(), 2), within(1e-9));
     }
+
+    @Test
+    @DisplayName("敵レベルが上がるほど敵HPが増える(レベル0は等倍、負は0扱い)")
+    void enemyLevelHpRate() {
+        assertThat(GameBalance.enemyLevelHpRate(0)).isCloseTo(1.0, within(1e-9));
+        assertThat(GameBalance.enemyLevelHpRate(-3)).isCloseTo(1.0, within(1e-9));
+        assertThat(GameBalance.enemyLevelHpRate(1)).isCloseTo(1 + GameBalance.enemyLevelHp(), within(1e-9));
+        assertThat(GameBalance.enemyLevelHpRate(2)).isGreaterThan(GameBalance.enemyLevelHpRate(1));
+    }
+
+    @Test
+    @DisplayName("stageDamageRate は 1 から始まり、ステージが進むほど増える(HPより緩やか)")
+    void stageDamageRateMonotonic() {
+        assertThat(GameBalance.stageDamageRate(1)).isCloseTo(1.0, within(1e-9));
+        assertThat(GameBalance.stageDamageRate(0)).isCloseTo(1.0, within(1e-9));
+        assertThat(GameBalance.stageDamageRate(100)).isGreaterThan(GameBalance.stageDamageRate(50));
+        assertThat(GameBalance.stageDamageRate(200)).isLessThan(GameBalance.stageHpRate(200));
+    }
 }

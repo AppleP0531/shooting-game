@@ -37,6 +37,7 @@ public final class StageModifiers {
     private static double endlessHp = 1.0;
     private static double endlessDamage = 1.0;
     private static boolean bossStage = false; // ボスチャレンジか(難易度のボス用倍率をかける)
+    private static double stageDamage = 1.0; // ステージが進むほど敵から受けるダメージが増える倍率(stageDamageGrowth)
     private static double stageHp = 1.0; // ステージが進むほど敵のHPが増える倍率(BalanceConfig.json の stageHpGrowth)
 
     private StageModifiers() {
@@ -71,6 +72,7 @@ public final class StageModifiers {
     public static void load(Spec spec, Difficulty diff, int stageIndex, boolean boss) {
         bossStage = boss;
         stageHp = GameBalance.stageHpRate(stageIndex);
+        stageDamage = GameBalance.stageDamageRate(stageIndex);
         current = spec == null ? new Spec() : spec;
         difficulty = diff == null ? Difficulty.NORMAL : diff;
         endlessHp = 1.0;
@@ -108,7 +110,8 @@ public final class StageModifiers {
 
     /** ノーマルモードの、敵から受けるダメージの倍率の上限(ナイトメアの値。ボスチャレンジならボス用の倍率も込み) */
     public static double normalDamageCap(boolean boss) {
-        return Difficulty.NIGHTMARE.getEnemyDamageRate() * (boss ? Difficulty.NIGHTMARE.getBossDamageRate() : 1.0);
+        return GameBalance.stageDamageRate(NORMAL_STAGE_COUNT) * Difficulty.NIGHTMARE.getEnemyDamageRate()
+                * (boss ? Difficulty.NIGHTMARE.getBossDamageRate() : 1.0);
     }
 
     private static boolean active() {
@@ -134,10 +137,17 @@ public final class StageModifiers {
                 * GameBalance.stageHpRate(stageIndex);
     }
 
+    /**
+     * 敵のレベルに応じた敵HPの倍率(ゲーム中だけ。ボスは対象外)
+     */
+    public static double enemyLevelHpRate(int level) {
+        return active() ? GameBalance.enemyLevelHpRate(level) : 1.0;
+    }
+
     public static double enemyDamageRate() {
         if (!active())
             return 1.0;
-        double rate = current.getEnemyDamageRate() * difficulty.getEnemyDamageRate() * (bossStage ? difficulty.getBossDamageRate() : 1.0) * endlessDamage;
+        double rate = current.getEnemyDamageRate() * difficulty.getEnemyDamageRate() * (bossStage ? difficulty.getBossDamageRate() : 1.0) * endlessDamage * stageDamage;
         return isNormalStage() ? Math.min(rate, normalDamageCap(bossStage)) : rate;
     }
 

@@ -11,6 +11,9 @@ import java.util.Objects;
 import lombok.Getter;
 
 import com.game.shooting_game.bagScene.BagManager;
+import com.game.shooting_game.achievementScene.AchievementManager;
+import com.game.shooting_game.chestScene.ChestManager;
+import com.game.shooting_game.idleScene.IdleManager;
 import com.game.shooting_game.encyclopediaScene.EncyclopediaManager;
 import com.game.shooting_game.gameResultScene.GameResultManager;
 import com.game.shooting_game.gameScene.GameManager;
@@ -46,6 +49,9 @@ public final class SceneManager implements Manager {
         SHOP,
         GACHA,
         ENCYCLOPEDIA,
+        ACHIEVEMENT,
+        CHEST,
+        IDLE,
         SELECTSTAGE,
         NORMALSTAGE,
         INFINITYSTAGE,
@@ -76,6 +82,9 @@ public final class SceneManager implements Manager {
         register(SceneType.SHOP, ShopManager::getInstance);
         register(SceneType.GACHA, GachaManager::getInstance);
         register(SceneType.ENCYCLOPEDIA, EncyclopediaManager::getInstance);
+        register(SceneType.ACHIEVEMENT, AchievementManager::getInstance);
+        register(SceneType.CHEST, ChestManager::getInstance);
+        register(SceneType.IDLE, IdleManager::getInstance);
         register(SceneType.SELECTSTAGE, SelectStageManager::getInstance);
         register(SceneType.NORMALSTAGE, NormalStageManager::getInstance);
         register(SceneType.INFINITYSTAGE, InfinityStageManager::getInstance);
@@ -116,6 +125,11 @@ public final class SceneManager implements Manager {
         Manager current = getCurrentManager();
         if (current != null)
             current.setup();
+
+        // 初めて入った画面なら、操作のガイドを出す
+        var guide = com.game.shooting_game.domain.tutorial.TutorialService.forScene(sceneName.name());
+        if (guide != null)
+            com.game.shooting_game.ui.TutorialOverlay.getInstance().show(guide, null);
 
         // シーンロード完了ログ
         LogUtils.info(component,

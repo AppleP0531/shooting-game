@@ -1,5 +1,7 @@
 package com.game.shooting_game.domain.unit;
 
+import com.game.shooting_game.domain.skill.SkillService;
+
 import com.game.shooting_game.domain.cost.CostService;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -109,6 +111,45 @@ public final class UnitService {
     public static double baseShieldRate(String shipId) {
         var d = baseData(shipId);
         return d != null && d.getShieldRate() != null ? d.getShieldRate() : DEFAULT_SHIELD_RATE;
+    }
+
+    private static final double DEFAULT_ON_HIT_CHANCE = 0.1;
+
+    /** 機体ごとの、当たった敵にかける特殊効果(ShipConfig の onHitEffect。なければ null) */
+    public static com.game.shooting_game.gameScene.status.StatusEffect onHitEffect(String shipId) {
+        try {
+            var d = baseData(shipId);
+            return d == null ? null : com.game.shooting_game.gameScene.status.StatusEffect.parse(d.getOnHitEffect());
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    /** 機体ごとの、その特殊効果がかかる確率(ShipConfig の onHitChance。なければ0.1) */
+    public static double onHitChance(String shipId) {
+        try {
+            var d = baseData(shipId);
+            return d != null && d.getOnHitChance() != null ? d.getOnHitChance() : DEFAULT_ON_HIT_CHANCE;
+        } catch (RuntimeException e) {
+            return DEFAULT_ON_HIT_CHANCE;
+        }
+    }
+
+    /**
+     * 当たった敵に、機体の特殊効果をかけるか決めてかける
+     * 
+     * @param scale 確率にかける倍率(ビームのように、何度も当たる攻撃は小さくする)
+     */
+    public static void rollOnHit(String shipId, com.game.shooting_game.gameScene.ship.Ship target, double scale) {
+        if (shipId == null)
+            return;
+        var effect = onHitEffect(shipId);
+        if (effect == null)
+            return;
+        double chance = onHitChance(shipId) * (1 + SkillService.getBonus("ELEM_CHANCE")) * scale;
+        if (Math.random() < Math.min(1.0, chance))
+            target.applyStatus(effect, effect.getDefaultSeconds() * (1 + SkillService.getBonus("ELEM_TIME")),
+                    1 + SkillService.getBonus("ELEM_POWER"));
     }
 
     /** 機体ごとの、被弾後の無敵時間・秒(ShipConfig の invincibleTime。なければ1) */
