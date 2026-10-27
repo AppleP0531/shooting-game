@@ -116,6 +116,9 @@ public final class ShootingGameMain extends JPanel implements Runnable {
         frame.setVisible(true);
         frame.setResizable(false);
         frame.toFront(); // ウィンドウを最前面に移動
+        // チュートリアルの表示(全画面に重ねる。出ていない間は隠れている)
+        frame.getLayeredPane().add(com.game.shooting_game.ui.TutorialOverlay.getInstance(),
+                javax.swing.JLayeredPane.POPUP_LAYER);
 
         panel.start();
 

@@ -15,6 +15,7 @@ import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.SceneManager;
+import com.game.shooting_game.domain.power.PowerService;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.gameScene.GameManager;
@@ -163,6 +164,9 @@ public class StageDetailPanel extends JPanel {
                         DifficultyService.scaleRange(rarityEntry.getValue(), diff.getRewardRate())));
         }
         infoView.setData(DifficultyService.highScore(stageId, diff), rewards, getEnemyList(stageId));
+        // 戦力値(ステージ番号と難易度に応じた推定必要戦力値と、いまの機体の戦力値)
+        infoView.setPower((int) Math.round(PowerService.required(stageId, diff)),
+                (int) Math.round(PowerService.currentPower()));
         // ミッションは、星を集められるステージだけ見せる
         if (DifficultyService.selectable(stageId))
             infoView.setMissions(DifficultyService.missions(stageId, diff), DifficultyService.stars(stageId, diff));

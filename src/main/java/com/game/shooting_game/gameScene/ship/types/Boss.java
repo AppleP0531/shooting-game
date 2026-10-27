@@ -42,6 +42,12 @@ import com.game.shooting_game.utils.Vector2;
  * 流れ: 入場(無敵) → 戦闘 → ゲージ破壊 → 移行(無敵・弾消し・ドロップ) → 次のゲージの戦闘 … → 最後のゲージを削ると撃破
  */
 public class Boss extends Ship {
+    @Override
+    protected double statusResist(com.game.shooting_game.gameScene.status.StatusEffect effect) {
+        // ボスは効きにくい(感電は効かない。ほかは時間が半分)
+        return effect == com.game.shooting_game.gameScene.status.StatusEffect.SHOCK ? 0 : 0.5;
+    }
+
     private static final String component = "[Ship:Boss]";
 
     // ゲージの色(ゲージ番号順、足りなければ繰り返す)

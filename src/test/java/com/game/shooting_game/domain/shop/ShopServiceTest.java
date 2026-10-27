@@ -32,10 +32,11 @@ class ShopServiceTest {
     }
 
     @Test
-    @DisplayName("設定から3商品が読める")
+    @DisplayName("設定から4商品が読める")
     void items() {
         assertThat(ShopService.items()).extracting(ShopService.ShopItem::kind)
-                .containsExactly(ItemKinds.BOMB, ItemKinds.FREEZE, ItemKinds.SKIP_TICKET);
+                .containsExactly(ItemKinds.BOMB, ItemKinds.FREEZE, ItemKinds.DURABLE_SHIELD, ItemKinds.SKIP_TICKET);
+        assertThat(ShopService.find(ItemKinds.DURABLE_SHIELD).price()).isEqualTo(1200000);
         assertThat(ShopService.find(ItemKinds.BOMB).price()).isEqualTo(800000);
         assertThat(ShopService.find(ItemKinds.FREEZE).price()).isEqualTo(1000000);
         assertThat(ShopService.find(ItemKinds.SKIP_TICKET).price()).isEqualTo(1500000);

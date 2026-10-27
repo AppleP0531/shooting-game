@@ -21,6 +21,8 @@ import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
+import com.game.shooting_game.domain.farm.MaterialFarmService;
+import com.game.shooting_game.domain.power.PowerService;
 import com.game.shooting_game.gameScene.stage.DailyService;
 import com.game.shooting_game.gameScene.stage.Difficulty;
 import com.game.shooting_game.gameScene.stage.DifficultyService;
@@ -174,8 +176,9 @@ public final class ExtraStageManager extends JPanel implements Manager {
                 continue;
             int id = Integer.parseInt(key.substring(5));
             if (id > EXTRA_BASE_ID && id != EndlessWaves.STAGE_ID
-                    && category.equals(STAGE_M.getStageConfig().get(key).getCategory()))
-                ids.add(id);
+                    && category.equals(STAGE_M.getStageConfig().get(key).getCategory())
+                    && (!MaterialFarmService.isFarmStage(id) || MaterialFarmService.obtained(MaterialFarmService.resourceOf(id))))
+                ids.add(id); // 素材周回ステージは、手に入れたことのある素材だけ
         }
         ids.sort(Integer::compare);
         return ids;
@@ -350,7 +353,11 @@ public final class ExtraStageManager extends JPanel implements Manager {
                     rewards.add(ExtraDetailView.Reward.resource(new ResourceKinds(e.getKey(), r.getKey()),
                             DifficultyService.scaleRange(r.getValue(), diff.getRewardRate()), icon));
 
-        detailView.setData(d.getDescription(), conds, bossInfos, rewards, DifficultyService.highScore(id, diff));
+        // 推定必要戦力値(解放に要るステージ番号を目安にする)と、いまの機体の戦力値
+        String power = String.format("\n\n推定必要戦力値 %,d(あなた %,d)", Math.round(PowerService.required(stageIndex, diff)),
+                Math.round(PowerService.currentPower()));
+        detailView.setData((d.getDescription() == null ? "" : d.getDescription()) + power, conds, bossInfos, rewards,
+                DifficultyService.highScore(id, diff));
     }
 
     @Override

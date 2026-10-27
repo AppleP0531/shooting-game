@@ -3,6 +3,7 @@ package com.game.shooting_game.gameScene;
 import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.bullet.Bullet;
+import com.game.shooting_game.gameScene.item.ItemManager;
 import com.game.shooting_game.gameScene.ship.Ship;
 import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.gameScene.ship.types.Player;
@@ -40,6 +41,25 @@ public final class DamageCalculator {
         return DataManager.getUserData() == null ? null : DataManager.getUserData().getSelectedShip();
     }
 
+    // ----- 自機が受ける -----
+    /**
+     * 耐久シールドが吸ったあとの結果
+     *
+     * @param durability 吸ったあとの残りの耐久
+     * @param restDamage 吸いきれずに、シールド・HPへ回るダメージ
+     */
+    public record DurableAbsorb(double durability, double restDamage) {
+    }
+
+    /**
+     * 耐久シールドにダメージを吸わせる(耐久が尽きるまで吸い、残りを返す)
+     */
+    public static DurableAbsorb absorbDurable(double durability, double damage) {
+        double d = Math.max(durability, 0);
+        double absorbed = Math.min(d, Math.max(damage, 0));
+        return new DurableAbsorb(d - absorbed, damage - absorbed);
+    }
+
     // ----- 自機が敵に与える -----
     /**
      * 弾の火力倍率(スキル + 機体のレベル・★)
@@ -50,14 +70,16 @@ public final class DamageCalculator {
         Player p = player();
         if (p != null && p.getShipLevel() >= 5)
             rate *= 1 + SkillService.getBonus("OOC_DAMAGE");
-        return rate * UnitService.attackRate(shipId()) * (1 + ModuleService.stat(ModuleStat.ATK_PCT));
+        return rate * UnitService.attackRate(shipId()) * (1 + ModuleService.stat(ModuleStat.ATK_PCT))
+                * ItemManager.atkUpMultiplier();
     }
 
     /**
      * ビームの火力倍率(機体のレベル・★。ビーム自体の強化は発射時に反映済み)
      */
     public static double beamAttackRate() {
-        return UnitService.attackRate(shipId()) * (1 + ModuleService.stat(ModuleStat.ATK_PCT));
+        return UnitService.attackRate(shipId()) * (1 + ModuleService.stat(ModuleStat.ATK_PCT))
+                * ItemManager.atkUpMultiplier();
     }
 
     /**

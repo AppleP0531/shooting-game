@@ -137,6 +137,16 @@ public abstract class Bullet implements Moveable, GameObject, Entity {
      * @param target 当たった相手
      * @return 初めて当たったならtrue(ダメージを与えてよい)
      */
+    public void applyStatusTo(com.game.shooting_game.gameScene.ship.Ship target) {
+        var effect = com.game.shooting_game.gameScene.status.StatusEffect.parse(config.getEffect());
+        if (effect == null || Math.random() >= config.getEffectChance())
+            return;
+        target.applyStatus(effect, config.getEffectTime() > 0 ? config.getEffectTime() : effect.getDefaultSeconds());
+    }
+
+    /**
+     * 敵に当たったことを記録する(貫通弾は同じ相手に2度ダメージを与えない)
+     */
     public boolean registerHit(Object target) {
         return hitTargets.add(target);
     }

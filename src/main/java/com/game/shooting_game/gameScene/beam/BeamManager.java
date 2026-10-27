@@ -9,6 +9,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
 
 import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.domain.unit.UnitService;
 import com.game.shooting_game.gameScene.DamageCalculator;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.beam.Beam.State;
@@ -329,7 +330,12 @@ public final class BeamManager implements Manager {
                 // 自機と同じ色のビームは当たらない(弾と同じルール)
                 if (playing && beam.getMode() != player.getMode()
                         && beam.hitsCircle(player.getPos(), player.getCollisionSize()))
+                {
                     player.addDamage(DamageCalculator.toPlayer(beam.getDamage()));
+                    if (beam.getEffect() != null)
+                        player.applyStatus(beam.getEffect(),
+                                beam.getEffectTime() > 0 ? beam.getEffectTime() : beam.getEffect().getDefaultSeconds());
+                }
             } else if (tick) {
                 damageEnemies(beam);
             }
@@ -352,6 +358,8 @@ public final class BeamManager implements Manager {
 
             DamageCalculator.hitEnemy(s, DamageCalculator.beamToEnemy(
                     beam.getDamage() * beam.getDamageScale(), TICK, beam.getMode(), beam.getBossRate(), s));
+            // 自機の属性(ビームは何度も当たるので、1回あたりの確率は小さくする)
+            UnitService.rollOnHit(SHIP_M.getPlayer() == null ? null : SHIP_M.getPlayer().getShipId(), s, TICK);
         }
     }
 
