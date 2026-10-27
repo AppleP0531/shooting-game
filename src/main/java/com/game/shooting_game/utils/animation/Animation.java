@@ -76,7 +76,8 @@ public class Animation {
             return null; // 画像がない場合はnullを返す
         }
 
-        return images[currentFrame];
+        // コマ数より大きい番号になっても止まらないよう、最後のコマにとどめる(ダミー画像などで、コマ数が設定より少ないとき)
+        return images[Math.min(Math.max(currentFrame, 0), images.length - 1)];
     }
 
     /**

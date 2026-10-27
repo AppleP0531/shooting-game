@@ -1,0 +1,139 @@
+{
+  "achievements": [
+    {
+      "id": "kills",
+      "title": "撃破王",
+      "description": "敵を倒す",
+      "metric": "stat:kills",
+      "unit": "体",
+      "divisor": 1,
+      "tiers": [
+        {"goal":100,"coins":2000,"resources":{"GEAR":{"COMMON":5},"SCREW":{"COMMON":4}}},
+        {"goal":500,"coins":6000,"resources":{"GEAR":{"COMMON":10},"SCREW":{"COMMON":8}}},
+        {"goal":2000,"coins":15000,"skipTickets":1,"resources":{"ENERGY_CELL":{"COMMON":12},"CIRCUIT":{"COMMON":9},"GEAR":{"UNCOMMON":3}}},
+        {"goal":10000,"coins":40000,"resources":{"ENERGY_CELL":{"COMMON":16},"CIRCUIT":{"COMMON":12},"GEAR":{"UNCOMMON":4}}},
+        {"goal":50000,"coins":100000,"skipTickets":2,"resources":{"PLASMA_CORE":{"COMMON":6},"CRYSTAL_SHARD":{"UNCOMMON":3},"GEAR":{"RARE":2}}}
+      ]
+    },
+    {
+      "id": "bossKills",
+      "title": "ボスハンター",
+      "description": "ボスを倒す",
+      "metric": "stat:bossKills",
+      "unit": "体",
+      "divisor": 1,
+      "tiers": [
+        {"goal":1,"coins":2000,"resources":{"GEAR":{"COMMON":5},"SCREW":{"COMMON":4}}},
+        {"goal":10,"coins":6000,"resources":{"GEAR":{"COMMON":10},"SCREW":{"COMMON":8}}},
+        {"goal":50,"coins":15000,"skipTickets":1,"resources":{"ENERGY_CELL":{"COMMON":12},"CIRCUIT":{"COMMON":9},"GEAR":{"UNCOMMON":3}}},
+        {"goal":200,"coins":40000,"resources":{"ENERGY_CELL":{"COMMON":16},"CIRCUIT":{"COMMON":12},"GEAR":{"UNCOMMON":4}}},
+        {"goal":1000,"coins":100000,"skipTickets":2,"resources":{"PLASMA_CORE":{"COMMON":6},"CRYSTAL_SHARD":{"UNCOMMON":3},"GEAR":{"RARE":2}}}
+      ]
+    },
+    {
+      "id": "items",
+      "title": "拾い屋",
+      "description": "アイテムを拾う",
+      "metric": "stat:items",
+      "unit": "個",
+      "divisor": 1,
+      "tiers": [
+        {"goal":50,"coins":2000,"resources":{"GEAR":{"COMMON":5},"SCREW":{"COMMON":4}}},
+        {"goal":300,"coins":6000,"resources":{"GEAR":{"COMMON":10},"SCREW":{"COMMON":8}}},
+        {"goal":1500,"coins":15000,"skipTickets":1,"resources":{"ENERGY_CELL":{"COMMON":12},"CIRCUIT":{"COMMON":9},"GEAR":{"UNCOMMON":3}}},
+        {"goal":6000,"coins":40000,"resources":{"ENERGY_CELL":{"COMMON":16},"CIRCUIT":{"COMMON":12},"GEAR":{"UNCOMMON":4}}},
+        {"goal":20000,"coins":100000,"skipTickets":2,"resources":{"PLASMA_CORE":{"COMMON":6},"CRYSTAL_SHARD":{"UNCOMMON":3},"GEAR":{"RARE":2}}}
+      ]
+    },
+    {
+      "id": "coins",
+      "title": "コイン稼ぎ",
+      "description": "ステージでコインを稼ぐ",
+      "metric": "stat:coins",
+      "unit": "コイン",
+      "divisor": 1,
+      "tiers": [
+        {"goal":10000,"coins":2000,"resources":{"GEAR":{"COMMON":5},"SCREW":{"COMMON":4}}},
+        {"goal":100000,"coins":6000,"resources":{"GEAR":{"COMMON":10},"SCREW":{"COMMON":8}}},
+        {"goal":1000000,"coins":15000,"skipTickets":1,"resources":{"ENERGY_CELL":{"COMMON":12},"CIRCUIT":{"COMMON":9},"GEAR":{"UNCOMMON":3}}},
+        {"goal":10000000,"coins":40000,"resources":{"ENERGY_CELL":{"COMMON":16},"CIRCUIT":{"COMMON":12},"GEAR":{"UNCOMMON":4}}},
+        {"goal":100000000,"coins":100000,"skipTickets":2,"resources":{"PLASMA_CORE":{"COMMON":6},"CRYSTAL_SHARD":{"UNCOMMON":3},"GEAR":{"RARE":2}}}
+      ]
+    },
+    {
+      "id": "playTime",
+      "title": "やりこみ",
+      "description": "ステージで遊んだ時間",
+      "metric": "stat:playSeconds",
+      "unit": "分",
+      "divisor": 60,
+      "tiers": [
+        {"goal":600,"coins":2000,"resources":{"GEAR":{"COMMON":5},"SCREW":{"COMMON":4}}},
+        {"goal":3600,"coins":6000,"resources":{"GEAR":{"COMMON":10},"SCREW":{"COMMON":8}}},
+        {"goal":18000,"coins":15000,"skipTickets":1,"resources":{"ENERGY_CELL":{"COMMON":12},"CIRCUIT":{"COMMON":9},"GEAR":{"UNCOMMON":3}}},
+        {"goal":86400,"coins":40000,"resources":{"ENERGY_CELL":{"COMMON":16},"CIRCUIT":{"COMMON":12},"GEAR":{"UNCOMMON":4}}},
+        {"goal":360000,"coins":100000,"skipTickets":2,"resources":{"PLASMA_CORE":{"COMMON":6},"CRYSTAL_SHARD":{"UNCOMMON":3},"GEAR":{"RARE":2}}}
+      ]
+    },
+    {
+      "id": "gameOvers",
+      "title": "七転び八起き",
+      "description": "ゲームオーバーになる",
+      "metric": "stat:gameOvers",
+      "unit": "回",
+      "divisor": 1,
+      "tiers": [
+        {"goal":1,"coins":2000,"resources":{"GEAR":{"COMMON":5},"SCREW":{"COMMON":4}}},
+        {"goal":10,"coins":6000,"resources":{"GEAR":{"COMMON":10},"SCREW":{"COMMON":8}}},
+        {"goal":50,"coins":15000,"skipTickets":1,"resources":{"ENERGY_CELL":{"COMMON":12},"CIRCUIT":{"COMMON":9},"GEAR":{"UNCOMMON":3}}},
+        {"goal":200,"coins":40000,"resources":{"ENERGY_CELL":{"COMMON":16},"CIRCUIT":{"COMMON":12},"GEAR":{"UNCOMMON":4}}},
+        {"goal":1000,"coins":100000,"skipTickets":2,"resources":{"PLASMA_CORE":{"COMMON":6},"CRYSTAL_SHARD":{"UNCOMMON":3},"GEAR":{"RARE":2}}}
+      ]
+    },
+    {
+      "id": "cleared",
+      "title": "踏破",
+      "description": "ステージを進める(クリア済みの最大の番号)",
+      "metric": "derived:cleared",
+      "unit": "面",
+      "divisor": 1,
+      "tiers": [
+        {"goal":5,"coins":2000,"resources":{"GEAR":{"COMMON":5},"SCREW":{"COMMON":4}}},
+        {"goal":20,"coins":6000,"resources":{"GEAR":{"COMMON":10},"SCREW":{"COMMON":8}}},
+        {"goal":50,"coins":15000,"skipTickets":1,"resources":{"ENERGY_CELL":{"COMMON":12},"CIRCUIT":{"COMMON":9},"GEAR":{"UNCOMMON":3}}},
+        {"goal":100,"coins":40000,"resources":{"ENERGY_CELL":{"COMMON":16},"CIRCUIT":{"COMMON":12},"GEAR":{"UNCOMMON":4}}},
+        {"goal":200,"coins":100000,"skipTickets":2,"resources":{"PLASMA_CORE":{"COMMON":6},"CRYSTAL_SHARD":{"UNCOMMON":3},"GEAR":{"RARE":2}}}
+      ]
+    },
+    {
+      "id": "stars",
+      "title": "ミッションコレクター",
+      "description": "ミッションの★を集める",
+      "metric": "derived:stars",
+      "unit": "個",
+      "divisor": 1,
+      "tiers": [
+        {"goal":10,"coins":2000,"resources":{"GEAR":{"COMMON":5},"SCREW":{"COMMON":4}}},
+        {"goal":50,"coins":6000,"resources":{"GEAR":{"COMMON":10},"SCREW":{"COMMON":8}}},
+        {"goal":150,"coins":15000,"skipTickets":1,"resources":{"ENERGY_CELL":{"COMMON":12},"CIRCUIT":{"COMMON":9},"GEAR":{"UNCOMMON":3}}},
+        {"goal":400,"coins":40000,"resources":{"ENERGY_CELL":{"COMMON":16},"CIRCUIT":{"COMMON":12},"GEAR":{"UNCOMMON":4}}},
+        {"goal":800,"coins":100000,"skipTickets":2,"resources":{"PLASMA_CORE":{"COMMON":6},"CRYSTAL_SHARD":{"UNCOMMON":3},"GEAR":{"RARE":2}}}
+      ]
+    },
+    {
+      "id": "endless",
+      "title": "無限の彼方",
+      "description": "無限モードで到達したウェーブ",
+      "metric": "derived:endlessWave",
+      "unit": "ウェーブ",
+      "divisor": 1,
+      "tiers": [
+        {"goal":10,"coins":2000,"resources":{"GEAR":{"COMMON":5},"SCREW":{"COMMON":4}}},
+        {"goal":30,"coins":6000,"resources":{"GEAR":{"COMMON":10},"SCREW":{"COMMON":8}}},
+        {"goal":60,"coins":15000,"skipTickets":1,"resources":{"ENERGY_CELL":{"COMMON":12},"CIRCUIT":{"COMMON":9},"GEAR":{"UNCOMMON":3}}},
+        {"goal":100,"coins":40000,"resources":{"ENERGY_CELL":{"COMMON":16},"CIRCUIT":{"COMMON":12},"GEAR":{"UNCOMMON":4}}},
+        {"goal":200,"coins":100000,"skipTickets":2,"resources":{"PLASMA_CORE":{"COMMON":6},"CRYSTAL_SHARD":{"UNCOMMON":3},"GEAR":{"RARE":2}}}
+      ]
+    }
+  ]
+}

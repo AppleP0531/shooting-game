@@ -73,7 +73,7 @@ public final class ConvertService {
             eq.put(fromKey, left);
         eq.merge(toKey, n, Integer::sum);
 
-        LogUtils.systemLog("[INFO]", component,
+        LogUtils.info(component,
                 ANSI.YELLOW + name + ANSI.RESET + " " + from + " x" + (n * RATE) + " -> " + to + " x" + n + ".");
         return n;
     }

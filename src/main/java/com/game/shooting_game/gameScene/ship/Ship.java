@@ -27,6 +27,9 @@ import com.game.shooting_game.gameScene.bullet.BulletFactory;
 import com.game.shooting_game.gameScene.bullet.BulletManager;
 import com.game.shooting_game.gameScene.bullet.BulletManager.BulletConfig;
 import com.game.shooting_game.gameScene.bullet.BulletManager.BulletKinds;
+import com.game.shooting_game.gameScene.stage.StageModifiers;
+import com.game.shooting_game.gameScene.status.StatusEffect;
+import com.game.shooting_game.gameScene.status.StatusSet;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipConfig;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipDefinition;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
@@ -126,6 +129,8 @@ public abstract class Ship implements Moveable, GameObject, Entity {
             ShipConfig datas = def.getDatas();
 
             maxHp = hp = datas.getHp() > 0 ? datas.getHp() : 100; // 未設定なら100
+            if (owner == ShipKinds.ENEMY)
+                maxHp = hp *= StageModifiers.enemyHpRate() * StageModifiers.enemyLevelHpRate(level); // 難易度・ステージ条件・敵レベルによる敵の硬さはHPで表す(防御力は変えない)
             collisionSize = datas.getCollisionSize() * ShootingGameMain.getScreenSizeAdj() * sizeScale();
             imageSize.put("ship", (int) (datas.getImageSize() * ShootingGameMain.getScreenSizeAdj() * sizeScale()));
             speed = datas.getSpeed() * ShootingGameMain.getScreenSizeAdj();
@@ -231,6 +236,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
         // 透明度を1に戻す
         g2.setComposite(AlphaComposite.SrcOver);
         drawAffixRing(g2);
+        drawStatusRing(g2);
     }
 
     @Override
@@ -286,6 +292,79 @@ public abstract class Ship implements Moveable, GameObject, Entity {
     /**
      * エフェクトによる毎フレームの効果(再生・連射)
      */
+    protected final StatusSet status = new StatusSet(); // かかっている特殊効果(毒・炎・鈍足・感電)
+
+    public StatusSet getStatus() {
+        return status;
+    }
+
+    /**
+     * 特殊効果を受ける
+     * 
+     * @param effect  効果
+     * @param seconds 時間(秒)
+     */
+    public void applyStatus(StatusEffect effect, double seconds) {
+        applyStatus(effect, seconds, 1.0);
+    }
+
+    /**
+     * 特殊効果を受ける(強さつき)
+     * 
+     * @param power 強さの倍率(継続ダメージ・脆弱の増え幅)
+     */
+    public void applyStatus(StatusEffect effect, double seconds, double power) {
+        status.apply(effect, seconds * statusResist(effect), power);
+    }
+
+    /**
+     * 特殊効果への耐性(時間にかける倍率。0なら効かない)。ボスは効きにくい
+     */
+    protected double statusResist(StatusEffect effect) {
+        return 1.0;
+    }
+
+    /**
+     * 特殊効果の時間を進め、継続ダメージを与える(実際の経過時間で呼ぶ。動きが止まっていても進む)
+     */
+    public void tickStatus(double dt) {
+        if (status.isEmpty())
+            return;
+        double fraction = status.update(dt);
+        if (fraction > 0 && hp > 0)
+            dotDamage(maxHp * fraction);
+    }
+
+    /**
+     * 継続ダメージ(毒・炎。無敵時間やシールドを使わない)
+     */
+    protected void dotDamage(double amount) {
+        addDamage(amount);
+    }
+
+    /**
+     * 特殊効果の輪(かかっている効果の色で、機体のまわりを光らせる)
+     */
+    private void drawStatusRing(Graphics2D g2) {
+        if (status.isEmpty() || (SM.getSceneName() != SceneType.GAME && SM.getSceneName() != SceneType.TEST))
+            return; // 特殊効果の輪は、ステージの中だけ
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        double r = imageSize.getOrDefault("ship", 30) / 2.0 + 8 * adj;
+        float pulse = (float) (0.6 + 0.4 * Math.sin(System.nanoTime() / 1.0e8));
+        g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+        int i = 0;
+        for (StatusEffect e : status.active()) {
+            Color c = e.getColor();
+            double rr = r + i * 3 * adj;
+            g2.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (60 * pulse)));
+            g2.fill(new java.awt.geom.Ellipse2D.Double(pos.getX() - rr, pos.getY() - rr, rr * 2, rr * 2));
+            g2.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (220 * pulse)));
+            g2.setStroke(new java.awt.BasicStroke((float) (1.5 * adj)));
+            g2.draw(new java.awt.geom.Ellipse2D.Double(pos.getX() - rr, pos.getY() - rr, rr * 2, rr * 2));
+            i++;
+        }
+    }
+
     private void updateAffix(double dt) {
         if (affix == EnemyAffix.REGEN && hp > 0)
             hp = Math.min(maxHp, hp + maxHp * EnemyAffix.REGEN_RATE_PER_SEC * dt);
@@ -375,9 +454,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
                         }
                         default -> {
                             // 不明な値ログ
-                            LogUtils.systemLog(
-                                    "[WARN]",
-                                    component,
+                            LogUtils.warn(component,
                                     "Unexpected value assigned to " + ANSI.YELLOW + "bulletVecRef" + ANSI.RESET);
                             return;
                         }
@@ -394,9 +471,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
                             config.getDirection()));
                 } else
                     // 基準vecの未定義ログ
-                    LogUtils.systemLog(
-                            "[WARN]",
-                            component,
+                    LogUtils.warn(component,
                             "Missing refercence: " + ANSI.YELLOW + id + " - Lv" + shipLevel + " - bulletVecRef"
                                     + ANSI.RESET);
 
@@ -503,8 +578,13 @@ public abstract class Ship implements Moveable, GameObject, Entity {
      * @return ドロップ量
      */
     public int getDropCoinAmount() {
-        String range = coins;
+        return rollCoinAmount(coins);
+    }
 
+    /**
+     * コインの範囲("最小~最大")から、ドロップ量を決める。読めない書き方なら0。
+     */
+    public static int rollCoinAmount(String range) {
         try {
             String[] num = range.split("~");
             int min = Integer.parseInt(num[0]);
@@ -522,6 +602,8 @@ public abstract class Ship implements Moveable, GameObject, Entity {
      * @param amount 回復量
      */
     public void heal(double amount) {
+        if (status.blocksHeal())
+            return; // 毒の間は回復できない
         hp += amount;
         hp = Math.min(hp, maxHp);
     }
@@ -534,6 +616,7 @@ public abstract class Ship implements Moveable, GameObject, Entity {
     public void addDamage(double damage) {
         // シールドを持っていなければダメージを受ける
         if (shieldTimer <= 0) {
+            damage *= status.damageTakenRate(); // 脆弱の間は増える
             hp -= damage;
             DamagePopupManager.getInstance().add(this, damage, critHit);
         }

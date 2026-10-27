@@ -60,9 +60,7 @@ public class PausePanel extends JPanel {
             UIBuilder.closePanel(this);
             GM.resume(); // 3・2・1を数えてから再開する
             // 再開ログ
-            LogUtils.systemLog(
-                    "[INFO]",
-                    component,
+            LogUtils.info(component,
                     ANSI.YELLOW + "Game Resumed" + ANSI.RESET);
         });
         this.add(resumeBtn);
@@ -95,9 +93,7 @@ public class PausePanel extends JPanel {
      */
     public void showPausePanel() {
         // ポーズログ
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
+        LogUtils.info(component,
                 ANSI.YELLOW + "Game Paused" + ANSI.RESET);
 
         UIBuilder.openPanel(this, "Pause", true, () -> {

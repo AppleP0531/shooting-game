@@ -26,7 +26,7 @@ import com.game.shooting_game.utils.Vector2;
  * - ゲームオーバーまで続く。到達したウェーブに応じて報酬が出る。
  */
 public final class EndlessWaves {
-    public static final int STAGE_ID = 200;
+    public static final int STAGE_ID = 1200;
     public static final String BEST_WAVE_KEY = "endless:wave"; // 最高到達ウェーブ(highScoresに保存)
     private static final int MAX_SOURCE_STAGE = 28;
     private static final int BOSS_EVERY = 10;
@@ -41,6 +41,20 @@ public final class EndlessWaves {
     }
 
     private EndlessWaves() {
+    }
+
+    /**
+     * 自動スキップで飛ぶ先のウェーブ(実際に戦い始めるウェーブ)
+     * スキル「助走」を強化していると、最高到達ウェーブの skillBonus ウェーブ前から始まる(最低1)。
+     *
+     * @param skillBonus スキル「助走」の効果の値(ENDLESS_SKIP。最高ウェーブの何ウェーブ前から始めるか。0なら飛ばさない)
+     * @param bestWave   これまでの最高到達ウェーブ
+     */
+    public static int skipTarget(double skillBonus, int bestWave) {
+        int before = (int) Math.max(0, skillBonus);
+        if (before == 0)
+            return 1;
+        return Math.max(1, Math.max(0, bestWave) - before);
     }
 
     private static boolean hasBoss(EnemyConfig[] enemies) {
@@ -128,6 +142,7 @@ public final class EndlessWaves {
             return r;
         Rarity rarity = tier(cleared);
         r.put(new ResourceKinds(ResourceName.MODULE_CHIP, rarity), n);
+        r.put(new ResourceKinds(ResourceName.RANK_CORE, Rarity.COMMON), n); // ランクアップ素材
         ResourceName[] pool = { ResourceName.GEAR, ResourceName.SCREW, ResourceName.COPPER_PLATE,
                 ResourceName.IRON_BAR };
         r.merge(new ResourceKinds(pool[ThreadLocalRandom.current().nextInt(pool.length)], rarity),

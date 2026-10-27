@@ -56,7 +56,7 @@ public final class SkillService {
                 for (SkillTreeData d : config)
                     byName.put(d.getName(), d);
             } catch (IOException e) {
-                LogUtils.error("[ERROR]", component,
+                LogUtils.error(component,
                         "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + ANSI.RESET, e);
             }
         }
@@ -80,7 +80,12 @@ public final class SkillService {
     public static int getLevel(String name) {
         tickResearch(); // 研究が終わっていればレベルに反映する
         Map<String, Integer> up = upgrades();
-        return up == null ? 0 : up.getOrDefault(name, 0);
+        if (up == null)
+            return 0;
+        int level = up.getOrDefault(name, 0);
+        // 最大レベルを下げた後の古いセーブ(Lv10 / 1 のように超えている)は、最大レベルとして扱う
+        SkillTreeData d = find(name);
+        return d == null ? level : Math.min(level, d.getMaxLevel());
     }
 
     /**
@@ -114,10 +119,26 @@ public final class SkillService {
             double sum = 0;
             for (SkillTreeData d : getConfig()) {
                 if (k.equals(d.getEffect()))
-                    sum += getLevel(d.getName()) * d.getPerLevel();
+                    sum += Math.min(getLevel(d.getName()), d.getMaxLevel()) * d.getPerLevel(); // 最大レベルを下げた後の古いセーブ対策
             }
             return sum;
         });
+    }
+
+    /**
+     * 効果量の合計(指定した機体。選択中でなくてもよい。持っていない機体は0)
+     */
+    public static double getBonusFor(String shipId, String effect) {
+        UserData ud = DataManager.getUserData();
+        var stats = ud == null ? null : ud.getShips().get(shipId);
+        if (stats == null)
+            return 0;
+        double sum = 0;
+        for (SkillTreeData d : getConfig()) {
+            if (effect.equals(d.getEffect()))
+                sum += Math.min(stats.getUpgrades().getOrDefault(d.getName(), 0), d.getMaxLevel()) * d.getPerLevel();
+        }
+        return sum;
     }
 
     public static synchronized void invalidate() {
@@ -224,7 +245,7 @@ public final class SkillService {
         st.setResearchFinishAt(0);
         invalidate();
 
-        LogUtils.systemLog("[INFO]", component,
+        LogUtils.info(component,
                 ANSI.YELLOW + name + ANSI.RESET + " research completed. Lv" + st.getUpgrades().get(name) + ".");
         return true;
     }
@@ -241,6 +262,35 @@ public final class SkillService {
 
     public static boolean isMaxLevel(SkillTreeData d) {
         return getLevel(d.getName()) >= d.getMaxLevel();
+    }
+
+    /**
+     * 名前でスキルを探す(大文字小文字は区別しない。コマンド用)
+     */
+    public static SkillTreeData findIgnoreCase(String name) {
+        for (SkillTreeData d : getConfig())
+            if (d.getName().equalsIgnoreCase(name))
+                return d;
+        return null;
+    }
+
+    /**
+     * レベルを直接設定する(コスト・研究時間・解放条件は見ない。管理用)
+     * 0〜最大レベルの範囲に収める。0にすると強化の記録を消す。
+     *
+     * @return 設定後のレベル(選択中の機体がなければ -1)
+     */
+    public static synchronized int setLevel(SkillTreeData d, int level) {
+        Map<String, Integer> up = upgrades();
+        if (d == null || up == null)
+            return -1;
+        int lv = Math.max(0, Math.min(d.getMaxLevel(), level));
+        if (lv == 0)
+            up.remove(d.getName());
+        else
+            up.put(d.getName(), lv);
+        invalidate();
+        return lv;
     }
 
     /**
@@ -270,7 +320,7 @@ public final class SkillService {
         st.setResearchSkill(name);
         st.setResearchFinishAt(System.currentTimeMillis() + sec * 1000);
 
-        LogUtils.systemLog("[INFO]", component,
+        LogUtils.info(component,
                 ANSI.YELLOW + name + ANSI.RESET + " research started (" + formatTime(sec) + ").");
         return true;
     }

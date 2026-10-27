@@ -15,6 +15,7 @@ import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.SceneManager;
+import com.game.shooting_game.domain.power.PowerService;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.gameScene.GameManager;
@@ -146,7 +147,11 @@ public class StageDetailPanel extends JPanel {
     /**
      * 難易度が選ばれたときの更新(報酬は難易度の倍率を反映して見せる)
      */
-    private void onDifficultyChanged(Difficulty diff) {
+    private void onDifficultyChanged(Difficulty chosen) {
+        // 難易度を選ぶまでは、STARTとSKIPを押せない(まだ選んでいないときは、ノーマルの内容を見せるだけ)
+        Difficulty diff = chosen == null ? Difficulty.NORMAL : chosen;
+        startStageBtn.setEnabled(chosen != null);
+        skipStageBtn.setEnabled(chosen != null);
         int stageId = currentStageId;
         STAGE_M.getStage().setDifficulty(diff);
         drawBtn(stageId, diff);
@@ -159,6 +164,9 @@ public class StageDetailPanel extends JPanel {
                         DifficultyService.scaleRange(rarityEntry.getValue(), diff.getRewardRate())));
         }
         infoView.setData(DifficultyService.highScore(stageId, diff), rewards, getEnemyList(stageId));
+        // 戦力値(ステージ番号と難易度に応じた推定必要戦力値と、いまの機体の戦力値)
+        infoView.setPower((int) Math.round(PowerService.required(stageId, diff)),
+                (int) Math.round(PowerService.currentPower()));
         // ミッションは、星を集められるステージだけ見せる
         if (DifficultyService.selectable(stageId))
             infoView.setMissions(DifficultyService.missions(stageId, diff), DifficultyService.stars(stageId, diff));
@@ -205,9 +213,7 @@ public class StageDetailPanel extends JPanel {
             return new LinkedHashMap<>(stageData.getRewardList());
         } catch (NullPointerException e) {
             // 報酬情報の取得に失敗した場合
-            LogUtils.systemLog(
-                    "[WARN]",
-                    component,
+            LogUtils.warn(component,
                     "Failed to get reward list for Stage" + ANSI.YELLOW + stageId + ANSI.RESET + ".");
         }
         return new LinkedHashMap<>();

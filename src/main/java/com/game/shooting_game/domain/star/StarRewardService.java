@@ -20,7 +20,7 @@ import com.game.shooting_game.utils.LogUtils;
 /**
  * ★(ミッション達成数)のマイルストーン報酬
  * <p>
- * ★が interval(既定12)個たまるごとに報酬を受け取れる。受け取りは手動で、
+ * ★が interval(既定36)個たまるごとに報酬を受け取れる。受け取りは手動で、
  * 受取済みは progress.highScores のキー {@code "starReward:" + n}(値1)に記録する。
  * 注意: "mission:" で始まるキーは★の数に数えられるので、受取済みキーはその接頭辞にしないこと。
  */
@@ -28,7 +28,7 @@ public final class StarRewardService {
     private static final String component = "[StarRewardService]";
     private static final String CONFIG_PATH = "/static/configs/StarRewardConfig.json";
     private static final String CLAIMED_PREFIX = "starReward:";
-    private static final int DEFAULT_INTERVAL = 12;
+    private static final int DEFAULT_INTERVAL = 36;
 
     /** 報酬(コインと素材、研究スキップ券) */
     public record Reward(int coins, Map<ResourceKinds, Integer> resources, int skipTickets) {
@@ -62,7 +62,7 @@ public final class StarRewardService {
             for (JsonNode t : root.path("tiers"))
                 loaded.add(parseTier(t));
         } catch (Exception e) {
-            LogUtils.systemLog("[WARN]", component, "★報酬の設定を読めないため既定値を使います: " + e.getMessage());
+            LogUtils.warn(component, "★報酬の設定を読めないため既定値を使います: " + e.getMessage());
             loadedInterval = DEFAULT_INTERVAL;
             loaded.clear();
         }
@@ -72,13 +72,14 @@ public final class StarRewardService {
         tiers = loaded;
     }
 
-    private static Reward parseTier(JsonNode t) {
+    /** 設定の1段分(coins / skipTickets / resources)を報酬にする */
+    public static Reward parseTier(JsonNode t) {
         int coins = Math.max(0, t.path("coins").asInt(0));
         Map<ResourceKinds, Integer> res = new LinkedHashMap<>();
         JsonNode r = t.path("resources");
         r.fieldNames().forEachRemaining(name -> {
             ResourceName rn = ResourceName.fromString(name);
-            r.get(name).fields().forEachRemaining(en -> {
+            r.get(name).properties().forEach(en -> {
                 int count = en.getValue().asInt(0);
                 if (count > 0)
                     res.merge(new ResourceKinds(rn, Rarity.fromString(en.getKey())), count, Integer::sum);
@@ -151,16 +152,21 @@ public final class StarRewardService {
     public static Reward claim(int n) {
         if (!canClaim(n))
             return null;
-        UserData ud = DataManager.getUserData();
         Reward r = rewardOf(n);
+        grant(r);
+        store().put(CLAIMED_PREFIX + n, 1);
+        return r;
+    }
+
+    /** 報酬を所持品へ入れる(★報酬・実績など、受け取りの共通の処理) */
+    public static void grant(Reward r) {
+        UserData ud = DataManager.getUserData();
         ud.getResources().setCoins(ud.getResources().getCoins() + r.coins());
         Map<ResourceKinds, Integer> eq = ud.getResources().getEquipments();
         for (Map.Entry<ResourceKinds, Integer> e : r.resources().entrySet())
             eq.merge(e.getKey(), e.getValue(), Integer::sum);
         if (r.skipTickets() > 0)
             store().merge("inv:" + ItemKinds.SKIP_TICKET.name(), r.skipTickets(), Integer::sum);
-        store().put(CLAIMED_PREFIX + n, 1);
-        return r;
     }
 
     /** 受け取れるものをすべて受け取る(合計を返す。無ければ null) */

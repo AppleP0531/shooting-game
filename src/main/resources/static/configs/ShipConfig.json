@@ -48,7 +48,14 @@
         "frameRate": 0.1,
         "imageSize": 30,
         "collisionSize": 12,
-        "speed": 250
+        "speed": 250,
+        "hp": 100,
+        "shieldRate": 0.15,
+        "invincibleTime": 1.0,
+        "oocTime": 10,
+        "attackRate": 1.0,
+        "onHitEffect": "BURN",
+        "onHitChance": 0.12
       },
       "Lv0": [
         {
@@ -146,7 +153,14 @@
         "frameRate": 0.1,
         "imageSize": 30,
         "collisionSize": 12,
-        "speed": 250
+        "speed": 250,
+        "hp": 80,
+        "shieldRate": 0.25,
+        "invincibleTime": 1.2,
+        "oocTime": 9,
+        "attackRate": 1.2,
+        "onHitEffect": "SHOCK",
+        "onHitChance": 0.06
       },
       "Lv0": [
         {
@@ -263,7 +277,14 @@
         "frameRate": 0.1,
         "imageSize": 30,
         "collisionSize": 12,
-        "speed": 250
+        "speed": 250,
+        "hp": 130,
+        "shieldRate": 0.10,
+        "invincibleTime": 0.8,
+        "oocTime": 12,
+        "attackRate": 0.8,
+        "onHitEffect": "POISON",
+        "onHitChance": 0.15
       },
       "Lv0": [
         {
@@ -401,7 +422,14 @@
         "frameRate": 0.1,
         "imageSize": 80,
         "collisionSize": 16,
-        "speed": 250
+        "speed": 250,
+        "hp": 90,
+        "shieldRate": 0.15,
+        "invincibleTime": 1.5,
+        "oocTime": 8,
+        "attackRate": 1.0,
+        "onHitEffect": "SLOW",
+        "onHitChance": 0.12
       },
       "Lv0": [
         {
@@ -546,7 +574,14 @@
         "frameRate": 0.1,
         "imageSize": 80,
         "collisionSize": 16,
-        "speed": 250
+        "speed": 250,
+        "hp": 110,
+        "shieldRate": 0.20,
+        "invincibleTime": 1.0,
+        "oocTime": 14,
+        "attackRate": 0.9,
+        "onHitEffect": "VULNERABLE",
+        "onHitChance": 0.12
       },
       "Lv0": [
         {

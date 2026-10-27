@@ -19,13 +19,13 @@ import com.game.shooting_game.utils.GameSettings;
 /**
  * ダメージ数字の表示
  * 船がダメージを受けたとき、機体の上に数字を出し、上へ浮かびながら薄く消える。
- * 累計にはせず、1回の被弾ごとに1つの数字を出す。会心は大きく橙色で「!」付き。
+ * 累計にはせず、1回の被弾ごとに1つの数字を出す。大きい数は「万」「億」にまとめる。会心は大きく橙色で「!」付き。
  * 設定画面の「ダメージ表記」がOFFのときは出さない。
  */
 public final class DamagePopupManager implements Manager {
     private static final double LIFETIME = 0.9; // 数字が出ている時間(秒)
     private static final double FADE_START = 0.5; // 薄くなり始める時間(秒)
-    private static final int MAX_POPUPS = 60; // 同時に出す数字の上限
+    private static final int MAX_POPUPS = 30; // 同時に出す数字の上限
 
     private static DamagePopupManager instance;
 
@@ -33,18 +33,18 @@ public final class DamagePopupManager implements Manager {
 
     /** 数字1つ */
     private static final class Popup {
-        final double x;
-        final double y;
+        double x;
+        double y;
         final ShipKinds owner;
-        double amount;
+        final double amount;
         final boolean crit;
         double age = 0;
 
-        Popup(double x, double y, ShipKinds owner, double amount, boolean crit) {
+        Popup(double x, double y, Ship target, double amount, boolean crit) {
             this.crit = crit;
             this.x = x;
             this.y = y;
-            this.owner = owner;
+            this.owner = target.getOwner();
             this.amount = amount;
         }
     }
@@ -97,9 +97,33 @@ public final class DamagePopupManager implements Manager {
                 y = cy;
             }
         }
-        popups.add(new Popup(x, y, target.getOwner(), amount, crit));
+        popups.add(new Popup(x, y, target, amount, crit));
         if (popups.size() > MAX_POPUPS)
             popups.removeFirst();
+    }
+
+    /**
+     * 数字の文字(大きい数は、読みやすいよう「万」「億」にまとめる。会心は「!」付き)
+     * 例: 9,999 → 9999 / 227,426 → 22.7万 / 120,000,000 → 1.2億
+     */
+    static String format(double amount, boolean crit) {
+        long n = Math.max(1, Math.round(amount));
+        String s;
+        if (n < 10_000)
+            s = String.valueOf(n);
+        else if (n < 100_000_000L)
+            s = trim(n / 10_000.0) + "万";
+        else if (n < 1_000_000_000_000L)
+            s = trim(n / 100_000_000.0) + "億";
+        else
+            s = trim(n / 1_000_000_000_000.0) + "兆";
+        return s + (crit ? "!" : "");
+    }
+
+    /** 小数1桁(ただし、100以上は整数)で、末尾の「.0」は付けない */
+    private static String trim(double v) {
+        String s = v >= 100 ? String.valueOf(Math.round(v)) : String.format("%.1f", v);
+        return s.endsWith(".0") ? s.substring(0, s.length() - 2) : s;
     }
 
     @Override
@@ -131,19 +155,20 @@ public final class DamagePopupManager implements Manager {
 
             boolean toPlayer = p.owner == ShipKinds.PLAYER;
             boolean toBoss = p.owner == ShipKinds.BOSS;
-            double size = (toBoss ? 16 : toPlayer ? 15 : 12) * adj * (p.crit ? 1.5 : 1);
+            double size = (toBoss ? 15 : toPlayer ? 14 : 11) * adj * (p.crit ? 1.35 : 1);
             Color color = p.crit ? new Color(255, 150, 30)
                     : toPlayer ? new Color(255, 100, 100) : toBoss ? new Color(255, 235, 130) : Color.WHITE;
 
             g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, (int) size));
             FontMetrics fm = g2.getFontMetrics();
-            String text = Math.max(1, Math.round(p.amount)) + (p.crit ? "!" : "");
+            String text = format(p.amount, p.crit);
             int x = (int) (p.x - fm.stringWidth(text) / 2.0);
             int y = (int) (p.y - rise);
 
-            // 縁取り(背景に埋もれないように黒い影を付ける)
-            g2.setColor(new Color(0, 0, 0, (int) (200 * alpha)));
-            g2.drawString(text, x + 1, y + 1);
+            // 縁取り(背景や、ほかの数字に埋もれないよう、黒で四方を囲む)
+            g2.setColor(new Color(0, 0, 0, (int) (220 * alpha)));
+            for (int[] d : new int[][] { { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 }, { 1, 1 } })
+                g2.drawString(text, x + d[0], y + d[1]);
             g2.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), (int) (255 * alpha)));
             g2.drawString(text, x, y);
         }

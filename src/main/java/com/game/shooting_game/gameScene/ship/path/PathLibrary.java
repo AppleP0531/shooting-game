@@ -60,15 +60,11 @@ public final class PathLibrary {
 
             pathMap = new ObjectMapper().readValue(is, TYPE_REF);
 
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
+            LogUtils.debug(component,
                     "Configuration loaded successfully (" + pathMap.size() + " paths)");
         } catch (IOException e) {
             pathMap = new HashMap<>();
-            LogUtils.systemLog(
-                    "[ERROR]",
-                    component,
+            LogUtils.error(component,
                     "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + ANSI.RESET + " (" + e.getMessage()
                             + ")");
         }
@@ -102,9 +98,7 @@ public final class PathLibrary {
     private static List<Vector2> getPoints(String pathId) {
         PathData data = pathId == null ? null : pathMap.get(pathId);
         if (data == null || data.getPoints() == null || data.getPoints().size() < 2) {
-            LogUtils.systemLog(
-                    "[WARN]",
-                    component,
+            LogUtils.warn(component,
                     "Path " + ANSI.YELLOW + pathId + ANSI.RESET + " is not defined. Using default path.");
             return List.of(new Vector2(0, -40), new Vector2(0, 780));
         }

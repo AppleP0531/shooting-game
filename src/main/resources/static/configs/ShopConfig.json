@@ -1,7 +1,8 @@
 {
   "items": [
-    { "kind": "BOMB", "price": 80000, "maxOwned": 10, "name": "ボム", "description": "画面の敵弾を消し、敵全体にダメージ" },
-    { "kind": "FREEZE", "price": 100000, "maxOwned": 10, "name": "フリーズ", "description": "敵(ボス以外)を4秒止め、ボスは動きを半分にする" },
-    { "kind": "SKIP_TICKET", "price": 150000, "maxOwned": 10, "name": "研究スキップ券", "description": "スキルツリー強化の研究の待ち時間を、すぐ終わらせる(強化画面で使う)" }
+    { "kind": "BOMB", "price": 800000, "maxOwned": 10, "name": "ボム", "description": "画面の敵弾を消し、敵全体にダメージ" },
+    { "kind": "FREEZE", "price": 1000000, "maxOwned": 10, "name": "フリーズ", "description": "敵(ボス以外)を4秒止め、ボスは動きを半分にする" },
+    { "kind": "DURABLE_SHIELD", "price": 1200000, "maxOwned": 10, "name": "耐久シールド", "description": "最大HPの50%ぶんの耐久のバリアを張る。クールタイムなしで、耐久が尽きるまで被弾を吸う" },
+    { "kind": "SKIP_TICKET", "price": 1500000, "maxOwned": 10, "name": "研究スキップ券", "description": "スキルツリー強化の研究の待ち時間を、すぐ終わらせる(強化画面で使う)" }
   ]
 }

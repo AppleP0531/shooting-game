@@ -113,15 +113,11 @@ public class UIBuilder extends JPanel {
         } catch (IOException e) {
             switch (e.getMessage()) {
                 // 画像ファイル未発見ログ
-                case "FILE_NOT_FOUND" -> LogUtils.systemLog(
-                        "[WARN]",
-                        component,
+                case "FILE_NOT_FOUND" -> LogUtils.warn(component,
                         "File not found: " + ANSI.YELLOW + path + ANSI.RESET + ".");
 
                 // 画像読み込みエラーログ
-                case "BROKEN_FILE" -> LogUtils.systemLog(
-                        "[ERROR]",
-                        component,
+                case "BROKEN_FILE" -> LogUtils.error(component,
                         "Failed to load image: " + ANSI.YELLOW + path + ANSI.RESET + ".");
                 default -> System.out.println(e);
             }
@@ -167,6 +163,22 @@ public class UIBuilder extends JPanel {
                     int alpha = (pixel >> 24) & 0xff;
                     return alpha > 0;
                 }
+
+                @Override
+                public void paint(Graphics g) {
+                    // アニメーションが付いていれば拡大縮小・コマ送りで描く(付いていなければ従来どおり)
+                    Graphics2D scaled = ButtonAnimator.begin(g, this);
+                    if (scaled == null) {
+                        super.paint(g);
+                        return;
+                    }
+                    try {
+                        if (!ButtonAnimator.drawSprite(scaled, this))
+                            super.paint(scaled);
+                    } finally {
+                        scaled.dispose();
+                    }
+                }
             };
 
             button.setBorderPainted(false);
@@ -181,6 +193,58 @@ public class UIBuilder extends JPanel {
     }
 
     /**
+     * コマ送りのボタンの生成(横・縦に並べたスプライトシート。ホバー・押下の拡大縮小も付く)
+     *
+     * @param grids    シートの列数・行数
+     * @param useCount 使うコマ数
+     * @param fps      1秒あたりのコマ数
+     */
+    public static JButton createSpriteBtn(String component, String sheetPath, Vector2 grids, int useCount,
+            double fps, Vector2 size, String fallbackText) {
+        try {
+            BufferedImage[] frames = cutSpriteSheet(loadImage(sheetPath), grids, useCount);
+            JButton button = createImageBtn(component, frames[0], size, fallbackText);
+            ButtonAnimator.attachSprite(button, frames, fps);
+            return button;
+        } catch (IOException | RuntimeException e) {
+            LogUtils.warn(component, "Failed to load sprite sheet: " + ANSI.YELLOW + sheetPath + ANSI.RESET + ".");
+            return new JButton(fallbackText);
+        }
+    }
+
+    /**
+     * ボタンの左上の座標(基準点が anchor の位置に来るようにする)
+     *
+     * @param anchor 部品のどこを基準点にするか
+     * @param refX   基準点の x(画素)
+     * @param refY   基準点の y(画素)
+     * @param w      部品の幅
+     * @param h      部品の高さ
+     */
+    public static java.awt.Point anchoredTopLeft(Anchor anchor, double refX, double refY, int w, int h) {
+        Vector2 a = anchor.getValue();
+        return new java.awt.Point((int) Math.round(refX - w * a.getX()), (int) Math.round(refY - h * a.getY()));
+    }
+
+    /**
+     * 画面の anchor 位置から (dx, dy) だけ離した所へ、ボタンの anchor を合わせて置く。
+     * dx, dy は基準サイズ(405x720)の長さで、画面サイズの倍率を掛ける。画面の右側・下側の anchor は、内側へ向く向きで指定する
+     * (右下の隅から 8 だけ内側なら dx=-8, dy=-8)。
+     * 例: 右下の隅から 8 離して右下を合わせる → placeBtn(btn, Anchor.BOTTOM_RIGHT, Anchor.BOTTOM_RIGHT, -8, -8)
+     *
+     * @param screenAnchor 画面のどこを基準にするか
+     * @param btnAnchor    ボタンのどこを基準点に合わせるか
+     */
+    public static void placeBtn(javax.swing.JComponent btn, Anchor screenAnchor, Anchor btnAnchor, double dx, double dy) {
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        ShootingGameMain main = ShootingGameMain.getInstance();
+        Vector2 s = screenAnchor.getValue();
+        java.awt.Point p = anchoredTopLeft(btnAnchor, main.getWidth() * s.getX() + dx * adj,
+                main.getHeight() * s.getY() + dy * adj, btn.getWidth(), btn.getHeight());
+        btn.setBounds(p.x, p.y, btn.getWidth(), btn.getHeight());
+    }
+
+    /**
      * 戻るボタン(正方形の矢印。画面の左下の隅に置く)
      *
      * @param component 呼び出しクラス名
@@ -190,10 +254,11 @@ public class UIBuilder extends JPanel {
     public static JButton createBackBtn(String component, Runnable action) {
         double adj = ShootingGameMain.getScreenSizeAdj();
         int size = (int) (40 * adj);
-        int margin = (int) (8 * adj);
         JButton btn = createImageBtn(component, "/static/img/UI/backArrow.png", new Vector2(size, size), "◀");
-        btn.setBounds(margin, ShootingGameMain.getInstance().getHeight() - margin - size, size, size);
+        btn.setSize(size, size);
+        placeBtn(btn, Anchor.BOTTOM_LEFT, Anchor.BOTTOM_LEFT, 8, -8);
         btn.addActionListener(e -> action.run());
+        ButtonAnimator.attachPop(btn);
         return btn;
     }
 
@@ -222,6 +287,30 @@ public class UIBuilder extends JPanel {
      * @param imageSize   画像サイズ
      * @return リサイズ後の画像
      */
+    /**
+     * 色のついた部分の色相を、指定した値(0〜1)にずらした絵を返す(白・灰・黒に近い部分と、明るさ・透明度はそのまま)
+     */
+    public static BufferedImage hueShift(BufferedImage src, float hue) {
+        int w = src.getWidth(), h = src.getHeight();
+        BufferedImage out = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        // 1画素ずつ getRGB / setRGB を呼ぶと遅いので、配列にまとめて読み書きする
+        int[] px = src.getRGB(0, 0, w, h, null, 0, w);
+        float[] hsb = new float[3];
+        for (int i = 0; i < px.length; i++) {
+            int p = px[i];
+            int a = p >>> 24;
+            if (a == 0) {
+                px[i] = 0;
+                continue;
+            }
+            Color.RGBtoHSB((p >> 16) & 255, (p >> 8) & 255, p & 255, hsb);
+            int rgb = hsb[1] > 0.12f ? Color.HSBtoRGB(hue, hsb[1], hsb[2]) : (p & 0xFFFFFF);
+            px[i] = (a << 24) | (rgb & 0xFFFFFF);
+        }
+        out.setRGB(0, 0, w, h, px, 0, w);
+        return out;
+    }
+
     public static BufferedImage resizeImage(BufferedImage originImage, double imageSize) {
         // 画像のリサイズ(再帰呼び出しにより少しづつ調整して画質を保つ)
         while (imageSize < originImage.getWidth() / 2) {
@@ -296,9 +385,7 @@ public class UIBuilder extends JPanel {
             }
         } catch (IOException e) {
             // 画像ファイル未発見ログ
-            LogUtils.systemLog(
-                    "[WARN]",
-                    component,
+            LogUtils.warn(component,
                     "File not found: " + ANSI.YELLOW + statePath + ANSI.RESET + ".");
         }
     }
@@ -372,6 +459,16 @@ public class UIBuilder extends JPanel {
      */
     public static void openPanel(JPanel p, String title, Boolean focus, CloseBtnAction closeAction,
             boolean closeOnOutsideClick) {
+        openPanel(p, title, focus, closeAction, closeOnOutsideClick, true);
+    }
+
+    /**
+     * パネル(閉じるボタンの有無を選べる)
+     *
+     * @param closable 閉じるボタンを出すか(falseなら、タイトルバーの閉じるボタンを隠す。ログインのように、操作を終えるまで閉じさせないパネル用)
+     */
+    public static void openPanel(JPanel p, String title, Boolean focus, CloseBtnAction closeAction,
+            boolean closeOnOutsideClick, boolean closable) {
         p.setLayout(null);
         p.setBackground(new Color(0, 0, 0, 220));
         p.setBorder(BorderFactory.createLineBorder(Color.CYAN, 2));
@@ -504,6 +601,7 @@ public class UIBuilder extends JPanel {
         // 開くたびに、閉じる対象を今のパネルに更新する
         closePanelBtn.putClientProperty("closeTarget", p);
         closePanelBtn.putClientProperty("closeAction", closeAction);
+        closePanelBtn.setVisible(closable); // 使い回すボタンなので、開くたびに有無を更新する
         closePanelBtn.setBounds(
                 (int) titlePanel.getWidth() - (int) closePanelBtn.getWidth(),
                 (int) titlePanelSize / 2 - (int) closePanelBtn.getHeight() / 2,

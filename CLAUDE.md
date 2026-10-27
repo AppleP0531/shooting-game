@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-縦画面の Java Swing 製シューティングゲーム(Spring Boot 4 + JPA/MySQL でセーブデータを持つ)。コメント・ログ・UI文言・TODOは日本語。Java 25 / Maven。
+縦画面の Java Swing 製シューティングゲーム(Spring Boot 4 + JPA/H2 でセーブデータを持つ)。コメント・ログ・UI文言・TODOは日本語。Java 25 / Maven。
 
 ## コマンド
 
@@ -16,8 +16,8 @@ JAVA_HOME は JDK 25(README 参照)。Windows では `.\mvnw.cmd`、Git Bash で
 
 - **「BUILD SUCCESS」だけでは、コンパイルできたと言えない。** 差分コンパイルが何も再コンパイルせずに成功することがあり、実際にエラーを見逃した。確実に確認するには、`target/classes/com`・`target/test-classes`・`target/maven-status` を消してから実行し、出力に `Compiling N source files` が出ることを確認する(または `clean` を使う)。
 - ゲームを起動したままだと `target` 内の画像が掴まれて `clean` が失敗する。その場合は上のフォルダだけを消し、`-Dmaven.resources.skip=true` を付けてコンパイル・テストする(リソースは前のコピーを使う)。
-- 起動時に Spring Boot で DB(AWS RDS / MySQL。`src/main/resources/application.properties` は git 管理外)へつなぐ。**つながらなければ自動でオフラインモード**(`DataManager.load("guest", "create")`、ログインなし)になる。DB なしの動作確認はこれで足りる。
-- `ShootingGameApplicationTests`(コンテキスト読み込み)は DB が必要。単体テストは DB・画面なしで動く純ロジックだけを対象にする。
+- 起動時に Spring Boot で DB(H2 のファイル。実行フォルダの `data/` にできる。接続は `src/main/resources/application.properties`(git 管理)の `spring.datasource.*`)へつなぐ。テーブルは `ddl-auto=update` で自動作成される。**つながらなければ自動でオフラインモード**(`DataManager.load("guest", "create")`、ログインなし)になる。DB なしの動作確認はこれで足りる。
+- `ShootingGameApplicationTests`(コンテキスト読み込み)は H2 のファイルを開く(ネットワークは不要。ゲームを起動中だと同じファイルを開けず失敗する)。単体テストは DB・画面なしで動く純ロジックだけを対象にする。
 - 公式のリンタ・フォーマッタ設定はない。
 
 ## アーキテクチャ(複数ファイルを読まないと分からない部分)
@@ -74,7 +74,7 @@ JAVA_HOME は JDK 25(README 参照)。Windows では `.\mvnw.cmd`、Git Bash で
 - **作業が終わるごとに、コミットして push する。** 手順:
   - まず、上の方法で確実に再コンパイルし、単体テストが通ることを確認する(通らなければコミットしない)。
   - 変更は、テーマごとに分けてコミットする(会心、サブ機、UI など)。1つのファイルに複数のテーマが混ざる場合は、主なテーマのコミットに入れる。メッセージは日本語で、1行目に要約、本文に理由と範囲を書く。
-  - `git add` は、パスを指定して行う(`git add -A` で `application.properties` や `settings.properties` など git 管理外のものや、生成物を巻き込まない)。削除したファイルのパスを `git add` に渡すと全体が失敗するので、`git add -A -- <パス>` を使う。
+  - `git add` は、パスを指定して行う(`git add -A` で `settings.properties` など git 管理外のものや、生成物を巻き込まない)。削除したファイルのパスを `git add` に渡すと全体が失敗するので、`git add -A -- <パス>` を使う。
   - **コミットメッセージに `Co-Authored-By`(Claude を共作者にする行)や「Generated with Claude Code」の行を付けない。** GitHub の履歴に Claude の名前が出ないようにするため。PR の説明にも付けない。
   - コミットのあとは、今のブランチを `git push` する。force push はしない。
   - 見た目の確認ができていない変更は、コミットメッセージや報告に「未確認」と書く。
@@ -85,7 +85,12 @@ JAVA_HOME は JDK 25(README 参照)。Windows では `.\mvnw.cmd`、Git Bash で
   - 各エージェントには「触ってよいファイル」「コミットしない(コミットと push は、全員の終了後に親が行う)」「他の人が同時に別のファイルを編集している」ことを明記する。
   - 同時に Maven を実行すると `target` の操作が衝突する。Maven を使うのは1人だけにし、ほかのエージェントには「Maven は実行しない」と伝える。
   - 全員の終了後に、全体の再コンパイル(上の「確実に確認する方法」)とテストと、触った範囲が重なっていないかを自分で確認する。エージェントの報告は鵜呑みにしない。
-  - UML・テスト・ドキュメント(`UML.puml` / `src/test` / `command.md`)の更新は、機能の実装と並行してそれぞれ別エージェントに任せてよい。
+  - **`UML.puml` の更新と、テストコード(`src/test`)の作成は、サブエージェントに任せる**(機能の実装が終わったら、それぞれ別のエージェントに、並行して依頼する)。`command.md` などのドキュメントも、必要なら同じように任せる。
+    - 依頼文には、変更した内容(クラス・メソッド・設定ファイル・仕様)と、実際の差分を見られること(`git diff` / `git status`)を書き、「実コードを読んで確認してから書く(推測で書かない)」と伝える。
+    - UML のエージェントは `UML.puml` だけ、テストのエージェントは `src/test` だけを触る。本体(`src/main`)は直さず、テストが落ちたら報告させる。
+    - テストは、DB・画面なしで動く純ロジックだけを対象にする。テストを実行するのはテストのエージェント1人にして、UML のエージェントには Maven を実行させない。
+    - 終わったら、自分で再コンパイルとテストを流し、UML の波括弧の数と、触った範囲が重なっていないかを確認してから、コミットと push を行う。
+    - 実装そのものを分ける場合のほかに、このように「実装は自分、UML とテストはサブエージェント」という分け方を、ふだんの標準にする。
 - 見た目・描画まわりの変更は、コンパイルが通っても実際の見た目は保証されない。起動して確認するか、未確認と明記する。
 - ファイルの編集で、複数行の正規表現の置換(perl や sed)は、改行コード(CRLF/LF)の違いや文字列の中のエスケープで、黙って失敗したり、文字列の途中に改行が入ったりした。編集のあとは必ず該当箇所を読み直して反映を確認し、小さな編集は Edit ツールを使う。
 - UML(`UML.puml`)は、構成を変えたら更新し、波括弧の数が合うことを確認する(PlantUML での描画確認はまだしていない)。

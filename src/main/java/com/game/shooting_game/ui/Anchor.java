@@ -6,6 +6,14 @@ import lombok.Data;
 @Data
 public class Anchor {
     public static final Anchor CENTER = new Anchor(H.CENTER, V.CENTER);
+    public static final Anchor TOP_LEFT = new Anchor(H.LEFT, V.TOP);
+    public static final Anchor TOP_CENTER = new Anchor(H.CENTER, V.TOP);
+    public static final Anchor TOP_RIGHT = new Anchor(H.RIGHT, V.TOP);
+    public static final Anchor CENTER_LEFT = new Anchor(H.LEFT, V.CENTER);
+    public static final Anchor CENTER_RIGHT = new Anchor(H.RIGHT, V.CENTER);
+    public static final Anchor BOTTOM_LEFT = new Anchor(H.LEFT, V.BOTTOM);
+    public static final Anchor BOTTOM_CENTER = new Anchor(H.CENTER, V.BOTTOM);
+    public static final Anchor BOTTOM_RIGHT = new Anchor(H.RIGHT, V.BOTTOM);
 
     public enum H {
         LEFT(0),

@@ -9,6 +9,7 @@ import java.util.Objects;
 import lombok.Data;
 
 import com.game.shooting_game.ResourceManager.ResourceKinds;
+import com.game.shooting_game.domain.chest.ChestService;
 import com.game.shooting_game.domain.module.Module;
 import com.game.shooting_game.gameScene.stage.DifficultyService;
 
@@ -24,6 +25,7 @@ public class StageRewards {
     private int starsBefore; // 判定前の★合計
     private int starsAfter; // 判定後の★合計
     private List<Module> modules = new ArrayList<>(); // クリアで手に入ったモジュール
+    private Map<ChestService.Rank, Integer> keys = new java.util.EnumMap<>(ChestService.Rank.class); // クリアで手に入った宝箱の鍵
 
     /**
      * インスタンスの取得
@@ -41,6 +43,7 @@ public class StageRewards {
     public void resetRewards() {
         resources.clear();
         modules.clear();
+        keys.clear();
         score = 0;
         difficultyLabel = "";
         newMissions.clear();
