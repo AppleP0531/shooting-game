@@ -83,7 +83,7 @@ public final class UnlockService {
                 if (root.has(f.name()))
                     m.put(f, Math.max(1, root.get(f.name()).asInt(f.defaultLevel)));
         } catch (Exception e) {
-            LogUtils.systemLog("[WARN]", component, "解放の設定を読めないため既定値を使います: " + e.getMessage());
+            LogUtils.warn(component, "解放の設定を読めないため既定値を使います: " + e.getMessage());
         }
         levels = m;
     }

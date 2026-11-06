@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 import com.game.shooting_game.gameScene.beam.BeamSpec;
 import com.game.shooting_game.gameScene.bullet.barrage.BarrageSpec;
 import com.game.shooting_game.utils.ANSI;
+import com.game.shooting_game.utils.GameBalance;
 import com.game.shooting_game.utils.LogUtils;
 
 /**
@@ -64,6 +65,7 @@ public final class BossLibrary {
         private List<BeamSpec> beams = new ArrayList<>(); // このゲージ中に撃つビーム
     }
 
+    public static final String COIN_BOSS_ID = "BossCoin";
     private static Map<String, BossDefinition> bossMap = new HashMap<>();
 
     static {
@@ -82,16 +84,22 @@ public final class BossLibrary {
                 throw new IOException("Resource not found: " + CONFIG_PATH);
 
             bossMap = new ObjectMapper().readValue(is, TYPE_REF);
+            // 追加のボス設定(BossConfig_Extra.json)があれば、同じIDのボスを加える
+            try (InputStream ex = BossLibrary.class.getResourceAsStream("/static/configs/BossConfig_Extra.json")) {
+                if (ex != null)
+                    bossMap.putAll(new ObjectMapper().readValue(ex, TYPE_REF));
+            }
 
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
+            // ボスは、設定のゲージHPに倍率(BalanceConfig.json の bossHpRate)をかけて使う。コインボスは対象外
+            for (Map.Entry<String, BossDefinition> e : bossMap.entrySet())
+                if (!e.getKey().equals(COIN_BOSS_ID))
+                    e.getValue().setGaugeHp(e.getValue().getGaugeHp() * GameBalance.bossHpRate());
+
+            LogUtils.debug(component,
                     "Configuration loaded successfully (" + bossMap.size() + " bosses)");
         } catch (IOException e) {
             bossMap = new HashMap<>();
-            LogUtils.systemLog(
-                    "[ERROR]",
-                    component,
+            LogUtils.error(component,
                     "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + ANSI.RESET + " (" + e.getMessage()
                             + ")");
         }
@@ -108,9 +116,7 @@ public final class BossLibrary {
         if (def != null && def.getGauges() != null && !def.getGauges().isEmpty())
             return def;
 
-        LogUtils.systemLog(
-                "[WARN]",
-                component,
+        LogUtils.warn(component,
                 "Boss " + ANSI.YELLOW + bossId + ANSI.RESET + " is not defined in BossConfig.json. Using default.");
 
         BossDefinition fallback = new BossDefinition();
@@ -122,7 +128,7 @@ public final class BossLibrary {
      * そのステージで戦うゲージの範囲を決める
      * <ul>
      * <li>無限モード: 後ろの3ゲージ(最後の3形態)</li>
-     * <li>ノーマルステージ(1〜99): 10の倍数は5ゲージ、5の倍数は3ゲージ(先頭から)</li>
+     * <li>ノーマルステージ(1〜200): 10の倍数は5ゲージ、5の倍数は3ゲージ(先頭から)</li>
      * <li>それ以外: ボスの定義のまま</li>
      * </ul>
      * 
@@ -136,7 +142,7 @@ public final class BossLibrary {
             int n = Math.min(3, total);
             return new int[] { total - n, n };
         }
-        if (stageId >= 1 && stageId < 100) {
+        if (stageId >= 1 && stageId < 1000) {
             if (stageId % 10 == 0)
                 return new int[] { 0, Math.min(5, total) };
             if (stageId % 5 == 0)

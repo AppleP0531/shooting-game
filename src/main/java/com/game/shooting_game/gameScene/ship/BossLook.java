@@ -104,6 +104,137 @@ public final class BossLook {
         return out;
     }
 
+    /** 追加ボス(Boss10〜19)の見た目。画像がなくても、ボスごとに違う形と色で描ける */
+    private static void registerExtra() {
+        // Boss10「ウォール」: 八角の壁。前の盾 → 肩の円盤 → 背の尖塔 → 外輪の砲塔
+        List<Part> wall = new ArrayList<>();
+        pair(wall, 0, true, 0.5, 0.6, pt(0.35, 0.6), pt(0.65, 0.6), pt(0.6, 1.1), pt(0.4, 1.1));
+        pair(wall, 1, false, 1.0, 0.0, ngon(1.15, 0.0, 0.3, 8));
+        pair(wall, 2, false, 0.5, -0.7, pt(0.3, -0.7), pt(0.7, -0.7), pt(0.5, -1.4));
+        wall.add(part(3, true, 0, 0.7, pt(-0.15, 0.7), pt(0.15, 0.7), pt(0.1, 1.4), pt(-0.1, 1.4)));
+        pair(wall, 4, false, 1.5, 0.0, pt(1.4, -0.5), pt(1.75, -0.5), pt(1.75, 0.5), pt(1.4, 0.5));
+        LOOKS.put("Boss10", new BossLook(new Color(255, 140, 80), ngon(0, 0, 0.95, 8), wall));
+
+        // Boss11「レイン」: 雲のような丸い機体。垂れ下がる雫 → 横の雲 → 雨筋
+        List<Part> rain = new ArrayList<>();
+        for (int i = -2; i <= 2; i++)
+            rain.add(part(0, true, i * 0.3, 0.6, pt(i * 0.3 - 0.07, 0.6), pt(i * 0.3, 1.0 + (2 - Math.abs(i)) * 0.12),
+                    pt(i * 0.3 + 0.07, 0.6)));
+        pair(rain, 1, false, 0.9, 0.0, ngon(1.0, 0.05, 0.4, 10));
+        pair(rain, 2, false, 1.3, -0.2, ngon(1.45, -0.2, 0.28, 10));
+        pair(rain, 3, false, 0.6, -0.8, blade(0.3, -0.7, 0.8, -1.0, 0.6, -1.5, 0.15));
+        pair(rain, 4, true, 0.9, 0.5, pt(0.8, 0.5), pt(1.0, 0.5), pt(0.9, 1.4));
+        LOOKS.put("Boss11", new BossLook(new Color(100, 170, 255), new double[][] { pt(0, 0.7), pt(-0.6, 0.55),
+                pt(-1.0, 0.1), pt(-0.8, -0.45), pt(-0.3, -0.75), pt(0.3, -0.75), pt(0.8, -0.45), pt(1.0, 0.1),
+                pt(0.6, 0.55) }, rain));
+
+        // Boss12「クロス」: 十字の機体。縦の砲身 → 横腕 → 斜めの腕 → 先端の円
+        List<Part> cross = new ArrayList<>();
+        cross.add(part(0, true, 0, 0.6, pt(-0.1, 0.6), pt(0.1, 0.6), pt(0.1, 1.3), pt(-0.1, 1.3)));
+        pair(cross, 1, false, 0.7, 0.0, pt(0.6, -0.15), pt(1.5, -0.15), pt(1.5, 0.15), pt(0.6, 0.15));
+        pair(cross, 2, false, 0.6, -0.6, pt(0.5, -0.5), pt(1.3, -1.3), pt(1.5, -1.1), pt(0.7, -0.3));
+        pair(cross, 3, false, 0.6, 0.6, pt(0.5, 0.5), pt(1.3, 1.3), pt(1.5, 1.1), pt(0.7, 0.3));
+        pair(cross, 4, false, 1.5, 0.0, ngon(1.6, 0.0, 0.22, 8));
+        cross.add(part(4, false, 0, -1.0, ngon(0, -1.2, 0.22, 8)));
+        LOOKS.put("Boss12", new BossLook(new Color(255, 80, 120), new double[][] { pt(0, 1.0), pt(-0.25, 0.25),
+                pt(-1.0, 0.25), pt(-1.0, -0.25), pt(-0.25, -0.25), pt(-0.25, -0.9), pt(0.25, -0.9), pt(0.25, -0.25),
+                pt(1.0, -0.25), pt(1.0, 0.25), pt(0.25, 0.25) }, cross));
+
+        // Boss13「ツイン」: 二連の円。もう一つの核 → 連結アーム → 外側の輪 → 双砲
+        List<Part> twin = new ArrayList<>();
+        pair(twin, 0, true, 0.45, 0.5, pt(0.35, 0.5), pt(0.55, 0.5), pt(0.5, 1.2), pt(0.4, 1.2));
+        pair(twin, 1, false, 1.0, 0.0, ngon(1.0, 0.0, 0.45, 12));
+        pair(twin, 2, false, 0.7, 0.0, pt(0.6, -0.1), pt(1.0, -0.1), pt(1.0, 0.1), pt(0.6, 0.1));
+        pair(twin, 3, false, 1.0, 0.0, ngon(1.0, 0.0, 0.62, 16));
+        pair(twin, 4, true, 1.0, 0.4, pt(0.92, 0.4), pt(1.08, 0.4), pt(1.06, 1.2), pt(0.94, 1.2));
+        LOOKS.put("Boss13", new BossLook(new Color(150, 255, 90), ngon(0, 0, 0.6, 12), twin));
+
+        // Boss14「ストップ」: 六角の箱。前の止め具 → 左右のバンパー → 後ろの脚 → 警告灯
+        List<Part> stop = new ArrayList<>();
+        pair(stop, 0, true, 0.5, 0.8, pt(0.3, 0.8), pt(0.7, 0.8), pt(0.7, 1.1), pt(0.3, 1.1));
+        pair(stop, 1, false, 1.0, 0.0, pt(1.0, -0.4), pt(1.4, -0.4), pt(1.4, 0.4), pt(1.0, 0.4));
+        pair(stop, 2, false, 0.6, -0.8, pt(0.4, -0.8), pt(0.8, -0.8), pt(0.8, -1.4), pt(0.5, -1.4));
+        pair(stop, 3, true, 0.3, 0.2, ngon(0.4, 0.3, 0.16, 6));
+        stop.add(part(4, true, 0, 0.3, ngon(0, 0.2, 0.3, 6)));
+        LOOKS.put("Boss14", new BossLook(new Color(255, 70, 70), ngon(0, 0, 1.0, 6), stop));
+
+        // Boss15「スナイプ」: 細い矢尻。照準の輪 → 長砲身 → 後退翼 → 尾の針
+        List<Part> snipe = new ArrayList<>();
+        snipe.add(part(0, true, 0, 0.5, ngon(0, 0.6, 0.3, 14)));
+        snipe.add(part(1, true, 0, 0.7, pt(-0.06, 0.7), pt(0.06, 0.7), pt(0.04, 1.6), pt(-0.04, 1.6)));
+        pair(snipe, 2, false, 0.4, -0.2, pt(0.4, -0.2), pt(1.4, -0.9), pt(0.6, -0.6));
+        pair(snipe, 3, true, 0.5, 0.3, pt(0.45, 0.3), pt(0.55, 0.3), pt(0.5, 1.4));
+        snipe.add(part(4, false, 0, -0.7, pt(-0.1, -0.7), pt(0, -1.6), pt(0.1, -0.7)));
+        LOOKS.put("Boss15", new BossLook(new Color(255, 255, 120), new double[][] { pt(0, 1.2), pt(-0.45, 0.1),
+                pt(-0.3, -0.6), pt(0, -0.35), pt(0.3, -0.6), pt(0.45, 0.1) }, snipe));
+
+        // Boss16「ブルーム」: 花の機体。内側の花弁 → 外側の花弁 → がく → 雌しべ
+        List<Part> bloom = new ArrayList<>();
+        for (int i = 0; i < 6; i++) {
+            double a = Math.PI * 2 * i / 6;
+            double x = Math.cos(a) * 0.9, y = Math.sin(a) * 0.9;
+            bloom.add(part(0, false, x * 0.6, y * 0.6, ngon(x, y, 0.38, 8)));
+        }
+        for (int i = 0; i < 6; i++) {
+            double a = Math.PI * 2 * i / 6 + Math.PI / 6;
+            double x = Math.cos(a) * 1.35, y = Math.sin(a) * 1.35;
+            bloom.add(part(2, false, x * 0.5, y * 0.5, ngon(x, y, 0.3, 6)));
+        }
+        pair(bloom, 3, true, 0.3, 0.7, blade(0.3, 0.6, 0.7, 1.0, 0.4, 1.5, 0.12));
+        bloom.add(part(4, true, 0, 0.0, ngon(0, 0, 0.3, 10)));
+        LOOKS.put("Boss16", new BossLook(new Color(255, 130, 200), ngon(0, 0, 0.7, 12), bloom));
+
+        // Boss17「ヴォルテックス」: 渦巻きの機体。内の羽根 → 外の羽根 → 大きな羽根 → 中心の目
+        List<Part> vortex = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            double a = Math.PI * 2 * i / 3;
+            vortex.add(part(0, false, 0, 0, rot(blade(0.3, 0.0, 1.0, 0.2, 1.0, 0.9, 0.18), a)));
+        }
+        for (int i = 0; i < 3; i++) {
+            double a = Math.PI * 2 * i / 3 + Math.PI / 3;
+            vortex.add(part(2, false, 0, 0, rot(blade(0.3, 0.0, 1.3, 0.3, 1.3, 1.2, 0.22), a)));
+        }
+        for (int i = 0; i < 6; i++) {
+            double a = Math.PI * 2 * i / 6 + Math.PI / 6;
+            vortex.add(part(3, false, 0, 0, rot(blade(0.3, 0.0, 1.6, 0.3, 1.6, 1.4, 0.26), a)));
+        }
+        vortex.add(part(4, true, 0, 0, ngon(0, 0, 0.28, 8)));
+        LOOKS.put("Boss17", new BossLook(new Color(120, 90, 255), ngon(0, 0, 0.75, 10), vortex));
+
+        // Boss18「ミラージュ」: 鏡のような菱形。分身の菱形 → 破片 → 光の筋 → 前の結晶
+        List<Part> mirage = new ArrayList<>();
+        pair(mirage, 0, false, 0.9, 0.0, pt(0.9, 0.0), pt(1.3, 0.5), pt(1.7, 0.0), pt(1.3, -0.5));
+        pair(mirage, 1, false, 0.6, -0.9, pt(0.5, -1.2), pt(0.8, -0.8), pt(0.5, -0.5), pt(0.2, -0.8));
+        pair(mirage, 2, true, 0.3, 0.8, pt(0.3, 0.7), pt(0.55, 0.95), pt(0.3, 1.3), pt(0.1, 0.95));
+        pair(mirage, 3, false, 1.6, 0.8, pt(1.6, 0.6), pt(1.8, 0.9), pt(1.6, 1.2), pt(1.4, 0.9));
+        mirage.add(part(4, true, 0, 0.9, pt(-0.15, 0.9), pt(0, 1.5), pt(0.15, 0.9), pt(0, 0.7)));
+        LOOKS.put("Boss18", new BossLook(new Color(190, 120, 255), new double[][] { pt(0, 1.1), pt(-0.75, 0.0),
+                pt(0, -1.0), pt(0.75, 0.0) }, mirage));
+
+        // Boss19「オメガ」: 大型の王機。肩の双砲 → 大きな翼 → 背の冠 → 外輪 → 全砲塔
+        List<Part> omega = new ArrayList<>();
+        pair(omega, 0, true, 0.55, 0.3, pt(0.45, 0.3), pt(0.65, 0.3), pt(0.62, 1.2), pt(0.48, 1.2));
+        pair(omega, 1, false, 1.1, 0.0, pt(1.1, -0.3), pt(1.8, 0.5), pt(1.3, 0.6), pt(0.9, 0.2));
+        for (int i = -2; i <= 2; i++)
+            omega.add(part(2, false, i * 0.3, -0.8, pt(i * 0.3 - 0.1, -0.8), pt(i * 0.3, -1.4 + Math.abs(i) * 0.15),
+                    pt(i * 0.3 + 0.1, -0.8)));
+        pair(omega, 3, false, 1.6, 0.0, ngon(1.7, 0.1, 0.3, 8));
+        omega.add(part(4, true, 0, 0.5, pt(-0.14, 0.5), pt(0.14, 0.5), pt(0.1, 1.55), pt(-0.1, 1.55)));
+        pair(omega, 4, true, 1.1, 0.4, pt(1.0, 0.4), pt(1.2, 0.4), pt(1.18, 1.1), pt(1.02, 1.1));
+        LOOKS.put("Boss19", new BossLook(new Color(245, 245, 255), new double[][] { pt(0, 1.1), pt(-0.5, 0.8),
+                pt(-1.1, 0.2), pt(-1.0, -0.7), pt(-0.4, -0.5), pt(0, -0.95), pt(0.4, -0.5), pt(1.0, -0.7),
+                pt(1.1, 0.2), pt(0.5, 0.8) }, omega));
+    }
+
+    /** 頂点を原点まわりに回す(渦巻きの羽根用) */
+    private static double[][] rot(double[][] p, double a) {
+        double c = Math.cos(a), s = Math.sin(a);
+        double[][] o = new double[p.length][];
+        for (int i = 0; i < p.length; i++)
+            o[i] = pt(p[i][0] * c - p[i][1] * s, p[i][0] * s + p[i][1] * c);
+        return o;
+    }
+
     static {
         // Boss1「レイダー」: V字の機体。肩の双砲 → 翼と主砲 → 背のトゲ → 砲台ポッド
         List<Part> raider = new ArrayList<>();
@@ -241,5 +372,7 @@ public final class BossLook {
         LOOKS.put("Boss9", new BossLook(new Color(215, 225, 245), new double[][] { pt(0, 1.15), pt(-0.55, 0.6),
                 pt(-1.0, 0.05), pt(-0.7, -0.6), pt(-0.3, -0.95), pt(0.3, -0.95), pt(0.7, -0.6), pt(1.0, 0.05),
                 pt(0.55, 0.6) }, prism));
+
+        registerExtra();
     }
 }

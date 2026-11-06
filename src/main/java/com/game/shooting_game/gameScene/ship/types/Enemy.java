@@ -79,9 +79,7 @@ public class Enemy extends Ship {
         animation("admission");
 
         // 船タイプログ
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
+        LogUtils.info(component,
                 "Current shipId set to " + ANSI.YELLOW + shipId + "." + ANSI.RESET);
     }
 

@@ -32,6 +32,10 @@ import com.game.shooting_game.gameScene.bullet.Bullet;
 import com.game.shooting_game.gameScene.beam.BeamManager;
 import com.game.shooting_game.gameScene.bullet.BulletManager;
 import com.game.shooting_game.gameScene.item.Item;
+import com.game.shooting_game.domain.achievement.AchievementService;
+import com.game.shooting_game.domain.chest.ChestService;
+import com.game.shooting_game.domain.trial.TrialService;
+import com.game.shooting_game.domain.farm.MaterialFarmService;
 import com.game.shooting_game.gameScene.item.ItemManager;
 import com.game.shooting_game.gameScene.ship.Ship;
 import com.game.shooting_game.gameScene.ship.ShipManager;
@@ -92,11 +96,14 @@ public final class GameManager extends JPanel implements Manager {
     private int killCountSinceLastLevelUp; // 最近のレベルアップドロップからのキル数
     private int score;
     private int coin;
+    private boolean tutorialHold; // チュートリアルの説明を出している間、ゲームを止める
+    private int bossKills; // このステージで倒したボスの数(宝箱の鍵のドロップ用)
     private int hitCount; // このステージで受けた被弾の回数(HARDのミッション用)
     private double playTime; // このステージの経過時間(秒。ポーズ中は進まない)
     private boolean skipped; // スキップで報酬だけ受け取ったか(ミッションの対象外)
     private ItemSlotButton bombBtn; // ショップで買ったボム(キー1)
     private ItemSlotButton freezeBtn; // ショップで買ったフリーズ(キー2)
+    private ItemSlotButton shieldBtn; // ショップで買った耐久シールド(キー3)
     private final Map<ResourceKinds, Integer> collectedResources = new LinkedHashMap<>(); // このステージで拾った素材
 
     private final List<Manager> managers = new ArrayList<>();
@@ -119,6 +126,7 @@ public final class GameManager extends JPanel implements Manager {
         managers.add(STAGE_M);
         managers.add(BM);
         managers.add(BEAM_M); // 船より後ろに描くので船より前に置く
+        managers.add(com.game.shooting_game.gameScene.hazard.MeteorManager.getInstance()); // 隕石(船より後ろに描く)
         managers.add(SHIP_M);
         managers.add(IM);
         managers.add(DamagePopupManager.getInstance()); // ダメージ数字は一番手前に描く
@@ -157,6 +165,8 @@ public final class GameManager extends JPanel implements Manager {
         // ショップで買った特殊アイテム: 数字キー(テンキー可)とボタンで使う
         bombBtn = createItemSlot(ItemKinds.BOMB, "1", new java.awt.Color(255, 150, 40), 0);
         freezeBtn = createItemSlot(ItemKinds.FREEZE, "2", new java.awt.Color(80, 200, 255), 1);
+        shieldBtn = createItemSlot(ItemKinds.DURABLE_SHIELD, "3", new java.awt.Color(255, 205, 70), 2);
+        bindItemKey(im, am, KeyEvent.VK_3, KeyEvent.VK_NUMPAD3, ItemKinds.DURABLE_SHIELD);
         bindItemKey(im, am, KeyEvent.VK_1, KeyEvent.VK_NUMPAD1, ItemKinds.BOMB);
         bindItemKey(im, am, KeyEvent.VK_2, KeyEvent.VK_NUMPAD2, ItemKinds.FREEZE);
     }
@@ -206,6 +216,8 @@ public final class GameManager extends JPanel implements Manager {
             bombBtn.refresh();
         if (freezeBtn != null)
             freezeBtn.refresh();
+        if (shieldBtn != null)
+            shieldBtn.refresh();
     }
 
     /**
@@ -221,15 +233,19 @@ public final class GameManager extends JPanel implements Manager {
     @Override
     public void setup() {
         setupDone = false;
+        tutorialHold = false;
+        com.game.shooting_game.gameScene.stage.CoinBossMemory.reset(); // 無限モードのコインボスの引き継ぎは、挑戦ごとに初期化する
         resumeTimer = leaveTimer = -1;
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
+        LogUtils.info(component,
                 ANSI.YELLOW + "Stage " + STAGE_M.getStageId() + ANSI.RESET + " loaded.");
 
         // ステージ条件の読み込み(敵が硬い・回復なし など。プレイヤーの生成より前に行う)
         StageData sd = STAGE_M.getStageConfig().get("stage" + STAGE_M.getStageId());
-        StageModifiers.load(sd == null ? null : sd.getModifiers(), STAGE_M.getStage().getDifficulty());
+        // 敵HPの強さの目安になるステージ番号(ノーマル=ステージ番号、エクストラ=解放に要るステージ番号。無限は、ウェーブごとに別に決める)
+        int sid = STAGE_M.getStageId();
+        int stageIndex = sid == EndlessWaves.STAGE_ID ? 1 : sid < 1000 ? sid : Math.max(1, sd == null ? 1 : sd.getUnlock());
+        StageModifiers.load(sd == null ? null : sd.getModifiers(), STAGE_M.getStage().getDifficulty(), stageIndex,
+                sd != null && "BOSS".equals(sd.getCategory()));
 
         // リセット
         gameover = false;
@@ -237,14 +253,19 @@ public final class GameManager extends JPanel implements Manager {
         score = 0;
         coin = 0;
         hitCount = 0;
+        bossKills = 0;
         playTime = 0;
         skipped = false;
+        LogUtils.debug(component, "Mission HUD: stage=" + STAGE_M.getStageId() + ", difficulty="
+                + STAGE_M.getStage().getDifficulty() + ", selectable=" + DifficultyService.selectable(STAGE_M.getStageId()) + ".");
         collectedResources.clear();
 
         // 各マネージャーのセットアップ
         for (Manager m : managers) {
             m.setup();
         }
+        if (SHIP_M.getPlayer() != null)
+            SHIP_M.getPlayer().getStatus().clear(); // 前のステージの特殊効果を持ち越さない
 
         animation("start");
         setupDone = true;
@@ -255,7 +276,7 @@ public final class GameManager extends JPanel implements Manager {
         if (!setupDone)
             return;
         updateResumeAndLeave(dt);
-        if (!pause) {
+        if (!pause && !tutorialHold) {
             switch (animationName) {
                 case "start" -> {
                     SHIP_M.getPlayer().animation("admission");
@@ -266,10 +287,12 @@ public final class GameManager extends JPanel implements Manager {
                     if (4 < animateTimer) {
                         SHIP_M.getPlayer().animation("none");
                         animation("none");
+                        fireTutorial("stage1.start");
                     }
                 }
                 case "none" -> {
                     playTime += dt;
+                    checkTutorialEvents();
                     checkCollisions();
 
                     // プレイヤーのHPがなくなったらゲームオーバーフラグを立ててリザルト画面に遷移
@@ -305,6 +328,9 @@ public final class GameManager extends JPanel implements Manager {
         // 各マネージャーの描画
         for (Manager m : managers) {
             m.draw(g);
+            // 敵の弾は、自機の弾・ビーム・船の上(アイテムの下)に描く
+            if (m instanceof com.game.shooting_game.gameScene.ship.ShipManager)
+                BulletManager.getInstance().drawEnemyBullets(g);
         }
 
         // 必要データのパッキング
@@ -315,8 +341,22 @@ public final class GameManager extends JPanel implements Manager {
                 coin,
                 effectList,
                 resumeTimer >= 0 ? resumeTimer : -1,
-                leaveTimer >= 0 ? Math.min(1, leaveTimer / LEAVE_FADE) : -1);
+                leaveTimer >= 0 ? Math.min(1, leaveTimer / LEAVE_FADE) : -1,
+                liveMissions());
         gameSceneUI.draw(g, uiData);
+    }
+
+    /**
+     * プレイ中に画面の左上へ出す、ミッションの状況(★は難易度ごとに取れるので、どの難易度でも出す。無限・スキップ・ミッションのないステージは空)
+     */
+    private java.util.List<DifficultyService.LiveMission> liveMissions() {
+        Difficulty diff = STAGE_M.getStage().getDifficulty();
+        if (skipped || STAGE_M.getStageId() == EndlessWaves.STAGE_ID
+                || !DifficultyService.selectable(STAGE_M.getStageId()) || SHIP_M.getPlayer() == null)
+            return java.util.List.of();
+        double maxHp = SHIP_M.getPlayer().getMaxHp();
+        double hpRate = maxHp > 0 ? SHIP_M.getPlayer().getHp() / maxHp : 0;
+        return DifficultyService.liveMissions(STAGE_M.getStageId(), diff, hitCount, hpRate, playTime);
     }
 
     /**
@@ -351,7 +391,11 @@ public final class GameManager extends JPanel implements Manager {
             if (leaveTimer >= LEAVE_FADE) {
                 leaveTimer = -1;
                 pause = false;
-                SM.changeScene(SceneType.NORMALSTAGE);
+                if (TrialService.isActive()) {
+                    TrialService.end();
+                    SM.changeToPrevScene(); // お試し出撃は、ロビーへ戻る
+                } else
+                    SM.changeScene(SceneType.NORMALSTAGE);
             }
         }
     }
@@ -367,8 +411,22 @@ public final class GameManager extends JPanel implements Manager {
      * @param g
      */
     private void updateEffectData() {
+        if (SHIP_M.getPlayer() == null)
+            return; // シーンの切り替え中など、自機がいない間は何もしない
         effectList.compute("OOC",
                 (k, v) -> SHIP_M.getPlayer().getOOCTimer() > 0 ? SHIP_M.getPlayer().getOOCTimer() : null);
+        effectList.compute("Regen",
+                (k, v) -> ItemManager.getInstance().getRegenTimer() > 0 ? ItemManager.getInstance().getRegenTimer()
+                        : null);
+        effectList.compute("AtkUp",
+                (k, v) -> ItemManager.getAtkUpTimer() > 0 ? ItemManager.getAtkUpTimer() : null);
+        // 自機にかかっている特殊効果(毒・炎・鈍足・感電)
+        for (com.game.shooting_game.gameScene.status.StatusEffect e : com.game.shooting_game.gameScene.status.StatusEffect.values()) {
+            final var eff = e;
+            effectList.compute("Status:" + e.name(), (k, v) -> SHIP_M.getPlayer().getStatus().remaining(eff) > 0
+                    ? SHIP_M.getPlayer().getStatus().remaining(eff)
+                    : null);
+        }
         effectList.compute("Shield",
                 (k, v) -> SHIP_M.getPlayer().getShieldTimer() > 0 || SHIP_M.getPlayer().getDamagedTimer() > 0
                         ? Math.max(SHIP_M.getPlayer().getShieldTimer(), SHIP_M.getPlayer().getDamagedTimer())
@@ -380,6 +438,33 @@ public final class GameManager extends JPanel implements Manager {
      */
     public void addHit() {
         hitCount++;
+        fireTutorial("stage1.hit");
+    }
+
+    /**
+     * ステージ1の、場面ごとのチュートリアル(最初の敵・最初のアイテム)のきっかけを調べる
+     */
+    private void checkTutorialEvents() {
+        if (STAGE_M.getStageId() != 1)
+            return;
+        if (SHIP_M.getEnemyList().stream().anyMatch(e -> e.inScreen()))
+            fireTutorial("stage1.enemy");
+        if (!IM.getItemList().isEmpty())
+            fireTutorial("stage1.item");
+    }
+
+    /**
+     * ステージ1のチュートリアルを出す(まだ見ていなければ。出している間はゲームを止める)
+     */
+    private void fireTutorial(String event) {
+        if (STAGE_M.getStageId() != 1 || SM.getSceneName() != SceneType.GAME || tutorialHold)
+            return;
+        var guide = com.game.shooting_game.domain.tutorial.TutorialService.forEvent(event);
+        if (guide == null)
+            return;
+        tutorialHold = true;
+        if (!com.game.shooting_game.ui.TutorialOverlay.getInstance().show(guide, () -> tutorialHold = false))
+            tutorialHold = false;
     }
 
     /**
@@ -402,28 +487,38 @@ public final class GameManager extends JPanel implements Manager {
      * リザルト処理
      */
     public void result() {
+        // お試し出撃は、報酬・記録なしでロビーへ戻る
+        if (TrialService.isActive()) {
+            SHIP_M.getPlayer().removeHandler();
+            TrialService.end();
+            SM.changeToPrevScene();
+            return;
+        }
         // 無限モードはゲームオーバーまで続くので、終わったときに到達したウェーブに応じた報酬を出す
         boolean endless = STAGE_M.getStageId() == EndlessWaves.STAGE_ID;
         boolean isClear = endless || getGameResult();
 
         // 結果ログ
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
+        LogUtils.info(component,
                 ANSI.YELLOW + (isClear ? "Game Clear" : "Game Over") + ANSI.RESET);
+
+        // 実績の累計(スキップは遊んでいないので数えない)
+        if (!skipped) {
+            AchievementService.add(AchievementService.PLAY_SECONDS, (int) playTime);
+            if (!isClear)
+                AchievementService.add(AchievementService.GAME_OVERS, 1);
+        }
 
         if (isClear) {
             UserData data = DataManager.getUserData();
 
             // 新しくクリアしたステージの場合更新
             // (エクストラステージは番号が100以上なので、通常ステージの進行度には数えない)
-            if (STAGE_M.getStageId() < 100 && STAGE_M.getStageId() > data.getProgress().getClearedStage()) {
+            if (STAGE_M.getStageId() < 1000 && STAGE_M.getStageId() > data.getProgress().getClearedStage()) {
                 data.getProgress().setClearedStage(STAGE_M.getStageId());
 
                 // クリア進捗更新ログ
-                LogUtils.systemLog(
-                        "[INFO]",
-                        component,
+                LogUtils.info(component,
                         "Progress reached " + ANSI.YELLOW + "Stage" + STAGE_M.getStageId() + ANSI.RESET + ".");
             }
 
@@ -446,6 +541,7 @@ public final class GameManager extends JPanel implements Manager {
             StageRewards.getInstance().setDifficultyLabel(diff == Difficulty.NORMAL ? "" : diff.getLabel());
 
             // 難易度ごとのミッション(スキップ・エンドレス・難易度を選べないステージでは判定しない)
+            int newStars = 0; // 今回新しく達成したミッション(★)の数
             if (!skipped && !endless && DifficultyService.selectable(STAGE_M.getStageId())) {
                 int starsBefore = DifficultyService.totalStars();
                 double hpRate = SHIP_M.getPlayer().getMaxHp() > 0
@@ -454,17 +550,25 @@ public final class GameManager extends JPanel implements Manager {
                 DifficultyService.MissionResult missionResult = DifficultyService.recordMissions(STAGE_M.getStageId(), diff,
                         hitCount, hpRate, playTime);
                 for (int i = 0; i < missionResult.newlyEarned().length; i++)
-                    if (missionResult.newlyEarned()[i])
+                    if (missionResult.newlyEarned()[i]) {
                         StageRewards.getInstance().getNewMissions().add(missionResult.missions().get(i).text());
+                        newStars++;
+                    }
                 StageRewards.getInstance().setMissionResult(missionResult);
                 StageRewards.getInstance().setStarsBefore(starsBefore);
                 StageRewards.getInstance().setStarsAfter(DifficultyService.totalStars());
             }
 
+            // 宝箱の鍵(初回クリア・ボス撃破・ミッションの★。スキップと無限モードでは出ない)
+            if (!skipped && !endless)
+                dropChestKeys(diff, firstClear, newStars);
+
             // コインの加算(難易度で増える)
             int coinGain = (int) Math.round(coin * diff.getRewardRate());
             data.getResources().setCoins(data.getResources().getCoins() + coinGain);
             StageRewards.getInstance().getResources().put(ResourceKinds.COIN, coinGain);
+            if (!skipped)
+                AchievementService.add(AchievementService.COINS, coinGain);
 
             // ステージ中に拾った素材をバックパックに追加
             for (Map.Entry<ResourceKinds, Integer> e : collectedResources.entrySet()) {
@@ -503,9 +607,18 @@ public final class GameManager extends JPanel implements Manager {
                     data.getResources().getEquipments().merge(e.getKey(), e.getValue(), Integer::sum);
                     StageRewards.getInstance().getResources().merge(e.getKey(), e.getValue(), Integer::sum);
                 }
+                // コインボスを倒していれば、特殊ドロップのモジュールも受け取る
+                for (Rarity rarity : com.game.shooting_game.gameScene.stage.CoinBossMemory.takeSpecialDrops())
+                    StageRewards.getInstance().getModules().add(ModuleService.addNew(null, rarity));
                 for (Rarity rarity : EndlessWaves.moduleRewards(cleared))
                     StageRewards.getInstance().getModules().add(ModuleService.addNew(null, rarity));
             }
+
+            // 手に入れた素材を記録(素材周回ステージの一覧に出るようになる)
+            StageRewards.getInstance().getResources().forEach((k, v) -> {
+                if (v > 0)
+                    MaterialFarmService.markObtained(k.getResName());
+            });
 
             // モジュールの報酬(確率で手に入る。種類を決めていなければランダム)
             if (currentStageData.getModuleRewards() != null) {
@@ -523,7 +636,7 @@ public final class GameManager extends JPanel implements Manager {
                         StageRewards.getInstance().getModules().add(ModuleService
                                 .addNew(kind, bumpRarity(Rarity.valueOf(r.getRarity()), diff.getRarityBump())));
                     } catch (IllegalArgumentException e) {
-                        LogUtils.systemLog("[WARN]", component, "Invalid module reward: " + r);
+                        LogUtils.warn(component, "Invalid module reward: " + r);
                     }
                 }
                 // 1日1回の報酬を受け取ったことを記録する
@@ -552,6 +665,29 @@ public final class GameManager extends JPanel implements Manager {
      */
     public double playerBulletDamage(Bullet bullet) {
         return bullet.getDamage() * DamageCalculator.bulletAttackRate();
+    }
+
+    /**
+     * ボスを倒したことの記録(宝箱の鍵のドロップ用)
+     */
+    public void addBossKill() {
+        bossKills++;
+    }
+
+    /**
+     * 宝箱の鍵のドロップ(初回クリアは確実、ボスは確率、ミッションの★は1つにつき銅の鍵1つ。結果の画面用にも記録する)
+     */
+    private void dropChestKeys(Difficulty diff, boolean firstClear, int newStars) {
+        java.util.Map<ChestService.Rank, Integer> got = StageRewards.getInstance().getKeys();
+        if (firstClear)
+            got.merge(ChestService.firstClearKey(diff), 1, Integer::sum);
+        if (bossKills > 0 && Math.random() < ChestService.BOSS_KEY_CHANCE)
+            got.merge(ChestService.bossKey(diff), 1, Integer::sum);
+        if (newStars > 0)
+            got.merge(ChestService.Rank.COPPER, Math.min(newStars, ChestService.MISSION_KEY_CAP), Integer::sum);
+        got.forEach(ChestService::addKey);
+        if (!got.isEmpty())
+            LogUtils.info(component, "Chest keys dropped: " + got);
     }
 
     /**
@@ -615,6 +751,8 @@ public final class GameManager extends JPanel implements Manager {
                         double damage = DamageCalculator.bulletToEnemy(bullet, enemy);
 
                         DamageCalculator.hitEnemy(enemy, damage);
+                        bullet.applyStatusTo(enemy);
+                        com.game.shooting_game.domain.unit.UnitService.rollOnHit(SHIP_M.getPlayer().getShipId(), enemy, 1.0);
 
                         // 貫通数が残っていれば通り抜ける
                         if (bullet.consumeHit()) {
@@ -633,6 +771,7 @@ public final class GameManager extends JPanel implements Manager {
                         continue;
 
                     SHIP_M.getPlayer().addDamage(DamageCalculator.toPlayer(bullet.getDamage()));
+                    bullet.applyStatusTo(SHIP_M.getPlayer());
                     break;
                 }
             }
@@ -640,9 +779,13 @@ public final class GameManager extends JPanel implements Manager {
 
         // アイテム衝突
         for (Item item : IM.getItemList()) {
-            if (GameUtils.collidesWith(SHIP_M.getPlayer(), item)) {
+            // 拾う範囲は、弾の当たり判定(白いドット)とは別に、機体ごとの元の大きさ
+            Player picker = SHIP_M.getPlayer();
+            if (GameUtils.distSq(picker.getPos(), item.getPos())
+                    < Math.pow(picker.getPickupSize() + item.getCollisionSize(), 2)) {
                 item.effect();
                 item.destroySelf();
+                AchievementService.add(AchievementService.ITEMS, 1);
             }
         }
     }

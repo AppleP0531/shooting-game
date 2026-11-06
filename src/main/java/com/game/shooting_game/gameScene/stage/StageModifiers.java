@@ -1,6 +1,7 @@
 package com.game.shooting_game.gameScene.stage;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.game.shooting_game.utils.GameBalance;
 import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 
@@ -35,6 +36,9 @@ public final class StageModifiers {
     private static Difficulty difficulty = Difficulty.NORMAL;
     private static double endlessHp = 1.0;
     private static double endlessDamage = 1.0;
+    private static boolean bossStage = false; // ボスチャレンジか(難易度のボス用倍率をかける)
+    private static double stageDamage = 1.0; // ステージが進むほど敵から受けるダメージが増える倍率(stageDamageGrowth)
+    private static double stageHp = 1.0; // ステージが進むほど敵のHPが増える倍率(BalanceConfig.json の stageHpGrowth)
 
     private StageModifiers() {
     }
@@ -50,6 +54,25 @@ public final class StageModifiers {
      * ステージの開始時に読み込む(難易度の倍率も、ステージ条件に重ねてかける)
      */
     public static void load(Spec spec, Difficulty diff) {
+        load(spec, diff, 1);
+    }
+
+    /**
+     * ステージの開始時に読み込む(ステージの番号に応じた敵HPの倍率も決める)
+     *
+     * @param stageIndex ステージの番号(ノーマルはステージ番号。エクストラは解放に要るステージ番号)
+     */
+    public static void load(Spec spec, Difficulty diff, int stageIndex) {
+        load(spec, diff, stageIndex, false);
+    }
+
+    /**
+     * ステージの開始時に読み込む(ボスチャレンジなら、難易度のボス用倍率も重ねる)
+     */
+    public static void load(Spec spec, Difficulty diff, int stageIndex, boolean boss) {
+        bossStage = boss;
+        stageHp = GameBalance.stageHpRate(stageIndex);
+        stageDamage = GameBalance.stageDamageRate(stageIndex);
         current = spec == null ? new Spec() : spec;
         difficulty = diff == null ? Difficulty.NORMAL : diff;
         endlessHp = 1.0;
@@ -62,8 +85,33 @@ public final class StageModifiers {
      * @param wave 今のウェーブ番号
      */
     public static void setEndlessScale(int wave) {
-        endlessHp = 1 + 0.015 * wave;
+        // 無限モードは、元にしているステージ(2ウェーブごとに1つ進む)の指数に、ウェーブごとの増加を重ねる
+        endlessHp = GameBalance.stageHpRate(1 + (wave - 1) / 2.0) * (1 + GameBalance.endlessHpPerWave() * wave);
         endlessDamage = 1 + 0.01 * wave;
+    }
+
+    /** ノーマルモードのステージの数(1〜この番号) */
+    public static final int NORMAL_STAGE_COUNT = 200;
+
+    /** いま戦っているのが、ノーマルモードのステージか(無限・エクストラは含まない) */
+    private static boolean isNormalStage() {
+        int id = StageManager.getInstance().getStageId();
+        return id >= 1 && id <= NORMAL_STAGE_COUNT;
+    }
+
+    /**
+     * ノーマルモードの敵HPの倍率の上限(ステージ200のナイトメアの値。ボスチャレンジならボス用の倍率も込み)
+     * ステージ固有の条件や日替わりの倍率が重なっても、これを超えない。
+     */
+    public static double normalHpCap(boolean boss) {
+        return GameBalance.stageHpRate(NORMAL_STAGE_COUNT) * Difficulty.NIGHTMARE.getEnemyHpRate()
+                * (boss ? Difficulty.NIGHTMARE.getBossHpRate() : 1.0);
+    }
+
+    /** ノーマルモードの、敵から受けるダメージの倍率の上限(ナイトメアの値。ボスチャレンジならボス用の倍率も込み) */
+    public static double normalDamageCap(boolean boss) {
+        return GameBalance.stageDamageRate(NORMAL_STAGE_COUNT) * Difficulty.NIGHTMARE.getEnemyDamageRate()
+                * (boss ? Difficulty.NIGHTMARE.getBossDamageRate() : 1.0);
     }
 
     private static boolean active() {
@@ -71,11 +119,36 @@ public final class StageModifiers {
     }
 
     public static double enemyHpRate() {
-        return active() ? current.getEnemyHpRate() * difficulty.getEnemyHpRate() * endlessHp : 1.0;
+        if (!active())
+            return 1.0;
+        double rate = current.getEnemyHpRate() * difficulty.getEnemyHpRate() * (bossStage ? difficulty.getBossHpRate() : 1.0) * endlessHp * stageHp;
+        return isNormalStage() ? Math.min(rate, normalHpCap(bossStage)) : rate;
+    }
+
+    /**
+     * 戦闘に入る前に見せる、敵HPの倍率(戦闘中の enemyHpRate と同じ掛け方。無限モードのウェーブ分は含まない)
+     *
+     * @param stageIndex ステージの番号(ノーマルはステージ番号。エクストラは解放に要るステージ番号)
+     */
+    public static double previewEnemyHpRate(Spec spec, Difficulty diff, boolean boss, int stageIndex) {
+        Spec s = spec == null ? new Spec() : spec;
+        Difficulty d = diff == null ? Difficulty.NORMAL : diff;
+        return s.getEnemyHpRate() * d.getEnemyHpRate() * (boss ? d.getBossHpRate() : 1.0)
+                * GameBalance.stageHpRate(stageIndex);
+    }
+
+    /**
+     * 敵のレベルに応じた敵HPの倍率(ゲーム中だけ。ボスは対象外)
+     */
+    public static double enemyLevelHpRate(int level) {
+        return active() ? GameBalance.enemyLevelHpRate(level) : 1.0;
     }
 
     public static double enemyDamageRate() {
-        return active() ? current.getEnemyDamageRate() * difficulty.getEnemyDamageRate() * endlessDamage : 1.0;
+        if (!active())
+            return 1.0;
+        double rate = current.getEnemyDamageRate() * difficulty.getEnemyDamageRate() * (bossStage ? difficulty.getBossDamageRate() : 1.0) * endlessDamage * stageDamage;
+        return isNormalStage() ? Math.min(rate, normalDamageCap(bossStage)) : rate;
     }
 
     public static double playerHpRate() {
@@ -98,12 +171,21 @@ public final class StageModifiers {
      * 条件の説明(表示用。条件がなければ空)
      */
     public static String describe(Spec s) {
+        return describe(s, true);
+    }
+
+    /**
+     * 条件の説明(表示用)
+     *
+     * @param withEnemyRates 敵のHP・受けるダメージの倍率も出すか(難易度の表示と重なるときは出さない)
+     */
+    public static String describe(Spec s, boolean withEnemyRates) {
         if (s == null)
             return "";
         StringBuilder sb = new StringBuilder();
-        if (s.getEnemyHpRate() != 1.0)
+        if (withEnemyRates && s.getEnemyHpRate() != 1.0)
             sb.append("・敵のHP ×").append(fmt(s.getEnemyHpRate())).append("\n");
-        if (s.getEnemyDamageRate() != 1.0)
+        if (withEnemyRates && s.getEnemyDamageRate() != 1.0)
             sb.append("・敵から受けるダメージ ×").append(fmt(s.getEnemyDamageRate())).append("\n");
         if (s.getPlayerHpRate() != 1.0)
             sb.append("・自機の最大HP ×").append(fmt(s.getPlayerHpRate())).append("\n");

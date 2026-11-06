@@ -1,11 +1,21 @@
 {
-  "interval": 12,
+  "interval": 36,
   "tiers": [
-    { "coins": 500, "resources": { "GEAR": { "COMMON": 5 }, "SCREW": { "COMMON": 5 } } },
-    { "coins": 800, "resources": { "COPPER_PLATE": { "COMMON": 5 }, "IRON_BAR": { "COMMON": 5 } } },
-    { "coins": 1200, "skipTickets": 1, "resources": { "GEAR": { "COMMON": 8 }, "SCREW": { "COMMON": 8 }, "ENERGY_CELL": { "COMMON": 3 } } },
-    { "coins": 1600, "resources": { "CIRCUIT": { "COMMON": 5 }, "LENS": { "COMMON": 5 } } },
-    { "coins": 2000, "resources": { "ALLOY_PLATE": { "COMMON": 5 }, "CRYSTAL_SHARD": { "COMMON": 3 } } },
-    { "coins": 2500, "skipTickets": 1, "resources": { "GEAR": { "COMMON": 12 }, "SCREW": { "COMMON": 12 }, "MODULE_CHIP": { "COMMON": 2 } } }
+    { "coins": 2500, "skipTickets": 1, "resources": { "GEAR": { "COMMON": 13 }, "SCREW": { "COMMON": 13 }, "COPPER_PLATE": { "COMMON": 5 }, "IRON_BAR": { "COMMON": 5 }, "ENERGY_CELL": { "COMMON": 3 } } },
+    { "coins": 6100, "skipTickets": 1, "resources": { "CIRCUIT": { "COMMON": 5 }, "LENS": { "COMMON": 5 }, "ALLOY_PLATE": { "COMMON": 5 }, "CRYSTAL_SHARD": { "COMMON": 3 }, "GEAR": { "COMMON": 12 }, "SCREW": { "COMMON": 12 }, "MODULE_CHIP": { "COMMON": 2 } } },
+    { "coins": 9000, "skipTickets": 1, "resources": { "GEAR": { "COMMON": 7 }, "SCREW": { "COMMON": 5 }, "COPPER_PLATE": { "COMMON": 7 }, "IRON_BAR": { "COMMON": 5 }, "ENERGY_CELL": { "COMMON": 7 }, "CIRCUIT": { "COMMON": 5 } } },
+    { "coins": 11250, "skipTickets": 1, "resources": { "LENS": { "COMMON": 8 }, "ALLOY_PLATE": { "COMMON": 6 }, "RANK_CORE": { "COMMON": 1 }, "CRYSTAL_SHARD": { "COMMON": 8 }, "MODULE_CHIP": { "COMMON": 6 }, "PLASMA_CORE": { "COMMON": 8 }, "GEAR": { "COMMON": 6 } } },
+    { "coins": 13500, "skipTickets": 1, "resources": { "GEAR": { "COMMON": 9 }, "SCREW": { "COMMON": 7 }, "COPPER_PLATE": { "COMMON": 9 }, "IRON_BAR": { "COMMON": 7 }, "ENERGY_CELL": { "COMMON": 9 }, "CIRCUIT": { "COMMON": 7 } } },
+    { "coins": 15750, "skipTickets": 1, "resources": { "LENS": { "COMMON": 10 }, "ALLOY_PLATE": { "COMMON": 8 }, "CRYSTAL_SHARD": { "COMMON": 10 }, "MODULE_CHIP": { "COMMON": 8 }, "PLASMA_CORE": { "COMMON": 10 }, "GEAR": { "COMMON": 8 } } },
+    { "coins": 18000, "skipTickets": 1, "resources": { "GEAR": { "COMMON": 5, "UNCOMMON": 3 }, "SCREW": { "COMMON": 4, "UNCOMMON": 3 }, "COPPER_PLATE": { "COMMON": 5, "UNCOMMON": 3 }, "IRON_BAR": { "COMMON": 4, "UNCOMMON": 3 }, "RANK_CORE": { "COMMON": 2 }, "ENERGY_CELL": { "COMMON": 5, "UNCOMMON": 3 }, "CIRCUIT": { "COMMON": 4, "UNCOMMON": 3 } } },
+    { "coins": 20250, "skipTickets": 1, "resources": { "LENS": { "COMMON": 6, "UNCOMMON": 4 }, "ALLOY_PLATE": { "COMMON": 5, "UNCOMMON": 3 }, "CRYSTAL_SHARD": { "COMMON": 6, "UNCOMMON": 4 }, "MODULE_CHIP": { "COMMON": 5, "UNCOMMON": 3 }, "PLASMA_CORE": { "COMMON": 6, "UNCOMMON": 4 }, "GEAR": { "COMMON": 5, "UNCOMMON": 3 } } },
+    { "coins": 22500, "skipTickets": 1, "resources": { "GEAR": { "COMMON": 6, "UNCOMMON": 4 }, "SCREW": { "COMMON": 5, "UNCOMMON": 3 }, "COPPER_PLATE": { "COMMON": 6, "UNCOMMON": 4 }, "IRON_BAR": { "COMMON": 5, "UNCOMMON": 3 }, "ENERGY_CELL": { "COMMON": 6, "UNCOMMON": 4 }, "CIRCUIT": { "COMMON": 5, "UNCOMMON": 3 } } },
+    { "coins": 24750, "skipTickets": 2, "resources": { "LENS": { "COMMON": 7, "UNCOMMON": 4 }, "ALLOY_PLATE": { "COMMON": 6, "UNCOMMON": 4 }, "CRYSTAL_SHARD": { "COMMON": 7, "UNCOMMON": 4 }, "MODULE_CHIP": { "COMMON": 6, "UNCOMMON": 4 }, "PLASMA_CORE": { "COMMON": 7, "UNCOMMON": 4 }, "GEAR": { "COMMON": 6, "UNCOMMON": 4 }, "RANK_CORE": { "COMMON": 3 } } },
+    { "coins": 27000, "skipTickets": 2, "resources": { "GEAR": { "UNCOMMON": 7, "RARE": 5 }, "SCREW": { "UNCOMMON": 6, "RARE": 4 }, "COPPER_PLATE": { "UNCOMMON": 7, "RARE": 5 }, "IRON_BAR": { "UNCOMMON": 6, "RARE": 4 }, "ENERGY_CELL": { "UNCOMMON": 7, "RARE": 5 }, "CIRCUIT": { "UNCOMMON": 6, "RARE": 4 } } },
+    { "coins": 29250, "skipTickets": 2, "resources": { "LENS": { "UNCOMMON": 8, "RARE": 5 }, "ALLOY_PLATE": { "UNCOMMON": 7, "RARE": 4 }, "CRYSTAL_SHARD": { "UNCOMMON": 8, "RARE": 5 }, "MODULE_CHIP": { "UNCOMMON": 7, "RARE": 4 }, "PLASMA_CORE": { "UNCOMMON": 8, "RARE": 5 }, "GEAR": { "UNCOMMON": 7, "RARE": 4 } } },
+    { "coins": 31500, "skipTickets": 2, "resources": { "GEAR": { "UNCOMMON": 8, "RARE": 5 }, "SCREW": { "UNCOMMON": 7, "RARE": 5 }, "COPPER_PLATE": { "UNCOMMON": 8, "RARE": 5 }, "IRON_BAR": { "UNCOMMON": 7, "RARE": 5 }, "ENERGY_CELL": { "UNCOMMON": 8, "RARE": 5 }, "CIRCUIT": { "UNCOMMON": 7, "RARE": 5 } } },
+    { "coins": 33750, "skipTickets": 2, "resources": { "LENS": { "UNCOMMON": 9, "RARE": 6 }, "ALLOY_PLATE": { "UNCOMMON": 8, "RARE": 5 }, "RANK_CORE": { "COMMON": 4 }, "CRYSTAL_SHARD": { "UNCOMMON": 9, "RARE": 6 }, "MODULE_CHIP": { "UNCOMMON": 8, "RARE": 5 }, "PLASMA_CORE": { "UNCOMMON": 9, "RARE": 6 }, "GEAR": { "UNCOMMON": 8, "RARE": 5 } } },
+    { "coins": 36000, "skipTickets": 2, "resources": { "GEAR": { "RARE": 9, "EPIC": 6 }, "SCREW": { "RARE": 8, "EPIC": 5 }, "COPPER_PLATE": { "RARE": 9, "EPIC": 6 }, "IRON_BAR": { "RARE": 8, "EPIC": 5 }, "ENERGY_CELL": { "RARE": 9, "EPIC": 6 }, "CIRCUIT": { "RARE": 8, "EPIC": 5 } } },
+    { "coins": 38250, "skipTickets": 2, "resources": { "LENS": { "RARE": 10, "EPIC": 6 }, "ALLOY_PLATE": { "RARE": 9, "EPIC": 6 }, "CRYSTAL_SHARD": { "RARE": 10, "EPIC": 6 }, "MODULE_CHIP": { "RARE": 9, "EPIC": 6 }, "PLASMA_CORE": { "RARE": 10, "EPIC": 6 }, "GEAR": { "RARE": 9, "EPIC": 6 } } }
   ]
 }

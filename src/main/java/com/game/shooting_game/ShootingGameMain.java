@@ -9,7 +9,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 import javax.swing.AbstractAction;
@@ -29,7 +28,6 @@ import com.game.shooting_game.command.CommandGlassPane;
 import com.game.shooting_game.data.DataManager;
 import com.game.shooting_game.data.LoginPanel;
 import com.game.shooting_game.data.UserService;
-import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.titleScene.TitleManager;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.GameSettings;
@@ -103,9 +101,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                 System.out.flush();
             }
         } catch (Exception e) {
-            LogUtils.systemLog(
-                    "[WARN]",
-                    component,
+            LogUtils.warn(component,
                     ANSI.YELLOW + "Fail to reset logs" + ANSI.RESET);
         }
 
@@ -120,6 +116,9 @@ public final class ShootingGameMain extends JPanel implements Runnable {
         frame.setVisible(true);
         frame.setResizable(false);
         frame.toFront(); // ウィンドウを最前面に移動
+        // チュートリアルの表示(全画面に重ねる。出ていない間は隠れている)
+        frame.getLayeredPane().add(com.game.shooting_game.ui.TutorialOverlay.getInstance(),
+                javax.swing.JLayeredPane.POPUP_LAYER);
 
         panel.start();
 
@@ -128,9 +127,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
             ConfigurableApplicationContext context = null;
             try {
                 // サーバー接続開始ログ
-                LogUtils.systemLog(
-                        "[INFO]",
-                        component,
+                LogUtils.info(component,
                         ANSI.GREEN + "Connecting to game server..." + ANSI.RESET);
                 LoadProgress.creep("Server connecting", 0, 0.30);
 
@@ -146,37 +143,31 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                 DataManager.setContext(context);
 
                 // サーバー接続成功ログ
-                LogUtils.systemLog(
-                        "[INFO]",
-                        component,
+                LogUtils.notice(component,
                         ANSI.GREEN + "Connected to game server successfully." + ANSI.RESET);
             } catch (Exception e) {
                 // サーバー接続失敗ログ
-                LogUtils.systemLog(
-                        "[ERROR]",
-                        component,
+                LogUtils.error(component,
                         ANSI.RED + "Server connect error" + ANSI.RESET);
                 // オフライン起動ログ
-                LogUtils.systemLog(
-                        "[ERROR]",
-                        component,
+                LogUtils.warn(component,
                         ANSI.YELLOW + "Starting in OFFLINE MODE." + ANSI.RESET);
                 onlineMode = false;
             }
             // 初期設定開始ログ
-            LogUtils.systemLog(
-                    "[INFO]",
-                    component,
+            LogUtils.notice(component,
                     ANSI.GREEN + "Initializing Game Setup..." + ANSI.RESET);
             LoadProgress.set("Loading game configs", 0.35);
 
             if (onlineMode) {
                 // DataManagerをSpringから取得して初期化
                 context.getBean(DataManager.class);
+                LoadProgress.set("Loading user data", 0.38);
             } else {
                 DataManager.load("guest", "create");
             }
 
+            LoadProgress.set("Preparing UI", 0.39);
             // GlassPaneの設定
             glassPane = new CommandGlassPane(() -> {
             });
@@ -202,13 +193,13 @@ public final class ShootingGameMain extends JPanel implements Runnable {
             // リソース情報の読み込み
             LoadProgress.set("Loading resources", 0.40);
             ResourceManager.getInstance();
-            LoadProgress.set("Building screens", 0.75);
+            LoadProgress.set("Loading scenes", 0.50);
 
             // UIのセットアップ
-            List<Manager> managers = new ArrayList<>(SceneManager.getInstance().getSceneMap().values());
-            for (int i = 0; i < managers.size(); i++) {
-                managers.get(i).initComponents();
-                LoadProgress.set("Building screens", 0.75 + 0.25 * (i + 1) / managers.size());
+            var scenes = new ArrayList<>(SceneManager.getInstance().getSceneMap().entrySet());
+            for (int i = 0; i < scenes.size(); i++) {
+                LoadProgress.set("Building " + scenes.get(i).getKey().name(), 0.80 + 0.20 * i / scenes.size());
+                scenes.get(i).getValue().initComponents();
             }
 
             // すべてのマネージャーをSceneManagerから取得しカードレイアウトに登録
@@ -228,14 +219,10 @@ public final class ShootingGameMain extends JPanel implements Runnable {
             }
 
             // 初期設定完了ログ
-            LogUtils.systemLog(
-                    "[INFO]",
-                    component,
+            LogUtils.notice(component,
                     ANSI.GREEN + "Game configuration loaded successfully." + ANSI.RESET);
             // 起動ログ
-            LogUtils.systemLog(
-                    "[INFO]",
-                    component,
+            LogUtils.notice(component,
                     ANSI.GREEN + "Game launching." + ANSI.RESET);
 
             // 最初の画面をTITLEに設定
@@ -249,9 +236,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                 // 保存のあいだ画面が固まって見えないよう、先にウィンドウを隠す(保存と終了はそのあと)
                 e.getWindow().setVisible(false);
                 // データセーブ開始ログ
-                LogUtils.systemLog(
-                        "[INFO]",
-                        component,
+                LogUtils.info(component,
                         ANSI.GREEN + "Saving game data..." + ANSI.RESET);
 
                 if (onlineMode) {
@@ -260,9 +245,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                 }
 
                 // Goodbyeログ
-                LogUtils.systemLog(
-                        "[INFO]",
-                        component,
+                LogUtils.notice(component,
                         ANSI.GREEN + "Goodbye!" + ANSI.RESET);
 
                 System.exit(0);
@@ -305,9 +288,7 @@ public final class ShootingGameMain extends JPanel implements Runnable {
                 waitUntil(frameStart + (long) (1_000_000_000.0 / fps));
             } catch (Exception e) {
                 // ゲームループエラー
-                LogUtils.error(
-                        "[ERROR]",
-                        component,
+                LogUtils.error(component,
                         "Game Loop Error.",
                         e);
             }

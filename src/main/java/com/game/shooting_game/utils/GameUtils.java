@@ -130,11 +130,10 @@ public class GameUtils {
      *
      * @param attack     攻撃側の火力
      * @param colorRate  色による倍率
-     * @param enemyHpRate 敵が硬い条件の倍率(割って表す)
-     * @return 火力 × 色の倍率 ÷ 敵のHP倍率
+     * @return 火力 × 色の倍率(敵の硬さはHPで表すので、ここでは割らない)
      */
-    public static double damageToEnemy(double attack, double colorRate, double enemyHpRate) {
-        return attack * colorRate / enemyHpRate;
+    public static double damageToEnemy(double attack, double colorRate) {
+        return attack * colorRate;
     }
 
     /**

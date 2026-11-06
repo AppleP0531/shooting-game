@@ -55,11 +55,11 @@ public final class ShopService {
                             n.path("name").asText(kind.name()),
                             n.path("description").asText("")));
                 } catch (IllegalArgumentException e) {
-                    LogUtils.systemLog("[WARN]", component, "不明な商品を無視します: " + n.path("kind").asText(""));
+                    LogUtils.warn(component, "不明な商品を無視します: " + n.path("kind").asText(""));
                 }
             }
         } catch (Exception e) {
-            LogUtils.systemLog("[WARN]", component, "ショップの設定を読めないため既定値を使います: " + e.getMessage());
+            LogUtils.warn(component, "ショップの設定を読めないため既定値を使います: " + e.getMessage());
             loaded.clear();
         }
         if (loaded.isEmpty())
@@ -71,6 +71,8 @@ public final class ShopService {
         return List.of(
                 new ShopItem(ItemKinds.BOMB, 80000, 10, "ボム", "画面の敵弾を消し、敵全体にダメージ"),
                 new ShopItem(ItemKinds.FREEZE, 100000, 10, "フリーズ", "敵(ボス以外)を4秒止め、ボスは動きを半分にする"),
+                new ShopItem(ItemKinds.DURABLE_SHIELD, 120000, 10, "耐久シールド",
+                        "最大HPの50%ぶんの耐久のバリアを張る。クールタイムなしで、耐久が尽きるまで被弾を吸う"),
                 new ShopItem(ItemKinds.SKIP_TICKET, 150000, 10, "研究スキップ券", "スキルツリー強化の研究の待ち時間を、すぐ終わらせる"));
     }
 

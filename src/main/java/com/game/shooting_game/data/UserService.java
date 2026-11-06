@@ -70,9 +70,7 @@ public class UserService {
         }
         // パスワードの認証
         if (!authenticate(username, oldPassword)) {
-            LogUtils.systemLog(
-                    "[WARN]",
-                    component,
+            LogUtils.warn(component,
                     "Password is not true");
             return false;
         }
@@ -116,26 +114,20 @@ public class UserService {
     public boolean deleteUser(String username, String password) {
         UserEntity entity = userRepository.findByUsername(username).orElse(null);
         if (entity == null) {
-            LogUtils.systemLog(
-                    "[WARN]",
-                    component,
+            LogUtils.warn(component,
                     "Unknown username: " + ANSI.YELLOW + username + ANSI.RESET);
             return false;
         }
 
         // パスワードの認証
         if (!authenticate(username, password)) {
-            LogUtils.systemLog(
-                    "[WARN]",
-                    component,
+            LogUtils.warn(component,
                     "Password is not true");
             return false;
         }
 
         userRepository.delete(entity);
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
+        LogUtils.info(component,
                 "User '" + username + "' and all associated data have been deleted.");
 
         // 自身のデータだった場合削除して強制終了
@@ -154,17 +146,13 @@ public class UserService {
     public boolean forceDeleteUser(String username) {
         UserEntity entity = userRepository.findByUsername(username).orElse(null);
         if (entity == null) {
-            LogUtils.systemLog(
-                    "[WARN]",
-                    component,
+            LogUtils.warn(component,
                     "Unknown username: " + ANSI.YELLOW + username + ANSI.RESET);
             return false;
         }
 
         userRepository.delete(entity);
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
+        LogUtils.info(component,
                 "User '" + username + "' and all associated data have been deleted.");
 
         return true;

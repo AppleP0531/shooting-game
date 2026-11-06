@@ -28,7 +28,7 @@ import com.game.shooting_game.gameScene.stage.StageManager.StageData;
  * - 起動中に日付をまたいでも、エクストラ画面に入るたびに作り直す。
  */
 public final class DailyService {
-    public static final int STAGE_ID = 141;
+    public static final int STAGE_ID = 1141;
     private static final int UNLOCK = 5;
     private static final int[] BOSS_STAGES = { 5, 10, 15, 20, 25 };
 

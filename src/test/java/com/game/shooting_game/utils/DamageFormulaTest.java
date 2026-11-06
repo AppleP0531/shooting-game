@@ -20,10 +20,10 @@ class DamageFormulaTest {
     }
 
     @Test
-    @DisplayName("敵が受けるダメージ = 火力 × 色の倍率 ÷ 敵のHP倍率")
+    @DisplayName("敵が受けるダメージ = 火力 × 色の倍率")
     void damageToEnemy() {
-        assertEquals(4.25, GameUtils.damageToEnemy(17, 0.5, 2), EPS);
-        assertEquals(17.0, GameUtils.damageToEnemy(17, 1, 1), EPS);
+        assertEquals(8.5, GameUtils.damageToEnemy(17, 0.5), EPS);
+        assertEquals(17.0, GameUtils.damageToEnemy(17, 1), EPS);
     }
 
     @Test

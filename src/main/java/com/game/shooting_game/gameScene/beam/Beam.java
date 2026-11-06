@@ -96,7 +96,14 @@ public class Beam {
         this.damage = spec.getDamage();
         this.bossRate = spec.getBossRate();
         this.lockFraction = Math.clamp(spec.getLock(), 0, 1);
+        this.effect = com.game.shooting_game.gameScene.status.StatusEffect.parse(spec.getEffect());
+        this.effectTime = spec.getEffectTime();
     }
+
+    @Getter
+    private final com.game.shooting_game.gameScene.status.StatusEffect effect; // 当たった自機にかける特殊効果(なければnull)
+    @Getter
+    private final double effectTime; // その時間(0なら効果の標準)
 
     public void update(double dt) {
         timer += dt;

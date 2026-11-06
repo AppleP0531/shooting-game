@@ -77,7 +77,7 @@ public final class SubShipTypeService {
             for (JsonNode n : new ObjectMapper().readTree(is))
                 loaded.add(parseType(n));
         } catch (Exception e) {
-            LogUtils.systemLog("[WARN]", component, "サブ機タイプの設定を読めないため標準のみにします: " + e.getMessage());
+            LogUtils.warn(component, "サブ機タイプの設定を読めないため標準のみにします: " + e.getMessage());
             loaded.clear();
         }
         if (loaded.isEmpty())

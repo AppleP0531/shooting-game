@@ -25,6 +25,7 @@ import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.utils.LogUtils;
+import com.game.shooting_game.ui.NullImage;
 import com.game.shooting_game.ui.UIBuilder;
 import com.game.shooting_game.utils.Vector2;
 import com.game.shooting_game.utils.animation.AnimationManager;
@@ -66,6 +67,9 @@ public final class BulletManager implements Manager {
         private double diff; // Curve用: 変角量
         private double startSpeed; // 初速(0なら最初から speed)。accel と組み合わせて加速する弾にする
         private double accel; // 加速度(1秒あたりの速度の増加)。speed まで加速する
+        private String effect; // 当たった相手にかける特殊効果(POISON / BURN / SLOW / SHOCK。なければなし)
+        private double effectTime; // 特殊効果の時間(秒。0なら効果の標準の時間)
+        private double effectChance = 1.0; // 特殊効果がかかる確率(0〜1)
         private int pierce; // 貫通数(当たった敵を何体まで通り抜けるか。0なら当たって消える)
         private double amplitude; // Spiral用: らせんの振れ幅
         private double frequency; // Spiral用: らせんの速さ(rad/秒)
@@ -127,9 +131,7 @@ public final class BulletManager implements Manager {
 
         try (InputStream is = getClass().getResourceAsStream(CONFIG_PATH)) {
             // ロード開始ログ
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
+            LogUtils.debug(component,
                     "Attempting to load configuration from " + ANSI.YELLOW + CONFIG_PATH + ANSI.RESET + ".");
 
             // nullチェック
@@ -140,15 +142,11 @@ public final class BulletManager implements Manager {
             bulletConfigMap = mapper.readValue(is, TYPE_REF);
 
             // ロード成功ログ
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
+            LogUtils.debug(component,
                     "Configuration loaded successfully");
         } catch (IOException e) {
             // ロードエラーログ
-            LogUtils.error(
-                    "[FATAL]",
-                    component,
+            LogUtils.fatal(component,
                     "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + "." + ANSI.RESET + "\n"
                             + ANSI.RED + "Application will terminate." + ANSI.RESET,
                     e);
@@ -178,9 +176,7 @@ public final class BulletManager implements Manager {
 
                     if (data == null) {
                         // データ未定義ログ
-                        LogUtils.systemLog(
-                                "[WARN]",
-                                component,
+                        LogUtils.warn(component,
                                 "data for " + ANSI.YELLOW + owner + " - " + kind + ANSI.RESET + " is not defined.");
                         continue;
                     }
@@ -204,15 +200,18 @@ public final class BulletManager implements Manager {
                         } catch (IOException e) {
                             switch (e.getMessage()) {
                                 // 画像ファイル未発見ログ
-                                case "FILE_NOT_FOUND" -> LogUtils.systemLog(
-                                        "[WARN]",
-                                        component,
-                                        "File not found: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
+                                case "FILE_NOT_FOUND" -> {
+                                    LogUtils.warn(component, "File not found: " + ANSI.YELLOW + imagePath
+                                            + ANSI.RESET + ". Using the null image.");
+                                    bulletImageCache
+                                            .computeIfAbsent(owner, o -> new HashMap<>())
+                                            .computeIfAbsent(kind, k -> new HashMap<>())
+                                            .put(String.valueOf(type) + "_" + mode.toString().toLowerCase(),
+                                                    NullImage.frames(NullImage.Kind.BULLET, data.getUseCount()));
+                                }
 
                                 // 画像読み込みエラーログ
-                                case "BROKEN_FILE" -> LogUtils.systemLog(
-                                        "[ERROR]",
-                                        component,
+                                case "BROKEN_FILE" -> LogUtils.error(component,
                                         "Failed to load image: " + ANSI.YELLOW + imagePath + ANSI.RESET + ".");
 
                                 // その他エラーログ
@@ -263,11 +262,18 @@ public final class BulletManager implements Manager {
 
     @Override
     public void draw(Graphics g) {
-        // 自機の弾を先に、敵の弾をあとに描く(敵の弾が自機の弾に隠れないように)
-        List<Bullet> snapshot = new ArrayList<>(bulletList);
-        snapshot.stream().filter(b -> b.getOwner() == ShipKinds.PLAYER).forEach(bullet -> bullet.draw(g));
-        snapshot.stream().filter(b -> b.getOwner() != ShipKinds.PLAYER).forEach(bullet -> bullet.draw(g));
+        // ここでは自機の弾だけを描く。敵の弾は、ビームの上に重なるよう、あとから drawEnemyBullets で描く(GameManager)
+        new ArrayList<>(bulletList).stream().filter(b -> b.getOwner() == ShipKinds.PLAYER)
+                .forEach(bullet -> bullet.draw(g));
         com.game.shooting_game.gameScene.bullet.barrage.AnchorMarkers.getInstance().draw(g);
+    }
+
+    /**
+     * 敵の弾を描く(自機の弾とビームの上に重ねる)
+     */
+    public void drawEnemyBullets(Graphics g) {
+        new ArrayList<>(bulletList).stream().filter(b -> b.getOwner() != ShipKinds.PLAYER)
+                .forEach(bullet -> bullet.draw(g));
     }
 
     /**

@@ -39,7 +39,7 @@ final class SystemCommands extends CommandGroup {
             } catch (NumberFormatException ne) {
                 error("Unknown param: '" + args[0] + "'");
             } catch (Exception e) {
-                LogUtils.systemLog("[WARN]", component, "Command Error");
+                LogUtils.warn(component, "Command Error");
             }
         }).setSyntax("<number>");
 
@@ -124,7 +124,7 @@ final class SystemCommands extends CommandGroup {
             } catch (NumberFormatException ne) {
                 error("Unknown param: " + param);
             } catch (Exception e) {
-                LogUtils.systemLog("[WARN]", component, "Command Error");
+                LogUtils.warn(component, "Command Error");
             }
         }).setSyntax("<stageId>");
         register(loadscene, "test", "Load test stage.", true, (node, args) -> {

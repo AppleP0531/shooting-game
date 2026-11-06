@@ -80,6 +80,6 @@ class DifficultyServiceTest {
         assertThat(Difficulty.EASY.getRewardRate()).isLessThan(Difficulty.NORMAL.getRewardRate());
         assertThat(Difficulty.HARD.getRewardRate()).isGreaterThan(Difficulty.NORMAL.getRewardRate());
         assertThat(Difficulty.NIGHTMARE.getEnemyHpRate()).isGreaterThan(Difficulty.HARD.getEnemyHpRate());
-        assertThat(Difficulty.NORMAL.describe()).contains("標準");
+        assertThat(Difficulty.NORMAL.describe(null, false)).contains("敵HP ×15.0").contains("報酬 ×1.0");
     }
 }

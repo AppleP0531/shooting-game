@@ -71,6 +71,7 @@ public final class InfinityStageManager extends JPanel implements Manager {
                 (int) (MAIN.getHeight() * 0.55), (int) startBtn.getWidth(), (int) startBtn.getHeight());
         startBtn.addActionListener(e -> {
             StageManager.getInstance().getStage().setStageId(EndlessWaves.STAGE_ID);
+            StageManager.getInstance().getStage().setStartWave(skipTargetWave());
             SM.changeScene(SceneType.GAME);
         });
         this.add(startBtn);
@@ -91,7 +92,6 @@ public final class InfinityStageManager extends JPanel implements Manager {
 
     @Override
     public void setup() {
-
     }
 
     @Override
@@ -126,6 +126,26 @@ public final class InfinityStageManager extends JPanel implements Manager {
         g.setColor(Color.YELLOW);
         g.setFont(new Font("SansSerif", Font.BOLD, Math.max(12, (int) (18 * adj))));
         drawCentered(g, "最高到達ウェーブ  " + best, cx, (int) (MAIN.getHeight() * 0.5));
+
+        // 自動スキップの案内(スキル「助走」で、高いウェーブまで道中を飛ばして始まる)
+        int target = skipTargetWave();
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("SansSerif", Font.BOLD, Math.max(11, (int) (16 * adj))));
+        int textY = startBtn.getY() + startBtn.getHeight() + (int) (28 * adj);
+        drawCentered(g, target > 1 ? "ウェーブ " + target + " まで自動スキップ" : "ウェーブ 1 から開始", cx, textY);
+        g.setFont(new Font("SansSerif", Font.PLAIN, Math.max(9, (int) (11 * adj))));
+        g.setColor(new Color(190, 220, 255));
+        // 画面の幅に収まるよう、2行に分ける
+        drawCentered(g, "スキル「助走」を強化すると、最高到達ウェーブの50ウェーブ前から", cx, textY + (int) (18 * adj));
+        drawCentered(g, "始められる(道中の敵は倒した扱い)", cx, textY + (int) (34 * adj));
+    }
+
+    /**
+     * 自動スキップで飛ぶ先のウェーブ(スキル「助走」を強化していると、最高到達ウェーブの50ウェーブ前)
+     */
+    private int skipTargetWave() {
+        int best = DataManager.getUserData().getProgress().getHighScores().getOrDefault(EndlessWaves.BEST_WAVE_KEY, 0);
+        return EndlessWaves.skipTarget(com.game.shooting_game.domain.skill.SkillService.getBonus("ENDLESS_SKIP"), best);
     }
 
     private static void drawCentered(Graphics g, String s, int cx, int y) {

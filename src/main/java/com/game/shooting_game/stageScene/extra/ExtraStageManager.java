@@ -12,14 +12,17 @@ import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
+import javax.swing.JScrollPane;
 
+import com.game.shooting_game.ResourceManager.ResourceKinds;
 import com.game.shooting_game.ResourceManager.ResourceKinds.Rarity;
 import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
 import com.game.shooting_game.SceneManager;
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
 import com.game.shooting_game.data.DataManager;
+import com.game.shooting_game.domain.farm.MaterialFarmService;
+import com.game.shooting_game.domain.power.PowerService;
 import com.game.shooting_game.gameScene.stage.DailyService;
 import com.game.shooting_game.gameScene.stage.Difficulty;
 import com.game.shooting_game.gameScene.stage.DifficultyService;
@@ -43,7 +46,7 @@ import com.game.shooting_game.utils.Vector2;
  */
 public final class ExtraStageManager extends JPanel implements Manager {
     private static final String component = "[ExtraStageManager]";
-    private static final int EXTRA_BASE_ID = 100;
+    private static final int EXTRA_BASE_ID = 1100;
 
     private final ShootingGameMain MAIN;
     private final SceneManager SM;
@@ -52,7 +55,7 @@ public final class ExtraStageManager extends JPanel implements Manager {
     private final List<JButton> stageBtns = new ArrayList<>();
     private JButton goBackBtn;
     private JPanel detailPanel;
-    private JTextArea detailText;
+    private ExtraDetailView detailView;
     private JButton startBtn;
     private DifficultyPanel difficultyPanel; // ボス分類だけ、難易度を選べる
     private int selectedId = -1;
@@ -124,20 +127,23 @@ public final class ExtraStageManager extends JPanel implements Manager {
         int diffH = pickDifficulty ? DifficultyPanel.height() + px(6) : 0;
         int dh = px(330) + diffH;
         detailPanel.setBounds(MAIN.getWidth() / 2 - dw / 2, MAIN.getHeight() / 2 - dh / 2, dw, dh);
-        detailText = new JTextArea();
-        detailText.setEditable(false);
-        detailText.setFocusable(false);
-        detailText.setLineWrap(true);
-        detailText.setWrapStyleWord(true);
-        detailText.setOpaque(false);
-        detailText.setForeground(Color.WHITE);
-        detailText.setFont(new Font("SansSerif", Font.PLAIN, Math.max(10, px(12))));
-        detailText.setBounds(px(8), px(6), dw - px(16), dh - px(66) - diffH);
-        detailPanel.add(detailText);
+        detailView = new ExtraDetailView(dw - px(16) - px(8));
+        JScrollPane detailScroll = new JScrollPane(detailView);
+        detailScroll.setBorder(null);
+        detailScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        detailScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        detailScroll.getVerticalScrollBar().setUnitIncrement(px(16));
+        detailScroll.setOpaque(false);
+        detailScroll.getViewport().setOpaque(false);
+        detailScroll.setBounds(px(8), px(6), dw - px(16), dh - px(66) - diffH);
+        detailPanel.add(detailScroll);
         if (pickDifficulty) {
             difficultyPanel = new DifficultyPanel(dw - px(16), d -> {
-                STAGE_M.getStage().setDifficulty(d);
-                renderDetail(d);
+                // 難易度を選ぶまでは、STARTを押せない(未選択のときは、ノーマルの内容を見せるだけ)
+                Difficulty shown = d == null ? Difficulty.NORMAL : d;
+                STAGE_M.getStage().setDifficulty(shown);
+                renderDetail(shown);
+                startBtn.setEnabled(d != null);
             });
             difficultyPanel.setLocation(px(8), dh - px(62) - DifficultyPanel.height());
             detailPanel.add(difficultyPanel);
@@ -148,7 +154,8 @@ public final class ExtraStageManager extends JPanel implements Manager {
                 startBtn.getWidth(), startBtn.getHeight());
         startBtn.addActionListener(e -> {
             UIBuilder.closePanel(detailPanel);
-            Difficulty diff = difficultyPanel == null ? Difficulty.NORMAL : difficultyPanel.getSelected();
+            Difficulty diff = difficultyPanel == null || difficultyPanel.getSelected() == null ? Difficulty.NORMAL
+                    : difficultyPanel.getSelected();
             STAGE_M.getStage().setStageId(selectedId);
             STAGE_M.getStage().setDifficulty(diff);
             SM.changeScene(SceneType.GAME);
@@ -169,8 +176,9 @@ public final class ExtraStageManager extends JPanel implements Manager {
                 continue;
             int id = Integer.parseInt(key.substring(5));
             if (id > EXTRA_BASE_ID && id != EndlessWaves.STAGE_ID
-                    && category.equals(STAGE_M.getStageConfig().get(key).getCategory()))
-                ids.add(id);
+                    && category.equals(STAGE_M.getStageConfig().get(key).getCategory())
+                    && (!MaterialFarmService.isFarmStage(id) || MaterialFarmService.obtained(MaterialFarmService.resourceOf(id))))
+                ids.add(id); // 素材周回ステージは、手に入れたことのある素材だけ
         }
         ids.sort(Integer::compare);
         return ids;
@@ -281,8 +289,10 @@ public final class ExtraStageManager extends JPanel implements Manager {
         StageData d = STAGE_M.getStageConfig().get("stage" + id);
         if (difficultyPanel != null)
             difficultyPanel.show(id); // 選ばれた難易度で renderDetail が呼ばれる
-        else
+        else {
             renderDetail(Difficulty.NORMAL);
+            startBtn.setEnabled(true); // 難易度を選ばないステージは、いつでも押せる
+        }
         UIBuilder.openPanel(detailPanel, d.getTitle(), true, null);
     }
 
@@ -292,35 +302,62 @@ public final class ExtraStageManager extends JPanel implements Manager {
     private void renderDetail(Difficulty diff) {
         int id = selectedId;
         StageData d = STAGE_M.getStageConfig().get("stage" + id);
-        StringBuilder sb = new StringBuilder();
-        sb.append(d.getDescription()).append("\n");
-        // ボスチャレンジなどの固定条件(デイリーは説明文に含まれている)
-        if (id != DailyService.STAGE_ID && d.getModifiers() != null)
-            sb.append("\n【条件】\n").append(StageModifiers.describe(d.getModifiers()));
-        sb.append("\n【クリア報酬】\n");
+        int icon = detailView.iconSize();
+
+        // 条件(デイリーは説明文に含まれている。敵のHP・被ダメージの倍率は難易度の欄に出す)
+        List<ExtraDetailView.Condition> conds = new ArrayList<>();
+        var spec = d.getModifiers();
+        if (id != DailyService.STAGE_ID && spec != null) {
+            if (spec.isNoHeal())
+                conds.add(new ExtraDetailView.Condition("回復アイテムが効かない", "Heal", true));
+            if (spec.isNoShield())
+                conds.add(new ExtraDetailView.Condition("シールドが使えない", "Shield", true));
+            if (spec.getPlayerHpRate() != 1.0)
+                conds.add(new ExtraDetailView.Condition(String.format("自機の最大HP ×%.1f", spec.getPlayerHpRate()), null, false));
+            if (spec.getCoinRate() != 1.0)
+                conds.add(new ExtraDetailView.Condition(String.format("拾うコイン ×%.1f", spec.getCoinRate()), null, false));
+        }
+
+        // ボスのHP(難易度・ステージ条件・ステージ番号の倍率をかけたあと)
+        int stageIndex = id < 1000 ? id : Math.max(1, d.getUnlock());
+        double hpRate = StageModifiers.previewEnemyHpRate(spec, diff, "BOSS".equals(d.getCategory()), stageIndex);
+        List<ExtraDetailView.BossInfo> bossInfos = new ArrayList<>();
+        for (String bossId : bossIdsOf(d)) {
+            var def = com.game.shooting_game.gameScene.ship.BossLibrary.forFight(bossId, id);
+            double gaugeHp = def.getGaugeHp() * hpRate;
+            int gauges = def.getGauges().size();
+            bossInfos.add(new ExtraDetailView.BossInfo(bossImage(bossId), bossId, gauges,
+                    String.format("%,.0f", gaugeHp), String.format("%,.0f", gaugeHp * gauges)));
+        }
+
+        // 報酬(モジュールのあとに素材。難易度の倍率を反映)
+        List<ExtraDetailView.Reward> rewards = new ArrayList<>();
         if (d.getModuleRewards() != null) {
             for (ModuleReward r : d.getModuleRewards()) {
-                String kind = r.getKind() == null ? "モジュール(種類はランダム)"
-                        : ModuleKind.valueOf(r.getKind()).getTitle();
+                ModuleKind kind = r.getKind() == null ? null : ModuleKind.valueOf(r.getKind());
                 Rarity shown = Rarity.values()[Math.min(Rarity.values().length - 1,
                         Rarity.valueOf(r.getRarity()).ordinal() + diff.getRarityBump())];
-                sb.append(kind).append("  ").append(ModuleService.rarityName(shown))
-                        .append("  ").append(Math.round(Math.min(1.0, r.getChance() * diff.getModuleChanceRate()) * 100))
-                        .append("%");
+                String badge = null;
                 if ("FIRST".equals(r.getOnce()))
-                    sb.append("  (初クリアのみ)");
-                if ("DAILY".equals(r.getOnce())) {
-                    boolean got = DataManager.getUserData().getProgress().getHighScores()
-                            .containsKey("daily:" + java.time.LocalDate.now() + ":stage" + id);
-                    sb.append(got ? "  (本日は受取済み)" : "  (1日1回)");
-                }
-                sb.append("\n");
+                    badge = "初回";
+                else if ("DAILY".equals(r.getOnce()))
+                    badge = DataManager.getUserData().getProgress().getHighScores()
+                            .containsKey("daily:" + java.time.LocalDate.now() + ":stage" + id) ? "受取済" : "毎日";
+                rewards.add(ExtraDetailView.Reward.module(kind, shown,
+                        (int) Math.round(Math.min(1.0, r.getChance() * diff.getModuleChanceRate()) * 100), badge, icon));
             }
         }
-        sb.append(chipLine(d, diff)).append("\n");
-        sb.append("最高スコア ").append(DifficultyService.highScore(id, diff));
-        detailText.setText(sb.toString());
-        detailText.setCaretPosition(0);
+        if (d.getRewardList() != null)
+            for (Map.Entry<ResourceName, Map<Rarity, String>> e : d.getRewardList().entrySet())
+                for (Map.Entry<Rarity, String> r : e.getValue().entrySet())
+                    rewards.add(ExtraDetailView.Reward.resource(new ResourceKinds(e.getKey(), r.getKey()),
+                            DifficultyService.scaleRange(r.getValue(), diff.getRewardRate()), icon));
+
+        // 推定必要戦力値(解放に要るステージ番号を目安にする)と、いまの機体の戦力値
+        String power = String.format("\n\n推定必要戦力値 %,d(あなた %,d)", Math.round(PowerService.required(stageIndex, diff)),
+                Math.round(PowerService.currentPower()));
+        detailView.setData((d.getDescription() == null ? "" : d.getDescription()) + power, conds, bossInfos, rewards,
+                DifficultyService.highScore(id, diff));
     }
 
     @Override
