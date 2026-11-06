@@ -40,7 +40,7 @@ public class ShipFactory {
         if (isDefined(ShipManager.getInstance().getShipConfig(), owner, shipId))
             return true;
         if (warned.add(owner + ":" + shipId))
-            LogUtils.systemLog("[WARN]", component, "Unknown ship: " + ANSI.YELLOW + owner + "/" + shipId
+            LogUtils.warn(component, "Unknown ship: " + ANSI.YELLOW + owner + "/" + shipId
                     + ANSI.RESET + ". Skipping spawn.");
         return false;
     }

@@ -1,0 +1,53 @@
+{
+  "COPPER": {
+    "openSeconds": 600,
+    "coins": "800~1500",
+    "resources": [
+      {"name":"GEAR","rarity":"COMMON","amount":"4~8","chance":1},
+      {"name":"SCREW","rarity":"COMMON","amount":"4~8","chance":1},
+      {"name":"COPPER_PLATE","rarity":"COMMON","amount":"2~4","chance":0.6},
+      {"name":"IRON_BAR","rarity":"COMMON","amount":"2~4","chance":0.6},
+      {"name":"ENERGY_CELL","rarity":"COMMON","amount":"1~3","chance":0.3}
+    ],
+    "modules": [
+      {"rarity":"COMMON","chance":0.25}
+    ]
+  },
+  "SILVER": {
+    "openSeconds": 3600,
+    "coins": "4000~7000",
+    "resources": [
+      {"name":"GEAR","rarity":"COMMON","amount":"8~14","chance":1},
+      {"name":"SCREW","rarity":"COMMON","amount":"8~14","chance":1},
+      {"name":"ENERGY_CELL","rarity":"COMMON","amount":"4~7","chance":0.8},
+      {"name":"CIRCUIT","rarity":"COMMON","amount":"3~6","chance":0.6},
+      {"name":"LENS","rarity":"COMMON","amount":"3~6","chance":0.6},
+      {"name":"GEAR","rarity":"UNCOMMON","amount":"1~3","chance":0.5},
+      {"name":"ALLOY_PLATE","rarity":"COMMON","amount":"2~4","chance":0.5}
+    ],
+    "modules": [
+      {"rarity":"COMMON","chance":0.6},
+      {"rarity":"UNCOMMON","chance":0.3}
+    ]
+  },
+  "GOLD": {
+    "openSeconds": 14400,
+    "coins": "15000~28000",
+    "resources": [
+      {"name":"ENERGY_CELL","rarity":"COMMON","amount":"8~14","chance":1},
+      {"name":"CIRCUIT","rarity":"COMMON","amount":"6~10","chance":1},
+      {"name":"LENS","rarity":"COMMON","amount":"6~10","chance":1},
+      {"name":"CRYSTAL_SHARD","rarity":"COMMON","amount":"4~8","chance":0.8},
+      {"name":"PLASMA_CORE","rarity":"COMMON","amount":"3~6","chance":0.6},
+      {"name":"GEAR","rarity":"UNCOMMON","amount":"3~6","chance":0.8},
+      {"name":"GEAR","rarity":"RARE","amount":"1~2","chance":0.4},
+      {"name":"MODULE_CHIP","rarity":"COMMON","amount":"2~4","chance":0.5},
+      {"name":"RANK_CORE","rarity":"COMMON","amount":"1~1","chance":0.15}
+    ],
+    "modules": [
+      {"rarity":"UNCOMMON","chance":0.7},
+      {"rarity":"RARE","chance":0.35},
+      {"rarity":"EPIC","chance":0.08}
+    ]
+  }
+}

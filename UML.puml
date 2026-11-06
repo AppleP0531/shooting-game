@@ -54,7 +54,11 @@ package "shooting_game" {
         BAG
         UPGRADE
         SHOP
+        GACHA
         ENCYCLOPEDIA
+        ACHIEVEMENT
+        CHEST
+        IDLE
         SELECTSTAGE
         NORMALSTAGE
         INFINITYSTAGE
@@ -315,6 +319,8 @@ package "shooting_game" {
         ALLOY_PLATE : パーツ素材
         CRYSTAL_SHARD : パーツ素材
         PLASMA_CORE : パーツ素材
+        MODULE_CHIP : モジュール基板
+        RANK_CORE : ランクアップ素材(ボスなどが落とす)
         --
         - family: Family
         - displayName: String
@@ -326,6 +332,8 @@ package "shooting_game" {
     enum Family {
         UPGRADE : スキル強化用
         PART : サブ機パーツ制作用
+        MODULE : モジュール基板(モジュールの制作にのみ使う)
+        RANK : ランクコア(機体のランクアップにのみ使う)
         NONE
     }
 
@@ -465,8 +473,8 @@ package "shooting_game" {
                 - stageBtnPanel: StageBtnPanel
                 - MAIN: ShootingGameMain
                 - SM: SceneManager
-                - lobbyBtn: JButton
-                - settingBtn: JButton
+                - lobbyBtn: JButton <<右下の「戻る」。ModeButtonImage の青い板、UIBuilder.placeBtn で置き、ButtonAnimator.attachPop を付ける>>
+                - settingBtn: JButton <<右上。placeBtn で置き、attachPop を付ける>>
                 - starBtn: JButton <<★の合計と次の目標。受け取れるときは黄色>>
                 - starRewardPanel: StarRewardPanel
                 - stageBtnConfigList: List<StageBtnData>
@@ -481,7 +489,7 @@ package "shooting_game" {
                 - loadImages(): void
                 + setup(): void
                 + update(dt: double): void
-                + draw(g: Graphics): void
+                + draw(g: Graphics): void <<背景は lobbyUI.draw(g, スクロール量)>>
                 + reload(): void
                 - reloadConfigs(): void
                 - reloadScreen(): void
@@ -499,8 +507,34 @@ package "shooting_game" {
             }
 
             class NormalStageSceneUI {
+                - {static} STAR_COUNT: int = 110
+                - {static} LAYER_SPEED: double[]
+                - stars: Star[]
+                --
                 + NormalStageSceneUI()
-                + draw(g: Graphics): void
+                + draw(g: Graphics, scroll: double): void <<紺の宇宙に、スクロールで流れる星(層ごとに速さが違う)と、上の帯(SceneBars)を描く>>
+            }
+
+            class Star <<record>> {
+                ~ x: double
+                ~ y: double
+                ~ layer: int
+                ~ size: double
+                ~ phase: double
+            }
+
+            NormalStageSceneUI +-- Star
+
+            class Chapters <<Utility>> {
+                + {static} STAGES_PER_CHAPTER: int = 20
+                + {static} BOSS_INTERVAL: int = 5
+                - {static} NAMES: String[] <<星座の名前(12)>>
+                - Chapters()
+                + {static} chapterOf(stageId: int): int
+                + {static} isChapterEnd(stageId: int): boolean
+                + {static} isBoss(stageId: int): boolean
+                + {static} name(chapter: int): String
+                + {static} label(chapter: int): String
             }
 
             package "subPanels" {
@@ -510,6 +544,8 @@ package "shooting_game" {
                     - MAIN: ShootingGameMain
                     - NSM: NormalStageManager
                     - STAGE_M: StageManager
+                    - {static} NODE_H: double = 64
+                    - {static} NODE_W: double = 56
                     - lockImage: BufferedImage
                     - panelSize: Vector2
                     - originPos: Vector2
@@ -518,7 +554,7 @@ package "shooting_game" {
                     - buttonMap: Map<Integer, JButton>
                     --
                     + StageBtnPanel()
-                    - createStageButton(stageId: int, image: BufferedImage, locked: boolean): JButton <<画像がなければ StageLockIcon.placeholder、ロック中は鍵を重ねる>>
+                    - createStageButton(stageId: int, image: BufferedImage, locked: boolean): JButton <<画像がなければ StageNodeIcon.create(台の絵と★)、ロック中は鍵を重ねる>>
                     - lockIconImage(buttonSize: int): BufferedImage
                     + initComponents(): void
                     + setup(): void
@@ -526,8 +562,9 @@ package "shooting_game" {
                     - loadImages(): void
                     - drawPanel(): void
                     - drawBtn(): void
-                    - buttonCenter(data: StageBtnData): Vector2
-                    # paintComponent(g: Graphics): void <<ステージ間を線でつなぐ>>
+                    - buttonCenter(data: StageBtnData): Vector2 <<台の中心(PLATFORM_CENTER の分だけ下)>>
+                    + getScrollOffset(): double <<背景の星を流すのに使う>>
+                    # paintComponent(g: Graphics): void <<台を点線の経路でつなぎ、章の最後に「第N章」と星座名のラベルを出す>>
                 }
 
                 class StageInfoView {
@@ -539,9 +576,13 @@ package "shooting_game" {
                     - enemyChips: List<Rectangle>
                     - missions: List<Mission> <<空なら非表示>>
                     - missionStars: int
+                    - powerY: int
+                    - requiredPower: int <<0以下なら戦力値の行を出さない>>
+                    - ownPower: int
                     --
                     + StageInfoView(viewWidth: int)
                     + setData(highScore: int, rewards: List<Reward>, enemies: List<String>): void
+                    + setPower(required: int, own: int): void <<推定必要戦力値と自分の戦力値(足りる=緑/ぎりぎり=黄/不足=赤)>>
                     + setMissions(missions: List<Mission>, stars: int): void
                     - drawStar(g2: Graphics2D, x: int, y: int, size: int, filled: boolean): void
                     - layoutItems(): void
@@ -598,9 +639,25 @@ package "shooting_game" {
             - select(d: Difficulty): void
             - refreshButtons(): void
             - infoText(): String
+            - isBossStage(): boolean <<StageConfig の category が BOSS か>>
         }
 
         package "extra" {
+            class ExtraDetailView <<詳細の中身。文字の羅列をやめ、アイコンと札で見せる>> {
+                - viewWidth: int
+                - description: String
+                - conditions: List<Condition> <<回復・シールド不可はアイテムの絵に斜線>>
+                - bosses: List<BossInfo> <<絵とゲージの帯と、倍率後のHP>>
+                - rewards: List<Reward> <<素材・モジュールのアイコン(レア度の枠)>>
+                - highScore: int
+                --
+                + ExtraDetailView(viewWidth: int)
+                + iconSize(): int
+                + setData(description: String, conditions: List<Condition>, bosses: List<BossInfo>, rewards: List<Reward>, highScore: int): void
+                - layoutItems(): void
+                # paintComponent(g: Graphics): void
+            }
+
             class ExtraStageManager <<カテゴリごとに1つ生成>> {
                 - {static} component: String
                 - {static} EXTRA_BASE_ID: int
@@ -613,7 +670,7 @@ package "shooting_game" {
                 - stageBtns: List<JButton>
                 - goBackBtn: JButton
                 - detailPanel: JPanel
-                - detailText: JTextArea
+                - detailView: ExtraDetailView <<アイコン中心の詳細(スクロール内)>>
                 - startBtn: JButton
                 - difficultyPanel: DifficultyPanel <<BOSS分類のみ>>
                 - selectedId: int
@@ -663,6 +720,7 @@ package "shooting_game" {
                 + setup()
                 + update(dt: double)
                 + draw(g: Graphics)
+                - skipTargetWave(): int <<スキル「助走」(ENDLESS_SKIP)と最高到達ウェーブから EndlessWaves.skipTarget で決める>>
             }
 
             class InfinityStageSceneUI {
@@ -691,6 +749,9 @@ package "shooting_game" {
             + draw(g: Graphics): void
             - createFpsRow(): JPanel
             - createDamageTextRow(): JPanel
+            - createSlowRateRow(): JPanel <<Shift中の低速移動の割合を決める JSlider>>
+            - toggleBtn(basePath: String, size: Vector2, text: String): JButton <<選べる絵のボタン。img/UI/settingScene/ の「基本パス.png」と「基本パス_on.png」を使う>>
+            - {static} showSelected(btn: JButton, selected: boolean, text: String): void <<選ばれているかで絵を切り替える(絵がなければ文字を[ ]で囲む)>>
             - updateFpsButtons(): void
             - updateDamageTextButtons(): void
             - confirmQuit(): void
@@ -718,10 +779,22 @@ package "shooting_game" {
             - prevShipBtn: JButton
             - selectShipBtn: JButton
             - unlockShipBtn: JButton
+            - trialShipBtn: JButton <<お試し出撃(TRIAL)。持っていない船を見ているとき、UNLOCK の下に出る>>
             - changeModeBtn: JButton
+            - infinityBtn: JButton <<無限モード。ロビーから直接入る(Lv20解放)。ModeButtonImage で描く>>
             - selectStageBtn: JButton
+            - unitPanel: UnitPanel <<下のカードから開く機体強化>>
+            - subShipPanel: SubShipPanel <<サブ機工房>>
+            - defensePanel: ArmorPanel <<防御装甲>>
+            - firepowerPanel: ArmorPanel <<火力装甲>>
+            - slotRects: Rectangle[]
+            - slotBtns: JButton[]
             - shopBtn: JButton <<ショップ。SHOP へ遷移(バッグ画面から移動。解放前はグレーアウト)>>
+            - gachaBtn: JButton <<ガチャ。GACHA へ遷移(ショップの右)>>
             - dexBtn: JButton <<図鑑。ENCYCLOPEDIA へ遷移(バッグ画面から移動)>>
+            - achievementBtn: JButton <<実績。ACHIEVEMENT へ遷移(図鑑ボタンの下)>>
+            - chestBtn: JButton <<宝箱。CHEST へ遷移(実績ボタンの下)>>
+            - idleBtn: JButton <<放置。IDLE へ遷移(宝箱ボタンの下)>>
             - viewingShipInd: int
             - ships: String[]
             --
@@ -732,8 +805,10 @@ package "shooting_game" {
             + update(dt: double): void
             + draw(g: Graphics): void
             - drawModeIndicator(g: Graphics): void <<いまの色(青/赤)を、切り替えボタンのまわりに出す>>
+            - drawSlots(g: Graphics): void <<LobbySceneUI.drawSlots へ矩形・ホバー・ロックを渡す>>
+            - drawUnlockCost(g: Graphics): void <<未開放の船を見ているとき、解放ボタンの上に必要なピースとコインを出す(足りなければ赤)。解放は GachaService.unlock>>
             + setDefaultViewingShip(shipName: String): void
-            - updateBtnStates(): void
+            - updateBtnStates(): void <<強化ボタンは未開放の船でも隠さず、グレーアウトする>>
         }
 
         class LobbySceneUI {
@@ -744,6 +819,9 @@ package "shooting_game" {
             - latestViewingShipName: String
             - levelUpInterval: double
             - levelUpIntervalTimer: double
+            - {static} MESSAGE_DURATION: double
+            - message: String <<画面に出す通知>>
+            - messageTimer: double
             --
             + LobbySceneUI()
             + setup(): void
@@ -753,6 +831,25 @@ package "shooting_game" {
             - drawTabBar(g: Graphics, totalLength: int, ind: int): void
             - drawUserLevel(g: Graphics): void
             - drawEquipment(g: Graphics): void
+            - drawBars(g: Graphics): void <<SceneBars.draw で上下の帯を敷く>>
+            + showMessage(text: String): void
+            - drawMessage(g: Graphics): void
+            - trimmed(shipId: String, src: BufferedImage): BufferedImage
+            - drawStats(g: Graphics, shipId: String): void <<ラベル+数値+バーの能力表示。閲覧中の機体の値>>
+            + drawSlots(g: Graphics, rects: Rectangle[], hovered: boolean[], locked: boolean[]): void <<下の装備カード4枚>>
+            - {static} drawArmorIcon(g: Graphics2D, defense: boolean, cx: double, cy: double, size: double): void <<防御は青い盾、火力は橙の刃>>
+        }
+
+        enum "LobbySceneUI.Slot" as LobbySlot {
+            UNIT
+            SUBSHIP
+            DEFENSE
+            FIREPOWER
+            --
+            - label: String
+            --
+            ~ Slot(label: String)
+            + label(): String
         }
 
         class LobbySceneUIData <<record>> {
@@ -851,6 +948,82 @@ package "shooting_game" {
         }
     }
 
+    package "achievementScene" {
+        class AchievementManager <<Singleton>> {
+            - {static} component: String
+            - {static} instance: AchievementManager
+            - MAIN: ShootingGameMain
+            - goBackBtn: JButton
+            - scrollOffset: double
+            - maxScroll: double
+            - message: String <<受け取りの結果>>
+            --
+            - AchievementManager()
+            - {static} px(base: double): int
+            + initComponents(): void
+            + {static} getInstance(): AchievementManager
+            - claim(a: Achievement): void
+            + setup(): void
+            + update(dt: double): void
+            - listArea(): Rectangle
+            + draw(g: Graphics): void
+            - drawRow(g2: Graphics2D, a: Achievement, x: int, y: int, w: int, h: int): void
+        }
+    }
+
+    package "chestScene" {
+        class ChestManager <<Singleton>> {
+            - {static} component: String
+            - {static} instance: ChestManager
+            - {static} RANK_COLORS: Color[]
+            - MAIN: ShootingGameMain
+            - goBackBtn: JButton
+            - message: String <<開ける・受け取りの結果>>
+            - repaintTimer: double
+            - rnd: Random
+            - hitAreas: List<Object[]> <<{判定の四角, 種類(open/skip/claim), 値}。描画のたびに作り直す>>
+            --
+            - ChestManager()
+            + {static} getInstance(): ChestManager
+            - {static} px(base: double): int
+            + initComponents(): void
+            - handle(kind: String, value: int): void
+            + setup(): void
+            + update(dt: double): void
+            + draw(g: Graphics): void
+            - drawSlot(g2: Graphics2D, slot: int, x: int, y: int, w: int, h: int, now: int): void
+            - drawCard(g2: Graphics2D, x: int, y: int, w: int, h: int, edge: Color): void
+            - drawButton(g2: Graphics2D, x: int, y: int, w: int, h: int, label: String, enabled: boolean): void
+        }
+    }
+
+    package "idleScene" {
+        class IdleManager <<Singleton>> {
+            - {static} component: String
+            - {static} instance: IdleManager
+            - MAIN: ShootingGameMain
+            - goBackBtn: JButton
+            - candidate: int <<選ぶ欄で見ているステージ>>
+            - message: String <<選ぶ・受け取りの結果>>
+            - repaintTimer: double
+            - hitAreas: List<Object[]> <<{判定の四角, 種類, 値}。描画のたびに作り直す>>
+            --
+            - IdleManager()
+            + {static} getInstance(): IdleManager
+            - {static} px(base: double): int
+            + initComponents(): void
+            - maxStage(): int
+            - handle(kind: String, value: int): void
+            - {static} describe(r: Reward): String
+            + setup(): void
+            + update(dt: double): void
+            + draw(g: Graphics): void
+            - {static} format(sec: int): String
+            - drawCard(g2: Graphics2D, x: int, y: int, w: int, h: int, edge: Color): void
+            - drawButton(g2: Graphics2D, x: int, y: int, w: int, h: int, label: String, enabled: boolean): void
+        }
+    }
+
     package "shopScene" {
         class ShopManager <<Singleton>> {
             - {static} component: String
@@ -889,6 +1062,29 @@ package "shooting_game" {
             ~ item: ShopItem
             ~ owned: int
             ~ icon: BufferedImage
+        }
+    }
+
+    package "gachaScene" {
+        class GachaManager <<Singleton>> {
+            - {static} component: String
+            - {static} instance: GachaManager
+            - MAIN: ShootingGameMain
+            - goBackBtn: JButton
+            - singleBtn: JButton
+            - tenBtn: JButton
+            - lastResults: List<Result> <<直近の結果(GachaService.Result)>>
+            - message: String
+            --
+            - GachaManager()
+            + initComponents(): void
+            + {static} getInstance(): GachaManager
+            - pull(times: int): void <<GachaService.pull で引き、結果かコイン不足の文言を入れる>>
+            - refresh(): void <<コインが足りないボタンを無効にする>>
+            + setup(): void
+            + update(dt: double): void
+            + draw(g: Graphics): void <<結果(機体ごとにまとめる)と、機体ごとのピースの進み具合を出す>>
+            - {static} center(g: Graphics2D, s: String, cx: int, y: int): void
         }
     }
 
@@ -1046,7 +1242,31 @@ package "shooting_game" {
                 # paintComponent(g: Graphics): void <<◇の並び。見ているタイプは塗り、使用中は金の縁、未解放は暗い灰色>>
             }
 
+            class ArmorPanel {
+                - type: ArmorService.Type <<防御装甲 / 火力装甲>>
+                - headerArea: JTextArea
+                - effectArea: JTextArea <<いまの値と次のレベルの値を並べる>>
+                - costPanel: CostPanel
+                - levelBtn: JButton
+                - statusArea: JTextArea
+                --
+                + ArmorPanel(type: ArmorService.Type)
+                + initComponents(): void
+                ~ {static} starText(stars: int): String
+                - refresh(): void
+                + showPanel(): void
+            }
+
             class UnitPanel {
+                - headerArea: JTextArea
+                - statArea: JTextArea
+                - costPanel: CostPanel <<レベルアップの素材>>
+                - starArea: JTextArea
+                - statusArea: JTextArea
+                - levelBtn: JButton
+                - rankCostPanel: CostPanel <<ランクアップに必要なランクコア>>
+                - starBtn: JButton <<ランクアップ(レベル最大で押せる。レベルは1に戻る)>>
+                --
                 + initComponents(): void
                 - refresh(): void
                 + showPanel(): void
@@ -1145,6 +1365,7 @@ package "shooting_game" {
                 + {static} getLevel(name: String): int
                 + {static} isUnlocked(name: String): boolean
                 + {static} getBonus(effect: String): double
+                + {static} getBonusFor(shipId: String, effect: String): double <<見ている機体のスキル・Lv・ランクで計算する(選択中の機体ではない)>>
                 + {static} invalidate(): void
                 + {static} getCost(d: SkillTreeData, level: int): Cost
                 + {static} researchSeconds(d: SkillTreeData, level: int): long
@@ -1156,6 +1377,8 @@ package "shooting_game" {
                 + {static} tickResearch(): boolean
                 + {static} formatTime(sec: long): String
                 + {static} isMaxLevel(d: SkillTreeData): boolean
+                + {static} findIgnoreCase(name: String): SkillTreeData <<コマンド用。大文字小文字を区別しない>>
+                + {static} setLevel(d: SkillTreeData, level: int): int <<コスト無視で直接設定(管理用)。0〜最大に収める>>
                 + {static} purchase(name: String): boolean
                 + {static} describe(d: SkillTreeData): String
                 + {static} status(d: SkillTreeData): String
@@ -1165,21 +1388,62 @@ package "shooting_game" {
         package "unit" {
             class UnitService <<Utility>> {
                 + {static} MAX_LEVEL: int
-                + {static} MAX_STARS: int
+                + {static} MAX_RANK: int
+                + {static} RANK_BASE: int <<ランク0→1に要るランクコア。以降ランクごとに2倍>>
                 --
                 + {static} getLevel(shipId: String): int
-                + {static} getStars(shipId: String): int
-                + {static} getCopies(shipId: String): int
-                + {static} attackRate(shipId: String): double
-                + {static} hpRate(shipId: String): double
+                + {static} getRank(shipId: String): int <<保存の欄は以前の★(ShipStats.stars)>>
+                + {static} attackRate(shipId: String): double <<レベルとランクの両方が指数(GameBalance)>>
+                + {static} hpRate(shipId: String): double <<レベルとランク>>
                 + {static} baseHp(shipId: String): double
                 + {static} levelCost(level: int): Cost
                 + {static} levelUp(shipId: String): boolean
-                + {static} addCopy(shipId: String): void
-                + {static} buyCopy(shipId: String): boolean
-                + {static} copyPrice(shipId: String): int
-                + {static} starUp(shipId: String): boolean
-                + {static} starText(shipId: String): String
+                + {static} setLevel(shipId: String, level: int): int <<コスト無視で直接設定(管理用)。1〜MAX_LEVELに収める>>
+                + {static} rankUpCost(rank: int): Cost <<ランクコア。ランク0→1は RANK_BASE 個>>
+                + {static} canRankUp(shipId: String): boolean <<レベル最大・ランクコアと機体のピースが足りる>>
+                + {static} rankUp(shipId: String): boolean <<素材とピースを払い、ランク+1、レベルは1に戻る>>
+                + {static} rankText(shipId: String): String
+                + {static} onHitEffect(shipId: String): StatusEffect <<ShipConfig の onHitEffect。なければnull>>
+                + {static} onHitChance(shipId: String): double <<ShipConfig の onHitChance。なければ0.1>>
+                + {static} rollOnHit(shipId: String, target: Ship, scale: double): void <<確率(×ELEM_CHANCE×scale)で、時間(×ELEM_TIME)・強さ(×ELEM_POWER)つきでかける>>
+            }
+        }
+
+        package "gacha" {
+            class PieceService <<Utility>> {
+                - {static} PREFIX: String = "piece:" <<progress.highScores に相乗り>>
+                + {static} UNLOCK_PIECES: int = 50
+                - {static} RANK_UP_PIECES: int[]
+                --
+                + {static} rankUpPieces(rank: int): int
+                + {static} owned(shipId: String): int <<管理者モードは無制限>>
+                + {static} ownedReal(shipId: String): int
+                + {static} ownedText(shipId: String): String <<管理者モードは∞>>
+                + {static} add(shipId: String, amount: int): void
+                + {static} consume(shipId: String, amount: int): boolean <<管理者モードは減らさずtrue>>
+            }
+
+            class GachaService <<Utility>> {
+                + {static} SINGLE_COST: int = 1000
+                + {static} TEN_COST: int = 9000
+                - {static} PIECE_COUNTS: int[]
+                - {static} PIECE_WEIGHTS: int[]
+                + {static} TEN_GUARANTEE_PIECES: int = 3
+                --
+                + {static} weight(shipCost: int): double <<入手コインが高いほど出にくい>>
+                + {static} pickShip(rnd: Random, costs: Map<String,Integer>): String
+                + {static} pickPieces(rnd: Random): int
+                + {static} roll(rnd: Random, costs: Map<String,Integer>, times: int): List<Result> <<コインやピースは動かさない>>
+                + {static} shipCosts(): Map<String,Integer> <<ShipConfig から>>
+                + {static} pull(times: int): List<Result> <<コインを払いピースを増やす>>
+                + {static} canUnlock(shipId: String): boolean
+                + {static} unlock(shipId: String): boolean <<ピース50個とコインで機体を解放>>
+                + {static} shipCost(shipId: String): int
+            }
+
+            class Result <<record>> {
+                ~ shipId: String
+                ~ pieces: int
             }
         }
 
@@ -1201,6 +1465,259 @@ package "shooting_game" {
                 + {static} markSeen(shipId: String): void
                 + {static} seenCount(shipIds: Collection<String>): int
                 - {static} records(): Map<String,Integer> <<progress.highScores を流用>>
+            }
+        }
+
+        package "achievement" {
+            class AchievementService <<Utility>> {
+                - {static} component: String
+                - {static} CONFIG_PATH: String <<AchievementConfig.json>>
+                - {static} CLAIMED_PREFIX: String = "ach:" <<受け取り済みの段の数。"mission:" と同じ接頭辞にしない>>
+                + {static} STAT_PREFIX: String = "stat:"
+                - {static} DERIVED_PREFIX: String = "derived:"
+                + {static} KILLS: String
+                + {static} BOSS_KILLS: String
+                + {static} ITEMS: String
+                + {static} COINS: String
+                + {static} PLAY_SECONDS: String
+                + {static} GAME_OVERS: String
+                - {static} achievements: List<Achievement>
+                --
+                - AchievementService()
+                - {static} ensureLoaded(): void
+                + {static} reload(): void
+                + {static} all(): List<Achievement>
+                - {static} store(): Map<String,Integer> <<progress.highScores を流用>>
+                + {static} add(metric: String, amount: int): void <<累計の指標に足す>>
+                + {static} value(metric: String): int
+                + {static} value(a: Achievement): int
+                + {static} reachedTiers(a: Achievement): int
+                + {static} claimedTiers(a: Achievement): int
+                + {static} canClaim(a: Achievement): boolean
+                + {static} claimableCount(): int
+                + {static} nextTier(a: Achievement): Tier
+                + {static} claim(a: Achievement): Reward <<届いた段をまとめて受け取る>>
+                + {static} shown(a: Achievement, raw: int): int <<divisor で割る表示用の値>>
+            }
+
+            class Tier <<record>> {
+                ~ goal: int
+                ~ reward: Reward
+            }
+
+            class Achievement <<record>> {
+                ~ id: String
+                ~ title: String
+                ~ description: String
+                ~ metric: String
+                ~ unit: String
+                ~ divisor: int
+                ~ tiers: List<Tier>
+            }
+        }
+
+        package "tutorial" {
+            class TutorialService <<Utility>> {
+                - {static} component: String
+                - {static} CONFIG_PATH: String <<TutorialConfig.json>>
+                - {static} SEEN_PREFIX: String = "tutorial:" <<見たガイド(tutorial:ID)。★の数に混ざらない>>
+                - {static} guides: List<Guide>
+                --
+                - TutorialService()
+                - {static} ensureLoaded(): void
+                + {static} reload(): void
+                - {static} blankToNull(s: String): String
+                + {static} all(): List<Guide>
+                - {static} store(): Map<String,Integer> <<progress.highScores を流用>>
+                + {static} seen(g: Guide): boolean
+                + {static} markSeen(g: Guide): void
+                + {static} reset(): int <<見た記録を消す。消した数を返す>>
+                + {static} forScene(sceneName: String): Guide <<その画面のまだ見ていないガイド(なければ null)>>
+                + {static} forEvent(event: String): Guide <<そのできごとのまだ見ていないガイド(なければ null)>>
+                + {static} unseenCount(): int
+                + {static} status(): Map<String,Boolean> <<ID → 見たか。/tutorial の表示用>>
+            }
+
+            class Guide <<record>> {
+                ~ id: String
+                ~ scene: String
+                ~ event: String
+                ~ title: String
+                ~ pages: List<String>
+            }
+        }
+
+        package "chest" {
+            class ChestService <<Utility>> {
+                - {static} component: String
+                - {static} CONFIG_PATH: String <<ChestConfig.json>>
+                - {static} KEY_PREFIX: String = "key:" <<鍵の所持数(key:ランク)>>
+                - {static} CHEST_PREFIX: String = "chest:" <<スロットの宝箱(chest:番号:rank|at)>>
+                + {static} MAX_SLOTS: int = 10 <<同時に開けられる数>>
+                + {static} BASE_EPOCH_SEC: long <<開く時刻の基準(2026-01-01 00:00 UTC)>>
+                + {static} BOSS_KEY_CHANCE: double = 0.35 <<ボス撃破で鍵が出る確率>>
+                + {static} MISSION_KEY_CAP: int = 3 <<1回のクリアでミッションの★からもらえる鍵の最大数>>
+                - {static} tables: Map<Rank,Table>
+                --
+                - ChestService()
+                - {static} ensureLoaded(): void
+                + {static} reload(): void
+                - {static} clamp01(v: double): double
+                + {static} table(rank: Rank): Table
+                + {static} openSeconds(rank: Rank): int
+                + {static} firstClearKey(diff: Difficulty): Rank <<難易度が高いほどよい鍵>>
+                + {static} bossKey(diff: Difficulty): Rank
+                - {static} rankOf(diff: Difficulty): Rank
+                - {static} store(): Map<String,Integer> <<progress.highScores を流用>>
+                + {static} nowSec(): int <<基準からの秒数>>
+                + {static} keyCount(rank: Rank): int
+                + {static} addKey(rank: Rank, n: int): void
+                + {static} slotRank(slot: int): Rank <<空なら null>>
+                + {static} remaining(slot: int, now: int): int
+                + {static} isReady(slot: int, now: int): boolean
+                + {static} usedSlots(): int
+                + {static} freeSlot(): int <<なければ -1>>
+                + {static} readyCount(now: int): int
+                + {static} open(rank: Rank, now: int): int <<鍵を1つ使って開け始める。使ったスロット(失敗は -1)>>
+                + {static} skip(slot: int, now: int): boolean <<研究スキップ券で開き終わらせる>>
+                + {static} roll(rank: Rank, rnd: Random): Loot
+                + {static} claim(slot: int, now: int, rnd: Random): Opened <<中身を所持品へ入れてスロットを空ける>>
+                + {static} formatTime(sec: int): String
+            }
+
+            enum Rank {
+                COPPER
+                SILVER
+                GOLD
+                + getLabel(): String
+            }
+
+            class Table <<record>> {
+                ~ openSeconds: int
+                ~ coinMin: int
+                ~ coinMax: int
+                ~ resources: List<ResourceEntry>
+                ~ modules: List<ModuleEntry>
+            }
+
+            class ResourceEntry <<record>> {
+                ~ name: ResourceName
+                ~ rarity: Rarity
+                ~ min: int
+                ~ max: int
+                ~ chance: double
+            }
+
+            class ModuleEntry <<record>> {
+                ~ rarity: Rarity
+                ~ chance: double
+            }
+
+            class Loot <<record>> {
+                ~ coins: int
+                ~ resources: Map<ResourceKinds,Integer>
+                ~ moduleRarities: List<Rarity>
+            }
+
+            class Opened <<record>> {
+                ~ loot: Loot
+                ~ modules: List<Module>
+            }
+        }
+
+        package "farm" {
+            class MaterialFarmService <<Utility>> {
+                + {static} STAGE_BASE: int = 1300 <<周回ステージ番号の起点>>
+                - {static} GOT_PREFIX: String = "got:"
+                - {static} FIRST_UNLOCK: int = 31
+                - {static} UNLOCK_STEP: int = 14
+                - {static} WAVES: int = 6
+                + {static} MATERIALS: List<ResourceName> <<価値の低い順>>
+                --
+                + {static} wavesOf(): int
+                + {static} stageId(res: ResourceName): int
+                + {static} isFarmStage(stageId: int): boolean
+                + {static} resourceOf(stageId: int): ResourceName
+                + {static} unlockStage(res: ResourceName): int
+                + {static} rewards(res: ResourceName): Map<ResourceName,Map<Rarity,String>>
+                + {static} markObtained(res: ResourceName): void <<progress.highScores を流用>>
+                + {static} obtained(res: ResourceName): boolean
+            }
+        }
+
+        package "idle" {
+            class IdleService <<Utility>> {
+                + {static} BASE_EPOCH_SEC: long = 1767225600 <<時刻の基準(2026-01-01 00:00 UTC)>>
+                + {static} MAX_SECONDS: int = 28800 <<たまる時間の上限(8時間)>>
+                + {static} EFFICIENCY: double = 0.3 <<実際の周回に対する効率>>
+                + {static} SECONDS_PER_WAVE: double = 25 <<1ウェーブの周回時間の見積もり(秒)>>
+                - {static} STAGE_KEY: String = "idle:stage" <<放置先のステージ番号>>
+                - {static} SINCE_KEY: String = "idle:since" <<数え始めた時刻(基準からの秒数)>>
+                --
+                - IdleService()
+                + {static} averageOf(range: String): double <<「最小~最大」の平均>>
+                + {static} cappedSeconds(elapsedSec: long): int <<上限で止まる。負は0>>
+                + {static} runsPerHour(waves: int): double
+                + {static} compute(elapsedSec: long, per: PerRun): Reward
+                + {static} estimate(stageId: int): PerRun <<1周ぶんの見積もり>>
+                - {static} coinsOf(e: EnemyConfig): double <<敵1体のコインの期待値>>
+                - {static} store(): Map<String,Integer> <<progress.highScores を流用>>
+                + {static} nowSec(): int <<基準からの秒数>>
+                + {static} stage(): int <<放置していなければ0>>
+                + {static} since(): int
+                + {static} elapsed(now: int): int
+                + {static} pending(now: int): Reward
+                + {static} canSelect(stageId: int): boolean <<クリア済み・戦力値が必要戦力値以上>>
+                + {static} select(stageId: int, now: int): boolean <<たまった分を先に受け取る>>
+                + {static} stop(now: int): void
+                + {static} claim(now: int): Reward <<数え直す。放置していなければ null>>
+            }
+
+            class PerRun <<record>> {
+                ~ coins: double
+                ~ resources: Map<ResourceKinds,Double>
+                ~ runsPerHour: double
+            }
+        }
+
+        package "trial" {
+            class TrialService <<Utility>> {
+                + {static} TRIAL_STAGE_ID: int = 1990 <<トレーニングステージの番号>>
+                + {static} TRIAL_WAVES: int = 3
+                - {static} component: String
+                - {static} active: boolean
+                - {static} trialShip: String
+                - {static} previousShip: String <<お試し前に選んでいた船>>
+                --
+                + {static} isActive(): boolean
+                + {static} trialShip(): String <<お試し中でなければ null>>
+                + {static} canTry(shipId: String): boolean <<設定にある、まだ持っていない船。お試し中でない>>
+                + {static} canTry(shipId: String, configuredShips: Set<String>): boolean
+                - {static} configuredShips(): Set<String>
+                + {static} bestLevelAndRank(ships: Map<String,ShipStats>): int[] <<持っている船の最高レベルとランク。なければ レベル1・ランク0>>
+                + {static} begin(shipId: String): boolean <<一時的な ShipStats を作って選択中にする>>
+                + {static} begin(shipId: String, configuredShips: Set<String>): boolean
+                + {static} end(): void <<一時データを消してもとの船に戻す。何度呼んでもよい>>
+            }
+        }
+
+        package "power" {
+            class PowerService <<Utility>> {
+                + {static} BARELY_RATE: double = 0.8 <<自分の戦力値が必要戦力値のこの割合以上なら「ぎりぎり」>>
+                --
+                + {static} power(attackRate: double, durability: double): double <<100 × 火力倍率 × √(耐久 ÷ 100)>>
+                + {static} required(stageIndex: int, diff: Difficulty): double <<推定必要戦力値(基準 × ステージ・難易度のHP倍率 × √ダメージ倍率 × requiredStageGrowth^(ステージ-1))>>
+                + {static} verdict(own: double, required: double): Verdict
+                + {static} durability(shipId: String): double <<最大HPとシールドの合計>>
+                + {static} attackRate(shipId: String): double <<火力の倍率(レベル・ランク・スキル・モジュール)>>
+                + {static} powerOf(shipId: String): double
+                + {static} currentPower(): double <<選んでいる機体の戦力値(データがなければ0)>>
+            }
+
+            enum Verdict <<PowerService>> {
+                ENOUGH <<足りる>>
+                BARELY <<ぎりぎり(80%以上)>>
+                SHORT <<不足>>
             }
         }
 
@@ -1371,7 +1888,9 @@ package "shooting_game" {
                 + {static} isClaimed(n: int): boolean
                 + {static} canClaim(n: int): boolean
                 + {static} claimableCount(): int
+                + {static} parseTier(t: JsonNode): Reward <<設定の1段分を報酬にする>>
                 + {static} claim(n: int): Reward
+                + {static} grant(r: Reward): void <<報酬を所持品へ入れる(★報酬・実績で共通)>>
                 + {static} claimAll(): Reward
                 - {static} store(): Map<String,Integer> <<progress.highScores を流用>>
             }
@@ -1380,6 +1899,43 @@ package "shooting_game" {
                 ~ coins: int
                 ~ resources: Map<ResourceKinds,Integer>
                 ~ skipTickets: int <<研究スキップ券の数>>
+            }
+        }
+
+        package "armor" {
+            class ArmorService <<Utility>> {
+                - {static} component: String
+                - {static} KEY_PREFIX: String = "armor:" <<Progress.highScores に相乗りするキーの接頭辞>>
+                + {static} MAX_LEVEL: int = 20
+                + {static} STAR_STEP: int = 4
+                + {static} MAX_STARS: int
+                --
+                - ArmorService()
+                - {static} store(): Map<String,Integer>
+                - {static} key(type: Type): String
+                + {static} level(type: Type): int
+                ~ {static} clampLevel(level: int): int
+                + {static} stars(level: int): int <<レベル4ごとに★1つ>>
+                + {static} stars(type: Type): int
+                + {static} value(type: Type, stat: ModuleStat, level: int): double
+                + {static} stat(stat: ModuleStat): double <<装着中の全種類の合計。ModuleService.stat から呼ばれる>>
+                + {static} levelCost(level: int): Cost
+                + {static} levelUp(type: Type): boolean
+                + {static} setLevel(type: Type, level: int): int <<コストを見ずに設定(管理用)>>
+            }
+
+            enum "ArmorService.Type" as ArmorType {
+                DEFENSE
+                FIREPOWER
+                --
+                - title: String
+                - detail: String
+                - perLevel: Map<ModuleStat,Double>
+                --
+                ~ Type(title: String, detail: String, perLevel: Map<ModuleStat,Double>)
+                + title(): String
+                + detail(): String
+                + perLevel(): Map<ModuleStat,Double> <<レベル1つあたりの効果>>
             }
         }
 
@@ -1426,11 +1982,12 @@ package "shooting_game" {
                 + {static} MAX_LEVEL: int
                 + {static} SUB_STEP: int
                 + {static} SUB_COUNT: int
+                + {static} SUB_CANDIDATES: int = 6 <<サブ能力の値の候補の数>>
                 --
                 + {static} owned(): List<Module>
                 + {static} slotted(): Module[]
                 + {static} mainNow(m: Module): double
-                + {static} stat(stat: ModuleStat): double
+                + {static} stat(stat: ModuleStat): double <<モジュールの合計に ArmorService.stat を足す>>
                 + {static} equip(id: long): boolean
                 + {static} unequip(id: long): void
                 + {static} recipe(kind: ModuleKind, rarity: Rarity): Cost
@@ -1438,7 +1995,8 @@ package "shooting_game" {
                 + {static} addNew(kind: ModuleKind, rarity: Rarity): Module
                 + {static} dismantleRefund(rarity: Rarity): int
                 + {static} roll(kind: ModuleKind, rarity: Rarity): Module
-                - {static} addRandomSub(m: Module): void
+                + {static} subRatio(index: int): double <<SUB_MIN〜SUB_MAX を等間隔に分けた候補の値>>
+                - {static} addRandomSub(m: Module): void <<値は SUB_CANDIDATES 個の候補から1つを抽選>>
                 + {static} levelUpCost(m: Module): Cost
                 + {static} levelUp(id: long): boolean
                 + {static} dismantle(id: long): boolean
@@ -1451,6 +2009,10 @@ package "shooting_game" {
 
         SkillService ..> CostService
         UnitService ..> CostService
+        UnitService ..> PieceService
+        GachaService ..> PieceService
+        GachaService ..> CostService
+        GachaService +-- Result
         ConvertService ..> CostService
         SubShipService ..> CostService
         ModuleService ..> CostService
@@ -1460,6 +2022,7 @@ package "shooting_game" {
         class DamageCalculator <<Utility>> {
             + {static} BASE_CRIT_RATE: double = 0.05
             + {static} BASE_CRIT_MULT: double = 1.5
+            + {static} MAX_HIT_DAMAGE: double = 99999 <<1回の攻撃のダメージ上限>>
             --
             + {static} bulletAttackRate(): double
             + {static} beamAttackRate(): double
@@ -1469,6 +2032,7 @@ package "shooting_game" {
             + {static} defenseRate(): double
             + {static} toPlayer(raw: double): double <<GameUtils.damageToPlayer を使う>>
             + {static} ramToPlayer(p: Player): double
+            + {static} absorbDurable(durability: double, damage: double): DurableAbsorb <<耐久シールドが吸った残り耐久と、回るダメージ>>
             + {static} critRate(): double <<基礎+スキルCRIT_RATE+モジュール。0〜1に収める>>
             + {static} critMult(): double <<基礎+スキルCRIT_DMG+モジュール>>
             + {static} hitEnemy(target: Ship, damage: double): void <<確率で addCritDamage、そうでなければ addDamage>>
@@ -1494,8 +2058,9 @@ package "shooting_game" {
             - pause: boolean
             - score: int
             - coin: int
-            - managers: List<Manager> <<DamagePopupManager を最前面に含む>>
+            - managers: List<Manager> <<DamagePopupManager を最前面に含む。BeamManager の次に MeteorManager>>
             - effectList: Map<String, Double>
+            - bossKills: int <<倒したボスの数(宝箱の鍵のドロップ用)>>
             - hitCount: int <<被弾回数(HARDミッション用)>>
             - playTime: double
             - skipped: boolean <<スキップ報酬のみ(ミッション対象外)>>
@@ -1503,8 +2068,10 @@ package "shooting_game" {
             - {static} LEAVE_FADE: double <<離脱時に暗くなる長さ(秒)>>
             - resumeTimer: double <<負なら数えていない。数えている間もゲームは止まる>>
             - leaveTimer: double <<負ならフェードしていない>>
+            - tutorialHold: boolean <<チュートリアルの説明を出している間、ゲームを止める(ポーズ画面は出さない)>>
             - bombBtn: ItemSlotButton <<ショップで買ったボム(キー1)>>
             - freezeBtn: ItemSlotButton <<ショップで買ったフリーズ(キー2)>>
+            - shieldBtn: ItemSlotButton <<ショップで買った耐久シールド(キー3)>>
             --
             - GameManager()
             + initComponents(): void
@@ -1519,6 +2086,10 @@ package "shooting_game" {
             + addScore(value: double): void
             + addCoin(value: int): void
             + addHit(): void
+            - checkTutorialEvents(): void <<ステージ1の最初の敵・最初のアイテムを調べる>>
+            - fireTutorial(event: String): void <<まだ見ていなければ出す。出している間は tutorialHold>>
+            + addBossKill(): void <<ボスを倒したことの記録(宝箱の鍵用)>>
+            - dropChestKeys(diff: Difficulty, firstClear: boolean, newStars: int): void <<初回クリア・ボス(確率)・ミッションの★で鍵を入れる>>
             + skipResult(): void
             - {static} bumpRarity(rarity: Rarity, bump: int): Rarity
             + getGameResult(): boolean
@@ -1638,12 +2209,17 @@ package "shooting_game" {
                 + putStage(key: String, data: StageData): void
                 + getStageId(): int
                 + setStageId(id: int): void
+                - generateFarmStages(enemies: List<String>, bosses: List<String>): void <<素材周回ステージを生成>>
+                - generateTrialStage(enemies: List<String>, bosses: List<String>): void <<お試し出撃のトレーニングステージ(1990番。TRIAL_WAVES ウェーブ・ボスなし・報酬なし・ギミックなし)を生成>>
             }
 
             class Stage {
                 - {static} component: String
                 - stageId: int
                 - waveId: int  <<@Getter>>
+                - startWave: int = 1 <<@Getter @Setter。無限モードで実際に戦い始めるウェーブ>>
+                - skipTarget: int = 1 <<無限モードで戦い始めるウェーブ。それまでは高速で飛ばす>>
+                - skipAccum: double <<飛ばしの経過時間>>
                 - MAIN: ShootingGameMain
                 - SM: SceneManager
                 - SHIP_M: ShipManager
@@ -1653,7 +2229,9 @@ package "shooting_game" {
                 + Stage()
                 + reset(): void
                 + update(dt: double): void
-                + draw(g: Graphics): void
+                + draw(g: Graphics): void <<飛ばし中は WAVE SKIP を表示>>
+                + isSkipping(): boolean <<無限モードで道中を飛ばしている最中か>>
+                - creditSkippedWave(wave: int): void <<飛ばしたウェーブの敵を倒した扱いにしてスコアだけ加える>>
                 - createShip(enemy: EnemyConfig): Ship <<NIGHTMARE の Enemy には EnemyAffix.roll で効果を付ける>>
                 - createBaseShip(enemy: EnemyConfig): Ship
                 - toScreen(pos: Vector2): Vector2
@@ -1677,8 +2255,11 @@ package "shooting_game" {
                 - rewardRate: double
                 - moduleChanceRate: double
                 - rarityBump: int
+                - bossHpRate: double <<ボスチャレンジだけ HP倍率にさらにかける>>
+                - bossDamageRate: double <<ボスチャレンジだけ 被ダメージ倍率にさらにかける>>
                 --
                 + describe(): String
+                + describeBoss(): String <<ボスチャレンジ用の説明。ボス用の倍率が重なる>>
             }
 
             class DifficultyService <<Utility>> {
@@ -1728,10 +2309,16 @@ package "shooting_game" {
                 - {static} difficulty: Difficulty
                 - {static} endlessHp: double
                 - {static} endlessDamage: double
+                - {static} bossStage: boolean <<ボスチャレンジか。難易度のボス用倍率をかける>>
+                - {static} stageHp: double <<ステージ番号に応じた敵HPの倍率(GameBalance)>>
+                - {static} stageDamage: double <<ステージが進むほど敵から受けるダメージが増える倍率(GameBalance.stageDamageGrowth)>>
                 + {static} load(spec: Spec): void
                 + {static} load(spec: Spec, diff: Difficulty): void
+                + {static} load(spec: Spec, diff: Difficulty, stageIndex: int): void <<GameManager がステージ番号を渡す>>
+                + {static} load(spec: Spec, diff: Difficulty, stageIndex: int, boss: boolean): void <<ボスチャレンジなら bossStage を立てる>>
                 + {static} setEndlessScale(wave: int): void
                 + {static} enemyHpRate(): double
+                + {static} enemyLevelHpRate(level: int): double <<敵レベルに応じた敵HPの倍率(ゲーム中だけ。ボスは対象外)>>
                 + {static} enemyDamageRate(): double
                 + {static} playerHpRate(): double
                 + {static} coinRate(): double
@@ -1754,9 +2341,10 @@ package "shooting_game" {
                 + {static} BEST_WAVE_KEY: String
                 - {static} BLOCK_RATE: double = 0.25 <<ブロック付きウェーブでブロックを出す確率>>
                 + {static} generate(wave: int): Wave
+                + {static} skipTarget(skillBonus: double, bestWave: int): int <<自動スキップで飛ぶ先。最高到達ウェーブ+1まで>>
                 - {static} pickBoss(wave: int): EnemyConfig
                 - {static} boss(bossId: String): EnemyConfig
-                + {static} materialRewards(cleared: int): Map<ResourceKinds, Integer>
+                + {static} materialRewards(cleared: int): Map<ResourceKinds, Integer> <<モジュール基板・ランクコアなど>>
                 + {static} moduleRewards(cleared: int): List<Rarity>
             }
 
@@ -1784,8 +2372,18 @@ package "shooting_game" {
                 - modifiers: StageModifiersSpec
                 - missions: MissionSpec <<HARDのミッション>>
                 - gimmicks: Map<String, BeamSpec[]>
+                - meteors: Map<String, MeteorSpec[]> <<ウェーブごとの隕石>>
                 --
                 + getRandomResourceAmount(resKind: ResourceKinds): int
+            }
+
+            class StageGenerator <<自動生成ステージ>> {
+                - {static} FENCE_FROM: int <<36: レーザー柵が入り始める>>
+                - {static} METEOR_FROM: int <<45: 隕石>>
+                --
+                - {static} addGimmicks(d: StageData, stageId: int, waves: int, hasBoss: boolean): void
+                ~ {static} fence(stageId: int, rnd: Random): BeamSpec[]
+                ~ {static} meteorShower(stageId: int, rnd: Random): MeteorSpec[]
             }
 
             class EnemyConfig <<Lomboc @Data>> {
@@ -1827,12 +2425,12 @@ package "shooting_game" {
                 + update(dt: double): void
                 + draw(g: Graphics): void
                 + reload(): void
-                + updateAndClean(List<Ship>, double): void
+                + updateAndClean(List<Ship>, double): void <<各船で tickStatus を呼び、凍結の進み具合に status.speedRate() をかけて update>>
                 - dropItem(ship: Ship): void
                 - dropResource(ship: Ship): void
                 - dropResource(pos: Vector2): void
                 - dropCoin(ship: Ship): void
-                + dropBossBonus(boss: Ship, rolls: int): void
+                + dropBossBonus(boss: Ship, rolls: int): void <<ランクコアも落とす>>
                 + clear(target: String): void
                 + kill(target: String): void
                 + addShip(ship: Ship): void <<null は無視する>>
@@ -1876,6 +2474,8 @@ package "shooting_game" {
                 - speed: double
                 - score: double
                 - coins: String
+                - onHitEffect: String <<自機: 弾・ビームが当たった敵にかける特殊効果(POISON/BURN/SLOW/SHOCK/VULNERABLE)>>
+                - onHitChance: Double <<自機: その効果がかかる確率(なければ0.1)>>
             }
 
             class SheetConfig <<lomboc @Data>> {
@@ -1927,6 +2527,7 @@ package "shooting_game" {
                 # animateTimer: double
                 # removeRequested: boolean
                 - affix: EnemyAffix <<ナイトメアで付くエフェクト。なければnull>>
+                # status: StatusSet <<かかっている特殊効果(毒・炎・鈍足・感電・脆弱)>>
                 - shotData: List<ShotConfig>
                 - shotBullet: Map<BulletKinds, List<Integer>>
                 --
@@ -1944,10 +2545,17 @@ package "shooting_game" {
                 + applyAffix(affix: EnemyAffix): void <<SWIFTは速度、ARMOREDはHPを上げる>>
                 - updateAffix(dt: double): void <<REGENは回復、RAPIDは冷却を短くする>>
                 - drawAffixRing(g2: Graphics2D): void
+                + getStatus(): StatusSet
+                + applyStatus(effect: StatusEffect, seconds: double): void
+                + applyStatus(effect: StatusEffect, seconds: double, power: double): void <<時間に statusResist をかけて StatusSet.apply>>
+                # statusResist(effect: StatusEffect): double <<時間にかける倍率。0なら効かない>>
+                + tickStatus(dt: double): void <<実際の経過時間で呼ぶ。継続ダメージは dotDamage>>
+                # dotDamage(amount: double): void <<継続ダメージ(毒・炎)。既定は addDamage>>
+                - drawStatusRing(g2: Graphics2D): void <<かかっている効果の色で機体のまわりを光らせる>>
                 + changeMode(): void
                 + addScore(): void
-                + heal(damage: double): void
-                + addDamage(damage: double): void <<DamagePopupManager.add を呼ぶ>>
+                + heal(damage: double): void <<毒の間(StatusSet.blocksHeal)は回復しない>>
+                + addDamage(damage: double): void <<DamagePopupManager.add を呼ぶ。脆弱の間は damageTakenRate 倍>>
                 + addCritDamage(damage: double): void <<会心表示つきでダメージを与える>>
                 + isColorless(): boolean
                 + collidesWithCircle(center: Vector2, radius: double): boolean
@@ -2105,6 +2713,8 @@ package "shooting_game" {
                     - shieldPoints: double
                     - maxShield: double
                     - shieldRegenWait: double
+                    - durableShield: double <<耐久シールド(アイテム)の残り耐久。回復なし・クールタイムなし>>
+                    - durableShieldMax: double <<張った時の耐久(バーの長さの基準)>>
                     + getShieldPoints(): double
                     + getMaxShield(): double
                     - mouseHandler: MouseAdapter
@@ -2115,6 +2725,7 @@ package "shooting_game" {
                     - down: boolean
                     - left: boolean
                     - right: boolean
+                    - shiftDown: boolean <<Shift中は低速(割合は GameSettings)>>
                     - lastHorizontal: String
                     - lastVertical: String
                     - subShip: List<SubShip>
@@ -2130,18 +2741,24 @@ package "shooting_game" {
                     + update(dt: double): void
                     - updateSubBeams(dt: double): void
                     + draw(g: Graphics): void
-                    + move(dt: double): void
+                    + move(dt: double): void <<ステージの中は鈍足・感電の speedRate をかける>>
+                    - moveMaybeSlow(dt: double): void <<Shift中は速度を設定の割合に下げて動く>>
                     + drawHpBar(g: Graphics): void
                     + keyPressed(e: KeyEvent): void
                     + keyTyped(e: KeyEvent): void
                     + keyReleased(e: KeyEvent): void
                     + mouseMoved(e: MouseEvent): void
                     + mouseDragged(e: MouseEvent): void
-                    + addDamage(damage: double): void
+                    + addDamage(damage: double): void <<脆弱の間は damageTakenRate 倍>>
+                    + applyStatus(effect: StatusEffect, seconds: double, power: double): void <<override。スキル RES_効果名 の分だけ時間を短くする(最大9割)>>
+                    # dotDamage(amount: double): void <<override。シールドと無敵時間を通さずHPを直接減らす(常時無敵なら受けない)>>
                     + levelUp(): void
                     + setShieldTimer(time: double): void
                     + setOOCTimer(time: double): void
                     + getOOCTimer(): double
+                    + startRampage(): void <<アイテム用。Lv5にして機体の暴走時間ぶん暴走状態にする>>
+                    + startDurableShield(durability: double): void <<アイテム用。重ねて使うと張り直す>>
+                    + getDurableShield(): double
                     + getDamagedTimer(): double
                     + setShieldTimer(time: double): void
                     + addHandler(): void
@@ -2235,9 +2852,11 @@ package "shooting_game" {
                     + update(dt: double): void
                     + draw(g: Graphics): void
                     + move(dt: double): void
-                    + addDamage(damage: double): void <<戦闘中のみ。受けたダメージを coinCarry にためる>>
+                    + addDamage(damage: double): void <<戦闘中のみ。受けたダメージを coinCarry にためる。1回で削れるのは今のゲージの残りまで>>
+                    # statusResist(effect: StatusEffect): double <<override。感電は0、ほかは0.5(時間が半分)>>
                     - payCoins(): void <<たまったダメージを coinStep ごとのコインにして落とす(1フレーム4つまで)>>
                     + getRamDamage(): double
+                    + isTransitioning(): boolean <<形態変化中か。この間、自機の暴走のカウントは止まる>>
                     - drawPlaceholder(g2: Graphics2D): void
                     - startGauge(): void
                     - checkGaugeBreak(): void
@@ -2280,7 +2899,8 @@ package "shooting_game" {
                 - loadImages(): void
                 + setup(): void
                 + update(dt: double): void
-                + draw(g: Graphics): void
+                + draw(g: Graphics): void <<自機の弾だけ描く>>
+                + drawEnemyBullets(g: Graphics): void <<敵の弾。GameManager がビームのあとに呼ぶ>>
                 + reload(): void
                 + addBullet(bullet: Bullet): void
                 + clearBullets(): void
@@ -2333,6 +2953,9 @@ package "shooting_game" {
                 - accelStart: double <<Accel用: 初速の倍率>>
                 - accelEnd: double
                 - accelTime: double
+                - effect: String <<当たった相手にかける特殊効果(なければなし)>>
+                - effectTime: double <<特殊効果の時間(0なら効果の標準)>>
+                - effectChance: double <<特殊効果がかかる確率(0〜1。既定1)>>
                 - cooldowns: Map<String, Double>
             }
 
@@ -2372,6 +2995,7 @@ package "shooting_game" {
                 + isPiercing(): boolean
                 + getKind(): BulletKinds
                 + destroySelf(): void
+                + applyStatusTo(target: Ship): void <<config.effect を effectChance の確率でかける>>
                 + registerHit(target: Object): boolean
                 + consumeHit(): boolean
                 + getPos(): Vector2
@@ -2598,6 +3222,8 @@ package "shooting_game" {
                 - count: int
                 - minLevel: int
                 - bossRate: double
+                - effect: String <<当たった自機にかける特殊効果(なければなし)>>
+                - effectTime: double <<特殊効果の時間(0なら効果の標準)>>
                 - lock: double
             }
 
@@ -2684,6 +3310,8 @@ package "shooting_game" {
                 - damage: double
                 - bossRate: double
                 - damageScale: double
+                - effect: StatusEffect <<当たった自機にかける特殊効果。なければnull>>
+                - effectTime: double
                 - origin: Vector2
                 - angle: double
                 - sweep: double
@@ -2731,8 +3359,114 @@ package "shooting_game" {
                 + hasTargetAhead(origin: Vector2, halfWidth: double): boolean
                 + fireHostile(spec: BeamSpec, source: Ship, mode: ColorMode): void
                 + firePlayer(spec: BeamSpec, originSupplier: Supplier<Vector2>, modeSupplier: Supplier<ColorMode>, damageScale: double): void
-                - damageEnemies(beam: Beam): void
+                - damageEnemies(beam: Beam): void <<ダメージのあと UnitService.rollOnHit(自機の機体ID, 敵, TICK)。敵のビームは自機に beam.effect をかける>>
             }
+        }
+
+        package "status" {
+            enum StatusEffect {
+                POISON : 毒(6秒・毎秒最大HPの2%・回復不可)
+                BURN : 炎(3秒・毎秒最大HPの5%)
+                SLOW : 鈍足(3秒・速さ半分)
+                SHOCK : 感電(0.8秒・動けない)
+                VULNERABLE : 脆弱(5秒・受けるダメージ1.25倍)
+                --
+                + {static} VULNERABLE_RATE: double = 1.25 <<脆弱の間に受けるダメージの倍率(強さ1)>>
+                - displayName: String
+                - color: Color
+                - defaultSeconds: double
+                - tickRate: double <<毎秒の継続ダメージ(最大HPに対する割合)>>
+                - speedRate: double <<かかっている間の動く速さの倍率(0なら止まる)>>
+                - blocksHeal: boolean
+                --
+                + {static} parse(name: String): StatusEffect <<設定ファイルの名前から。なければnull>>
+                + getDisplayName(): String
+                + getColor(): Color
+                + getDefaultSeconds(): double
+                + getTickRate(): double
+                + getSpeedRate(): double
+                + isBlocksHeal(): boolean
+            }
+
+            class StatusSet <<純ロジック>> {
+                - timers: Map<StatusEffect, Double> <<効果ごとの残り時間>>
+                - powers: Map<StatusEffect, Double> <<効果ごとの強さの倍率>>
+                --
+                + apply(effect: StatusEffect, seconds: double): void
+                + apply(effect: StatusEffect, seconds: double, power: double): void <<重ねがけは時間も強さも大きい方>>
+                + update(dt: double): double <<時間を進め、継続ダメージ(最大HPに対する割合)を返す>>
+                + isActive(effect: StatusEffect): boolean
+                + remaining(effect: StatusEffect): double
+                + isEmpty(): boolean
+                + active(): Set<StatusEffect>
+                + speedRate(): double <<かかっている効果のうち最も遅いもの>>
+                + damageTakenRate(): double <<脆弱の間は増える>>
+                + blocksHeal(): boolean <<毒など>>
+                + clear(): void
+            }
+            StatusSet o-- StatusEffect
+        }
+
+        package "hazard" {
+            class MeteorSpec <<lombok @Data>> {
+                - x: Double <<省略ならランダム>>
+                - y: double
+                - vx: double
+                - vy: double
+                - radius: double
+                - hp: double
+                - damage: double
+                - delay: double
+                - interval: double
+                - count: int
+            }
+
+            class Meteor {
+                - pos: Vector2
+                - vx: double
+                - vy: double
+                - radius: double
+                - damage: double
+                - spinSpeed: double
+                - maxHp: double
+                - hp: double
+                - angle: double
+                - dead: boolean
+                --
+                + Meteor(spec: MeteorSpec)
+                + update(dt: double): void
+                + hit(amount: double): boolean
+                + shatter(): void
+                + isDead(): boolean
+                + isGone(): boolean
+                + draw(g2: Graphics2D): void
+            }
+
+            class MeteorManager <<Singleton>> {
+                - {static} instance: MeteorManager
+                - spawners: List<Spawner>
+                - meteors: List<Meteor>
+                --
+                + {static} getInstance(): MeteorManager
+                + setup(): void
+                + setMeteors(specs: MeteorSpec[]): void
+                + update(dt: double): void
+                + draw(g: Graphics): void
+                - collide(player: Player): void
+            }
+
+            class Spawner <<MeteorManager の内部クラス>> {
+                ~ spec: MeteorSpec
+                ~ timer: double
+                ~ fired: int
+                --
+                ~ done(): boolean
+            }
+
+            MeteorManager o-- Meteor
+            MeteorManager *-- Spawner
+            Spawner --> MeteorSpec
+            Meteor --> MeteorSpec
         }
 
         package "item" {
@@ -2744,6 +3478,10 @@ package "shooting_game" {
                 - itemConfigMap: Map<ItemKinds, ItemConfig>
                 - itemImageCache: Map<ItemKinds, BufferedImage[]>
                 - magnetTimer: double
+                - regenTimer: double <<継続回復の残り時間>>
+                - regenPerSec: double <<継続回復の毎秒の回復量>>
+                - {static} atkUpTimer: double <<攻撃力アップの残り時間>>
+                - {static} atkUpRate: double <<攻撃力アップの倍率(例: 1.3)>>
                 --
                 - ItemManager()
                 + {static} getInstance(): ItemManager
@@ -2759,6 +3497,11 @@ package "shooting_game" {
                 + removeItem(item: Item): void
                 + clearItems(): void
                 + getItemList(): List<Item>
+                + startRegen(totalHeal: double, seconds: double): void <<重ねて取ると取り直す>>
+                + {static} startAtkUp(rate: double, seconds: double): void <<重ねて取ると取り直す>>
+                + getRegenTimer(): double
+                + {static} getAtkUpTimer(): double
+                + {static} atkUpMultiplier(): double <<効果中は倍率、そうでなければ1>>
             }
 
             enum ItemKinds {
@@ -2768,7 +3511,11 @@ package "shooting_game" {
                 BOMB
                 MAGNET
                 FREEZE
+                REGEN <<少量継続回復>>
+                RAMPAGE <<一時的に暴走状態になる>>
+                ATK_UP <<一定時間、攻撃力アップ>>
                 SKIP_TICKET <<ショップ専用の研究スキップ券>>
+                DURABLE_SHIELD <<ショップ専用。耐久が尽きるまで被弾を吸う>>
             }
 
             class ItemConfig <<lomboc @Data>> {
@@ -2809,7 +3556,7 @@ package "shooting_game" {
             }
 
             class ItemFactory {
-                - {static} ITEM_DROP_TABLE: Map<ItemKinds, Double> <<BOMB と FREEZE は含まない(ショップ専用)>>
+                - {static} ITEM_DROP_TABLE: Map<ItemKinds, Double> <<BOMB・FREEZE・DURABLE_SHIELD は含まない(ショップ専用)。REGEN/RAMPAGE/ATK_UP を含む>>
                 --
                 + {static} createItem(pos: Vector2): Item
                 + {static} createItem(pos: Vector2, kind: ItemKinds): Item
@@ -2860,6 +3607,32 @@ package "shooting_game" {
                     + Magnet(pos: Vector2)
                     + draw(g: Graphics): void
                     + effect(): void
+                }
+
+                class Regen {
+                    + Regen(pos: Vector2)
+                    + draw(g: Graphics): void
+                    + effect(): void <<8秒かけて最大HPの15%を回復。回復なしステージでは無効>>
+                }
+
+                class Rampage {
+                    + Rampage(pos: Vector2)
+                    + draw(g: Graphics): void
+                    + effect(): void <<Player.startRampage を呼ぶ>>
+                }
+
+                class AtkUp {
+                    + AtkUp(pos: Vector2)
+                    + draw(g: Graphics): void
+                    + effect(): void <<8秒間、ダメージ1.3倍(ItemManager.startAtkUp)>>
+                }
+
+                class DurableShield {
+                    - {static} DURABILITY_RATE: double = 0.5 <<耐久(最大HPに対する割合)>>
+                    --
+                    + DurableShield(pos: Vector2)
+                    + draw(g: Graphics): void
+                    + effect(): void <<Player.startDurableShield(最大HP×0.5)を呼ぶ>>
                 }
 
                 class Freeze {
@@ -3002,6 +3775,9 @@ package "shooting_game" {
             - {static} FILE: Path <<settings.properties>>
             + {static} FPS_CHOICES: int[]
             + {static} DEFAULT_FPS: int
+            + {static} SLOW_PERCENT_MIN: int = 10
+            + {static} SLOW_PERCENT_MAX: int = 90
+            + {static} DEFAULT_SLOW_PERCENT: int = 50
             - {static} props: Properties
             - {static} loaded: boolean
             --
@@ -3009,8 +3785,37 @@ package "shooting_game" {
             + {static} setFps(fps: int): void
             + {static} isDamageTextEnabled(): boolean
             + {static} setDamageTextEnabled(enabled: boolean): void
+            + {static} getSlowPercent(): int <<Shift中の移動速度の割合(%)>>
+            + {static} setSlowPercent(percent: int): void
             - {static} load(): void
             - {static} save(): void
+        }
+
+        class GameBalance <<Utility>> {
+            - {static} component: String
+            - {static} CONFIG_PATH: String <<BalanceConfig.json>>
+            - {static} unitAttackGrowth: double = 1.06
+            - {static} rankAttackGrowth: double = 18.0
+            - {static} stageHpGrowth: double = 1.07
+            - {static} endlessHpPerWave: double = 0.015
+            - {static} enemyLevelHp: double = 0.2
+            - {static} stageDamageGrowth: double = 1.004
+            - {static} requiredBase: double = 100.0
+            - {static} requiredStageGrowth: double = 1.00275
+            - {static} loaded: boolean
+            --
+            - {static} ensureLoaded(): void
+            + {static} unitAttackGrowth(): double <<機体レベルごとの火力の倍率(指数)>>
+            + {static} rankAttackGrowth(): double <<ランク1つごとの火力の倍率(指数)>>
+            + {static} stageHpGrowth(): double
+            + {static} endlessHpPerWave(): double
+            + {static} enemyLevelHp(): double <<敵レベル1つごとに増える敵HPの割合>>
+            + {static} stageDamageGrowth(): double <<ステージ1つごとの、敵から受けるダメージの倍率(指数)>>
+            + {static} requiredBase(): double <<ステージ1・ノーマルでの推定必要戦力値(戦力値の基準)>>
+            + {static} requiredStageGrowth(): double <<推定必要戦力値の、ステージ1つごとの上乗せ(指数)。ステージ200・ナイトメアが約3000万になるよう実測に合わせた>>
+            + {static} stageHpRate(stageIndex: double): double <<ステージ番号に応じた敵HPの倍率>>
+            + {static} enemyLevelHpRate(level: int): double <<敵レベルに応じた敵HPの倍率(1 + enemyLevelHp × level)>>
+            + {static} stageDamageRate(stageIndex: double): double <<ステージ番号に応じた、敵から受けるダメージの倍率>>
         }
 
         class GameUtils {
@@ -3043,6 +3848,25 @@ package "shooting_game" {
             + {static} error(tag: String, className: String, msg: String, e: Exception): void
             + {static} debugLog(message: Object): void
             + {static} debugLog(format: String, messages: Object...): void
+        }
+
+        enum Severity {
+            EMERGENCY
+            ALERT
+            CRITICAL
+            ERROR
+            WARNING
+            NOTICE
+            INFO
+            DEBUG
+            --
+            - code: int
+            - label: String
+            - color: String
+            --
+            - Severity(code: int, label: String, color: String)
+            + code(): int
+            + label(): String <<画面に出すラベル。EMERGENCY〜CRITICAL は FATAL>>
         }
 
         enum LogLevel {
@@ -3080,6 +3904,32 @@ package "shooting_game" {
     }
 
     package "ui" {
+        class NullImage <<Utility>> {
+            - {static} SIZE: int = 96
+            - {static} CACHE: Map<Kind, BufferedImage>
+            --
+            + {static} of(kind: Kind): BufferedImage <<ダミー画像(1枚)。img/null/<要素>.png があればそれ、なければ render>>
+            + {static} frames(kind: Kind, count: int): BufferedImage[] <<使うコマ数ぶんに並べたダミー(同じ絵)>>
+            + {static} render(kind: Kind): BufferedImage <<「?」入りの市松模様をコードで描く>>
+        }
+
+        enum NullImage.Kind {
+            BULLET
+            ITEM
+            RESOURCE
+            ENEMY
+            BOSS
+            PLAYER
+            OBJECT
+            MODULE
+            UI
+            --
+            - color: Color
+            + getColor(): Color
+        }
+
+        NullImage +-- NullImage.Kind
+
         class ShooterButtonUI <<Utility>> {
             + {static} createUI(c: JComponent): ComponentUI
             + {static} install(): void
@@ -3087,6 +3937,66 @@ package "shooting_game" {
             + paint(g: Graphics, c: JComponent): void
             # paintText(g: Graphics, b: AbstractButton, textRect: Rectangle, text: String): void
         }
+
+        class ButtonAnimator <<Utility>> {
+            ~ {static} REST: double = 0.94
+            ~ {static} HOVER: double = 1.0
+            ~ {static} PRESS: double = 0.88
+            - {static} KEY: String
+            - {static} SPEED: double
+            - {static} ALL: Map<ButtonAnimator,Boolean>
+            - {static} timer: Timer
+            - button: JButton
+            - pop: boolean
+            - frames: BufferedImage[]
+            - fps: double
+            - scale: double
+            - lastFrame: int
+            --
+            - ButtonAnimator(button: JButton, pop: boolean)
+            + {static} attachPop(button: JButton): void <<ホバー・押下で拡大縮小>>
+            + {static} attachSprite(button: JButton, frames: BufferedImage[], fps: double): void <<コマ送り>>
+            - {static} attach(a: ButtonAnimator): void
+            - {static} tickAll(e: ActionEvent): void
+            - tick(dt: double): void
+            ~ {static} targetScale(enabled: boolean, rollover: boolean, pressed: boolean): double
+            ~ {static} approach(current: double, target: double, dt: double): double
+            ~ {static} frameAt(seconds: double, fps: double, count: int): int
+            + {static} begin(g: Graphics, c: JComponent): Graphics2D <<中心基準で拡大縮小した Graphics。なければ null>>
+            + {static} drawSprite(g: Graphics, c: JComponent): boolean
+        }
+
+        class SceneBars <<Utility>> {
+            + {static} TOP: double = 44
+            --
+            - SceneBars()
+            + {static} draw(g: Graphics, topH: double, bottomH: double): void <<画面の上下の帯(紺の板とネオンの縁)>>
+        }
+
+        class ModeButtonImage <<Utility>> {
+            - ModeButtonImage()
+            + {static} create(w: int, h: int, label: String, top: Color, bottom: Color, edge: Color, fontPx: int): BufferedImage <<大きなモードボタンの絵(板と縁取りの文字)>>
+            ~ {static} plate(x: double, y: double, w: double, h: double, cut: double): Shape
+        }
+
+        class StageNodeIcon <<Utility>> {
+            + {static} PLATFORM_CENTER: double = 0.66
+            - StageNodeIcon()
+            + {static} lookOf(locked: boolean, boss: boolean, stars: int): Look
+            + {static} create(w: int, h: int, label: String, look: Look, stars: int): BufferedImage <<光る丸い台に番号と★。ボスはドクロ>>
+            - {static} alpha(c: Color, a: int): Color
+            ~ {static} star(cx: double, cy: double, r: double): Path2D
+            - {static} drawSkull(g: Graphics2D, cx: double, cy: double, r: double, c: Color): void
+        }
+
+        enum "StageNodeIcon.Look" as StageNodeIconLook {
+            NORMAL
+            GOLD
+            BOSS
+            LOCKED
+        }
+
+        StageNodeIcon +-- StageNodeIconLook
 
         class StageLockIcon <<Utility>> {
             - {static} NEON: Color
@@ -3097,7 +4007,7 @@ package "shooting_game" {
         }
 
         class CoinHud <<Utility>> {
-            - {static} SCENES: Set<SceneType>
+            - {static} SCENES: Set<SceneType> <<LOBBY/BAG/UPGRADE/SHOP/GACHA/ステージ選択系など>>
             - {static} icon: BufferedImage
             --
             + {static} draw(g: Graphics, scene: SceneType): void <<ゲーム以外の画面の左上に所持コインを描く>>
@@ -3159,6 +4069,11 @@ package "shooting_game" {
             + {static} get(kind: ResourceKinds, size: int): BufferedImage
         }
 
+        class ShipPieceIcon <<Utility>> {
+            + {static} draw(g: Graphics2D, shipId: String, x: int, y: int, size: int): void <<機体の絵+右下にピースの図形>>
+            - {static} drawPiece(g: Graphics2D, x: int, y: int, s: int): void
+        }
+
         class CostPanel {
             - {static} ENOUGH: Color
             - {static} SHORT: Color
@@ -3174,11 +4089,33 @@ package "shooting_game" {
             + getToolTipText(ev: MouseEvent): String
         }
 
+        class TutorialOverlay <<Singleton>> {
+            - {static} instance: TutorialOverlay
+            - guide: Guide
+            - page: int
+            - onClose: Runnable
+            - nextBtn: Rectangle
+            - skipBtn: Rectangle
+            --
+            - TutorialOverlay()
+            + {static} getInstance(): TutorialOverlay
+            + isShowingGuide(): boolean
+            + show(g: Guide, onClose: Runnable): boolean <<出せたら true。出ている間は下の画面へのクリックを受け止める>>
+            - next(): void
+            - close(): void <<markSeen して onClose を呼ぶ>>
+            # paintComponent(g: Graphics): void <<画面を暗くして下に説明パネル>>
+            - drawButton(g: Graphics2D, r: Rectangle, label: String, bg: Color, fg: Color): void
+            ~ {static} wrap(text: String, fm: FontMetrics, width: int): List<String>
+        }
+
         class UIBuilder {
             + {static} loadImage(path: String): BufferedImage
             + {static} cutSpriteSheet(masterSheet: BufferedImage, grids: Vector2, useCount: int, imageSize: double): BufferedImage[]
             + {static} createImageBtn(component: String, path: String, size: Vector2, fallBackText: String): JButton
             + {static} createImageBtn(component: String, image: BufferedImage, size: Vector2, fallBackText: String): JButton
+            + {static} createSpriteBtn(component: String, sheetPath: String, grids: Vector2, useCount: int, fps: double, size: Vector2, fallbackText: String): JButton <<コマ送りのボタン。ButtonAnimator.attachSprite を付ける>>
+            + {static} anchoredTopLeft(anchor: Anchor, refX: double, refY: double, w: int, h: int): Point <<基準点が anchor に来る左上の座標>>
+            + {static} placeBtn(btn: JComponent, screenAnchor: Anchor, btnAnchor: Anchor, dx: double, dy: double): void <<画面の anchor から (dx,dy) 離して置く。基準サイズの長さ>>
             + {static} createBackBtn(component: String, action: Runnable): JButton <<左下の隅の正方形の矢印>>
             + {static} resizeImage(originImage: BufferedImage, imageSize: double): BufferedImage
             + {static} applyHighQualityRenderSettings(g2: Graphics2D): void
@@ -3202,6 +4139,14 @@ package "shooting_game" {
 
         class Anchor {
             + {static} CENTER: Anchor
+            + {static} TOP_LEFT: Anchor
+            + {static} TOP_CENTER: Anchor
+            + {static} TOP_RIGHT: Anchor
+            + {static} CENTER_LEFT: Anchor
+            + {static} CENTER_RIGHT: Anchor
+            + {static} BOTTOM_LEFT: Anchor
+            + {static} BOTTOM_CENTER: Anchor
+            + {static} BOTTOM_RIGHT: Anchor
             + horizontal: H
             + vertical: V
             --
@@ -3236,6 +4181,7 @@ package "shooting_game" {
             - {static} instance: StageRewards
             - resources: Map<ResourceKinds, Integer>
             - modules: List<Module>
+            - keys: Map<Rank,Integer> <<クリアで手に入った宝箱の鍵>>
             - score: int
             - difficultyLabel: String
             - newMissions: List<String>
@@ -3403,6 +4349,9 @@ shooting_game.command.CommandGlassPane +-- MoveOption
 shooting_game.command.CommandGlassPane +-- LogCellRenderer
 shooting_game.command.LogLine +-- Kind
 shooting_game.utils.animation.Animation +-- AnimationLogic
+shooting_game.utils.LogUtils +-- Severity
+shooting_game.lobbyScene.LobbySceneUI +-- LobbySlot
+shooting_game.domain.armor.ArmorService +-- ArmorType
 shooting_game.ui.Anchor +-- H
 shooting_game.ui.Anchor +-- V
 shooting_game.ResourceManager +-- ResourceKinds
@@ -3457,6 +4406,14 @@ shooting_game.domain.unlock.UnlockService +-- Feature
 shooting_game.upgradeScene.SkillTreeLayout +-- Pattern
 shooting_game.upgradeScene.SkillTreeLayout +-- SkillTreeLayoutNode
 shooting_game.domain.star.StarRewardService +-- StarReward
+shooting_game.domain.achievement.AchievementService +-- Tier
+shooting_game.domain.achievement.AchievementService +-- Achievement
+shooting_game.domain.chest.ChestService +-- Rank
+shooting_game.domain.chest.ChestService +-- Table
+shooting_game.domain.chest.ChestService +-- ResourceEntry
+shooting_game.domain.chest.ChestService +-- ModuleEntry
+shooting_game.domain.chest.ChestService +-- Loot
+shooting_game.domain.chest.ChestService +-- Opened
 shooting_game.shopScene.ShopSceneUI +-- CardData
 shooting_game.gameScene.stage.DifficultyService +-- MissionResult
 shooting_game.gameScene.bullet.barrage.AnchorMarkers +-- Marker
@@ -3466,6 +4423,7 @@ shooting_game.gameScene.bullet.types.Redirect +-- RedirectPhase
 shooting_game.stageScene.DifficultyPanel --> shooting_game.gameScene.stage.Difficulty
 shooting_game.stageScene.DifficultyPanel ..> shooting_game.gameScene.stage.DifficultyService
 shooting_game.stageScene.extra.ExtraStageManager --> shooting_game.stageScene.DifficultyPanel
+shooting_game.stageScene.extra.ExtraStageManager --> shooting_game.stageScene.extra.ExtraDetailView
 shooting_game.stageScene.normal.subPanels.StageDetailPanel --> shooting_game.stageScene.DifficultyPanel
 shooting_game.gameScene.stage.Stage --> shooting_game.gameScene.stage.Difficulty
 shooting_game.gameScene.stage.StageModifiers ..> shooting_game.gameScene.stage.Difficulty
@@ -3479,16 +4437,74 @@ shooting_game.encyclopediaScene.EncyclopediaManager ..> shooting_game.domain.dex
 shooting_game.encyclopediaScene.EncyclopediaManager ..> shooting_game.gameScene.ship.ShipManager
 shooting_game.lobbyScene.LobbyManager ..> shooting_game.encyclopediaScene.EncyclopediaManager
 shooting_game.SceneManager --> shooting_game.encyclopediaScene.EncyclopediaManager
+
+' チュートリアル
+shooting_game.domain.tutorial.TutorialService +-- Guide
+shooting_game.SceneManager ..> shooting_game.domain.tutorial.TutorialService
+shooting_game.SceneManager ..> shooting_game.ui.TutorialOverlay
+shooting_game.ShootingGameMain ..> shooting_game.ui.TutorialOverlay
+shooting_game.gameScene.GameManager ..> shooting_game.domain.tutorial.TutorialService
+shooting_game.gameScene.GameManager ..> shooting_game.ui.TutorialOverlay
+shooting_game.command.PlayerDataCommands ..> shooting_game.domain.tutorial.TutorialService
+shooting_game.ui.TutorialOverlay ..> shooting_game.domain.tutorial.TutorialService
+shooting_game.domain.tutorial.TutorialService ..> shooting_game.data.DataManager
+shooting_game.ui.TutorialOverlay --|> javax.swing.JComponent
+
+' 実績
+shooting_game.lobbyScene.LobbyManager ..> shooting_game.achievementScene.AchievementManager
+shooting_game.SceneManager --> shooting_game.achievementScene.AchievementManager
+shooting_game.achievementScene.AchievementManager ..> shooting_game.domain.achievement.AchievementService
+shooting_game.domain.achievement.AchievementService ..> shooting_game.domain.star.StarRewardService
+shooting_game.domain.achievement.AchievementService ..> shooting_game.gameScene.stage.DifficultyService
+shooting_game.gameScene.ship.ShipManager ..> shooting_game.domain.achievement.AchievementService
+shooting_game.gameScene.GameManager ..> shooting_game.domain.achievement.AchievementService
+
+' 宝箱と鍵
+shooting_game.lobbyScene.LobbyManager ..> shooting_game.chestScene.ChestManager
+shooting_game.SceneManager --> shooting_game.chestScene.ChestManager
+shooting_game.lobbyScene.LobbyManager ..> shooting_game.idleScene.IdleManager
+shooting_game.SceneManager --> shooting_game.idleScene.IdleManager
+shooting_game.chestScene.ChestManager ..> shooting_game.domain.chest.ChestService
+shooting_game.chestScene.ChestManager ..> shooting_game.domain.shop.ShopService
+shooting_game.domain.chest.ChestService ..> shooting_game.data.DataManager
+shooting_game.domain.chest.ChestService ..> shooting_game.domain.shop.ShopService
+shooting_game.domain.chest.ChestService ..> shooting_game.domain.star.StarRewardService
+shooting_game.domain.chest.ChestService ..> shooting_game.domain.module.ModuleService
+shooting_game.domain.chest.ChestService ..> shooting_game.gameScene.stage.Difficulty
+shooting_game.gameScene.GameManager ..> shooting_game.domain.chest.ChestService
+shooting_game.gameScene.ship.ShipManager ..> shooting_game.gameScene.GameManager
+shooting_game.model.StageRewards ..> shooting_game.domain.chest.ChestService
 shooting_game.SceneManager ..> shooting_game.ui.CoinHud
+shooting_game.SceneManager --> shooting_game.gachaScene.GachaManager
+shooting_game.gachaScene.GachaManager ..> shooting_game.domain.gacha.GachaService
+shooting_game.gachaScene.GachaManager ..> shooting_game.domain.gacha.PieceService
+shooting_game.gachaScene.GachaManager ..> shooting_game.domain.unit.UnitService
+shooting_game.domain.gacha.GachaService ..> shooting_game.gameScene.ship.ShipManager
+shooting_game.lobbyScene.LobbyManager ..> shooting_game.domain.gacha.GachaService
+shooting_game.lobbyScene.LobbyManager ..> shooting_game.domain.gacha.PieceService
+shooting_game.gachaScene.GachaManager --|> javax.swing.JPanel
+shooting_game.gachaScene.GachaManager ..|> shooting_game.interfaces.Manager
 shooting_game.ShootingGameMain ..> shooting_game.ui.LoadProgress
 shooting_game.ShootingGameMain ..> shooting_game.ui.ShooterScrollBarUI
 shooting_game.ShootingGameMain ..> shooting_game.utils.GameSettings
 shooting_game.settingScene.SettingManager ..> shooting_game.utils.GameSettings
+shooting_game.gameScene.ship.types.Player ..> shooting_game.utils.GameSettings
+shooting_game.gameScene.ship.types.Player ..> shooting_game.gameScene.ship.types.Boss
+shooting_game.domain.unit.UnitService ..> shooting_game.utils.GameBalance
+shooting_game.gameScene.stage.StageModifiers ..> shooting_game.utils.GameBalance
+shooting_game.gameScene.GameManager ..> shooting_game.gameScene.stage.StageModifiers
+shooting_game.gameScene.GameManager ..> shooting_game.gameScene.bullet.BulletManager
+shooting_game.stageScene.infinity.InfinityStageManager ..> shooting_game.domain.skill.SkillService
 
 ' 敵のエフェクト・フリーズ
 shooting_game.gameScene.ship.Ship --> shooting_game.gameScene.ship.EnemyAffix
 shooting_game.gameScene.stage.Stage ..> shooting_game.gameScene.ship.EnemyAffix
 shooting_game.gameScene.item.types.Freeze ..> shooting_game.gameScene.ship.ShipManager
+shooting_game.gameScene.item.types.Regen ..> shooting_game.gameScene.item.ItemManager
+shooting_game.gameScene.item.types.AtkUp ..> shooting_game.gameScene.item.ItemManager
+shooting_game.gameScene.item.types.Rampage ..> shooting_game.gameScene.ship.types.Player
+shooting_game.gameScene.item.types.DurableShield ..> shooting_game.gameScene.ship.types.Player
+shooting_game.gameScene.DamageCalculator ..> shooting_game.gameScene.item.ItemManager
 shooting_game.gameScene.ship.ShipFactory ..> shooting_game.gameScene.ship.ShipManager
 
 ' ショップ・ゲーム中のアイテム使用
@@ -3509,6 +4525,27 @@ shooting_game.domain.subship.SubShipTypeService ..> shooting_game.data.DataManag
 shooting_game.gameScene.ship.types.SubShip ..> shooting_game.domain.subship.SubShipTypeService
 shooting_game.upgradeScene.subPanels.SubShipPanel ..> shooting_game.domain.subship.SubShipTypeService
 shooting_game.lobbyScene.LobbyManager ..> shooting_game.domain.unlock.UnlockService
+shooting_game.lobbyScene.LobbyManager --> shooting_game.upgradeScene.subPanels.UnitPanel
+shooting_game.lobbyScene.LobbyManager --> shooting_game.upgradeScene.subPanels.SubShipPanel
+shooting_game.lobbyScene.LobbyManager --> shooting_game.upgradeScene.subPanels.ArmorPanel
+shooting_game.lobbyScene.LobbyManager ..> shooting_game.ui.ModeButtonImage
+shooting_game.lobbyScene.LobbyManager ..> shooting_game.ui.UIBuilder
+shooting_game.lobbyScene.LobbySceneUI ..> shooting_game.ui.SceneBars
+shooting_game.lobbyScene.LobbySceneUI ..> shooting_game.domain.skill.SkillService
+shooting_game.lobbyScene.LobbySceneUI ..> shooting_game.domain.armor.ArmorService
+shooting_game.domain.module.ModuleService ..> shooting_game.domain.armor.ArmorService
+shooting_game.domain.armor.ArmorService ..> shooting_game.data.DataManager
+shooting_game.domain.armor.ArmorService ..> shooting_game.domain.module.ModuleStat
+shooting_game.upgradeScene.subPanels.ArmorPanel ..> shooting_game.domain.armor.ArmorService
+shooting_game.upgradeScene.subPanels.ArmorPanel --|> javax.swing.JPanel
+shooting_game.ui.UIBuilder ..> shooting_game.ui.ButtonAnimator
+shooting_game.ui.UIBuilder ..> shooting_game.ui.Anchor
+shooting_game.ui.NullImage ..> shooting_game.ui.UIBuilder
+shooting_game.ResourceManager ..> shooting_game.ui.NullImage
+shooting_game.gameScene.item.ItemManager ..> shooting_game.ui.NullImage
+shooting_game.gameScene.bullet.BulletManager ..> shooting_game.ui.NullImage
+shooting_game.gameScene.ship.ShipManager ..> shooting_game.ui.NullImage
+shooting_game.gameScene.ship.Ship ..> shooting_game.gameScene.stage.StageModifiers
 shooting_game.bagScene.BagManager ..> shooting_game.domain.unlock.UnlockService
 shooting_game.upgradeScene.UpgradeManager ..> shooting_game.domain.unlock.UnlockService
 shooting_game.stageScene.SelectStageManager ..> shooting_game.domain.unlock.UnlockService
@@ -3517,6 +4554,38 @@ shooting_game.shopScene.ShopSceneUI ..> shooting_game.domain.shop.ShopService
 shooting_game.domain.shop.ShopService ..> shooting_game.gameScene.item.ItemManager
 shooting_game.gameScene.GameManager --> shooting_game.gameScene.ItemSlotButton
 shooting_game.gameScene.GameManager ..> shooting_game.domain.shop.ShopService
+shooting_game.gameScene.GameManager ..> shooting_game.domain.farm.MaterialFarmService
+shooting_game.gameScene.stage.StageManager ..> shooting_game.domain.farm.MaterialFarmService
+shooting_game.stageScene.extra.ExtraStageManager ..> shooting_game.domain.farm.MaterialFarmService
+shooting_game.domain.idle.IdleService +-- PerRun
+shooting_game.idleScene.IdleManager ..> shooting_game.domain.idle.IdleService
+shooting_game.idleScene.IdleManager ..> shooting_game.domain.power.PowerService
+shooting_game.idleScene.IdleManager ..> shooting_game.domain.star.StarRewardService
+shooting_game.idleScene.IdleManager ..> shooting_game.gameScene.stage.Difficulty
+shooting_game.domain.idle.IdleService ..> shooting_game.data.DataManager
+shooting_game.domain.idle.IdleService ..> shooting_game.domain.power.PowerService
+shooting_game.domain.idle.IdleService ..> shooting_game.domain.star.StarRewardService
+shooting_game.domain.idle.IdleService ..> shooting_game.gameScene.stage.Difficulty
+shooting_game.domain.idle.IdleService ..> shooting_game.gameScene.stage.StageManager
+shooting_game.domain.idle.IdleService ..> shooting_game.gameScene.ship.ShipManager
+shooting_game.domain.power.PowerService +-- Verdict
+shooting_game.domain.power.PowerService ..> shooting_game.gameScene.stage.Difficulty
+shooting_game.domain.power.PowerService ..> shooting_game.utils.GameBalance
+shooting_game.domain.power.PowerService ..> shooting_game.domain.unit.UnitService
+shooting_game.domain.power.PowerService ..> shooting_game.domain.skill.SkillService
+shooting_game.domain.power.PowerService ..> shooting_game.domain.module.ModuleService
+shooting_game.domain.power.PowerService ..> shooting_game.data.DataManager
+shooting_game.domain.trial.TrialService ..> shooting_game.data.DataManager
+shooting_game.domain.trial.TrialService ..> shooting_game.gameScene.ship.ShipManager
+shooting_game.gameScene.GameManager ..> shooting_game.domain.trial.TrialService
+shooting_game.gameScene.stage.StageManager ..> shooting_game.domain.trial.TrialService
+shooting_game.lobbyScene.LobbyManager ..> shooting_game.domain.trial.TrialService
+shooting_game.data.DataManager ..> shooting_game.domain.trial.TrialService
+shooting_game.domain.achievement.AchievementService ..> shooting_game.domain.trial.TrialService
+shooting_game.stageScene.normal.subPanels.StageDetailPanel ..> shooting_game.domain.power.PowerService
+shooting_game.stageScene.normal.subPanels.StageInfoView ..> shooting_game.domain.power.PowerService
+shooting_game.lobbyScene.LobbySceneUI ..> shooting_game.domain.power.PowerService
+shooting_game.stageScene.extra.ExtraStageManager ..> shooting_game.domain.power.PowerService
 shooting_game.gameScene.GameManager ..> shooting_game.gameScene.item.ItemFactory
 shooting_game.gameScene.ItemSlotButton ..> shooting_game.domain.shop.ShopService
 shooting_game.gameScene.ItemSlotButton --|> javax.swing.JButton
@@ -3539,6 +4608,14 @@ shooting_game.stageScene.StarRewardPanel --|> javax.swing.JPanel
 shooting_game.stageScene.normal.subPanels.StageInfoView ..> shooting_game.gameScene.stage.DifficultyService
 shooting_game.stageScene.normal.subPanels.StageDetailPanel ..> shooting_game.gameScene.stage.DifficultyService
 shooting_game.stageScene.normal.subPanels.StageBtnPanel ..> shooting_game.ui.StageLockIcon
+shooting_game.stageScene.normal.subPanels.StageBtnPanel ..> shooting_game.ui.StageNodeIcon
+shooting_game.stageScene.normal.subPanels.StageBtnPanel ..> shooting_game.stageScene.normal.Chapters
+shooting_game.stageScene.normal.subPanels.StageBtnPanel ..> shooting_game.gameScene.stage.DifficultyService
+shooting_game.stageScene.normal.subPanels.StageBtnPanel ..> shooting_game.gameScene.stage.Difficulty
+shooting_game.stageScene.normal.NormalStageSceneUI ..> shooting_game.ui.SceneBars
+shooting_game.stageScene.normal.NormalStageManager ..> shooting_game.ui.ModeButtonImage
+shooting_game.stageScene.normal.NormalStageManager ..> shooting_game.ui.ButtonAnimator
+shooting_game.stageScene.normal.NormalStageManager ..> shooting_game.ui.UIBuilder
 shooting_game.model.StageRewards --> shooting_game.gameScene.stage.MissionResult
 shooting_game.gameScene.GameManager ..> shooting_game.model.StageRewards
 shooting_game.gameResultScene.GameResultSceneUI ..> shooting_game.model.StageRewards
@@ -3584,6 +4661,9 @@ shooting_game.gameResultScene.subPanels.RewardListPanel --|> javax.swing.JPanel
 shooting_game.testScene.TestManager --|> javax.swing.JPanel
 shooting_game.bagScene.BagManager --|> javax.swing.JPanel
 shooting_game.encyclopediaScene.EncyclopediaManager --|> javax.swing.JPanel
+shooting_game.achievementScene.AchievementManager --|> javax.swing.JPanel
+shooting_game.chestScene.ChestManager --|> javax.swing.JPanel
+shooting_game.idleScene.IdleManager --|> javax.swing.JPanel
 shooting_game.stageScene.DifficultyPanel --|> javax.swing.JPanel
 shooting_game.stageScene.extra.ExtraStageManager --|> javax.swing.JPanel
 shooting_game.ui.ShooterScrollBarUI --|> javax.swing.plaf.basic.BasicScrollBarUI
@@ -3615,6 +4695,14 @@ shooting_game.gameScene.item.Item ..|> shooting_game.interfaces.Entity
 shooting_game.gameScene.item.Item ..|> shooting_game.interfaces.Moveable
 shooting_game.gameScene.bullet.BulletManager ..|> shooting_game.interfaces.Manager
 shooting_game.gameScene.beam.BeamManager ..|> shooting_game.interfaces.Manager
+shooting_game.gameScene.hazard.MeteorManager ..|> shooting_game.interfaces.Manager
+shooting_game.gameScene.GameManager ..> shooting_game.gameScene.hazard.MeteorManager
+shooting_game.gameScene.stage.Stage ..> shooting_game.gameScene.hazard.MeteorManager
+shooting_game.gameScene.stage.StageGenerator ..> shooting_game.gameScene.stage.StageManager.StageData
+shooting_game.gameScene.stage.StageGenerator ..> shooting_game.gameScene.beam.BeamSpec
+shooting_game.gameScene.stage.StageGenerator ..> shooting_game.gameScene.beam.BlockSpec
+shooting_game.gameScene.stage.StageGenerator ..> shooting_game.gameScene.hazard.MeteorSpec
+shooting_game.gameScene.stage.StageManager.StageData --> shooting_game.gameScene.hazard.MeteorSpec
 shooting_game.gameScene.item.ItemManager ..|> shooting_game.interfaces.Manager
 ItemKinds ..|> shooting_game.interfaces.Collectible
 shooting_game.gameResultScene.GameResultManager ..|> shooting_game.interfaces.Manager
@@ -3622,10 +4710,28 @@ shooting_game.testScene.TestManager ..|> shooting_game.interfaces.Manager
 shooting_game.data.DataManager ..|> shooting_game.interfaces.Manager
 shooting_game.bagScene.BagManager ..|> shooting_game.interfaces.Manager
 shooting_game.encyclopediaScene.EncyclopediaManager ..|> shooting_game.interfaces.Manager
+shooting_game.achievementScene.AchievementManager ..|> shooting_game.interfaces.Manager
+shooting_game.chestScene.ChestManager ..|> shooting_game.interfaces.Manager
+shooting_game.idleScene.IdleManager ..|> shooting_game.interfaces.Manager
 shooting_game.stageScene.extra.ExtraStageManager ..|> shooting_game.interfaces.Manager
 shooting_game.gameScene.damage.DamagePopupManager ..|> shooting_game.interfaces.Manager
 shooting_game.shopScene.ShopManager ..|> shooting_game.interfaces.Manager
 shooting_game.gameScene.ship.types.Player ..|> java.awt.event.KeyListener
 shooting_game.utils.animation.AnimationManager ..|> shooting_game.interfaces.Manager
+
+' 特殊効果
+shooting_game.gameScene.ship.Ship --> shooting_game.gameScene.status.StatusSet
+shooting_game.gameScene.ship.Ship ..> shooting_game.gameScene.status.StatusEffect
+shooting_game.gameScene.ship.types.Player ..> shooting_game.domain.skill.SkillService
+shooting_game.gameScene.ship.types.Player ..> shooting_game.gameScene.status.StatusEffect
+shooting_game.gameScene.ship.types.Boss ..> shooting_game.gameScene.status.StatusEffect
+shooting_game.gameScene.ship.ShipManager ..> shooting_game.gameScene.status.StatusSet
+shooting_game.gameScene.bullet.Bullet ..> shooting_game.gameScene.status.StatusEffect
+shooting_game.gameScene.beam.Beam ..> shooting_game.gameScene.status.StatusEffect
+shooting_game.gameScene.beam.BeamManager ..> shooting_game.domain.unit.UnitService
+shooting_game.gameScene.GameManager ..> shooting_game.domain.unit.UnitService
+shooting_game.gameScene.GameManager ..> shooting_game.gameScene.status.StatusEffect
+shooting_game.domain.unit.UnitService ..> shooting_game.gameScene.status.StatusEffect
+shooting_game.domain.unit.UnitService ..> shooting_game.domain.skill.SkillService
 
 @enduml

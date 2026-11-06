@@ -42,6 +42,12 @@ import com.game.shooting_game.utils.Vector2;
  * 流れ: 入場(無敵) → 戦闘 → ゲージ破壊 → 移行(無敵・弾消し・ドロップ) → 次のゲージの戦闘 … → 最後のゲージを削ると撃破
  */
 public class Boss extends Ship {
+    @Override
+    protected double statusResist(com.game.shooting_game.gameScene.status.StatusEffect effect) {
+        // ボスは効きにくい(感電は効かない。ほかは時間が半分)
+        return effect == com.game.shooting_game.gameScene.status.StatusEffect.SHOCK ? 0 : 0.5;
+    }
+
     private static final String component = "[Ship:Boss]";
 
     // ゲージの色(ゲージ番号順、足りなければ繰り返す)
@@ -111,8 +117,14 @@ public class Boss extends Ship {
         // 戦闘定義とHP(ゲージ数 × 1ゲージ分)
         def = BossLibrary.forFight(id, com.game.shooting_game.gameScene.stage.StageManager.getInstance().getStageId());
         gaugeCount = def.getGauges().size();
-        gaugeHp = Math.max(1, def.getGaugeHp());
+        gaugeHp = Math.max(1, def.getGaugeHp())
+                * com.game.shooting_game.gameScene.stage.StageModifiers.enemyHpRate(); // 難易度などの硬さはゲージのHPで表す
         maxHp = hp = gaugeHp * gaugeCount;
+        // 無限モードのコインボスは、前の登場で削ったHPを引き継ぐ(再登場で満タンに戻らない)
+        if (isEndlessCoinBoss(id)) {
+            hp = Math.max(1, maxHp * com.game.shooting_game.gameScene.stage.CoinBossMemory.remainingRatio());
+            currentGauge = Math.min(gaugeCount - 1, Math.max(0, gaugeCount - (int) Math.ceil(hp / gaugeHp - 1e-9)));
+        }
 
         // 入場の設定(StageConfigの指定があればそちらを優先)
         entrance = entranceType != null ? entranceType : def.getEntrance();
@@ -123,9 +135,7 @@ public class Boss extends Ship {
         animation("admission");
 
         // 船タイプログ
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
+        LogUtils.info(component,
                 "Current shipId set to " + ANSI.YELLOW + shipId + ANSI.RESET + " (" + gaugeCount + " gauges).");
     }
 
@@ -231,7 +241,21 @@ public class Boss extends Ship {
     public void addDamage(double damage) {
         if (phase != Phase.FIGHT)
             return;
-        super.addDamage(damage);
+        // どんなに大きいダメージでも、一度に削れるのは今のゲージの残りまで(余りは捨てる)。
+        // コマンドの /kill は addDamage を通らないので、ゲージに関係なく倒せる
+        double floorHp = (gaugeCount - currentGauge - 1) * gaugeHp;
+        double allowed = Math.max(0, hp - floorHp);
+        if (damage >= allowed) {
+            if (allowed <= 0)
+                return;
+            damage = allowed;
+            double before = hp;
+            super.addDamage(damage);
+            if (hp < before) // シールド中は減っていない
+                hp = floorHp; // 誤差で次のゲージにはみ出したり、わずかに残ったりしないようにする
+        } else {
+            super.addDamage(damage);
+        }
 
         // ダメージを受けたぶんだけコインを落とす(被弾の回数ではなく、受けたダメージの合計に比例する)
         if (def.getCoinStep() > 0)
@@ -259,6 +283,20 @@ public class Boss extends Ship {
     }
 
     /**
+     * 形態変化の最中か(ゲージ破壊後の移行中。この間、自機の暴走のカウントは止まる)
+     */
+    public boolean isTransitioning() {
+        return phase == Phase.TRANSITION;
+    }
+
+    /** 無限モードのコインボスか(再登場でHPを引き継ぐ対象) */
+    public static boolean isEndlessCoinBoss(String bossId) {
+        return BossLibrary.COIN_BOSS_ID.equals(bossId)
+                && com.game.shooting_game.gameScene.stage.StageManager.getInstance().getStageId()
+                        == com.game.shooting_game.gameScene.stage.EndlessWaves.STAGE_ID;
+    }
+
+    /**
      * 撤収を始める(弾とビームを消して、上へ去る)
      */
     private void startRetreat() {
@@ -269,7 +307,11 @@ public class Boss extends Ship {
         BeamManager.getInstance().clearHostile();
         BulletManager.getInstance().clearEnemyBullets();
 
-        LogUtils.systemLog("[INFO]", component, "Boss retreats.");
+        // 撤収するコインボスは、残りHPの割合を覚えておく(次の登場に引き継ぐ)
+        if (isEndlessCoinBoss(shipId))
+            com.game.shooting_game.gameScene.stage.CoinBossMemory.save(hp / maxHp);
+
+        LogUtils.info(component, "Boss retreats.");
     }
 
     /**
@@ -346,9 +388,7 @@ public class Boss extends Ship {
         BulletManager.getInstance().clearEnemyBullets();
         SHIP_M.dropBossBonus(this, def.getGauges().get(clearedGauge).getDropRolls());
 
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
+        LogUtils.info(component,
                 "Gauge " + (clearedGauge + 1) + "/" + gaugeCount + " broken.");
     }
 
@@ -520,7 +560,7 @@ public class Boss extends Ship {
                 BufferedImage sheet = UIBuilder.loadImage(String.format(BODY_IMAGE_PATH, bossId, f));
                 frames = UIBuilder.cutSpriteSheet(sheet, new Vector2(4, 2), BODY_FRAMES);
             } catch (java.io.IOException e) {
-                LogUtils.systemLog("[WARN]", component, "Boss image not found: " + ANSI.YELLOW + key + ANSI.RESET
+                LogUtils.warn(component, "Boss image not found: " + ANSI.YELLOW + key + ANSI.RESET
                         + ". Using placeholder.");
             }
             BODY_IMAGES.put(key, frames);

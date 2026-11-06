@@ -8,7 +8,7 @@ import com.game.shooting_game.ResourceManager.ResourceKinds.ResourceName;
  * @see ModuleStat
  */
 public enum ModuleKind {
-    ATC("atc_mod", "攻撃モジュール", "攻", ModuleStat.ATK_PCT, 1.0, ResourceName.GEAR,
+    ATC("atc_mod", "攻撃モジュール", "攻", ModuleStat.ATK_PCT, 4.0, ResourceName.GEAR,
             "自機の弾とビームのダメージが増える"),
     DEF("def_mod", "防御モジュール", "防", ModuleStat.DEF_PCT, 0.6, ResourceName.SCREW,
             "受けるダメージが減る"),

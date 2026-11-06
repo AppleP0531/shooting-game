@@ -23,17 +23,17 @@ class StarRewardServiceTest {
         Map<String, Integer> hs = DataManager.getUserData().getProgress().getHighScores();
         hs.keySet().removeIf(k -> k.startsWith("mission:"));
         for (int i = 0; i < n; i++)
-            hs.put("mission:stage1:HARD:" + i, 1);
+            hs.put("mission:stage1:EASY:" + i, 1); // イージーだけの記録(1つ=★1つ)
     }
 
     @Test
-    @DisplayName("設定どおり interval は12、★0なら次の目標は12")
+    @DisplayName("設定どおり interval は36、★0なら次の目標は36")
     void intervalAndTarget() {
-        assertThat(StarRewardService.interval()).isEqualTo(12);
-        assertThat(StarRewardService.nextTarget()).isEqualTo(12);
-        setStars(24);
-        assertThat(StarRewardService.milestoneCount()).isEqualTo(2);
+        assertThat(StarRewardService.interval()).isEqualTo(36);
         assertThat(StarRewardService.nextTarget()).isEqualTo(36);
+        setStars(72);
+        assertThat(StarRewardService.milestoneCount()).isEqualTo(2);
+        assertThat(StarRewardService.nextTarget()).isEqualTo(108);
     }
 
     @Test
@@ -51,7 +51,7 @@ class StarRewardServiceTest {
     void claimOnce() {
         assertThat(StarRewardService.canClaim(1)).isFalse();
         assertThat(StarRewardService.claim(1)).isNull();
-        setStars(12);
+        setStars(36);
         assertThat(StarRewardService.canClaim(1)).isTrue();
         assertThat(StarRewardService.claimableCount()).isEqualTo(1);
         int coins = DataManager.getUserData().getResources().getCoins();
@@ -70,7 +70,7 @@ class StarRewardServiceTest {
     @DisplayName("claimAll は受け取れる分の合計を返し、二度目は null")
     void claimAll() {
         assertThat(StarRewardService.claimAll()).isNull();
-        setStars(36);
+        setStars(108);
         int expected = StarRewardService.rewardOf(1).coins() + StarRewardService.rewardOf(2).coins()
                 + StarRewardService.rewardOf(3).coins();
         Reward sum = StarRewardService.claimAll();
@@ -80,26 +80,26 @@ class StarRewardServiceTest {
     }
 
     @Test
-    @DisplayName("skipTickets を含む段(3段目・6段目)の報酬を持つ")
+    @DisplayName("どの段も研究スキップ券を含む(1段目・2段目)")
     void skipTicketTiers() {
-        assertThat(StarRewardService.rewardOf(1).skipTickets()).isZero();
-        assertThat(StarRewardService.rewardOf(3).skipTickets()).isEqualTo(1);
-        assertThat(StarRewardService.rewardOf(6).skipTickets()).isEqualTo(1);
+        assertThat(StarRewardService.rewardOf(1).skipTickets()).isEqualTo(1);
+        assertThat(StarRewardService.rewardOf(2).skipTickets()).isEqualTo(1);
+        assertThat(StarRewardService.rewardOf(16).skipTickets()).isGreaterThanOrEqualTo(1);
     }
 
     @Test
     @DisplayName("claim で研究スキップ券が増え、二重には受け取れない")
     void claimGivesSkipTicket() {
-        setStars(36);
+        setStars(72);
         int before = ShopService.owned(ItemKinds.SKIP_TICKET);
-        StarRewardService.claim(1);
-        StarRewardService.claim(2);
-        assertThat(ShopService.owned(ItemKinds.SKIP_TICKET)).isEqualTo(before);
-        Reward r = StarRewardService.claim(3);
-        assertThat(r.skipTickets()).isEqualTo(1);
+        Reward r1 = StarRewardService.claim(1);
+        assertThat(r1.skipTickets()).isEqualTo(1);
         assertThat(ShopService.owned(ItemKinds.SKIP_TICKET)).isEqualTo(before + 1);
-        assertThat(StarRewardService.claim(3)).isNull();
-        assertThat(ShopService.owned(ItemKinds.SKIP_TICKET)).isEqualTo(before + 1);
+        Reward r2 = StarRewardService.claim(2);
+        assertThat(r2.skipTickets()).isEqualTo(1);
+        assertThat(ShopService.owned(ItemKinds.SKIP_TICKET)).isEqualTo(before + 2);
+        assertThat(StarRewardService.claim(2)).isNull();
+        assertThat(ShopService.owned(ItemKinds.SKIP_TICKET)).isEqualTo(before + 2);
     }
 
     @Test
@@ -116,9 +116,25 @@ class StarRewardServiceTest {
     @Test
     @DisplayName("受取済みキーは★の数に影響しない")
     void claimKeyDoesNotChangeStars() {
-        setStars(24);
+        setStars(36);
         StarRewardService.claimAll();
-        assertThat(StarRewardService.totalStars()).isEqualTo(24);
+        assertThat(StarRewardService.totalStars()).isEqualTo(36);
         assertThat(DataManager.getUserData().getProgress().getHighScores()).containsKey("starReward:1");
+    }
+
+    @Test
+    @DisplayName("16段(★36〜576。★600まで)そろっていて、段ごとに報酬が違い、増えていく")
+    void sixteenDistinctTiers() {
+        for (int n = 1; n <= 16; n++)
+            assertThat(StarRewardService.rewardOf(n).coins()).isGreaterThan(0);
+        for (int n = 1; n < 16; n++) {
+            assertThat(StarRewardService.rewardOf(n)).isNotEqualTo(StarRewardService.rewardOf(n + 1));
+            assertThat(StarRewardService.rewardOf(n + 1).coins()).isGreaterThan(StarRewardService.rewardOf(n).coins());
+        }
+        // 表を超えた段は最後の段を繰り返す
+        assertThat(StarRewardService.rewardOf(17)).isEqualTo(StarRewardService.rewardOf(16));
+        // ★600までに受け取れる段の数
+        setStars(600);
+        assertThat(StarRewardService.milestoneCount()).isEqualTo(16);
     }
 }

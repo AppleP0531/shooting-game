@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
+import com.game.shooting_game.domain.farm.MaterialFarmService;
+import com.game.shooting_game.domain.trial.TrialService;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
@@ -24,6 +26,7 @@ import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.ship.EntranceType;
 import com.game.shooting_game.gameScene.ship.ShipManager;
 import com.game.shooting_game.gameScene.beam.BeamSpec;
+import com.game.shooting_game.gameScene.hazard.MeteorSpec;
 import com.game.shooting_game.gameScene.beam.BlockSpec;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipDefinition;
 import com.game.shooting_game.gameScene.ship.ShipManager.ShipKinds;
@@ -81,6 +84,7 @@ public final class StageManager implements Manager {
         private Map<String, EnemyConfig[]> enemyList;
         private Map<String, BlockSpec[]> blocks; // ウェーブごとのビームブロック(四角ブロック。流れながらビームを撃つ)
         private Map<String, BeamSpec[]> gimmicks; // ウェーブごとのビームギミック(壁・上からのビーム)
+        private Map<String, MeteorSpec[]> meteors; // ウェーブごとの隕石(上から降ってくる障害物。自機の弾で壊せる)
 
         /**
          * 獲得リソース量の決定
@@ -166,9 +170,7 @@ public final class StageManager implements Manager {
 
         try (InputStream is = getClass().getResourceAsStream(CONFIG_PATH)) {
             // ロード開始ログ
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
+            LogUtils.debug(component,
                     "Attempting to load configuration from " + ANSI.YELLOW + CONFIG_PATH + ANSI.RESET + ".");
 
             // nullチェック
@@ -177,20 +179,92 @@ public final class StageManager implements Manager {
 
             // データを読み込む
             stageConfigMap = mapper.readValue(is, TYPE_REF);
+            generateStages();
 
             // ロード成功ログ
-            LogUtils.systemLog(
-                    "[DEBUG]",
-                    component,
+            LogUtils.debug(component,
                     "Configuration loaded successfully");
         } catch (IOException e) {
             // ロードエラーログ
-            LogUtils.error(
-                    "[FATAL]",
-                    component,
+            LogUtils.fatal(component,
                     "Failed to load configuration file: " + ANSI.YELLOW + CONFIG_PATH + "." + ANSI.RESET + "\n"
                             + ANSI.RED + "Application will terminate." + ANSI.RESET,
                     e);
+        }
+    }
+
+    /**
+     * 31〜200の通常ステージを自動で作って加える(敵・ボスの種類は ShipConfig から集める)
+     */
+    private void generateStages() {
+        Map<ShipKinds, Map<String, ShipDefinition>> cfg = ShipManager.getInstance().getShipConfig();
+        List<String> enemies = new java.util.ArrayList<>();
+        Map<String, ShipDefinition> en = cfg.get(ShipKinds.ENEMY);
+        if (en != null)
+            for (Map.Entry<String, ShipDefinition> e : en.entrySet())
+                if (e.getValue().getDatas() != null)
+                    enemies.add(e.getKey());
+        List<String> bosses = new java.util.ArrayList<>();
+        Map<String, ShipDefinition> bs = cfg.get(ShipKinds.BOSS);
+        if (bs != null)
+            for (String id : bs.keySet())
+                if (id.matches("Boss\\d+"))
+                    bosses.add(id);
+        bosses.sort(java.util.Comparator.comparingInt(s -> Integer.parseInt(s.substring(4))));
+        if (enemies.isEmpty())
+            return;
+        for (int id = StageGenerator.FIRST_GENERATED; id <= StageGenerator.LAST_STAGE; id++)
+            stageConfigMap.put("stage" + id, StageGenerator.generate(id, enemies, bosses));
+        generateFarmStages(enemies, bosses);
+        generateTrialStage(enemies, bosses);
+    }
+
+    /**
+     * お試し出撃のトレーニングステージを作る(短い・ボスなし・報酬なし。エクストラの一覧には出ない)
+     */
+    private void generateTrialStage(List<String> enemies, List<String> bosses) {
+        StageData d = StageGenerator.generate(33, enemies, bosses);
+        Map<String, EnemyConfig[]> waves = new java.util.LinkedHashMap<>();
+        for (Map.Entry<String, EnemyConfig[]> e : d.getEnemyList().entrySet()) {
+            if (waves.size() >= TrialService.TRIAL_WAVES)
+                break;
+            waves.put(e.getKey(), e.getValue());
+        }
+        d.setEnemyList(waves);
+        d.setRewardList(new java.util.LinkedHashMap<>());
+        d.setGimmicks(null);
+        d.setMeteors(null);
+        d.setBlocks(null);
+        d.setCategory("TRIAL");
+        d.setUnlock(10);
+        d.setTitle("お試し出撃");
+        d.setDescription("まだ持っていない機体を試すトレーニング。報酬や記録はない。");
+        stageConfigMap.put("stage" + TrialService.TRIAL_STAGE_ID, d);
+    }
+
+    /**
+     * 素材周回ステージ(素材ごとに1つ)を作る。中身は同じ価値の通常ステージと同じ作りで、ウェーブを絞り、報酬をその素材だけにする
+     */
+    private void generateFarmStages(List<String> enemies, List<String> bosses) {
+        for (ResourceName res : MaterialFarmService.MATERIALS) {
+            int unlock = MaterialFarmService.unlockStage(res);
+            int base = Math.max(StageGenerator.FIRST_GENERATED, Math.min(StageGenerator.LAST_STAGE, unlock));
+            if (base % 5 == 0)
+                base++; // ボスのいないステージを土台にする
+            StageData d = StageGenerator.generate(base, enemies, bosses);
+            Map<String, EnemyConfig[]> waves = new java.util.LinkedHashMap<>();
+            for (Map.Entry<String, EnemyConfig[]> e : d.getEnemyList().entrySet()) {
+                if (waves.size() >= MaterialFarmService.wavesOf())
+                    break;
+                waves.put(e.getKey(), e.getValue());
+            }
+            d.setEnemyList(waves);
+            d.setRewardList(MaterialFarmService.rewards(res));
+            d.setCategory("MATERIAL");
+            d.setUnlock(unlock);
+            d.setTitle(res.getDisplayName() + "の周回");
+            d.setDescription(res.getDisplayName() + "を集めるための周回ステージ。\n手に入れたことのある素材だけが並ぶ。");
+            stageConfigMap.put("stage" + MaterialFarmService.stageId(res), d);
         }
     }
 

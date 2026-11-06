@@ -16,6 +16,7 @@ import lombok.Setter;
 
 import com.game.shooting_game.SceneManager.SceneType;
 import com.game.shooting_game.ShootingGameMain;
+import com.game.shooting_game.gameScene.DamageCalculator;
 import com.game.shooting_game.gameScene.GameManager.ColorMode;
 import com.game.shooting_game.gameScene.beam.BeamEmitter;
 import com.game.shooting_game.gameScene.beam.BeamManager;
@@ -31,6 +32,7 @@ import com.game.shooting_game.domain.unit.UnitService;
 import com.game.shooting_game.domain.subship.SubShipService;
 import com.game.shooting_game.utils.ANSI;
 import com.game.shooting_game.ui.Anchor;
+import com.game.shooting_game.utils.GameSettings;
 import com.game.shooting_game.utils.GameUtils;
 import com.game.shooting_game.utils.LogUtils;
 import com.game.shooting_game.ui.UIBuilder;
@@ -47,19 +49,25 @@ public class Player extends Ship implements KeyListener {
     private Vector2 dragMousePos; // ドラッグ中のマウス位置
     @Getter
     private boolean up = false, down = false, left = false, right = false; // キー入力
+    private boolean shiftDown = false; // Shiftを押している間は低速で動く(速度の割合は GameSettings)
     private String lastHorizontal = ""; // 最後に押された左右
     private String lastVertical = ""; // 最後に押された上下
     private List<SubShip> subShip = new ArrayList<>();
+    private static final double HITBOX_RADIUS = 4; // 弾の当たり判定の半径(白いドット)の初期値
+    private static final double HITBOX_RADIUS_MIN = 2; // 「小型化」を最大まで強化したときの半径
+    private static final double GLOW_RADIUS = 12; // ドットの後ろの、モードの色のぼかしの半径
+    private double pickupSize; // アイテムを拾う範囲の半径(機体ごとの元の判定の大きさ)
     private double OOCTime = 10; // 暴走状態持続時間
     @Setter
     @Getter
     private double OOCTimer; // 暴走状態タイマー
-    private static final double BASE_SHIELD_RATE = 0.15; // 最大HPに対する基本のシールド量
     private static final double SHIELD_REGEN_DELAY = 3.0; // 被弾してから回復が始まるまで(秒)
     private static final double SHIELD_REGEN_RATE = 0.08; // 1秒あたりに回復するシールド量(最大値に対する割合)
     private double shieldPoints; // 今のシールド量
     private double maxShield; // シールドの最大量
     private double shieldRegenWait; // 回復が始まるまでの待ち時間
+    private double durableShield; // 耐久シールド(アイテム)の残り耐久。0になるまで被弾を全部吸う(回復なし・クールタイムなし)
+    private double durableShieldMax; // 耐久シールドを張った時の耐久(バーの長さの基準)
     @Getter
     private double damagedTimer; // 被弾時の無敵タイマー
     private double breakawaySpeed; // 離脱速度
@@ -141,14 +149,18 @@ public class Player extends Ship implements KeyListener {
         maxHp *= StageModifiers.playerHpRate(); // ステージ条件
         hp = maxHp;
         // シールド(HPの前にダメージを受け、被弾から少し経つと回復する。モジュールで増やせる)
-        maxShield = maxHp * BASE_SHIELD_RATE * (1 + ModuleService.stat(ModuleStat.SHIELD_PCT))
+        maxShield = maxHp * UnitService.baseShieldRate(shipId) * (1 + ModuleService.stat(ModuleStat.SHIELD_PCT))
                 + ModuleService.stat(ModuleStat.SHIELD_FLAT);
         if (StageModifiers.noShield())
             maxShield = 0;
         shieldPoints = maxShield;
         speed *= 1 + SkillService.getBonus("MOVE_SPEED");
-        collisionSize *= 1 - Math.min(0.15, SkillService.getBonus("HITBOX"));
-        OOCTime = 10 + SkillService.getBonus("OOC_TIME");
+        // 弾の当たり判定は、中心の白いドットだけ(半径4px、強化で2px)。アイテムを拾う範囲は、これまでの判定の大きさのまま
+        pickupSize = collisionSize;
+        // 「小型化」(最大-15%)を最大まで強化すると、半径が初期値(4px)から最小(2px)まで小さくなる
+        double shrink = Math.min(1.0, SkillService.getBonus("HITBOX") / 0.15);
+        collisionSize = (HITBOX_RADIUS - (HITBOX_RADIUS - HITBOX_RADIUS_MIN) * shrink) * ShootingGameMain.getScreenSizeAdj();
+        OOCTime = UnitService.baseOocTime(shipId) + SkillService.getBonus("OOC_TIME");
 
         mouseHandler = new MouseAdapter() {
             @Override
@@ -171,9 +183,7 @@ public class Player extends Ship implements KeyListener {
         mode = ColorMode.BLUE;
 
         // 船タイプログ
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
+        LogUtils.info(component,
                 "Current shipId set to " + ANSI.YELLOW + shipId + "." + ANSI.RESET);
 
         // サブ機の生成(必須パーツが揃っていて、装備中のときだけ両端に付く)
@@ -201,7 +211,9 @@ public class Player extends Ship implements KeyListener {
 
                 // 船がレベル5の時は暴走モードにする
                 if (shipLevel >= 5) {
-                    OOCTimer = Math.max(0, OOCTimer - dt);
+                    // ボスが形態変化(ゲージ破壊後の移行)している間は、暴走のカウントを止める
+                    if (!SHIP_M.getBossList().stream().anyMatch(b -> b instanceof Boss boss && boss.isTransitioning()))
+                        OOCTimer = Math.max(0, OOCTimer - dt);
                     shipState = "OOC";
 
                     if (OOCTimer <= 0)
@@ -307,6 +319,10 @@ public class Player extends Ship implements KeyListener {
             }
         }
 
+        // 当たり判定の白いドットと、後ろのモードの色(赤・青)のぼかし
+        if (SM.getSceneName() != SceneType.LOBBY)
+            drawHitDot(g2);
+
         switch (animationName) {
             case "death" -> {
                 GM.result();
@@ -316,8 +332,38 @@ public class Player extends Ship implements KeyListener {
         subShip.forEach(s -> s.draw(g));
     }
 
+    /**
+     * 当たり判定の白いドット(半径2px)。後ろに、今のモードの色のぼかしを置いて、モードを見分けやすくする
+     */
+    private void drawHitDot(Graphics2D g2) {
+        double adj = ShootingGameMain.getScreenSizeAdj();
+        float glow = (float) (GLOW_RADIUS * adj);
+        Color c = mode == ColorMode.RED ? new Color(255, 70, 70) : new Color(70, 140, 255);
+        java.awt.Paint oldPaint = g2.getPaint();
+        g2.setPaint(new java.awt.RadialGradientPaint((float) pos.getX(), (float) pos.getY(), glow,
+                new float[] { 0f, 0.45f, 1f },
+                new Color[] { new Color(c.getRed(), c.getGreen(), c.getBlue(), 200),
+                        new Color(c.getRed(), c.getGreen(), c.getBlue(), 90),
+                        new Color(c.getRed(), c.getGreen(), c.getBlue(), 0) }));
+        g2.fill(new java.awt.geom.Ellipse2D.Double(pos.getX() - glow, pos.getY() - glow, glow * 2, glow * 2));
+        g2.setPaint(oldPaint);
+
+        double r = Math.max(2, collisionSize); // 見た目も、実際の判定の大きさに合わせる
+        g2.setColor(Color.WHITE);
+        g2.fill(new java.awt.geom.Ellipse2D.Double(pos.getX() - r, pos.getY() - r, r * 2, r * 2));
+    }
+
+    /**
+     * アイテムを拾う範囲の半径
+     */
+    public double getPickupSize() {
+        return pickupSize;
+    }
+
     @Override
-    public void move(double dt) {
+    public void move(double rawDt) {
+        // 鈍足・感電の間は、動く速さが落ちる(ステージの中だけ。登場や退場の演出は変えない)
+        final double dt = "none".equals(animationName) ? rawDt * status.speedRate() : rawDt;
         switch (animationName) {
             case "admission" -> {
                 animateTimer += dt;
@@ -338,7 +384,7 @@ public class Player extends Ship implements KeyListener {
                 // キーが何かしら押されてるときに移動
                 if (up || down || left || right) {
                     vec = GameUtils.targetVec(new Vector2(0, 0), direction);
-                    super.move(dt);
+                    moveMaybeSlow(dt);
                 }
 
                 // マウス移動処理
@@ -350,7 +396,7 @@ public class Player extends Ship implements KeyListener {
                     // 目標地点との距離が近いときは止まる（ガタつき防止）
                     if (distSq > Math.pow(5 * ShootingGameMain.getScreenSizeAdj(), 2)) {
                         vec = GameUtils.targetVec(pos, targetPos);
-                        super.move(dt);
+                        moveMaybeSlow(dt);
                     }
 
                 }
@@ -374,6 +420,20 @@ public class Player extends Ship implements KeyListener {
         }
 
         subShip.forEach(s -> s.move(dt));
+    }
+
+    /**
+     * 1フレーム分動く(Shiftを押している間は、設定の割合まで速度を下げる)
+     */
+    private void moveMaybeSlow(double dt) {
+        if (!shiftDown) {
+            super.move(dt);
+            return;
+        }
+        double base = speed;
+        speed = base * GameSettings.getSlowPercent() / 100.0;
+        super.move(dt);
+        speed = base;
     }
 
     public double getShieldPoints() {
@@ -444,6 +504,17 @@ public class Player extends Ship implements KeyListener {
             g2.setColor(new Color(90, 200, 255));
             g2.fillRect((int) barPos.getX() + skewX / 2, sy, (int) (barSize.getX() * (shieldPoints / maxShield)), sh);
         }
+
+        // 耐久シールドのバー(シールドのバーの下に、金色で)
+        if (durableShield > 0 && durableShieldMax > 0) {
+            int sh = Math.max(3, (int) (4 * ShootingGameMain.getScreenSizeAdj()));
+            int sy = (int) barPos.getY() + (int) barSize.getY() + 2 + (maxShield > 0 ? sh + 2 : 0);
+            g2.setColor(new Color(50, 50, 50, 150));
+            g2.fillRect((int) barPos.getX() + skewX / 2, sy, (int) barSize.getX(), sh);
+            g2.setColor(new Color(255, 205, 70));
+            g2.fillRect((int) barPos.getX() + skewX / 2, sy,
+                    (int) (barSize.getX() * Math.min(1.0, durableShield / durableShieldMax)), sh);
+        }
     }
 
     /*
@@ -471,6 +542,7 @@ public class Player extends Ship implements KeyListener {
                 right = true;
                 lastHorizontal = "right";
             }
+            case KeyEvent.VK_SHIFT -> shiftDown = true;
             case KeyEvent.VK_SPACE -> {
                 changeMode();
             }
@@ -507,13 +579,40 @@ public class Player extends Ship implements KeyListener {
                 if (left)
                     lastHorizontal = "left";
             }
+            case KeyEvent.VK_SHIFT -> shiftDown = false;
         }
+    }
+
+    /**
+     * 自機への特殊効果の時間は、スキルの耐性(RES_効果名)の分だけ短くなる(最大9割)
+     */
+    @Override
+    public void applyStatus(com.game.shooting_game.gameScene.status.StatusEffect effect, double seconds, double power) {
+        double resist = Math.min(0.9, SkillService.getBonus("RES_" + effect.name()));
+        super.applyStatus(effect, seconds * (1 - resist), power);
+    }
+
+    @Override
+    protected void dotDamage(double amount) {
+        // 毒・炎は、シールドと無敵時間を通さず、HPを直接減らす(常時無敵のときは受けない)
+        if (shieldTimer == Double.POSITIVE_INFINITY)
+            return;
+        hp -= amount;
     }
 
     @Override
     public void addDamage(double damage) {
+        damage *= status.damageTakenRate(); // 脆弱の間は増える
         // シールドを持っていなかった場合はダメージを負って、1秒のダメージクールタイムを設ける
         if (shieldTimer <= 0) {
+            // 耐久シールドが一番先に吸う(全部吸えたら被弾扱いにならず、無敵時間も付かない)
+            if (durableShield > 0) {
+                var r = DamageCalculator.absorbDurable(durableShield, damage);
+                durableShield = r.durability();
+                damage = r.restDamage();
+                if (damage <= 0)
+                    return;
+            }
             // シールドが先にダメージを受け、残りがHPに入る
             double rest = damage;
             if (shieldPoints > 0) {
@@ -525,7 +624,7 @@ public class Player extends Ship implements KeyListener {
             GM.addHit();
             if (rest > 0)
                 super.addDamage(rest);
-            shieldTimer = damagedTimer = 1 + SkillService.getBonus("INVINCIBLE");
+            shieldTimer = damagedTimer = UnitService.baseInvincibleTime(shipId) + SkillService.getBonus("INVINCIBLE");
         }
     }
 
@@ -542,6 +641,31 @@ public class Player extends Ship implements KeyListener {
 
         if (shipLevel == 5)
             setOOCTimer(OOCTime);
+    }
+
+    /**
+     * 耐久シールドを張る(アイテム用。重ねて使うと、耐久を張り直す)
+     *
+     * @param durability 耐久
+     */
+    public void startDurableShield(double durability) {
+        durableShield = durableShieldMax = durability;
+    }
+
+    public double getDurableShield() {
+        return durableShield;
+    }
+
+    /**
+     * 一時的に暴走状態にする(アイテム用。機体の暴走時間ぶん続く)
+     */
+    public void startRampage() {
+        // 常時暴走状態の場合処理をスキップ
+        if (OOCTimer == Double.POSITIVE_INFINITY)
+            return;
+
+        shipLevel = 5;
+        setOOCTimer(OOCTime);
     }
 
     /**

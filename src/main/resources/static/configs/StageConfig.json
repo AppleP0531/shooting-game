@@ -31027,7 +31027,7 @@
       ]
     }
   },
-  "stage101": {
+  "stage1101": {
     "title": "モジュール試練 I",
     "description": "ステージ3と5の敵が入り乱れる試練。最後はボス。クリアするとモジュールが手に入る。",
     "category": "MODULE",
@@ -31650,7 +31650,7 @@
       ]
     }
   },
-  "stage102": {
+  "stage1102": {
     "title": "モジュール試練 II",
     "description": "ステージ8と10の敵が入り乱れる試練。最後はボス。クリアするとモジュールが手に入る。",
     "category": "MODULE",
@@ -32399,7 +32399,7 @@
       ]
     }
   },
-  "stage103": {
+  "stage1103": {
     "title": "モジュール試練 III",
     "description": "ステージ13と15の敵が入り乱れる試練。最後はボス。クリアするとモジュールが手に入る。",
     "category": "MODULE",
@@ -32994,7 +32994,7 @@
       ]
     }
   },
-  "stage104": {
+  "stage1104": {
     "title": "モジュール試練 IV",
     "description": "ステージ23と25の敵が入り乱れる試練。最後はボス。クリアするとモジュールが手に入る。",
     "category": "MODULE",
@@ -34078,7 +34078,7 @@
       ]
     }
   },
-  "stage111": {
+  "stage1111": {
     "title": "ビームブロック回廊",
     "description": "全ウェーブに、ビームを撃つ四角ブロックが現れる。色を切り替えながらかわし続ける回廊。",
     "category": "SPECIAL",
@@ -34844,7 +34844,7 @@
       ]
     }
   },
-  "stage121": {
+  "stage1121": {
     "title": "ボスラッシュ",
     "description": "これまでのボスと連続で戦う。回復の合間は少ない。",
     "category": "BOSS",
@@ -34948,7 +34948,7 @@
       ]
     }
   },
-  "stage131": {
+  "stage1131": {
     "title": "強化素材の採掘",
     "description": "敵の数が多いステージ。強化素材がまとめて手に入る。",
     "category": "MATERIAL",
@@ -35766,7 +35766,7 @@
       ]
     }
   },
-  "stage132": {
+  "stage1132": {
     "title": "パーツ素材の採掘",
     "description": "敵の数が多いステージ。サブ機のパーツ素材がまとめて手に入る。",
     "category": "MATERIAL",
@@ -36298,7 +36298,7 @@
       ]
     }
   },
-  "stage141": {
+  "stage1141": {
     "title": "デイリーチャレンジ",
     "description": "毎日変わる条件のステージ。",
     "category": "SPECIAL",
@@ -36306,14 +36306,14 @@
     "rewardList": {},
     "enemyList": {}
   },
-  "stage200": {
+  "stage1200": {
     "title": "無限モード",
     "description": "ゲームオーバーまで続く。",
     "unlock": 0,
     "rewardList": {},
     "enemyList": {}
   },
-  "stage151": {
+  "stage1151": {
     "title": "ボスチャレンジ Boss1",
     "description": "Boss1だけと戦う高難度版。敵が硬く、攻撃も強い。",
     "category": "BOSS",
@@ -36367,7 +36367,7 @@
       ]
     }
   },
-  "stage152": {
+  "stage1152": {
     "title": "ボスチャレンジ Boss2",
     "description": "Boss2だけと戦う高難度版。敵が硬く、攻撃も強い。",
     "category": "BOSS",
@@ -36429,7 +36429,7 @@
       ]
     }
   },
-  "stage153": {
+  "stage1153": {
     "title": "ボスチャレンジ Boss3",
     "description": "Boss3だけと戦う高難度版。敵が硬く、攻撃も強い。",
     "category": "BOSS",
@@ -36499,7 +36499,7 @@
       ]
     }
   },
-  "stage154": {
+  "stage1154": {
     "title": "ボスチャレンジ Boss4",
     "description": "Boss4だけと戦う高難度版。敵が硬く、攻撃も強い。",
     "category": "BOSS",
@@ -36594,7 +36594,7 @@
       ]
     }
   },
-  "stage155": {
+  "stage1155": {
     "title": "ボスチャレンジ Boss5",
     "description": "Boss5だけと戦う高難度版。敵が硬く、攻撃も強い。",
     "category": "BOSS",
@@ -36696,7 +36696,7 @@
       ]
     }
   },
-  "stage157": {
+  "stage1157": {
     "title": "ボスチャレンジ Boss7 スナイパー",
     "description": "Boss7だけと戦う高難度版。敵が硬く、攻撃も強い。",
     "category": "BOSS",
@@ -36800,7 +36800,7 @@
       ]
     }
   },
-  "stage158": {
+  "stage1158": {
     "title": "ボスチャレンジ Boss8 カスケード",
     "description": "Boss8だけと戦う高難度版。敵が硬く、攻撃も強い。",
     "category": "BOSS",
@@ -36905,7 +36905,7 @@
       ]
     }
   },
-  "stage159": {
+  "stage1159": {
     "title": "ボスチャレンジ Boss9 プリズム",
     "description": "Boss9だけと戦う高難度版。敵が硬く、攻撃も強い。",
     "category": "BOSS",

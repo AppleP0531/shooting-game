@@ -11,12 +11,16 @@ import java.util.Objects;
 import lombok.Getter;
 
 import com.game.shooting_game.bagScene.BagManager;
+import com.game.shooting_game.achievementScene.AchievementManager;
+import com.game.shooting_game.chestScene.ChestManager;
+import com.game.shooting_game.idleScene.IdleManager;
 import com.game.shooting_game.encyclopediaScene.EncyclopediaManager;
 import com.game.shooting_game.gameResultScene.GameResultManager;
 import com.game.shooting_game.gameScene.GameManager;
 import com.game.shooting_game.interfaces.Manager;
 import com.game.shooting_game.lobbyScene.LobbyManager;
 import com.game.shooting_game.settingScene.SettingManager;
+import com.game.shooting_game.gachaScene.GachaManager;
 import com.game.shooting_game.shopScene.ShopManager;
 import com.game.shooting_game.stageScene.SelectStageManager;
 import com.game.shooting_game.stageScene.extra.ExtraStageManager;
@@ -43,7 +47,11 @@ public final class SceneManager implements Manager {
         BAG,
         UPGRADE,
         SHOP,
+        GACHA,
         ENCYCLOPEDIA,
+        ACHIEVEMENT,
+        CHEST,
+        IDLE,
         SELECTSTAGE,
         NORMALSTAGE,
         INFINITYSTAGE,
@@ -67,26 +75,39 @@ public final class SceneManager implements Manager {
         SceneManager.instance = this;
         animation = AnimationManager.getInstance();
 
-        scenes.put(SceneType.TITLE, TitleManager.getInstance());
-        scenes.put(SceneType.LOBBY, LobbyManager.getInstance());
-        scenes.put(SceneType.BAG, BagManager.getInstance());
-        scenes.put(SceneType.UPGRADE, UpgradeManager.getInstance());
-        scenes.put(SceneType.SHOP, ShopManager.getInstance());
-        scenes.put(SceneType.ENCYCLOPEDIA, EncyclopediaManager.getInstance());
-        scenes.put(SceneType.SELECTSTAGE, SelectStageManager.getInstance());
-        scenes.put(SceneType.NORMALSTAGE, NormalStageManager.getInstance());
-        scenes.put(SceneType.INFINITYSTAGE, InfinityStageManager.getInstance());
+        register(SceneType.TITLE, TitleManager::getInstance);
+        register(SceneType.LOBBY, LobbyManager::getInstance);
+        register(SceneType.BAG, BagManager::getInstance);
+        register(SceneType.UPGRADE, UpgradeManager::getInstance);
+        register(SceneType.SHOP, ShopManager::getInstance);
+        register(SceneType.GACHA, GachaManager::getInstance);
+        register(SceneType.ENCYCLOPEDIA, EncyclopediaManager::getInstance);
+        register(SceneType.ACHIEVEMENT, AchievementManager::getInstance);
+        register(SceneType.CHEST, ChestManager::getInstance);
+        register(SceneType.IDLE, IdleManager::getInstance);
+        register(SceneType.SELECTSTAGE, SelectStageManager::getInstance);
+        register(SceneType.NORMALSTAGE, NormalStageManager::getInstance);
+        register(SceneType.INFINITYSTAGE, InfinityStageManager::getInstance);
         for (String[] c : ExtraStageManager.CATEGORIES)
-            scenes.put(SceneType.valueOf("EXTRA_" + c[0]), new ExtraStageManager(c[0], c[1]));
-        scenes.put(SceneType.SETTING, SettingManager.getInstance());
-        scenes.put(SceneType.GAME, GameManager.getInstance());
-        scenes.put(SceneType.GAMERESULT, GameResultManager.getInstance());
-        scenes.put(SceneType.TEST, TestManager.getInstance());
+            register(SceneType.valueOf("EXTRA_" + c[0]), () -> new ExtraStageManager(c[0], c[1]));
+        register(SceneType.SETTING, SettingManager::getInstance);
+        register(SceneType.GAME, GameManager::getInstance);
+        register(SceneType.GAMERESULT, GameResultManager::getInstance);
+        register(SceneType.TEST, TestManager::getInstance);
+    }
+
+    /**
+     * シーンを登録する(起動時の進捗バーに、いま読み込んでいるシーンの名前と、登録の進み具合を出す。0.50〜0.80)
+     */
+    private void register(SceneType type, java.util.function.Supplier<Manager> supplier) {
+        com.game.shooting_game.ui.LoadProgress.set("Loading " + type.name(),
+                0.50 + 0.30 * scenes.size() / SceneType.values().length);
+        scenes.put(type, supplier.get());
     }
 
     /**
      * インスタンスの取得
-     * 
+     *
      * @return インスタンス
      */
     public static SceneManager getInstance() {
@@ -97,9 +118,7 @@ public final class SceneManager implements Manager {
     @Override
     public void setup() {
         // シーンロード開始ログ
-        LogUtils.systemLog(
-                "[DEBUG]",
-                component,
+        LogUtils.debug(component,
                 "loading Scene...");
 
         // マネージャーのセットアップ
@@ -107,10 +126,13 @@ public final class SceneManager implements Manager {
         if (current != null)
             current.setup();
 
+        // 初めて入った画面なら、操作のガイドを出す
+        var guide = com.game.shooting_game.domain.tutorial.TutorialService.forScene(sceneName.name());
+        if (guide != null)
+            com.game.shooting_game.ui.TutorialOverlay.getInstance().show(guide, null);
+
         // シーンロード完了ログ
-        LogUtils.systemLog(
-                "[INFO]",
-                component,
+        LogUtils.info(component,
                 ANSI.YELLOW + sceneName + " Scene" + ANSI.RESET + " loaded.");
     }
 
